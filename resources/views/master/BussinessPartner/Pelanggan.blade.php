@@ -29,7 +29,7 @@
 								</div>
 							    <div class="icons d-flex">
 									<a href="{{ url('pelanggan/form/-') }}" class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1">Tambah Data</a>
-								
+									<a href="{{ url('pelanggan/export') }}" class="btn btn-outline-success rounded-pill font-weight-bold me-1 mb-1">Download Excel</a>
 								</div>
 							</div>
 						
@@ -51,6 +51,7 @@
 												<th>Nama Pelanggan</th>
 												<th>Grup Pelanggan</th>
 												<th>Limit Piutang</th>
+												<th>Status</th>
 												<th>Email</th>
 												<th>No. HP</th>
 												<th>Alamat</th>
@@ -69,6 +70,7 @@
 													<td>{{ $v['NamaPelanggan'] }}</td>
 													<td>{{ $v['NamaGrup'] }}</td>
 													<td>{{ $v['LimitPiutang'] }}</td>
+													<td> <div class="{{ $v['StatusRecord'] == 'ACTIVE' ? 'mr-0 text-success' : 'mr-0 text-danger' }} ">{{ $v['StatusRecord'] }}</div> </td>
 													<td>{{ $v['Email'] }}</td>
 													<td>{{ $v['NoTlp1'] }}</td>
 													<td>{{ $v['Alamat'] }}</td>
@@ -87,7 +89,6 @@
 															</button>
 															<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdowneditButton1"  style="position: absolute; transform: translate3d(1001px, 111px, 0px); top: 0px; left: 0px; will-change: transform;">
 																<a class="dropdown-item" href="{{ url('pelanggan/form/' . $v['KodePelanggan']) }}">Edit</a>
-																<a class="dropdown-item" title="Delete" href="{{ route('pelanggan-delete', $v['KodePelanggan']) }}" data-confirm-delete="true">Delete</a>
 															</div>
 														</div>
 													</td>

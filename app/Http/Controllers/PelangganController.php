@@ -7,10 +7,12 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use DB;
 use Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 use App\Models\GrupPelanggan;
 use App\Models\Pelanggan;
 use App\Models\Provinsi;
+use App\Exports\PelangganExport;
 
 class PelangganController extends Controller
 {
@@ -32,7 +34,7 @@ class PelangganController extends Controller
     	$field = ['KodePelanggan','NamaPelanggan'];
         $keyword = $request->input('keyword');
 
-        $sql = "pelanggan.*, dem_provinsi.prov_name, dem_kota.city_name, dem_kecamatan.dis_name, dem_kelurahan.subdis_name, gruppelanggan.NamaGrup ";
+        $sql = "pelanggan.*, dem_provinsi.prov_name, dem_kota.city_name, dem_kecamatan.dis_name, dem_kelurahan.subdis_name, gruppelanggan.NamaGrup, CASE WHEN pelanggan.status = 1 THEN 'ACTIVE' ELSE 'INACTIVE' END StatusRecord";
 
         $pelanggan = Pelanggan::selectRaw($sql)
         				->leftJoin('dem_provinsi','pelanggan.ProvID','=','dem_provinsi.prov_id')
@@ -101,6 +103,7 @@ class PelangganController extends Controller
 			$model->NoTlp2 = $request->input('NoTlp2');
 			$model->Alamat = $request->input('Alamat');
 			$model->Keterangan = $request->input('Keterangan');
+            $model->Status = $request->input('Status');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -140,7 +143,6 @@ class PelangganController extends Controller
                             ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                 			->update(
                 				[
-                					'KodePelanggan' => $request->input('KodePelanggan'),
 									'NamaPelanggan' => $request->input('NamaPelanggan'),
 									'KodeGrupPelanggan' => $request->input('KodeGrupPelanggan'),
 									'LimitPiutang' => $request->input('LimitPiutang'),
@@ -153,6 +155,7 @@ class PelangganController extends Controller
 									'NoTlp2' => $request->input('NoTlp2'),
 									'Alamat' => $request->input('Alamat'),
 									'Keterangan' => $request->input('Keterangan'),
+                                    'Status' => $request->input('Status')
                 				]
                 			);
 
@@ -187,5 +190,9 @@ class PelangganController extends Controller
         	alert()->error('Error','Delete Pelanggan Gagal.');
         }
         return redirect('pelanggan');
+    }
+    public function Export()
+    {
+        return Excel::download(new PelangganExport(), 'Daftar Pelanggan.xlsx');
     }
 }

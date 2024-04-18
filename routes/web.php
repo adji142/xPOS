@@ -5,6 +5,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GrupPelangganController;
 use App\Http\Controllers\PelangganController;
+use App\Http\Controllers\SupplierController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -45,3 +46,17 @@ Route::post('/pelanggan/store', [PelangganController::class, 'store'])->name('pe
 Route::post('/pelanggan/edit', [PelangganController::class, 'edit'])->name('pelanggan-edit')->middleware('auth');
 Route::delete('/pelanggan/delete/{id}', [PelangganController::class, 'deletedata'])->name('pelanggan-delete')->middleware('auth');
 Route::post('/pelanggan/demografi', [PelangganController::class, 'ReadDemografi'])->name('demografipelanggan')->middleware('auth');
+Route::get('/pelanggan/export', [PelangganController::class,'Export'])->name('pelanggan-export')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Supplier
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/supplier', [SupplierController::class,'View'])->name('supplier')->middleware('auth');
+Route::get('/supplier/form/{id}', [SupplierController::class,'Form'])->name('supplier-form')->middleware('auth');
+Route::post('/supplier/store', [SupplierController::class, 'store'])->name('supplier-store')->middleware('auth');
+Route::post('/supplier/edit', [SupplierController::class, 'edit'])->name('supplier-edit')->middleware('auth');
+Route::delete('/supplier/delete/{id}', [SupplierController::class, 'deletedata'])->name('supplier-delete')->middleware('auth');
+Route::get('/supplier/export', [SupplierController::class,'Export'])->name('supplier-export')->middleware('auth');

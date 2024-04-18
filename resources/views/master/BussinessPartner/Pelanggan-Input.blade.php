@@ -176,6 +176,18 @@
 	                            				<textarea class="form-control" id="Keterangan" name="Keterangan" rows="3" placeholder="Masukan Keterangan"></textarea>
 	                            			</fieldset>
 	                            		</div>
+
+	                            		<div class="col-md-12">
+	                            			<label  class="text-body">Status</label>
+	                            			<fieldset class="form-group mb-3">
+	                            				<select name="Status" id="Status" class="js-example-basic-single js-states form-control bg-transparent" name="state" >
+													<option value="1" {{ count($pelanggan) > 0 ? $pelanggan[0]['Status'] == 1 ? "selected" : '' :""}}>Active</option>
+													<option value="0" {{ count($pelanggan) > 0 ? $pelanggan[0]['Status'] == 0 ? "selected" : '' :""}}>Inactive</option>
+												</select>
+	                            			</fieldset>
+	                            			
+	                            		</div>
+
 	                            		<div class="col-md-12">
 	                            			<button type="submit" class="btn btn-success text-white font-weight-bold me-1 mb-1">Simpan</button>
 	                            		</div>

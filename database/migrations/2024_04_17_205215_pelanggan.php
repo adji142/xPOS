@@ -27,6 +27,7 @@ class Pelanggan extends Migration
             $table->string('NoTlp2')->nullable();
             $table->string('Alamat')->nullable();
             $table->string('Keterangan')->nullable();
+            $table->integer('Status')->default(1);
             $table->string('RecordOwnerID');
             $table->timestamps();
         });
