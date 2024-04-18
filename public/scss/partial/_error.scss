@@ -1,0 +1,69 @@
+#notfound {
+  position: relative;
+  height: 100vh;
+  background-color: var(--artical-background-page);
+}
+#notfound .notfound {
+  text-align: center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%,-50%);
+  -ms-transform: translate(-50%,-50%);
+  transform: translate(-50%,-50%);
+}
+.notfound .notfound-404 {
+  // height: 158px;
+  // line-height: 153px;
+}
+.notfound .notfound-404 h1 {
+  color: var(--artical-background-primary-dark);
+  font-size: 220px;
+  letter-spacing: 10px;
+  margin: 0;
+  font-weight: 700;
+  text-shadow: 2px 2px 0 #c9c9c9, -2px -2px 0 #c9c9c9;
+}
+.notfound .notfound-403 h1 {
+  color: var(--artical-background-primary-dark);
+  font-size: 100px;
+  letter-spacing: 10px;
+  margin: 0;
+  font-weight: 700;
+  text-shadow: 2px 2px 0 #c9c9c9, -2px -2px 0 #c9c9c9;
+}
+.notfound .notfound-403 h1>span {
+  text-shadow: 2px 2px 0 var(--artical-background-secondary-dark), -2px -2px 0 var(--artical-background-secondary-dark), 0 0 8px var(--artical-background-secondary-dark);
+}
+.notfound .notfound-404 h1>span {
+  text-shadow: 2px 2px 0 var(--artical-background-secondary-dark), -2px -2px 0 var(--artical-background-secondary-dark), 0 0 8px var(--artical-background-secondary-dark);
+}
+.notfound p {
+  font-family: $font-family-base;
+  color: var(--artical-color-dark);
+  font-size: 16px;
+  font-weight: 400;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+.notfound a {
+  text-decoration: none;
+  text-transform: uppercase;
+  background: 0 0;
+  color: var(--artical-color-primary);
+  border: 2px solid var(--artical-color-primary);
+  display: inline-block;
+  padding: 10px 25px;
+  font-weight: 700;
+  -webkit-transition: .2s all;
+  transition: .2s all;
+}
+
+@media only screen and (max-width:576px){
+  .notfound .notfound-404 h1{
+    font-size: 140px;
+  }
+  .notfound .notfound-403 h1{
+    font-size: 75px;
+  }
+}
