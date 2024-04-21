@@ -143,6 +143,7 @@
 																						
 																							<span class="nav-text">{{$lv3['PermissionName']}}</span>
 																						</a>
+																						
 																					</li>
 																				@endforeach
 																			@endif
@@ -371,8 +372,9 @@
 	<script src="{{asset('api/datatable/jquery.dataTables.min.js')}}"></script>
 	<script src="{{asset('api/select2/select2.min.js')}}"></script>
 	<script src="{{asset('api/multiple-select/multiple-select.min.js')}}"></script>
-	<!-- <script src="{{asset('js/script.bundle.js')}}"></script> -->
+	<script src="{{asset('js/script.bundle.js')}}"></script>
 	<script src="{{asset('js/script-slick.js')}}"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script>
 		// In your Javascript (external .js resource or <script> tag)
 	

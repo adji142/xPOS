@@ -6,6 +6,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GrupPelangganController;
 use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\SalesController;
+use App\Http\Controllers\RolesController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -60,3 +62,30 @@ Route::post('/supplier/store', [SupplierController::class, 'store'])->name('supp
 Route::post('/supplier/edit', [SupplierController::class, 'edit'])->name('supplier-edit')->middleware('auth');
 Route::delete('/supplier/delete/{id}', [SupplierController::class, 'deletedata'])->name('supplier-delete')->middleware('auth');
 Route::get('/supplier/export', [SupplierController::class,'Export'])->name('supplier-export')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Supplier
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/sales', [SalesController::class,'View'])->name('sales')->middleware('auth');
+Route::get('/sales/form/{id}', [SalesController::class,'Form'])->name('sales-form')->middleware('auth');
+Route::post('/sales/store', [SalesController::class, 'store'])->name('sales-store')->middleware('auth');
+Route::post('/sales/edit', [SalesController::class, 'edit'])->name('sales-edit')->middleware('auth');
+Route::delete('/sales/delete/{id}', [SalesController::class, 'deletedata'])->name('sales-delete')->middleware('auth');
+Route::get('/sales/export', [SalesController::class,'Export'])->name('sales-export')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| KelompokAkses
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/roles', [RolesController::class,'View'])->name('roles')->middleware('auth');
+Route::get('/roles/form/{id}', [RolesController::class,'Form'])->name('roles-form')->middleware('auth');
+Route::post('/roles/store', [RolesController::class, 'store'])->name('roles-store')->middleware('auth');
+Route::post('/roles/edit', [RolesController::class, 'edit'])->name('roles-edit')->middleware('auth');
+Route::delete('/roles/delete/{id}', [RolesController::class, 'deletedata'])->name('roles-delete')->middleware('auth');
+Route::get('/roles/export', [RolesController::class,'Export'])->name('roles-export')->middleware('auth');
