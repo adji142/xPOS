@@ -69,6 +69,7 @@ class LoginController extends Controller
             if ($user) {
                 if ($user->active == 'N') {
                     throw new \Exception('User tidak aktif !');
+                    goto jump;
                 }
 
                 if (Auth::Attempt($data)) {

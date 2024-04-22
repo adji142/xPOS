@@ -8,6 +8,11 @@ use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\RolesController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\JenisItemController;
+use App\Http\Controllers\MerkController;
+use App\Http\Controllers\GudangController;
+use App\Http\Controllers\SatuanController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -89,3 +94,68 @@ Route::post('/roles/store', [RolesController::class, 'store'])->name('roles-stor
 Route::post('/roles/edit', [RolesController::class, 'edit'])->name('roles-edit')->middleware('auth');
 Route::delete('/roles/delete/{id}', [RolesController::class, 'deletedata'])->name('roles-delete')->middleware('auth');
 Route::get('/roles/export', [RolesController::class,'Export'])->name('roles-export')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Users
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/user', [UserController::class,'View'])->name('user')->middleware('auth');
+Route::get('/user/form/{id}', [UserController::class,'Form'])->name('user-form')->middleware('auth');
+Route::post('/user/store', [UserController::class, 'store'])->name('user-store')->middleware('auth');
+Route::post('/user/edit', [UserController::class, 'edit'])->name('user-edit')->middleware('auth');
+Route::delete('/user/delete/{id}', [UserController::class, 'deletedata'])->name('user-delete')->middleware('auth');
+Route::get('/user/export', [UserController::class,'Export'])->name('user-export')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Jenis Item
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/jenisitem', [JenisItemController::class,'View'])->name('jenisitem')->middleware('auth');
+Route::get('/jenisitem/form/{id}', [JenisItemController::class,'Form'])->name('jenisitem-form')->middleware('auth');
+Route::post('/jenisitem/store', [JenisItemController::class, 'store'])->name('jenisitem-store')->middleware('auth');
+Route::post('/jenisitem/edit', [JenisItemController::class, 'edit'])->name('jenisitem-edit')->middleware('auth');
+Route::delete('/jenisitem/delete/{id}', [JenisItemController::class, 'deletedata'])->name('jenisitem-delete')->middleware('auth');
+Route::get('/jenisitem/export', [JenisItemController::class,'Export'])->name('jenisitem-export')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Merk
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/merk', [MerkController::class,'View'])->name('merk')->middleware('auth');
+Route::get('/merk/form/{id}', [MerkController::class,'Form'])->name('merk-form')->middleware('auth');
+Route::post('/merk/store', [MerkController::class, 'store'])->name('merk-store')->middleware('auth');
+Route::post('/merk/edit', [MerkController::class, 'edit'])->name('merk-edit')->middleware('auth');
+Route::delete('/merk/delete/{id}', [MerkController::class, 'deletedata'])->name('merk-delete')->middleware('auth');
+Route::get('/merk/export', [MerkController::class,'Export'])->name('merk-export')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Gudang
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/gudang', [GudangController::class,'View'])->name('gudang')->middleware('auth');
+Route::get('/gudang/form/{id}', [GudangController::class,'Form'])->name('gudang-form')->middleware('auth');
+Route::post('/gudang/store', [GudangController::class, 'store'])->name('gudang-store')->middleware('auth');
+Route::post('/gudang/edit', [GudangController::class, 'edit'])->name('gudang-edit')->middleware('auth');
+Route::delete('/gudang/delete/{id}', [GudangController::class, 'deletedata'])->name('gudang-delete')->middleware('auth');
+Route::get('/gudang/export', [GudangController::class,'Export'])->name('gudang-export')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Satuan
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/satuan', [SatuanController::class,'View'])->name('satuan')->middleware('auth');
+Route::get('/satuan/form/{id}', [SatuanController::class,'Form'])->name('satuan-form')->middleware('auth');
+Route::post('/satuan/store', [SatuanController::class, 'store'])->name('satuan-store')->middleware('auth');
+Route::post('/satuan/edit', [SatuanController::class, 'edit'])->name('satuan-edit')->middleware('auth');
+Route::delete('/satuan/delete/{id}', [SatuanController::class, 'deletedata'])->name('satuan-delete')->middleware('auth');
+Route::get('/satuan/export', [SatuanController::class,'Export'])->name('satuan-export')->middleware('auth');
