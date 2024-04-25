@@ -118,7 +118,7 @@
 	                            		<div class="col-md-12">
 	                            			<label  class="text-body">Alamat</label>
 	                            			<fieldset class="form-group mb-12">
-	                            				<textarea class="form-control" id="Alamat" name="Alamat" rows="3" placeholder="Masukan Alamat"></textarea>
+	                            				<textarea class="form-control" id="Alamat" name="Alamat" rows="3" placeholder="Masukan Alamat">{{ count($supplier) > 0 ? $supplier[0]['Alamat'] : '' }}</textarea>
 	                            			</fieldset>
 	                            		</div>
 
@@ -144,9 +144,37 @@
 	                            		</div>
 
 	                            		<div class="col-md-12">
+	                            			<label  class="text-body">No. NPWP</label>
+	                            			<fieldset class="form-group mb-12">
+	                            				<input type="text" class="form-control" id="NPWP" name="NPWP" placeholder="" value="{{ count($supplier) > 0 ? $supplier[0]['NPWP'] : '' }}" >
+	                            			</fieldset>
+	                            		</div>
+
+	                            		<div class="col-md-4">
+	                            			<label  class="text-body">Bank</label>
+	                            			<fieldset class="form-group mb-12">
+	                            				<input type="text" class="form-control" id="Bank" name="Bank" placeholder="" value="{{ count($supplier) > 0 ? $supplier[0]['Bank'] : '' }}" >
+	                            			</fieldset>
+	                            		</div>
+
+	                            		<div class="col-md-4">
+	                            			<label  class="text-body">No. Rekening</label>
+	                            			<fieldset class="form-group mb-12">
+	                            				<input type="text" class="form-control" id="NoRekening" name="NoRekening" placeholder="" value="{{ count($supplier) > 0 ? $supplier[0]['NoRekening'] : '' }}" >
+	                            			</fieldset>
+	                            		</div>
+
+	                            		<div class="col-md-4">
+	                            			<label  class="text-body">Pemilik Rekening</label>
+	                            			<fieldset class="form-group mb-12">
+	                            				<input type="text" class="form-control" id="PemilikRekening" name="PemilikRekening" placeholder="" value="{{ count($supplier) > 0 ? $supplier[0]['PemilikRekening'] : '' }}" >
+	                            			</fieldset>
+	                            		</div>
+
+	                            		<div class="col-md-12">
 	                            			<label  class="text-body">Keterangan Lain</label>
 	                            			<fieldset class="form-group mb-12">
-	                            				<textarea class="form-control" id="Keterangan" name="Keterangan" rows="3" placeholder="Masukan Keterangan"></textarea>
+	                            				<textarea class="form-control" id="Keterangan" name="Keterangan" rows="3" placeholder="Masukan Keterangan">{{ count($supplier) > 0 ? $supplier[0]['Keterangan'] : '' }}</textarea>
 	                            			</fieldset>
 	                            		</div>
 	                            		<div class="col-md-12">
@@ -185,15 +213,16 @@
 	// });
 	jQuery(function () {
 		jQuery(document).ready(function() {
-			jQuery('.js-example-basic-single').select2();
+			// jQuery('.js-example-basic-single').select2();
 
 			// Append Data Select 2
 			var xTemData = '<?php echo json_encode($supplier); ?>'
 			var xData = JSON.parse(xTemData)
-			$('#ProvID').val(xData[0]['ProvID']).trigger('change');
-			$('#KotaID').val(xData[0]['KotaID']).trigger('change');
-			$('#KecID').val(xData[0]['KecID']).trigger('change');
-			$('#KelID').val(xData[0]['KelID']).trigger('change');
+			console.log(xData)
+			jQuery('#ProvID').val(xData[0]['ProvID']).trigger('change');
+			jQuery('#KotaID').val(xData[0]['KotaID']).trigger('change');
+			jQuery('#KecID').val(xData[0]['KecID']).trigger('change');
+			jQuery('#KelID').val(xData[0]['KelID']).trigger('change');
 		});
 		jQuery('#ProvID').change(function () {
 			console.log('Test masuk')

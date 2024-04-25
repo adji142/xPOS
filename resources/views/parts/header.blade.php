@@ -356,7 +356,7 @@
 <!--end::Main-->
 
 
-
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="{{asset('js/plugin.bundle.min.js')}}"></script>
 	<script src="{{asset('js/bootstrap.bundle.min.js')}}"></script>
 	  
@@ -377,7 +377,9 @@
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script>
 		// In your Javascript (external .js resource or <script> tag)
-	
+		jQuery(document).ready(function() {
+			jQuery('.js-example-basic-single').select2();
+		});
 	</script>	
 	@include('sweetalert::alert')
 

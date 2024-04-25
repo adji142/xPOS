@@ -26,6 +26,10 @@ class Supplier extends Migration
             $table->string('Alamat')->nullable();
             $table->string('Keterangan')->nullable();
             $table->integer('Status')->default(1);
+            $table->integer('NPWP')->nullable();
+            $table->integer('Bank')->nullable();
+            $table->integer('NoRekening')->nullable();
+            $table->integer('PemilikRekening')->nullable();
             $table->string('RecordOwnerID');
             $table->timestamps();
         });

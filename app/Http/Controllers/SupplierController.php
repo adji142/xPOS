@@ -82,6 +82,10 @@ class SupplierController extends Controller
 			$model->Alamat = $request->input('Alamat');
 			$model->Keterangan = $request->input('Keterangan');
             $model->Status = $request->input('Status');
+            $model->NPWP = $request->input('NPWP');
+            $model->Bank = $request->input('Bank');
+            $model->NoRekening = $request->input('NoRekening');
+            $model->PemilikRekening = $request->input('PemilikRekening');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -131,7 +135,11 @@ class SupplierController extends Controller
 									'NoTlp2' => $request->input('NoTlp2'),
 									'Alamat' => $request->input('Alamat'),
 									'Keterangan' => $request->input('Keterangan'),
-                                    'Status' => $request->input('Status')
+                                    'Status' => $request->input('Status'),
+                                    'NPWP' => $request->input('NPWP'),
+                                    'Bank' => $request->input('Bank'),
+                                    'NoRekening' => $request->input('NoRekening'),
+                                    'PemilikRekening' => $request->input('PemilikRekening'),
                 				]
                 			);
 

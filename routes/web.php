@@ -13,6 +13,8 @@ use App\Http\Controllers\JenisItemController;
 use App\Http\Controllers\MerkController;
 use App\Http\Controllers\GudangController;
 use App\Http\Controllers\SatuanController;
+use App\Http\Controllers\KelompokRekeningController;
+use App\Http\Controllers\RekeningController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -159,3 +161,30 @@ Route::post('/satuan/store', [SatuanController::class, 'store'])->name('satuan-s
 Route::post('/satuan/edit', [SatuanController::class, 'edit'])->name('satuan-edit')->middleware('auth');
 Route::delete('/satuan/delete/{id}', [SatuanController::class, 'deletedata'])->name('satuan-delete')->middleware('auth');
 Route::get('/satuan/export', [SatuanController::class,'Export'])->name('satuan-export')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Kellompok Rekening
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/kelompokrekening', [KelompokRekeningController::class,'View'])->name('kelompokrekening')->middleware('auth');
+Route::get('/kelompokrekening/form/{id}', [KelompokRekeningController::class,'Form'])->name('kelompokrekening-form')->middleware('auth');
+Route::post('/kelompokrekening/store', [KelompokRekeningController::class, 'store'])->name('kelompokrekening-store')->middleware('auth');
+Route::post('/kelompokrekening/edit', [KelompokRekeningController::class, 'edit'])->name('kelompokrekening-edit')->middleware('auth');
+Route::delete('/kelompokrekening/delete/{id}', [KelompokRekeningController::class, 'deletedata'])->name('kelompokrekening-delete')->middleware('auth');
+Route::get('/kelompokrekening/export', [KelompokRekeningController::class,'Export'])->name('kelompokrekening-export')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Rekening
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/rekening', [RekeningController::class,'View'])->name('rekening')->middleware('auth');
+Route::get('/rekening/form/{id}', [RekeningController::class,'Form'])->name('rekening-form')->middleware('auth');
+Route::post('/rekening/store', [RekeningController::class, 'store'])->name('rekening-store')->middleware('auth');
+Route::post('/rekening/edit', [RekeningController::class, 'edit'])->name('rekening-edit')->middleware('auth');
+Route::delete('/rekening/delete/{id}', [RekeningController::class, 'deletedata'])->name('rekening-delete')->middleware('auth');
+Route::get('/rekening/export', [RekeningController::class,'Export'])->name('rekening-export')->middleware('auth');
+Route::post('/rekening/getjson', [RekeningController::class, 'ViewJson'])->name('rekening-json')->middleware('auth');
