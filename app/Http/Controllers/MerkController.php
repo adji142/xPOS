@@ -33,6 +33,16 @@ class MerkController extends Controller
         ]);
     }
 
+    public function ViewJson(Request $request)
+    {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        $jenisitem = Merk::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+
+        $data['data']= $jenisitem;
+        return response()->json($data);
+    }
+
     public function Form($KodeMerk = null)
     {
     	$merk = Merk::where('KodeMerk','=',$KodeMerk)->get();
@@ -111,6 +121,64 @@ class MerkController extends Controller
             alert()->error('Error',$e->getMessage());
             return redirect()->back();
         }
+    }
+
+    public function storeJson(Request $request)
+    {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        Log::debug($request->all());
+        try {
+
+            $model = new Merk;
+            $model->KodeMerk = $request->input('KodeMerk');
+            $model->NamaMerk = $request->input('NamaMerk');
+            $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+            $save = $model->save();
+
+            if ($save) {
+                $data['success'] =true;
+            }else{
+                $data['message'] = 'Penambahan Data Merk Gagal';
+            }
+        } catch (\Exception $e) {
+            Log::debug($e->getMessage());
+            $data['message'] = $e->getMessage();
+        }
+        return response()->json($data);
+    }
+
+    public function editJson(Request $request)
+    {
+        Log::debug($request->all());
+        try {
+
+            $model = Merk::where('KodeMerk','=',$request->input('KodeMerk'));
+
+            if ($model) {
+                $update = DB::table('merk')
+                            ->where('KodeMerk','=', $request->input('KodeMerk'))
+                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->update(
+                                [
+                                    'NamaMerk'=>$request->input('NamaMerk'),
+                                ]
+                            );
+
+                if ($update) {
+                    $data['success'] = true;
+                }else{
+                    $data['message'] = 'Edit Merk Gagal';
+                }
+            } else{
+                $data['message'] = 'Merk not found.';
+            }
+        } catch (Exception $e) {
+            Log::debug($e->getMessage());
+            $data['message'] = $e->getMessage();
+        }
+        return response()->json($data);
     }
 
     public function deletedata(Request $request)

@@ -33,6 +33,16 @@ class GudangController extends Controller
         ]);
     }
 
+    public function ViewJson(Request $request)
+    {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        $jenisitem = Gudang::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+
+        $data['data']= $jenisitem;
+        return response()->json($data);
+    }
+
     public function Form($KodeGudang = null)
     {
     	$gudang = Gudang::where('KodeGudang','=',$KodeGudang)->get();
@@ -111,6 +121,66 @@ class GudangController extends Controller
             alert()->error('Error',$e->getMessage());
             return redirect()->back();
         }
+    }
+
+    public function storeJson(Request $request)
+    {
+        Log::debug($request->all());
+        try {
+
+            $model = new Gudang;
+            $model->KodeGudang = $request->input('KodeGudang');
+            $model->NamaGudang = $request->input('NamaGudang');
+            $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+            $save = $model->save();
+
+            if ($save) {
+                $data['success'] = true;
+                
+            }else{
+                $data['message'] = 'Penambahan Data Gudang Gagal';
+            }
+        } catch (\Exception $e) {
+            Log::debug($e->getMessage());
+            $data['message'] = $e->getMessage();
+        }
+        return response()->json($data);
+    }
+
+    public function editJson(Request $request)
+    {
+        Log::debug($request->all());
+        try {
+
+            $model = Gudang::where('KodeGudang','=',$request->input('KodeGudang'));
+
+            if ($model) {
+                // $model->Kode = $request->input('Kode');
+             //    $model->Nama = $request->input('Nama');
+                $update = DB::table('gudang')
+                            ->where('KodeGudang','=', $request->input('KodeGudang'))
+                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->update(
+                                [
+                                    'NamaGudang'=>$request->input('NamaGudang'),
+                                ]
+                            );
+
+                if ($update) {
+                    $data['success'] = true;
+                }else{
+                    $data['message'] = 'Edit Gudang Gagal';
+                }
+            } else{
+                $data['message'] = 'Gudang not found.';
+            }
+        } catch (Exception $e) {
+            Log::debug($e->getMessage());
+
+            $data['message'] = $e->getMessage();
+        }
+        return response()->json($data);
     }
 
     public function deletedata(Request $request)

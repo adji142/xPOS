@@ -15,6 +15,8 @@ use App\Http\Controllers\GudangController;
 use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\KelompokRekeningController;
 use App\Http\Controllers\RekeningController;
+use App\Http\Controllers\SettingAccountController;
+use App\Http\Controllers\ItemMasterController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -120,6 +122,13 @@ Route::get('/jenisitem', [JenisItemController::class,'View'])->name('jenisitem')
 Route::get('/jenisitem/form/{id}', [JenisItemController::class,'Form'])->name('jenisitem-form')->middleware('auth');
 Route::post('/jenisitem/store', [JenisItemController::class, 'store'])->name('jenisitem-store')->middleware('auth');
 Route::post('/jenisitem/edit', [JenisItemController::class, 'edit'])->name('jenisitem-edit')->middleware('auth');
+
+// json
+Route::post('/jenisitem/read', [JenisItemController::class, 'ViewJson'])->name('jenisitem-ViewJson')->middleware('auth');
+Route::post('/jenisitem/storeJson', [JenisItemController::class, 'storeJson'])->name('jenisitem-storeJson')->middleware('auth');
+Route::post('/jenisitem/editJson', [JenisItemController::class, 'editJson'])->name('jenisitem-editJson')->middleware('auth');
+// json
+
 Route::delete('/jenisitem/delete/{id}', [JenisItemController::class, 'deletedata'])->name('jenisitem-delete')->middleware('auth');
 Route::get('/jenisitem/export', [JenisItemController::class,'Export'])->name('jenisitem-export')->middleware('auth');
 
@@ -133,6 +142,13 @@ Route::get('/merk', [MerkController::class,'View'])->name('merk')->middleware('a
 Route::get('/merk/form/{id}', [MerkController::class,'Form'])->name('merk-form')->middleware('auth');
 Route::post('/merk/store', [MerkController::class, 'store'])->name('merk-store')->middleware('auth');
 Route::post('/merk/edit', [MerkController::class, 'edit'])->name('merk-edit')->middleware('auth');
+
+// json
+Route::post('/merk/read', [MerkController::class, 'ViewJson'])->name('merk-ViewJson')->middleware('auth');
+Route::post('/merk/storeJson', [MerkController::class, 'storeJson'])->name('merk-storeJson')->middleware('auth');
+Route::post('/merk/editJson', [MerkController::class, 'editJson'])->name('merk-editJson')->middleware('auth');
+// json
+
 Route::delete('/merk/delete/{id}', [MerkController::class, 'deletedata'])->name('merk-delete')->middleware('auth');
 Route::get('/merk/export', [MerkController::class,'Export'])->name('merk-export')->middleware('auth');
 
@@ -146,6 +162,13 @@ Route::get('/gudang', [GudangController::class,'View'])->name('gudang')->middlew
 Route::get('/gudang/form/{id}', [GudangController::class,'Form'])->name('gudang-form')->middleware('auth');
 Route::post('/gudang/store', [GudangController::class, 'store'])->name('gudang-store')->middleware('auth');
 Route::post('/gudang/edit', [GudangController::class, 'edit'])->name('gudang-edit')->middleware('auth');
+
+// json
+Route::post('/gudang/read', [GudangController::class, 'ViewJson'])->name('gudang-ViewJson')->middleware('auth');
+Route::post('/gudang/storeJson', [GudangController::class, 'storeJson'])->name('gudang-storeJson')->middleware('auth');
+Route::post('/gudang/editJson', [GudangController::class, 'editJson'])->name('gudang-editJson')->middleware('auth');
+// endjson
+
 Route::delete('/gudang/delete/{id}', [GudangController::class, 'deletedata'])->name('gudang-delete')->middleware('auth');
 Route::get('/gudang/export', [GudangController::class,'Export'])->name('gudang-export')->middleware('auth');
 
@@ -159,6 +182,12 @@ Route::get('/satuan', [SatuanController::class,'View'])->name('satuan')->middlew
 Route::get('/satuan/form/{id}', [SatuanController::class,'Form'])->name('satuan-form')->middleware('auth');
 Route::post('/satuan/store', [SatuanController::class, 'store'])->name('satuan-store')->middleware('auth');
 Route::post('/satuan/edit', [SatuanController::class, 'edit'])->name('satuan-edit')->middleware('auth');
+
+// json
+Route::post('/satuan/read', [SatuanController::class, 'ViewJson'])->name('satuan-ViewJson')->middleware('auth');
+Route::post('/satuan/storeJson', [SatuanController::class, 'storeJson'])->name('satuan-storeJson')->middleware('auth');
+Route::post('/satuan/editJson', [SatuanController::class, 'editJson'])->name('satuan-editJson')->middleware('auth');
+// end json
 Route::delete('/satuan/delete/{id}', [SatuanController::class, 'deletedata'])->name('satuan-delete')->middleware('auth');
 Route::get('/satuan/export', [SatuanController::class,'Export'])->name('satuan-export')->middleware('auth');
 
@@ -188,3 +217,23 @@ Route::post('/rekening/edit', [RekeningController::class, 'edit'])->name('rekeni
 Route::delete('/rekening/delete/{id}', [RekeningController::class, 'deletedata'])->name('rekening-delete')->middleware('auth');
 Route::get('/rekening/export', [RekeningController::class,'Export'])->name('rekening-export')->middleware('auth');
 Route::post('/rekening/getjson', [RekeningController::class, 'ViewJson'])->name('rekening-json')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Item Master Data
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/itemmaster', [ItemMasterController::class,'View'])->name('itemmaster')->middleware('auth');
+Route::get('/itemmaster/form/{id}', [ItemMasterController::class,'Form'])->name('itemmaster-form')->middleware('auth');
+Route::post('/itemmaster/edit', [ItemMasterController::class, 'edit'])->name('itemmaster-edit')->middleware('auth');
+Route::post('/itemmaster/store', [ItemMasterController::class, 'store'])->name('itemmaster-store')->middleware('auth');
+Route::post('/itemmaster/edit', [ItemMasterController::class, 'edit'])->name('itemmaster-edit')->middleware('auth');
+/*
+|--------------------------------------------------------------------------
+| Setting
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/acctsetting', [SettingAccountController::class,'View'])->name('acctsetting')->middleware('auth');
+Route::post('/acctsetting/edit', [SettingAccountController::class, 'edit'])->name('acctsetting-edit')->middleware('auth');

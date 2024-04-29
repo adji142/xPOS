@@ -15,7 +15,7 @@ class ItemMaster extends Migration
     {
         Schema::create('itemmaster', function (Blueprint $table) {
             $table->string('KodeItem')->unique();
-            $table->string('NamaSatuan');
+            $table->string('NamaItem');
             $table->string('KodeJenisItem');
             $table->string('KodeMerk');
             $table->string('TypeItem');
@@ -29,6 +29,7 @@ class ItemMaster extends Migration
             $table->double('HargaJual');
             $table->double('HargaBeliTerakhir');
             $table->double('Stock');
+            $table->double('StockMinimum');
             $table->string('isKonsinyasi'); // Y/N
             $table->string('Active'); // Y/N
             $table->string('AcctHPP');

@@ -33,6 +33,16 @@ class JenisItemController extends Controller
         ]);
     }
 
+    public function ViewJson(Request $request)
+    {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        $jenisitem = JenisItem::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+
+        $data['data']= $jenisitem;
+        return response()->json($data);
+    }
+
     public function Form($KodeJenis = null)
     {
     	$jenisitem = JenisItem::where('KodeJenis','=',$KodeJenis)->get();
@@ -111,6 +121,70 @@ class JenisItemController extends Controller
             alert()->error('Error',$e->getMessage());
             return redirect()->back();
         }
+    }
+
+    public function storeJson(Request $request)
+    {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        Log::debug($request->all());
+        try {
+
+            $model = new JenisItem;
+            $model->KodeJenis = $request->input('KodeJenis');
+            $model->NamaJenis = $request->input('NamaJenis');
+            $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+            $save = $model->save();
+
+            if ($save) {
+                $data['success'] = true;
+                
+            }else{
+                $data['message'] = 'Penambahan Data Jenis Item Gagal';
+            }
+        } catch (\Exception $e) {
+            Log::debug($e->getMessage());
+
+            $data['message'] = $e->getMessage();
+        }
+
+        return response()->json($data);
+    }
+
+    public function editJson(Request $request)
+    {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+        Log::debug($request->all());
+        try {
+
+            $model = JenisItem::where('KodeJenis','=',$request->input('KodeJenis'));
+
+            if ($model) {
+                // $model->Kode = $request->input('Kode');
+             //    $model->Nama = $request->input('Nama');
+                $update = DB::table('jenisitem')
+                            ->where('KodeJenis','=', $request->input('KodeJenis'))
+                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->update(
+                                [
+                                    'NamaJenis'=>$request->input('NamaJenis'),
+                                ]
+                            );
+
+                if ($update) {
+                    $data['success'] = true;
+                }else{
+                    $data['message'] = 'Edit Jenis Item Gagal';
+                }
+            } else{
+                $data['message'] = 'Jenis Item not found.';
+            }
+        } catch (Exception $e) {
+            Log::debug($e->getMessage());
+            $data['message'] = $e->getMessage();
+        }
+        return response()->json($data);
     }
 
     public function deletedata(Request $request)

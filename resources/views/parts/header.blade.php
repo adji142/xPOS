@@ -359,7 +359,13 @@
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="{{asset('js/plugin.bundle.min.js')}}"></script>
 	<script src="{{asset('js/bootstrap.bundle.min.js')}}"></script>
-	  
+	
+	<!-- Dev Express -->
+	<!-- <link rel="stylesheet" href="https://cdn3.devexpress.com/jslib/23.2.5/css/dx.light.css">
+	<script type="text/javascript" src="https://cdn3.devexpress.com/jslib/23.2.5/js/dx.all.js"></script> -->
+	<link href="{{ asset('devexpress/dx.light.css')}}" rel="stylesheet" type="text/css" />
+	<script src="{{asset('devexpress/dx.all.js')}}"></script>
+	<!-- End DevExpress -->
 	<script src="{{asset('js/slick.min.js')}}"></script>
 	<script src="{{asset('api/jqueryvalidate/jquery.validate.min.js')}}"></script>
 	<script src="{{asset('api/apexcharts/apexcharts.js')}}"></script>

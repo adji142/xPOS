@@ -33,6 +33,16 @@ class SatuanController extends Controller
         ]);
     }
 
+    public function ViewJson(Request $request)
+    {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        $jenisitem = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+
+        $data['data']= $jenisitem;
+        return response()->json($data);
+    }
+
     public function Form($KodeSatuan = null)
     {
     	$satuan = Satuan::where('KodeSatuan','=',$KodeSatuan)->get();
@@ -111,6 +121,67 @@ class SatuanController extends Controller
             alert()->error('Error',$e->getMessage());
             return redirect()->back();
         }
+    }
+
+    public function storeJson(Request $request)
+    {
+        Log::debug($request->all());
+        try {
+
+            $model = new Satuan;
+            $model->KodeSatuan = $request->input('KodeSatuan');
+            $model->NamaSatuan = $request->input('NamaSatuan');
+            $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+            $save = $model->save();
+
+            if ($save) {
+                $data['success'] = true;
+                
+            }else{
+                $data['message'] = 'Penambahan Data Satuan Gagal';
+            }
+        } catch (\Exception $e) {
+            Log::debug($e->getMessage());
+
+            $data['message'] = $e->getMessage();
+        }
+        return response()->json($data);
+    }
+
+    public function editJson(Request $request)
+    {
+        Log::debug($request->all());
+        try {
+
+            $model = Satuan::where('KodeSatuan','=',$request->input('KodeSatuan'));
+
+            if ($model) {
+                // $model->Kode = $request->input('Kode');
+             //    $model->Nama = $request->input('Nama');
+                $update = DB::table('satuan')
+                            ->where('KodeSatuan','=', $request->input('KodeSatuan'))
+                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->update(
+                                [
+                                    'NamaSatuan'=>$request->input('NamaSatuan'),
+                                ]
+                            );
+
+                if ($update) {
+                    $data['success'] = true;
+                }else{
+                    $data['message'] = 'Edit Satuan Gagal';
+                }
+            } else{
+                $data['message'] = 'Satuan not found.';
+            }
+        } catch (Exception $e) {
+            Log::debug($e->getMessage());
+
+            $data['message'] = $e->getMessage();
+        }
+        return response()->json($data);
     }
 
     public function deletedata(Request $request)
