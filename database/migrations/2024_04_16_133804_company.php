@@ -26,6 +26,12 @@ class Company extends Migration
             $table->date('StartSubs');
             $table->date('EndSubs');
             $table->integer('ExtraDays');
+            $table->string('NPWP');
+            $table->date('TglPKP');
+            $table->double('PPN');
+            $table->integer('isHargaJualIncludePPN');
+            $table->string('NamaPosPrinter');
+            $table->string('FooterNota');
             $table->timestamps();
         });
     }

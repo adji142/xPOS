@@ -17,6 +17,11 @@ use App\Http\Controllers\KelompokRekeningController;
 use App\Http\Controllers\RekeningController;
 use App\Http\Controllers\SettingAccountController;
 use App\Http\Controllers\ItemMasterController;
+use App\Http\Controllers\BankController;
+use App\Http\Controllers\MetodePembayaranController;
+use App\Http\Controllers\TerminController;
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\ShiftController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -237,3 +242,58 @@ Route::post('/itemmaster/edit', [ItemMasterController::class, 'edit'])->name('it
 */
 Route::get('/acctsetting', [SettingAccountController::class,'View'])->name('acctsetting')->middleware('auth');
 Route::post('/acctsetting/edit', [SettingAccountController::class, 'edit'])->name('acctsetting-edit')->middleware('auth');
+
+Route::get('/companysetting', [CompanyController::class,'View'])->name('companysetting')->middleware('auth');
+Route::get('/companysetting/testprint', [CompanyController::class,'TestPrint'])->name('companysetting-testprint')->middleware('auth');
+Route::post('/companysetting/edit', [CompanyController::class, 'edit'])->name('companysetting-edit')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Bank
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/bank', [BankController::class,'View'])->name('bank')->middleware('auth');
+Route::get('/bank/form/{id}', [BankController::class,'Form'])->name('bank-form')->middleware('auth');
+Route::post('/bank/store', [BankController::class, 'store'])->name('bank-store')->middleware('auth');
+Route::post('/bank/edit', [BankController::class, 'edit'])->name('bank-edit')->middleware('auth');
+Route::delete('/bank/delete/{id}', [BankController::class, 'deletedata'])->name('bank-delete')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Metode Pembayaran
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/metodepembayaran', [MetodePembayaranController::class,'View'])->name('metodepembayaran')->middleware('auth');
+Route::get('/metodepembayaran/form/{id}', [MetodePembayaranController::class,'Form'])->name('metodepembayaran-form')->middleware('auth');
+Route::post('/metodepembayaran/store', [MetodePembayaranController::class, 'store'])->name('metodepembayaran-store')->middleware('auth');
+Route::post('/metodepembayaran/edit', [MetodePembayaranController::class, 'edit'])->name('metodepembayaran-edit')->middleware('auth');
+Route::delete('/metodepembayaran/delete/{id}', [MetodePembayaranController::class, 'deletedata'])->name('metodepembayaran-delete')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Termin
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/termin', [TerminController::class,'View'])->name('termin')->middleware('auth');
+Route::get('/termin/form/{id}', [TerminController::class,'Form'])->name('termin-form')->middleware('auth');
+Route::post('/termin/store', [TerminController::class, 'store'])->name('termin-store')->middleware('auth');
+Route::post('/termin/edit', [TerminController::class, 'edit'])->name('termin-edit')->middleware('auth');
+Route::delete('/termin/delete/{id}', [TerminController::class, 'deletedata'])->name('termin-delete')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Shift
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/shift', [ShiftController::class,'View'])->name('shift')->middleware('auth');
+Route::get('/shift/form/{id}', [ShiftController::class,'Form'])->name('shift-form')->middleware('auth');
+Route::post('/shift/store', [ShiftController::class, 'store'])->name('shift-store')->middleware('auth');
+Route::post('/shift/edit', [ShiftController::class, 'edit'])->name('shift-edit')->middleware('auth');
+Route::delete('/shift/delete/{id}', [ShiftController::class, 'deletedata'])->name('shift-delete')->middleware('auth');

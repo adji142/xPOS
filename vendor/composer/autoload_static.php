@@ -46,6 +46,10 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         array (
             'voku\\' => 5,
         ),
+        'c' => 
+        array (
+            'charlieuki\\ReceiptPrinter\\' => 26,
+        ),
         'Z' => 
         array (
             'ZipStream\\' => 10,
@@ -122,6 +126,7 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
             'MyCLabs\\Enum\\' => 13,
             'Monolog\\' => 8,
             'Mockery\\' => 8,
+            'Mike42\\' => 7,
             'Matrix\\' => 7,
             'Maatwebsite\\Excel\\' => 18,
         ),
@@ -194,6 +199,10 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'voku\\' => 
         array (
             0 => __DIR__ . '/..' . '/voku/portable-ascii/src/voku',
+        ),
+        'charlieuki\\ReceiptPrinter\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/charlieuki/receiptprinter/src',
         ),
         'ZipStream\\' => 
         array (
@@ -396,6 +405,10 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         array (
             0 => __DIR__ . '/..' . '/mockery/mockery/library/Mockery',
         ),
+        'Mike42\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42',
+        ),
         'Matrix\\' => 
         array (
             0 => __DIR__ . '/..' . '/markbaker/matrix/classes/src',
@@ -566,6 +579,8 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'App\\Exceptions\\Handler' => __DIR__ . '/../..' . '/app/Exceptions/Handler.php',
         'App\\Exports\\PelangganExport' => __DIR__ . '/../..' . '/app/Exports/PelangganExport.php',
         'App\\Exports\\SupplierExport' => __DIR__ . '/../..' . '/app/Exports/SupplierExport.php',
+        'App\\Http\\Controllers\\BankController' => __DIR__ . '/../..' . '/app/Http/Controllers/BankController.php',
+        'App\\Http\\Controllers\\CompanyController' => __DIR__ . '/../..' . '/app/Http/Controllers/CompanyController.php',
         'App\\Http\\Controllers\\Controller' => __DIR__ . '/../..' . '/app/Http/Controllers/Controller.php',
         'App\\Http\\Controllers\\DashboardController' => __DIR__ . '/../..' . '/app/Http/Controllers/DashboardController.php',
         'App\\Http\\Controllers\\GrupPelangganController' => __DIR__ . '/../..' . '/app/Http/Controllers/GrupPelangganController.php',
@@ -575,6 +590,7 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'App\\Http\\Controllers\\KelompokRekeningController' => __DIR__ . '/../..' . '/app/Http/Controllers/KelompokRekeningController.php',
         'App\\Http\\Controllers\\LoginController' => __DIR__ . '/../..' . '/app/Http/Controllers/LoginController.php',
         'App\\Http\\Controllers\\MerkController' => __DIR__ . '/../..' . '/app/Http/Controllers/MerkController.php',
+        'App\\Http\\Controllers\\MetodePembayaranController' => __DIR__ . '/../..' . '/app/Http/Controllers/MetodePembayaranController.php',
         'App\\Http\\Controllers\\PelangganController' => __DIR__ . '/../..' . '/app/Http/Controllers/PelangganController.php',
         'App\\Http\\Controllers\\RekeningController' => __DIR__ . '/../..' . '/app/Http/Controllers/RekeningController.php',
         'App\\Http\\Controllers\\RolesController' => __DIR__ . '/../..' . '/app/Http/Controllers/RolesController.php',
@@ -582,7 +598,9 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'App\\Http\\Controllers\\SalesController' => __DIR__ . '/../..' . '/app/Http/Controllers/SalesController.php',
         'App\\Http\\Controllers\\SatuanController' => __DIR__ . '/../..' . '/app/Http/Controllers/SatuanController.php',
         'App\\Http\\Controllers\\SettingAccountController' => __DIR__ . '/../..' . '/app/Http/Controllers/SettingAccountController.php',
+        'App\\Http\\Controllers\\ShiftController' => __DIR__ . '/../..' . '/app/Http/Controllers/ShiftController.php',
         'App\\Http\\Controllers\\SupplierController' => __DIR__ . '/../..' . '/app/Http/Controllers/SupplierController.php',
+        'App\\Http\\Controllers\\TerminController' => __DIR__ . '/../..' . '/app/Http/Controllers/TerminController.php',
         'App\\Http\\Controllers\\UserController' => __DIR__ . '/../..' . '/app/Http/Controllers/UserController.php',
         'App\\Http\\Controllers\\testController' => __DIR__ . '/../..' . '/app/Http/Controllers/testController.php',
         'App\\Http\\Kernel' => __DIR__ . '/../..' . '/app/Http/Kernel.php',
@@ -594,6 +612,7 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'App\\Http\\Middleware\\TrustHosts' => __DIR__ . '/../..' . '/app/Http/Middleware/TrustHosts.php',
         'App\\Http\\Middleware\\TrustProxies' => __DIR__ . '/../..' . '/app/Http/Middleware/TrustProxies.php',
         'App\\Http\\Middleware\\VerifyCsrfToken' => __DIR__ . '/../..' . '/app/Http/Middleware/VerifyCsrfToken.php',
+        'App\\Models\\Bank' => __DIR__ . '/../..' . '/app/Models/Bank.php',
         'App\\Models\\Company' => __DIR__ . '/../..' . '/app/Models/Company.php',
         'App\\Models\\GrupPelanggan' => __DIR__ . '/../..' . '/app/Models/GrupPelanggan.php',
         'App\\Models\\Gudang' => __DIR__ . '/../..' . '/app/Models/Gudang.php',
@@ -605,6 +624,7 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'App\\Models\\Kelurahan' => __DIR__ . '/../..' . '/app/Models/Kelurahan.php',
         'App\\Models\\Kota' => __DIR__ . '/../..' . '/app/Models/Kota.php',
         'App\\Models\\Merk' => __DIR__ . '/../..' . '/app/Models/Merk.php',
+        'App\\Models\\MetodePembayaran' => __DIR__ . '/../..' . '/app/Models/MetodePembayaran.php',
         'App\\Models\\Pelanggan' => __DIR__ . '/../..' . '/app/Models/Pelanggan.php',
         'App\\Models\\Permission' => __DIR__ . '/../..' . '/app/Models/Permission.php',
         'App\\Models\\PermissionRole' => __DIR__ . '/../..' . '/app/Models/PermissionRole.php',
@@ -615,7 +635,9 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'App\\Models\\Sales' => __DIR__ . '/../..' . '/app/Models/Sales.php',
         'App\\Models\\Satuan' => __DIR__ . '/../..' . '/app/Models/Satuan.php',
         'App\\Models\\SettingAccount' => __DIR__ . '/../..' . '/app/Models/SettingAccount.php',
+        'App\\Models\\Shift' => __DIR__ . '/../..' . '/app/Models/Shift.php',
         'App\\Models\\Supplier' => __DIR__ . '/../..' . '/app/Models/Supplier.php',
+        'App\\Models\\Termin' => __DIR__ . '/../..' . '/app/Models/Termin.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
         'App\\Models\\UserRole' => __DIR__ . '/../..' . '/app/Models/UserRole.php',
         'App\\Models\\test' => __DIR__ . '/../..' . '/app/Models/test.php',
@@ -754,6 +776,7 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'Cron\\MinutesField' => __DIR__ . '/..' . '/dragonmantank/cron-expression/src/Cron/MinutesField.php',
         'Cron\\MonthField' => __DIR__ . '/..' . '/dragonmantank/cron-expression/src/Cron/MonthField.php',
         'Database\\Factories\\UserFactory' => __DIR__ . '/../..' . '/database/factories/UserFactory.php',
+        'Database\\Seeders\\BankSeeder' => __DIR__ . '/../..' . '/database/seeders/BankSeeder.php',
         'Database\\Seeders\\CompanySeeder' => __DIR__ . '/../..' . '/database/seeders/CompanySeeder.php',
         'Database\\Seeders\\DatabaseSeeder' => __DIR__ . '/../..' . '/database/seeders/DatabaseSeeder.php',
         'Database\\Seeders\\GrupPelangganSeeder' => __DIR__ . '/../..' . '/database/seeders/GrupPelangganSeeder.php',
@@ -762,6 +785,7 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'Database\\Seeders\\JenisItemSeeder' => __DIR__ . '/../..' . '/database/seeders/JenisItemSeeder.php',
         'Database\\Seeders\\KelompokRekeningSeeder' => __DIR__ . '/../..' . '/database/seeders/KelompokRekeningSeeder.php',
         'Database\\Seeders\\MerkSeeder' => __DIR__ . '/../..' . '/database/seeders/MerkSeeder.php',
+        'Database\\Seeders\\MetodePembayaranSeeder' => __DIR__ . '/../..' . '/database/seeders/MetodePembayaranSeeder.php',
         'Database\\Seeders\\PelangganSeeder' => __DIR__ . '/../..' . '/database/seeders/PelangganSeeder.php',
         'Database\\Seeders\\PermissionRoleSeeder' => __DIR__ . '/../..' . '/database/seeders/PermissionRoleSeeder.php',
         'Database\\Seeders\\PermissionSeeder' => __DIR__ . '/../..' . '/database/seeders/PermissionSeeder.php',
@@ -772,7 +796,9 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'Database\\Seeders\\SalesSeeder' => __DIR__ . '/../..' . '/database/seeders/SalesSeeder.php',
         'Database\\Seeders\\SatuanSeeder' => __DIR__ . '/../..' . '/database/seeders/SatuanSeeder.php',
         'Database\\Seeders\\SettingAccountSeeder' => __DIR__ . '/../..' . '/database/seeders/SettingAccountSeeder.php',
+        'Database\\Seeders\\ShiftSeeder' => __DIR__ . '/../..' . '/database/seeders/ShiftSeeder.php',
         'Database\\Seeders\\SupplierSeeder' => __DIR__ . '/../..' . '/database/seeders/SupplierSeeder.php',
+        'Database\\Seeders\\TerminSeeder' => __DIR__ . '/../..' . '/database/seeders/TerminSeeder.php',
         'Database\\Seeders\\UserRoleSeeder' => __DIR__ . '/../..' . '/database/seeders/UserRoleSeeder.php',
         'Database\\Seeders\\UserSeeder' => __DIR__ . '/../..' . '/database/seeders/UserSeeder.php',
         'Database\\Seeders\\UsersSeeder' => __DIR__ . '/../..' . '/database/seeders/UsersSeeder.php',
@@ -3619,6 +3645,31 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'Matrix\\Operators\\Multiplication' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Operators/Multiplication.php',
         'Matrix\\Operators\\Operator' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Operators/Operator.php',
         'Matrix\\Operators\\Subtraction' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Operators/Subtraction.php',
+        'Mike42\\Escpos\\CapabilityProfile' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/CapabilityProfile.php',
+        'Mike42\\Escpos\\CapabilityProfiles\\DefaultCapabilityProfile' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/CapabilityProfiles/DefaultCapabilityProfile.php',
+        'Mike42\\Escpos\\CapabilityProfiles\\EposTepCapabilityProfile' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/CapabilityProfiles/EposTepCapabilityProfile.php',
+        'Mike42\\Escpos\\CapabilityProfiles\\P822DCapabilityProfile' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/CapabilityProfiles/P822DCapabilityProfile.php',
+        'Mike42\\Escpos\\CapabilityProfiles\\SimpleCapabilityProfile' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/CapabilityProfiles/SimpleCapabilityProfile.php',
+        'Mike42\\Escpos\\CapabilityProfiles\\StarCapabilityProfile' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/CapabilityProfiles/StarCapabilityProfile.php',
+        'Mike42\\Escpos\\CodePage' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/CodePage.php',
+        'Mike42\\Escpos\\Devices\\AuresCustomerDisplay' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/Devices/AuresCustomerDisplay.php',
+        'Mike42\\Escpos\\EscposImage' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/EscposImage.php',
+        'Mike42\\Escpos\\GdEscposImage' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/GdEscposImage.php',
+        'Mike42\\Escpos\\ImagickEscposImage' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/ImagickEscposImage.php',
+        'Mike42\\Escpos\\NativeEscposImage' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/NativeEscposImage.php',
+        'Mike42\\Escpos\\PrintBuffers\\EscposPrintBuffer' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/PrintBuffers/EscposPrintBuffer.php',
+        'Mike42\\Escpos\\PrintBuffers\\ImagePrintBuffer' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/PrintBuffers/ImagePrintBuffer.php',
+        'Mike42\\Escpos\\PrintBuffers\\PrintBuffer' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/PrintBuffers/PrintBuffer.php',
+        'Mike42\\Escpos\\PrintConnectors\\ApiPrintConnector' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/PrintConnectors/ApiPrintConnector.php',
+        'Mike42\\Escpos\\PrintConnectors\\CupsPrintConnector' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/PrintConnectors/CupsPrintConnector.php',
+        'Mike42\\Escpos\\PrintConnectors\\DummyPrintConnector' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/PrintConnectors/DummyPrintConnector.php',
+        'Mike42\\Escpos\\PrintConnectors\\FilePrintConnector' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/PrintConnectors/FilePrintConnector.php',
+        'Mike42\\Escpos\\PrintConnectors\\NetworkPrintConnector' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/PrintConnectors/NetworkPrintConnector.php',
+        'Mike42\\Escpos\\PrintConnectors\\PrintConnector' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/PrintConnectors/PrintConnector.php',
+        'Mike42\\Escpos\\PrintConnectors\\RawbtPrintConnector' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/PrintConnectors/RawbtPrintConnector.php',
+        'Mike42\\Escpos\\PrintConnectors\\UriPrintConnector' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/PrintConnectors/UriPrintConnector.php',
+        'Mike42\\Escpos\\PrintConnectors\\WindowsPrintConnector' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/PrintConnectors/WindowsPrintConnector.php',
+        'Mike42\\Escpos\\Printer' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/Printer.php',
         'Mockery\\Adapter\\Phpunit\\MockeryPHPUnitIntegration' => __DIR__ . '/..' . '/mockery/mockery/library/Mockery/Adapter/Phpunit/MockeryPHPUnitIntegration.php',
         'Mockery\\Adapter\\Phpunit\\MockeryPHPUnitIntegrationAssertPostConditions' => __DIR__ . '/..' . '/mockery/mockery/library/Mockery/Adapter/Phpunit/MockeryPHPUnitIntegrationAssertPostConditions.php',
         'Mockery\\Adapter\\Phpunit\\MockeryTestCase' => __DIR__ . '/..' . '/mockery/mockery/library/Mockery/Adapter/Phpunit/MockeryTestCase.php',
@@ -6533,6 +6584,11 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'ZipStream\\Option\\Version' => __DIR__ . '/..' . '/maennchen/zipstream-php/src/Option/Version.php',
         'ZipStream\\Stream' => __DIR__ . '/..' . '/maennchen/zipstream-php/src/Stream.php',
         'ZipStream\\ZipStream' => __DIR__ . '/..' . '/maennchen/zipstream-php/src/ZipStream.php',
+        'charlieuki\\ReceiptPrinter\\Facades\\ReceiptPrinter' => __DIR__ . '/..' . '/charlieuki/receiptprinter/src/Facades/ReceiptPrinter.php',
+        'charlieuki\\ReceiptPrinter\\Item' => __DIR__ . '/..' . '/charlieuki/receiptprinter/src/Item.php',
+        'charlieuki\\ReceiptPrinter\\ReceiptPrinter' => __DIR__ . '/..' . '/charlieuki/receiptprinter/src/ReceiptPrinter.php',
+        'charlieuki\\ReceiptPrinter\\ReceiptPrinterServiceProvider' => __DIR__ . '/..' . '/charlieuki/receiptprinter/src/ReceiptPrinterServiceProvider.php',
+        'charlieuki\\ReceiptPrinter\\Store' => __DIR__ . '/..' . '/charlieuki/receiptprinter/src/Store.php',
         'voku\\helper\\ASCII' => __DIR__ . '/..' . '/voku/portable-ascii/src/voku/helper/ASCII.php',
     );
 

@@ -53,7 +53,7 @@
                             		<div class="col-md-3"> 
                             			<div class="checkbox">
                             				<label for="chkAutoNumbering">Kode Item / Atur Otomatis</label>
-                            				<input type="checkbox" class="checkbox-input" id="chkAutoNumbering">
+                            				<input type="checkbox" class="checkbox-input" id="chkAutoNumbering" {{ count($itemmaster) > 0 ? 'disabled' : '' }}>
                             			</div>
                             			<fieldset class="form-group mb-3">
                             				<input type="text" class="form-control" id="KodeItem" name="KodeItem" placeholder="Masukan Kode Item" value="{{ count($itemmaster) > 0 ? $itemmaster[0]['KodeItem'] : '' }}" required="" {{ count($itemmaster) > 0 ? 'readonly' : '' }} >
@@ -64,7 +64,7 @@
                             		<div class="col-md-9">
                             			<label  class="text-body">Nama Item</label>
                             			<fieldset class="form-group mb-3">
-                            				<input type="text" class="form-control" id="NamaItem" name="NamaItem" placeholder="Masukan Nama Item" value="{{ count($itemmaster) > 0 ? $itemmaster[0]['NamaItem'] : '' }}" required="">
+                            				<input type="text" class="form-control" id="NamaItem" name="NamaItem" placeholder="Masukan Nama Item" value="{{ count($itemmaster) > 0 ? $itemmaster[0]['NamaItem'] : '' }}" required="" onchange="SetEnableCommand();">
                             			</fieldset>
                             			
                             		</div>
@@ -321,6 +321,7 @@
 											                  		<div id="gridContainerRakitan"></div>
 											                	</div>
 											              	</div>
+											              	<small style="color: red">Tekan Enter saat selesai edit data</small>
                                                     	</div>
                                                     </div>
                                                 </div>
@@ -486,6 +487,8 @@
 
 @push('scripts')
 <script type="text/javascript">
+	var oItem = <?php echo $itembahanrakitan; ?> 
+	var oErrorList = [];
 	jQuery(document).ready(function() {
 		var dataSetting = <?php echo $settingaccount; ?>	
 		// console.log(dataSetting);
@@ -493,7 +496,15 @@
 		jQuery('#AcctPenjualan').val(dataSetting[0]['InvAcctPendapatanJual']).trigger('change');
 		jQuery('#AcctPenjualanJasa').val(dataSetting[0]['InvAcctPendapatanJasa']).trigger('change');
 		jQuery('#AcctPersediaan').val(dataSetting[0]['InvAcctPersediaan']).trigger('change');
-		bindGrid([])
+
+		var bahanrakitan = <?php echo $bahanrakitan ?>;
+		if (bahanrakitan.length > 0) {
+			bindGrid(bahanrakitan)
+		}
+		else{
+			bindGrid([])
+		}
+		SetEnableCommand();
 	});
 
 	jQuery('#KodeJenisItem').change(function () {
@@ -501,6 +512,7 @@
 			jQuery('#AddJenisItem').modal({backdrop: 'static', keyboard: false})
 			jQuery('#AddJenisItem').modal('show');
 		}
+		SetEnableCommand();
 	});
 
 	jQuery('#KodeMerk').change(function () {
@@ -508,6 +520,7 @@
 			jQuery('#AddMerk').modal({backdrop: 'static', keyboard: false})
 			jQuery('#AddMerk').modal('show');
 		}
+		SetEnableCommand();
 	})
 
 	jQuery('#Satuan').change(function () {
@@ -515,6 +528,7 @@
 			jQuery('#AddSatuan').modal({backdrop: 'static', keyboard: false})
 			jQuery('#AddSatuan').modal('show');
 		}
+		SetEnableCommand();
 	})
 
 	jQuery('#KodeGudang').change(function () {
@@ -522,6 +536,7 @@
 			jQuery('#AddGudang').modal({backdrop: 'static', keyboard: false})
 			jQuery('#AddGudang').modal('show');
 		}
+		SetEnableCommand();
 	});
 
 	jQuery('#btSaveJenisItem').click(function () {
@@ -744,6 +759,7 @@
 		var dataGridInstance = jQuery('#gridContainerRakitan').dxDataGrid('instance');
         var allRowsData  = dataGridInstance.getDataSource().items();
 
+
         if (allRowsData.length > 0) {
         	for (var i = 0; i < allRowsData.length; i++) {
         		if (allRowsData[i]['KodeItemBahan'] != "") {
@@ -787,6 +803,7 @@
 
         var formtype = jQuery('#formtype').val();
 
+        console.log(allRowsData)
         if (formtype == "add") {
         	$.ajax({
 				url: "{{route('itemmaster-store')}}",
@@ -1015,7 +1032,8 @@
 	
 
 	function bindGrid(data) {
-		jQuery("#gridContainerRakitan").dxDataGrid({
+		// console.log(oItem)
+		var dataGridInstance = jQuery("#gridContainerRakitan").dxDataGrid({
 			allowColumnResizing: true,
 			dataSource: data,
 			keyExpr: "KodeItemBahan",
@@ -1029,7 +1047,7 @@
                 pageSize: 30
             },
             editing: {
-                mode: "row",
+                mode: "cell",
                 allowAdding:true,
                 allowUpdating: true,
                 allowDeleting: true,
@@ -1046,26 +1064,197 @@
                 },
                 {
                     dataField: "KodeItemBahan",
-                    caption: "Kode Bahan",
-                    allowEditing:false
-                },
-                {
-                    dataField: "NamaItemBahan",
                     caption: "Nama Bahan",
-                    allowEditing:false
+                    lookup: {
+					    dataSource: oItem,
+					    valueExpr: 'KodeItem',
+					    displayExpr: 'NamaItem',
+				    },
                 },
                 {
-                    dataField: "Qty",
+                    dataField: "QtyBahan",
                     caption: "Qty",
-                    allowEditing:false
+                    allowEditing:true
                 },
                 {
                     dataField: "Satuan",
                     caption: "Satuan",
-                    allowEditing:false
+                    // allowEditing:false,
+                    lookup: {
+					    dataSource: <?php echo $satuan ?>,
+					    valueExpr: 'KodeSatuan',
+					    displayExpr: 'NamaSatuan',
+				    },
                 },
-            ]
+            ],
+            onRowInserted(e) {
+		    	e.component.navigateToRow(e.key);
+		    },
+			// onDataErrorOccurred(e){
+			// 	console.log(e)
+			// }
+		}).dxDataGrid('instance');
+
+		dataGridInstance.on('dataErrorOccurred',function (e) {
+			// console.log(e)
+			alert("Data Sudah terpakai di baris lain");
+			e.error.message = "Data Sudah terpakai di baris lain";
+			e.error.url = "";
+			dataGridInstance.refresh();
+			dataGridInstance.cancelEditData();
+			SetEnableCommand();
+		});
+		dataGridInstance.on('editorPreparing',function (e) {
+			if (e.parentType === "dataRow" && e.dataField === "KodeItemBahan") {
+		        e.editorOptions.onFocusOut = (x) => {
+		            // same here
+		            var rowIndex = dataGridInstance.getRowIndexByKey(e.row.key);
+		            var allRowsData  = dataGridInstance.getDataSource().items();
+
+		            // Validasi Duplikat
+
+		            // for (var i = 0; i < oItem.length; i++) {
+		            // 	if (oItem[i].KodeItem == e.row.cells[0].value) {
+		            // 		// Satuan = oItem[i].Satuan;
+		            // 		alert('Data Sudah di pakai di baris lain');
+		            // 		// dataGridInstance.deleteRow(e.row.key);
+		            // 		dataGridInstance.cancelEditData();
+		            // 		break;
+		            // 	}
+		            // }
+
+		            var Satuan = "";
+		            for (var i = 0; i < oItem.length; i++) {
+		            	if (oItem[i].KodeItem == e.row.cells[0].value) {
+		            		Satuan = oItem[i].Satuan;
+		            		break;
+		            	}
+		            }
+
+		            // x.component.option("value", "Test2");
+		            console.log(e.row.cells[0].value)
+		            // console.log(selectedItem)
+		            dataGridInstance.cellValue(rowIndex, "QtyBahan", 1);
+		            dataGridInstance.cellValue(rowIndex, "Satuan", Satuan);
+		            // dataGridInstance.cellValue(rowIndex, "Qty", 1);
+
+		            dataGridInstance.refresh()
+
+		            var $focusedRow = jQuery(e.component._$focusedRowElement);
+                    var $saveButton = $focusedRow.find(".dx-link dx-link-save");
+                    // console.log($focusedRow);
+                    if ($saveButton.length) {
+                        $saveButton.trigger("click");
+                    }
+		        }
+		    }
+		    else if (e.parentType === "dataRow" && e.dataField === "QtyBahan") {
+		    	e.editorOptions.onFocusOut = (x) => {
+		    		var $focusedRow = jQuery(e.component._$focusedRowElement);
+                    var $saveButton = $focusedRow.find(".dx-link dx-link-save");
+                    // console.log($focusedRow);
+                    if ($saveButton.length) {
+                        $saveButton.trigger("click");
+                    }
+		    	}
+		    }
+
+		    else if (e.parentType === "dataRow" && e.dataField === "Satuan") {
+		    	e.editorOptions.onFocusIn = (x) => {
+		    		var $focusedRow = jQuery(e.component._$focusedRowElement);
+                    var $saveButton = $focusedRow.find(".dx-link dx-link-save");
+                    // console.log($focusedRow);
+                    if ($saveButton.length) {
+                        $saveButton.trigger("click");
+                    }
+		    	}
+		    }
+		    SetEnableCommand();
 		})
+	}
+
+	function SetEnableCommand() {
+		var errorCount = 0;
+
+		if (jQuery('#NamaItem').val() == "") {
+			errorCount += 1;
+			oErrorList.push("Nama Item Harus diisi");
+		}
+		if (jQuery('#TypeItem').val() == "" || jQuery('#TypeItem').val() == -99) {
+			errorCount += 1;
+			oErrorList.push("Type Item Harus diisi");
+		}
+		if (jQuery('#KodeJenisItem').val() == "" || jQuery('#KodeJenisItem').val() == -99) {
+			errorCount += 1;
+			oErrorList.push("Jenis Item Harus diisi");
+		}
+		if (jQuery('#KodeMerk').val() == "" || jQuery('#KodeMerk').val() == -99) {
+			errorCount += 1;
+			oErrorList.push("Merk Harus diisi");
+		}
+		if (jQuery('#Satuan').val() == "" || jQuery('#Satuan').val() == -99) {
+			errorCount += 1;
+			oErrorList.push("Satuan Harus diisi");
+		}
+		if (jQuery('#KodeGudang').val() == "" || jQuery('#KodeGudang').val() == -99) {
+			errorCount += 1;
+			oErrorList.push("Gudang Harus diisi");
+		}
+
+		if (jQuery('#TypeItem').val() == 3 ) {
+			var dataGridInstance = jQuery('#gridContainerRakitan').dxDataGrid('instance');
+        	var allRowsData  = dataGridInstance.getDataSource().items();
+
+        	// console.log(allRowsData)
+
+        	if (allRowsData.length == 0) {
+        		errorCount +=1;
+        		oErrorList.push("Item Rakitan harus isi bahan di tab rakitan");
+        	}
+		}
+
+		console.log(oErrorList);
+
+		if (errorCount > 0) {
+			jQuery('#btSaveItem').attr('disabled',true);
+		}
+		else{
+			jQuery('#btSaveItem').attr('disabled',false);
+		}
+	}
+
+	function dropDownBoxEditorTemplate(cellElement, cellInfo) {
+		console.log(cellInfo)
+	    return jQuery('<div>').dxDropDownBox({
+	    	dropDownOptions: { width: 500 },
+	    	dataSource: oItem,
+	    	value: cellInfo.value,
+	    	valueExpr: 'KodeItem',
+	    	displayExpr: 'NamaItem',
+	    	inputAttr: { 'aria-label': 'Owner' },
+	    	contentTemplate(e) {
+	    		return jQuery('<div>').dxDataGrid({
+	    			dataSource: oItem,
+	    			remoteOperations: true,
+	    			columns: ['KodeItem', 'NamaItem'],
+	    			hoverStateEnabled: true,
+	    			scrolling: { mode: 'virtual' },
+	    			height: 250,
+	    			selection: { mode: 'single' },
+	    			selectedRowKeys: [cellInfo.value],
+	    			focusedRowEnabled: true,
+	    			focusedRowKey: cellInfo.value,
+    				onSelectionChanged(selectionChangedArgs) {
+    					console.log(cellInfo)
+	    		  		e.component.option('value', selectionChangedArgs.currentSelectedRowKeys[0]);
+	    		  		cellInfo.setValue(selectionChangedArgs.currentSelectedRowKeys[0]['KodeItem']);
+	    		  		if (selectionChangedArgs.currentSelectedRowKeys.length > 0) {
+	    		  			e.component.close();
+	    		  		}
+	    		  	},
+	        	});
+	      	},
+	    });
 	}
 </script>
 @endpush

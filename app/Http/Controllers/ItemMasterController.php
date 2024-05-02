@@ -16,6 +16,7 @@ use App\Models\Supplier;
 use App\Models\Rekening;
 use App\Models\Satuan;
 use App\Models\SettingAccount;
+use App\Models\ItemRakitan;
 
 class ItemMasterController extends Controller
 {
@@ -98,19 +99,27 @@ class ItemMasterController extends Controller
       $supplier = Supplier::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                   ->where('Status','=',1)->get();
 
+      $itemmasterbahanrakitan = ItemMaster::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                                ->where('TypeItem', "<>", 3)->get();
+
+      $bahanrakitan = ItemRakitan::where('RecordOwnerID','=', Auth::user()->RecordOwnerID)
+                      ->where('KodeItemHasil','=', $KodeItem)->get();
+
         
         return view("master.ItemMasterData.ItemMaster-Input",[
         	'itemmaster' => $itemmaster,
-            'jenisitem' => $jenisitem,
-            'merk' => $merk,
-            'rekening' => $rekening,
-            'satuan'=> $satuan,
-            'gudang'=>$gudang,
-            'rekeninghpp' => $rekeninghpp,
-            'rekeningpenjualan' => $rekeningpenjualan,
-            'rekeninginventory' => $rekeninginventory,
-            'settingaccount' => $settingaccount,
-            'supplier' => $supplier
+          'jenisitem' => $jenisitem,
+          'merk' => $merk,
+          'rekening' => $rekening,
+          'satuan'=> $satuan,
+          'gudang'=>$gudang,
+          'rekeninghpp' => $rekeninghpp,
+          'rekeningpenjualan' => $rekeningpenjualan,
+          'rekeninginventory' => $rekeninginventory,
+          'settingaccount' => $settingaccount,
+          'supplier' => $supplier,
+          'itembahanrakitan' => $itemmasterbahanrakitan,
+          'bahanrakitan' => $bahanrakitan
         ]);
     }
 
@@ -153,13 +162,30 @@ class ItemMasterController extends Controller
           $model->AcctPersediaan = empty($jsonData['AcctPersediaan']) ? "" : $jsonData['AcctPersediaan'];
           $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
-          if (count($jsonData['BahanRakitan']) > 0) {
-            # code...
-          }
-
           $save = $model->save();
 
           if ($save) {
+
+            if (count($jsonData['BahanRakitan']) > 0) {
+              for ($i=0; $i < count($jsonData['BahanRakitan']) ; $i++) { 
+                $modelRakitan = new ItemRakitan;
+                $modelRakitan->KodeItemHasil = $jsonData['BahanRakitan'][$i]['KodeItemHasil'];
+                $modelRakitan->QtyHasil = $jsonData['BahanRakitan'][$i]['QtyHasil'];
+                $modelRakitan->KodeItemBahan = $jsonData['BahanRakitan'][$i]['KodeItemBahan'];
+                $modelRakitan->Satuan = $jsonData['BahanRakitan'][$i]['Satuan'];
+                $modelRakitan->QtyBahan = $jsonData['BahanRakitan'][$i]['QtyBahan'];
+                $modelRakitan->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+                $saveRakitan = $modelRakitan->save();
+
+                if (!$saveRakitan) {
+                  $data['message'] = 'Simpan Data Rakitan Baris $i Gagal disimpan';
+                  $errorCount +=1;
+                  goto jump;
+                }
+
+              }
+            }
             $data['success'] = true;
               // alert()->success('Success','Data Item Berhasil disimpan.');
               // return redirect('itemmaster');
@@ -239,15 +265,31 @@ class ItemMasterController extends Controller
                       ]
                     );
 
-                if ($update) {
-                  if (count($jsonData['BahanRakitan']) > 0) {
-                    # code...
+                if (count($jsonData['BahanRakitan']) > 0) {
+                  $itemRakitan = DB::table('itemrakitan')
+                            ->where('KodeItemHasil','=',  $jsonData['KodeItem'])
+                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->delete();
+                  for ($i=0; $i < count($jsonData['BahanRakitan']) ; $i++) { 
+
+                    $modelRakitan = new ItemRakitan;
+                    $modelRakitan->KodeItemHasil = $jsonData['BahanRakitan'][$i]['KodeItemHasil'];
+                    $modelRakitan->QtyHasil = $jsonData['BahanRakitan'][$i]['QtyHasil'];
+                    $modelRakitan->KodeItemBahan = $jsonData['BahanRakitan'][$i]['KodeItemBahan'];
+                    $modelRakitan->Satuan = $jsonData['BahanRakitan'][$i]['Satuan'];
+                    $modelRakitan->QtyBahan = $jsonData['BahanRakitan'][$i]['QtyBahan'];
+                    $modelRakitan->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+                    $saveRakitan = $modelRakitan->save();
+
+                    if (!$saveRakitan) {
+                      $data['message'] = 'Simpan Data Rakitan Baris $i Gagal disimpan';
+                      $errorCount +=1;
+                      goto jump;
+                    }
                   }
-                  $data['success'] =  true;
-                }else{
-                  $data['message'] = "Gagal Modifikasi Data";
-                  $errorCount +=1;
                 }
+                $data['success'] =  true;
             } else{
                 // throw new \Exception('Item not found.');
               $data['message'] = "Item not found";

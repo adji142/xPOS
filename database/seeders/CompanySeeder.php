@@ -26,7 +26,13 @@ class CompanySeeder extends Seeder
             'StartSubs'=>'2021-01-01',
             'EndSubs'=>'2222-01-01',
             'ExtraDays'=>1,
-            'tempStore'=>''
+            'tempStore'=>'',
+            'NPWP' => '',
+            'TglPKP' => '1999-01-01',
+            'PPN' => 0,
+            'isHargaJualIncludePPN' => 1,
+            'NamaPosPrinter' => '',
+            'FooterNota' => ''
         ]);
     }
 }
