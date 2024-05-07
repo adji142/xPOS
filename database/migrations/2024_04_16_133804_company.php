@@ -30,6 +30,7 @@ class Company extends Migration
             $table->date('TglPKP');
             $table->double('PPN');
             $table->integer('isHargaJualIncludePPN');
+            $table->integer('isPostingAkutansi');
             $table->string('NamaPosPrinter');
             $table->string('FooterNota');
             $table->timestamps();

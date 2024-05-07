@@ -72,6 +72,42 @@ class ItemMasterController extends Controller
         ]);
     }
 
+    public function ViewJson(Request $request)
+    {
+      $data = array('success'=>false, 'message'=>'', 'data'=>array());
+      $KodeJenis = $request->input('KodeJenis');
+      $Merk = $request->input('Merk');
+      $TipeItem = $request->input('TipeItem');
+      $Active = $request->input('Active');
+
+      $sql = "itemmaster.KodeItem, itemmaster.NamaItem, itemmaster.Barcode,itemmaster.HargaJual,itemmaster.HargaPokokPenjualan,itemmaster.HargaBeliTerakhir,itemmaster.Stock, itemmaster.StockMinimum, merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, itemmaster.Rak, COALESCE(itemmaster.HargaJual,0) - COALESCE(itemmaster.HargaBeliTerakhir, 0) Margin";
+      $itemmaster = ItemMaster::selectRaw($sql)
+              ->leftJoin('jenisitem', 'jenisitem.KodeJenis','=','itemmaster.KodeJenisItem')
+              ->leftJoin('merk','merk.KodeMerk','=','itemmaster.KodeMerk')
+              ->leftJoin('gudang', 'gudang.KodeGudang','=','itemmaster.KodeGudang')
+              ->leftJoin('supplier','supplier.KodeSupplier','=','itemmaster.KodeSupplier')
+              ->leftJoin('satuan', 'satuan.KodeSatuan','=','itemmaster.Satuan')
+              ->where('itemmaster.RecordOwnerID','=',Auth::user()->RecordOwnerID);
+      if ($KodeJenis != "") {
+        $itemmaster->where('itemmaster.KodeJenisItem','=', $KodeJenis);
+      }
+
+      if ($Merk != "") {
+        $itemmaster->where('itemmaster.KodeMerk','=', $Merk);
+      }
+
+      if ($TipeItem != "") {
+        $itemmaster->where('itemmaster.TypeItem','=', $TipeItem);
+      }
+      if ($Active != "") {
+        $itemmaster->where('itemmaster.Active','=', $Active);
+      }
+
+      $data['data'] = $itemmaster->get();
+
+      return response()->json($data);
+    }
+
     public function Form($KodeItem = null)
     {
     	$itemmaster = ItemMaster::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)

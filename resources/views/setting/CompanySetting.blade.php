@@ -117,13 +117,24 @@
 	                            			
 	                            		</div>
 
-	                            		<div class="col-md-12">
+	                            		<div class="col-md-6">
 	                            			<label  class="text-body">PPN</label>
 	                            			<fieldset class="form-group mb-3">
 	                            				<input type="number" class="form-control" id="PPN" name="PPN" placeholder="Masukan Nomor Handphone" value="{{ count($company) > 0 ? $company[0]['PPN'] : 0 }}" >
 	                            			</fieldset>
 	                            			<label for="isHargaJualIncludePPN">Harga Jual Sudah Termasuk PPN</label>
 	                            			<input type="checkbox" class="checkbox-input" id="isHargaJualIncludePPN" {{ count($company) > 0 ? $company[0]['isHargaJualIncludePPN'] == 1 ? 'checked' : '' : '' }}>
+	                            			
+	                            		</div>
+
+	                            		<div class="col-md-6">
+	                            			<label  class="text-body">Posting Akutansi ?</label>
+	                            			<fieldset class="form-group mb-3">
+	                            				<select name="isPostingAkutansi" id="isPostingAkutansi" class="js-example-basic-single js-states form-control bg-transparent">
+	                            					<option value="0" {{ count($company) > 0 ? $company[0]['isPostingAkutansi'] == 0 ? 'selected' : '' : '' }} >Tidak</option>
+	                            					<option value="1" {{ count($company) > 0 ? $company[0]['isPostingAkutansi'] == 1 ? 'selected' : '' : '' }}>Ya</option>
+	                            				</select>
+	                            			</fieldset>
 	                            			
 	                            		</div>
 

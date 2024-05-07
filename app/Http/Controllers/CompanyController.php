@@ -56,6 +56,7 @@ class CompanyController extends Controller
 									'TglPKP' => empty($request->input('TglPKP')) ? "1999-01-01" : $request->input('TglPKP'),
 									'PPN' => empty($request->input('PPN')) ? 0 : $request->input('PPN'),
 									'isHargaJualIncludePPN' => empty($request->input('isHargaJualIncludePPN')) ? 0 : $request->input('isHargaJualIncludePPN'),
+                                    'isPostingAkutansi' => empty($request->input('isPostingAkutansi')) ? 0 : $request->input('isPostingAkutansi'),
 									'NamaPosPrinter' => empty($request->input('NamaPosPrinter')) ? "" : $request->input('NamaPosPrinter'),
 									'FooterNota' => empty($request->input('FooterNota')) ? "" : $request->input('FooterNota'),
                 				]

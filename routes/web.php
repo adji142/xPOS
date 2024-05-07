@@ -22,6 +22,9 @@ use App\Http\Controllers\MetodePembayaranController;
 use App\Http\Controllers\TerminController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\HargaJualController;
+use App\Http\Controllers\OrderPembelianController;
+use App\Http\Controllers\DocumentNumberingController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -230,6 +233,7 @@ Route::post('/rekening/getjson', [RekeningController::class, 'ViewJson'])->name(
 |
 */
 Route::get('/itemmaster', [ItemMasterController::class,'View'])->name('itemmaster')->middleware('auth');
+Route::post('/itemmaster/read', [ItemMasterController::class, 'ViewJson'])->name('itemmaster-ViewJson')->middleware('auth');
 Route::get('/itemmaster/form/{id}', [ItemMasterController::class,'Form'])->name('itemmaster-form')->middleware('auth');
 Route::post('/itemmaster/edit', [ItemMasterController::class, 'edit'])->name('itemmaster-edit')->middleware('auth');
 Route::post('/itemmaster/store', [ItemMasterController::class, 'store'])->name('itemmaster-store')->middleware('auth');
@@ -247,6 +251,10 @@ Route::get('/companysetting', [CompanyController::class,'View'])->name('companys
 Route::get('/companysetting/testprint', [CompanyController::class,'TestPrint'])->name('companysetting-testprint')->middleware('auth');
 Route::post('/companysetting/edit', [CompanyController::class, 'edit'])->name('companysetting-edit')->middleware('auth');
 
+// DocumentNumbering
+Route::get('/docnum', [DocumentNumberingController::class,'View'])->name('docnum')->middleware('auth');
+Route::post('/docnum/read', [DocumentNumberingController::class, 'ViewJson'])->name('docnum-ViewJson')->middleware('auth');
+Route::post('/docnum/store', [DocumentNumberingController::class, 'storeJson'])->name('docnum-store')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------
@@ -297,3 +305,26 @@ Route::get('/shift/form/{id}', [ShiftController::class,'Form'])->name('shift-for
 Route::post('/shift/store', [ShiftController::class, 'store'])->name('shift-store')->middleware('auth');
 Route::post('/shift/edit', [ShiftController::class, 'edit'])->name('shift-edit')->middleware('auth');
 Route::delete('/shift/delete/{id}', [ShiftController::class, 'deletedata'])->name('shift-delete')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Harga Jual
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/hargajual', [HargaJualController::class,'View'])->name('hargajual')->middleware('auth');
+Route::post('/hargajual/store', [HargaJualController::class, 'store'])->name('hargajual-store')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| OrderPembelian
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/opembelian', [OrderPembelianController::class,'View'])->name('opembelian')->middleware('auth');
+Route::get('/opembelian/form/{id}', [OrderPembelianController::class,'Form'])->name('opembelian-form')->middleware('auth');
+Route::post('/opembelian/storeJson', [OrderPembelianController::class, 'storeJson'])->name('opembelian-storeJson')->middleware('auth');
+Route::post('/opembelian/editJson', [OrderPembelianController::class, 'editJson'])->name('opembelian-editJson')->middleware('auth');
+Route::post('/opembelian/readheader', [OrderPembelianController::class, 'ViewHeader'])->name('opembelian-readheader')->middleware('auth');
+Route::post('/opembelian/readdetail', [OrderPembelianController::class, 'ViewDetail'])->name('opembelian-readdetail')->middleware('auth');

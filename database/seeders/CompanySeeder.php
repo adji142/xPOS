@@ -32,7 +32,8 @@ class CompanySeeder extends Seeder
             'PPN' => 0,
             'isHargaJualIncludePPN' => 1,
             'NamaPosPrinter' => '',
-            'FooterNota' => ''
+            'FooterNota' => '',
+            'isPostingAkutansi' => 0
         ]);
     }
 }
