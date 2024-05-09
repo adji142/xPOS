@@ -664,7 +664,7 @@
 	                {
 	                    dataField: "QtyFaktur",
 	                    caption: "Qty Faktur",
-	                    allowEditing:AllowManipulation,
+	                    allowEditing:true,
 	                    format: { type: 'fixedPoint', precision: 2 },
 	                    allowSorting: false 
 	                },
@@ -678,19 +678,19 @@
 						    displayExpr: 'NamaSatuan',
 					    },
 					    allowSorting: false ,
-					    allowEditing:AllowManipulation
+					    allowEditing:true
 	                },
 	                {
 	                    dataField: "Harga",
 	                    caption: "Harga",
-	                    allowEditing:AllowManipulation,
+	                    allowEditing:true,
 	                    format: { type: 'fixedPoint', precision: 2 },
 	                    allowSorting: false 
 	                },
 	                {
 	                    dataField: "Discount",
 	                    caption: "Discount",
-	                    allowEditing:AllowManipulation,
+	                    allowEditing:true,
 	                    format: { type: 'fixedPoint', precision: 2 },
 	                    allowSorting: false 
 	                },
