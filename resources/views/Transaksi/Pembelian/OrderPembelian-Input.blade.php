@@ -158,7 +158,7 @@
                             				<tr>
                             					<td>Sub Total</td>
                             					<td>:</td>
-                            					<td><input type="text" align="right" name="TotalTransaksi" id="TotalTransaksi" class="form-control aligned-textbox" value="{{ count($orderheader) > 0 ? $orderheader[0]['TotalTransaksi'] : '0' }}"></td>
+                            					<td><input type="text" align="right" name="TotalTransaksi" id="TotalTransaksi" class="form-control aligned-textbox" value="{{ count($orderheader) > 0 ? $orderheader[0]['TotalTransaksi'] : '0' }}" readonly=""></td>
                             				</tr>
                             				<tr>
                             					<td>Diskon</td>
@@ -201,6 +201,8 @@
 	// 	jQuery('.js-example-basic-multiple').select2();
 	// });
 	var TotalTermin = 0;
+	var StatusTransaksi = "O";
+	var orderHeader = [];
 	jQuery(function () {
 		jQuery(document).ready(function() {
 			var now = new Date();
@@ -211,15 +213,33 @@
 
 	    	jQuery('#TglTransaksi').val(NowDay);
 	    	jQuery('#TglJatuhTempo').val(NowDay);
+	    	// console.log(jQuery('#formtype').val())
 
-			BindGridDetail(<?php echo json_encode($orderdetail) ?>);
-
+	    	orderHeader = <?php echo json_encode($orderheader); ?>;
+	    	// console.log(orderHeader)
 			if (jQuery('#formtype').val() == "edit") {
-				formatCurrency(jQuery('#TotalTransaksi'), <?php echo $orderheader[0]['TotalTransaksi'] ?>);
-	      		formatCurrency(jQuery('#Potongan'), <?php echo $orderheader[0]['Potongan'] ?>);
-	      		formatCurrency(jQuery('#TotalPembelian'), <?php echo $orderheader[0]['TotalPembelian'] ?>);
+				formatCurrency(jQuery('#TotalTransaksi'), orderHeader[0]["TotalTransaksi"]);
+	      		formatCurrency(jQuery('#Potongan'), orderHeader[0]["Potongan"]);
+	      		formatCurrency(jQuery('#TotalPembelian'), orderHeader[0]["TotalPembelian"]);
+	      		StatusTransaksi = orderHeader[0]["Status"];
 
+	      		// console.log(StatusTransaksi)
+	      		if (StatusTransaksi != "O") {
+	      			jQuery('#KodeSupplier').attr('disabled',true);
+	      			jQuery('#Status').attr('disabled',true);
+	      			jQuery('#KodeTermin').attr('disabled',true);
+	      			jQuery('#TglTransaksi').attr('disabled',true);
+	      			jQuery('#TglJatuhTempo').attr('disabled',true);
+	      			jQuery('#NoReff').attr('disabled',true);
+	      			jQuery('#Keterangan').attr('disabled',true);
+	      			jQuery('#btSave').attr('disabled',true);
+	      		}
+	      		BindGridDetail(<?php echo json_encode($orderdetail) ?>);
 			}
+			else{
+				BindGridDetail([])	
+			}
+
 		});
 
 		jQuery('#KodeTermin').change(function () {
@@ -265,7 +285,7 @@
 
       		var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
       		var allRowsData  = dataGridInstance.getDataSource().items();
-      		console.log(allRowsData)
+      		// console.log(allRowsData)
       		var oDetail = [];
 
       		for (var i = 0; i < allRowsData.length; i++) {
@@ -280,6 +300,7 @@
 						'Harga' : allRowsData[i]['Harga'],
 						'Discount' : allRowsData[i]['Discount'],
 						'HargaNet' : allRowsData[i]['HargaNet'],
+						'LineStatus':allRowsData[i]['LineStatus'],
       				}
       				
       				oDetail.push(oItem)
@@ -413,7 +434,23 @@
       		formatCurrency(jQuery('#TotalPembelian'), TotalTransaksi - TotalPotongan);
 		}
 
+		function isRowEditable(rowData) {
+			console.log(rowData);
+			var isEditable = true;
+
+			if (rowData.LineStatus == "C") {
+				isEditable = false;
+			}
+
+		    return isEditable;
+		}
+
 		function BindGridDetail(data) {
+			var AllowManipulation = true;
+			if (StatusTransaksi != "O") {
+				AllowManipulation = false;
+			}
+			// console.log(AllowManipulation)
 			var dataGridInstance = jQuery("#gridContainerDetail").dxDataGrid({
 				allowColumnResizing: true,
 				dataSource: data,
@@ -429,8 +466,8 @@
 	            editing: {
 	                mode: "row",
 	                // allowAdding:true,
-	                allowUpdating: true,
-	                allowDeleting: true,
+	                allowUpdating: AllowManipulation,
+	                allowDeleting: AllowManipulation,
 	                texts: {
 	                    confirmDeleteMessage: ''  
 	                }
@@ -457,12 +494,13 @@
 						    displayExpr: 'NamaItem',
 					    },
 					    width: 350,
-					    allowSorting: false 
+					    allowSorting: false,
+					    allowEditing:AllowManipulation
 	                },
 	                {
 	                    dataField: "Qty",
 	                    caption: "Qty",
-	                    allowEditing:true,
+	                    allowEditing:AllowManipulation,
 	                    format: { type: 'fixedPoint', precision: 2 },
 	                    allowSorting: false 
 	                },
@@ -475,26 +513,27 @@
 						    valueExpr: 'KodeSatuan',
 						    displayExpr: 'NamaSatuan',
 					    },
-					    allowSorting: false 
+					    allowSorting: false ,
+					    allowEditing:AllowManipulation
 	                },
 	                {
 	                    dataField: "Harga",
 	                    caption: "Harga",
-	                    allowEditing:true,
+	                    allowEditing:AllowManipulation,
 	                    format: { type: 'fixedPoint', precision: 2 },
 	                    allowSorting: false 
 	                },
 	                {
 	                    dataField: "Discount",
 	                    caption: "Discount",
-	                    allowEditing:true,
+	                    allowEditing:AllowManipulation,
 	                    format: { type: 'fixedPoint', precision: 2 },
 	                    allowSorting: false 
 	                },
 	                {
 	                    dataField: "HargaNet",
 	                    caption: "HargaNet",
-	                    allowEditing:false,
+	                    allowEditing:AllowManipulation,
 	                    format: { type: 'fixedPoint', precision: 2 },
 	                    calculateCellValue:function (rowData) {
 	                    	var HargaNet = 0;
@@ -504,11 +543,11 @@
 	                    		HargaGross = rowData.Qty * rowData.Harga;
 	                    	}
 	                    	else{
-	                    		console.log("HargaGross = " + HargaGross)
+	                    		// console.log("HargaGross = " + HargaGross)
 	                    		HargaGross = rowData.Qty * rowData.Harga;
 
 	                    		var diskon = HargaGross * rowData.Discount / 100
-	                    		console.log("Diskon = " + diskon)
+	                    		// console.log("Diskon = " + diskon)
 	                    		HargaNet = HargaGross - diskon;
 	                    	}
 
@@ -516,13 +555,20 @@
 	                    },
 	                    allowSorting: false 
 	                },
+	                {
+	                    dataField: "LineStatus",
+	                    caption: "LineStatus",
+	                    allowEditing:false,
+	                    allowSorting: false,
+	                    visible:false
+	                },
 	            ],
 			    onContentReady: function(e) {
 		            // Trigger edit mode for the first row (index 0) when the grid content is ready
 		            // console.log(dataGridInstance.option("dataSource"))
 		            var rowData = dataGridInstance.option("dataSource");
 		            if (rowData.length == 1) {
-		            	dataGridInstance.editRow(0)	
+		            	// dataGridInstance.editRow(0)	
 		            }
 		            // dataGridInstance.editRow(0)
 		            // dataGridInstance.editRow(0);
@@ -531,7 +577,7 @@
 		        	// console.log(dataGridInstance.option("dataSource"))
 		            var rowData = dataGridInstance.option("dataSource");
 		            var columnIndex = e.columnIndex;
-		            console.log(e)
+		            // console.log(e)
 		        	if (columnIndex >= 1 && columnIndex <= 5) {
 		                dataGridInstance.editRow(e.rowIndex)	
 		            }
@@ -539,7 +585,7 @@
 		        },
 			}).dxDataGrid('instance');
 
-			console.log(dataGridInstance)
+			// console.log(dataGridInstance)
 
 			var xItem = '<?php echo json_encode($item); ?>'
 			var oItem = JSON.parse(xItem);
@@ -549,17 +595,43 @@
 
 			// console.log(dataGridInstance)
 			var allRowsData  = dataGridInstance.option("dataSource");
-        	var newData = { NoUrut: allRowsData.length + 1,KodeItem:"", Qty: 0, Satuan: "", Harga:0, Discount:0, HargaNet:0 }
+        	var newData = { NoUrut: allRowsData.length + 1,KodeItem:"", Qty: 0, Satuan: "", Harga:0, Discount:0, HargaNet:0 ,LineStatus:"O"}
         	dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
         	dataGridInstance.refresh();
 
+        	// Set Editable / Not
+        	// console.log(dataGridInstance)
+        // 	for (var i = 0; i < allRowsData.length; i++) {
+        // 		if (allRowsData[i]['LineStatus'] == "C") {
+        // 			var column = dataGridInstance.columns.find(c => c.dataField === "KodeItem");
+				    // if (column) {
+				    //     column.allowEditing = isEditable;
+				    //     $('#gridContainerDetail').dxDataGrid('instance').refresh();
+				    // }
+        // 		}
+        // 	}
+
         	dataGridInstance.on('rowUpdated', function(e) {
-        		// console.log(e)
+        		var allRowsData  = dataGridInstance.option("dataSource");
+        		var blankCount = 0;
+
+        		for (var i = 0; i < allRowsData.length; i++) {
+        			if (allRowsData[i]["KodeItem"] == "") {
+        				blankCount += 1;
+        			}
+        		}
+
+        		if (blankCount == 1) {
+        			var newData = { NoUrut: allRowsData.length+1,KodeItem:"", Qty: 0, Satuan: "", Harga:0, Discount:0, HargaNet:0,LineStatus:"O" }
+					dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
+					dataGridInstance.refresh();
+        		}
+
         		CalculateTotal();
         	})
         	// Validasi duplicate Row
         	dataGridInstance.on('dataErrorOccurred',function (e) {
-			console.log(e)
+			// console.log(e)
 				alert("Data Sudah terpakai di baris lain");
 				e.error.message = "Data Sudah terpakai di baris lain";
 				e.error.url = "";
@@ -569,7 +641,11 @@
 			});
 
         	dataGridInstance.on('editorPreparing',function (e) {
+
 				if (e.parentType === "dataRow" && e.dataField === "KodeItem") {
+					var isEditable = isRowEditable(e.row.data);
+    				e.editorOptions.disabled = !isEditable;
+
 			        e.editorOptions.onFocusOut = (x) => {
 			            // same here
 			            var rowIndex = dataGridInstance.getRowIndexByKey(e.row.key);
@@ -577,7 +653,7 @@
 
 			            var Satuan = "";
 			            for (var i = 0; i < oItem.length; i++) {
-			            	console.log(oItem[i].KodeItem + " == " +e.row.cells[1].value);
+			            	// console.log(oItem[i].KodeItem + " == " +e.row.cells[1].value);
 			            	// console.log(e.row.values)
 			            	if (oItem[i].KodeItem == e.row.cells[1].value) {
 			            		Satuan = oItem[i].Satuan;
@@ -588,35 +664,31 @@
 			            // x.component.option("value", "Test2");
 			            // console.log(e.row.cells[0].value)
 			            // console.log(selectedItem)
-			            dataGridInstance.cellValue(rowIndex, "Qty", 1);
-			            dataGridInstance.cellValue(rowIndex, "Harga", 0);
-			            dataGridInstance.cellValue(rowIndex, "Discount", 0);
-			            dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
-			            dataGridInstance.cellValue(rowIndex, "Satuan", Satuan);
-			            // dataGridInstance.cellValue(rowIndex, "Qty", 1);
+			            if (jQuery("#formtype").val() == "add") {
+			            	dataGridInstance.cellValue(rowIndex, "Qty", 1);
+				            dataGridInstance.cellValue(rowIndex, "Harga", 0);
+				            dataGridInstance.cellValue(rowIndex, "Discount", 0);
+				            dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
+				            dataGridInstance.cellValue(rowIndex, "Satuan", Satuan);
+				            // dataGridInstance.cellValue(rowIndex, "Qty", 1);
 
-			            dataGridInstance.refresh()
-
-			            var $focusedRow = jQuery(e.component._$focusedRowElement);
-	                    var $saveButton = $focusedRow.find(".dx-link dx-link-save");
-	                    console.log($focusedRow);
-	                    if ($saveButton.length) {
-	                        $saveButton.trigger("click");
-	                    }
+				            dataGridInstance.refresh()
+			            }
 
 	                    dataGridInstance.saveEditData();
 	                    
-
-	                    var allRowsData  = dataGridInstance.option("dataSource");
-	                    var newData = { NoUrut: allRowsData.length+1,KodeItem:"", Qty: 0, Satuan: "", Harga:0, Discount:0, HargaNet:0 }
-        				dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
-        				dataGridInstance.refresh();
+	                    var newData = { NoUrut: allRowsData.length+1,KodeItem:"", Qty: 0, Satuan: "", Harga:0, Discount:0, HargaNet:0,LineStatus:"O" }
+						dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
+						dataGridInstance.refresh();
 			        }
 			        e.editorOptions.onFocusIn = (x) => {
-			        	console.log(x)
+
+
 			        }
 			    }
 			    else if (e.parentType === "dataRow" && e.dataField === "Qty") {
+			    	var isEditable = isRowEditable(e.row.data);
+    				e.editorOptions.disabled = !isEditable;
 			    	e.editorOptions.onFocusOut = (x) => {
 			    		var $focusedRow = jQuery(e.component._$focusedRowElement);
 	                    var $saveButton = $focusedRow.find(".dx-link dx-link-save");
@@ -628,6 +700,8 @@
 			    }
 
 			    else if (e.parentType === "dataRow" && e.dataField === "Satuan") {
+			    	var isEditable = isRowEditable(e.row.data);
+    				e.editorOptions.disabled = !isEditable;
 			    	e.editorOptions.onFocusIn = (x) => {
 			    		var $focusedRow = jQuery(e.component._$focusedRowElement);
 	                    var $saveButton = $focusedRow.find(".dx-link dx-link-save");
@@ -637,6 +711,22 @@
 	                    }
 			    	}
 			    }
+			    else if (e.parentType === "dataRow" && e.dataField === "Harga") {
+			    	var isEditable = isRowEditable(e.row.data);
+    				e.editorOptions.disabled = !isEditable;
+
+    			}
+    			else if (e.parentType === "dataRow" && e.dataField === "Discount") {
+			    	var isEditable = isRowEditable(e.row.data);
+    				e.editorOptions.disabled = !isEditable;
+
+    			}
+
+    			else if (e.parentType === "dataRow" && e.dataField === "HargaNet") {
+			    	var isEditable = isRowEditable(e.row.data);
+    				e.editorOptions.disabled = !isEditable;
+
+    			}
 			    // SetEnableCommand();
 			})
 		}

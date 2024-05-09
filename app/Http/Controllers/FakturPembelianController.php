@@ -1,0 +1,237 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+use DB;
+use Log;
+
+use App\Models\OrderPembelianHeader;
+use App\Models\OrderPembelianDetail;
+use App\Models\FakturPembelianHeader;
+use App\Models\FakturPembelianDetail;
+use App\Models\Supplier;
+use App\Models\Termin;
+use App\Models\ItemMaster;
+use App\Models\Satuan;
+use App\Models\DocumentNumbering;
+use App\Models\Gudang;
+use App\Models\AutoPosting;
+
+class FakturPembelianController extends Controller
+{
+    public function View(Request $request)
+    {
+    	$keyword = $request->input('keyword');
+	    $supplier = Supplier::where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
+
+	    return view("Transaksi.Pembelian.FakturPembelian",[
+	    	'supplier' => $supplier->get(), 
+	    ]);
+    }
+
+    public function ViewHeader(Request $request)
+    {
+    	$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+    	$TglAwal = $request->input('TglAwal');
+	   	$TglAkhir = $request->input('TglAkhir');
+	   	$KodeVendor = $request->input('KodeVendor');
+
+	   	$sql = "DISTINCT fakturpembelianheader.NoTransaksi, fakturpembelianheader.TglTransaksi,fakturpembelianheader.TglJatuhTempo, fakturpembelianheader.NoReff, fakturpembelianheader.KodeSupplier, supplier.NamaSupplier, fakturpembelianheader.Termin, terminpembayaran.NamaTermin, fakturpembelianheader.TotalPembelian, fakturpembelianheader.TotalPembayaran, fakturpembelianheader.TotalPembelian - COALESCE(fakturpembelianheader.TotalPembayaran,0) TotalHutang, COALESCE(orderpembelianheader.NoTransaksi, '') AS NoOrder, orderpembelianheader.TglTransaksi TglOrder ";
+	   	$model = FakturPembelianHeader::selectRaw($sql)
+    				->leftJoin('terminpembayaran', function ($value){
+    					$value->on('fakturpembelianheader.KodeTermin','=','terminpembayaran.id')
+    					->on('terminpembayaran.RecordOwnerID','=','fakturpembelianheader.RecordOwnerID');
+    				})
+    				->leftJoin('supplier', function ($value){
+    					$value->on('fakturpembelianheader.KodeSupplier','=','supplier.KodeSupplier')
+    					->on('supplier.RecordOwnerID','=','fakturpembelianheader.RecordOwnerID');
+    				})
+    				->leftJoin('fakturpembeliandetail', function ($value){
+    					$value->on('fakturpembeliandetail.NoTransaksi','=','fakturpembelianheader.NoTransaksi')
+    					->on('fakturpembeliandetail.RecordOwnerID','=','fakturpembelianheader.RecordOwnerID');
+    				})
+    				->leftJoin('orderpembeliandetail', function ($value){
+    					$value->on('orderpembeliandetail.NoTransaksi','=','fakturpembeliandetail.BaseReff')
+    					->on('orderpembeliandetail.RecordOwnerID','=','fakturpembeliandetail.RecordOwnerID');
+    				})
+    				->leftJoin('orderpembelianheader', function ($value){
+    					$value->on('orderpembelianheader.NoTransaksi','=','orderpembeliandetail.NoTransaksi')
+    					->on('orderpembelianheader.RecordOwnerID','=','orderpembeliandetail.RecordOwnerID');
+    				})
+    				->whereBetween('fakturpembelianheader.TglTransaksi',[$TglAwal, $TglAkhir])
+    				->where('fakturpembelianheader.RecordOwnerID',Auth::user()->RecordOwnerID);
+
+    	if ($KodeVendor != "") {
+    		$model->where("fakturpembelianheader.KodeSupplier", $KodeVendor);
+    	}
+   
+        $data['data']= $model->get();
+        return response()->json($data);
+    }
+    public function ViewDetail(Request $request)
+	{
+		$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+			
+			$NoTransaksi = $request->input('NoTransaksi');
+
+			$sql = "fakturpembeliandetail.NoUrut, fakturpembeliandetail.KodeItem, itemmaster.NamaItem, fakturpembeliandetail.Qty, fakturpembeliandetail.Harga, fakturpembeliandetail.Discount, fakturpembeliandetail.HargaNet";
+			$model = FakturPembelianDetail::selectRaw($sql)
+					->leftJoin('itemmaster', function ($value){
+						$value->on('fakturpembeliandetail.KodeItem','=','itemmaster.KodeItem')
+						->on('fakturpembeliandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+					})
+					->leftJoin('orderpembeliandetail', function ($value){
+						$value->on('orderpembeliandetail.NoTransaksi','=','fakturpembeliandetail.BaseReff')
+						->on('orderpembeliandetail.NoUrut','=','fakturpembeliandetail.BaseLine')
+						->on('orderpembeliandetail.RecordOwnerID','=','fakturpembeliandetail.RecordOwnerID');
+					})
+					->where('fakturpembeliandetail.NoTransaksi',$NoTransaksi)
+					->where('fakturpembeliandetail.RecordOwnerID',Auth::user()->RecordOwnerID);
+
+	    $data['data']= $model->get();
+	    return response()->json($data);
+	}
+
+	public function Form($NoTransaksi = null)
+	{
+		$supplier = Supplier::where('Status', 1)
+						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();    
+		$termin = Termin::where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+		$item = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+					->where('Active','Y')->get();
+		$orderheader = OrderPembelianHeader::where('NoTransaksi', $NoTransaksi)
+						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+		$orderdetail = OrderPembelianDetail::where('NoTransaksi', $NoTransaksi)
+						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+
+		$fakturheader = FakturPembelianHeader::where('NoTransaksi', $NoTransaksi)
+						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+		$fakturdetail = FakturPembelianDetail::where('NoTransaksi', $NoTransaksi)
+						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+
+		$satuan = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+		$gudang = Gudang::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+
+	    return view("Transaksi.Pembelian.FakturPembelian-Input",[
+	        'supplier' => $supplier,
+	        'termin' => $termin,
+	        'item' => $item,
+	        'orderheader' => $orderheader,
+	        'orderdetail' => $orderdetail,
+	        'fakturheader' => $fakturheader,
+	        'fakturdetail' => $fakturdetail,
+	        'satuan' => $satuan,
+	        'gudang' => $gudang
+	    ]);
+	}
+
+	public function storeJson(Request $request)
+	{
+		$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+		Log::debug($request->all());
+		DB::beginTransaction();
+
+		$errorCount = 0;
+		$jsonData = $request->json()->all();
+
+		try {
+			$currentDate = Carbon::now();
+			$Year = $currentDate->format('y');
+			$Month = $currentDate->format('m');
+
+			$numberingData = new DocumentNumbering();
+	        $NoTransaksi = $numberingData->GetNewDoc("FPB","fakturpembelianheader","NoTransaksi");
+
+	        $model = new FakturPembelianHeader;
+
+	        $model->Periode = $Year.$Month;
+	        $model->NoTransaksi= $NoTransaksi;
+
+	        $model->TglTransaksi = $jsonData['TglTransaksi'];
+			$model->TglJatuhTempo = $jsonData['TglJatuhTempo'];
+			$model->NoReff = $jsonData['NoReff'];
+			$model->KodeSupplier = $jsonData['KodeSupplier'];
+			$model->KodeTermin = $jsonData['KodeTermin'];
+			$model->Termin = $jsonData['Termin'];
+			$model->TotalTransaksi = $jsonData['TotalTransaksi'];
+			$model->Potongan = $jsonData['Potongan'];
+			$model->Pajak = $jsonData['Pajak'];
+			$model->TotalPembelian = $jsonData['TotalPembelian'];
+			$model->TotalRetur = $jsonData['TotalRetur'];
+			$model->TotalPembayaran = $jsonData['TotalPembayaran'];
+			$model->Status = $jsonData['Status'];
+			$model->Keterangan = $jsonData['Keterangan'];
+			$model->Posted = 0;
+			$model->CreatedBy = Auth::user()->name;
+			$model->UpdatedBy = "";
+            $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+   
+			$save = $model->save();
+
+			foreach ($jsonData['Detail'] as $key) {
+				if ($key['Qty'] == 0) {
+					goto skip;
+				}
+
+				$modelDetail = new FakturPembelianDetail;
+           		$modelDetail->NoTransaksi = $NoTransaksi;
+				$modelDetail->NoUrut = $key['NoUrut'];
+				$modelDetail->KodeItem = $key['KodeItem'];
+				$modelDetail->Qty = $key['Qty'];
+				$modelDetail->Satuan = $key['Satuan'];
+				$modelDetail->Harga = $key['Harga'];
+				$modelDetail->Discount = $key['Discount'];
+
+				$modelDetail->BaseReff = $key['BaseReff'];
+				$modelDetail->BaseLine = $key['BaseLine'];
+				$modelDetail->KodeGudang = $key['KodeGudang'];
+
+				if ($key['Discount'] ==0) {
+					$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
+				}
+				else{
+					$HargaGros = $key['Qty'] * $key['Harga'];
+					$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
+					$modelDetail->HargaNet = $HargaGros - $diskon;
+				}
+				$modelDetail->LineStatus = 'O';
+				$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+				$save = $modelDetail->save();
+
+				if (!$save) {
+					$data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
+					$errorCount += 1;
+					goto jump;
+				}
+				skip:
+			}
+
+			// Auto Journal
+
+			// Generate Header :
+
+
+
+			jump:
+	        if ($errorCount > 0) {
+		        DB::rollback();
+		        $data['success'] = false;
+	        }
+	        else{
+		        DB::commit();
+		        $data['success'] = true;
+	        }
+
+		} catch (\Exception $e) {
+			Log::debug($e->getMessage());
+	        $data['message'] = $e->getMessage();
+		}
+
+		return response()->json($data);
+	}
+
+}

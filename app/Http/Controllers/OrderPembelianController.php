@@ -35,6 +35,7 @@ class OrderPembelianController extends Controller
 	   		$TglAwal = $request->input('TglAwal');
 	   		$TglAkhir = $request->input('TglAkhir');
 	   		$KodeVendor = $request->input('KodeVendor');
+	   		$Status = $request->input('Status');
 
 	   		$sql = "orderpembelianheader.NoTransaksi, orderpembelianheader.TglTransaksi,orderpembelianheader.TglJatuhTempo, orderpembelianheader.NoReff, orderpembelianheader.KodeSupplier, supplier.NamaSupplier, orderpembelianheader.Termin, terminpembayaran.NamaTermin, orderpembelianheader.TotalPembelian, orderpembelianheader.TotalPembayaran, orderpembelianheader.TotalPembelian - COALESCE(orderpembelianheader.TotalPembayaran,0) TotalHutang";
 	   		$model = OrderPembelianHeader::selectRaw($sql)
@@ -52,6 +53,10 @@ class OrderPembelianController extends Controller
         	if ($KodeVendor != "") {
         		$model->where("orderpembelianheader.KodeSupplier", $KodeVendor);
         	}
+
+        	if ($Status != "") {
+        		$model->where("orderpembelianheader.Status", $Status);
+        	}
 	   
 	        $data['data']= $model->get();
 	        return response()->json($data);
@@ -63,7 +68,7 @@ class OrderPembelianController extends Controller
 	   		
 	   		$NoTransaksi = $request->input('NoTransaksi');
 
-	   		$sql = "orderpembeliandetail.NoUrut, orderpembeliandetail.KodeItem, itemmaster.NamaItem, orderpembeliandetail.Qty, orderpembeliandetail.Harga, orderpembeliandetail.Discount, orderpembeliandetail.HargaNet";
+	   		$sql = "orderpembeliandetail.NoUrut, orderpembeliandetail.KodeItem, itemmaster.NamaItem, orderpembeliandetail.Qty, orderpembeliandetail.Harga, orderpembeliandetail.Discount, orderpembeliandetail.HargaNet, orderpembeliandetail.Satuan";
 	   		$model = OrderPembelianDetail::selectRaw($sql)
         				->leftJoin('itemmaster', function ($value){
         					$value->on('orderpembeliandetail.KodeItem','=','itemmaster.KodeItem')
@@ -73,6 +78,18 @@ class OrderPembelianController extends Controller
         				->where('orderpembeliandetail.RecordOwnerID',Auth::user()->RecordOwnerID);
 	   
 	        $data['data']= $model->get();
+	        return response()->json($data);
+	   }
+
+	   public function FindHeader(Request $request)
+	   {
+	   		$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+	   		
+	   		$NoTransaksi = $request->input('NoTransaksi');
+	   		$orderheader = OrderPembelianHeader::where('NoTransaksi', $NoTransaksi)
+							->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+
+			$data['data']= $orderheader;
 	        return response()->json($data);
 	   }
 	   
@@ -185,6 +202,7 @@ class OrderPembelianController extends Controller
 	           	
 	           	$numberingData = new DocumentNumbering();
 	           	$NoTransaksi = $numberingData->GetNewDoc("PBL","orderpembelianheader","NoTransaksi");
+	           	
 	            $model->Periode = $Year.$Month;
 	            $model->NoTransaksi= $NoTransaksi;
 
@@ -316,6 +334,11 @@ class OrderPembelianController extends Controller
 							goto jump;
 						}
 
+						if ($key['LineStatus'] == "C") {
+							goto skip;
+						}
+
+
 						$checkExists = OrderPembelianHeader::where('NoTransaksi','=',$jsonData['NoTransaksi'])
 	           							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
 	           							->where('KodeItem','=', $key['KodeItem']);
@@ -378,6 +401,7 @@ class OrderPembelianController extends Controller
 								goto jump;
 							}
 	           			}
+	           			skip:
 		           }
 	               if ($update) {
 	                   $data['success'] = true;

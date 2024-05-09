@@ -25,6 +25,7 @@ use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\HargaJualController;
 use App\Http\Controllers\OrderPembelianController;
 use App\Http\Controllers\DocumentNumberingController;
+use App\Http\Controllers\FakturPembelianController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -328,3 +329,18 @@ Route::post('/opembelian/storeJson', [OrderPembelianController::class, 'storeJso
 Route::post('/opembelian/editJson', [OrderPembelianController::class, 'editJson'])->name('opembelian-editJson')->middleware('auth');
 Route::post('/opembelian/readheader', [OrderPembelianController::class, 'ViewHeader'])->name('opembelian-readheader')->middleware('auth');
 Route::post('/opembelian/readdetail', [OrderPembelianController::class, 'ViewDetail'])->name('opembelian-readdetail')->middleware('auth');
+Route::post('/opembelian/findheader', [OrderPembelianController::class, 'FindHeader'])->name('opembelian-findheader')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| FakturPembelian
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/fpembelian', [FakturPembelianController::class,'View'])->name('fpembelian')->middleware('auth');
+Route::get('/fpembelian/form/{id}', [FakturPembelianController::class,'Form'])->name('fpembelian-form')->middleware('auth');
+Route::post('/fpembelian/storeJson', [FakturPembelianController::class, 'storeJson'])->name('fpembelian-storeJson')->middleware('auth');
+Route::post('/fpembelian/editJson', [FakturPembelianController::class, 'editJson'])->name('fpembelian-editJson')->middleware('auth');
+Route::post('/fpembelian/readheader', [FakturPembelianController::class, 'ViewHeader'])->name('fpembelian-readheader')->middleware('auth');
+Route::post('/fpembelian/readdetail', [FakturPembelianController::class, 'ViewDetail'])->name('fpembelian-readdetail')->middleware('auth');

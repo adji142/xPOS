@@ -9,4 +9,9 @@ class Company extends Model
 {
     use HasFactory;
     protected $table = 'company';
+
+    public function ReadSetting()
+    {
+    	return $this::where('RecordOwnerID', Auth::user()->RecordOwnerID)->first();
+    }
 }
