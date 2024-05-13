@@ -9,13 +9,19 @@ use DB;
 use Log;
 
 use App\Models\MetodePembayaran;
+use App\Models\Rekening;
 
 class MetodePembayaranController extends Controller
 {
     public function View(Request $request)
     {
-
-        $metodepembayaran = MetodePembayaran::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+        $sql = "metodepembayaran.*, rekeningakutansi.NamaRekening ";
+        $metodepembayaran = MetodePembayaran::selectRaw($sql)
+                            ->leftJoin('rekeningakutansi', function ($value){
+                                $value->on('rekeningakutansi.KodeRekening','=','metodepembayaran.AkunPembayaran')
+                                ->on('rekeningakutansi.RecordOwnerID','=','metodepembayaran.RecordOwnerID');
+                            })
+                            ->where('metodepembayaran.RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
         // $metodepembayaran = $metodepembayaran->paginate(4);
 
@@ -40,9 +46,12 @@ class MetodePembayaranController extends Controller
     public function Form($id = null)
     {
     	$metodepembayaran = MetodePembayaran::where('id','=',$id)->get();
+        $rekeningakutansi = Rekening::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->where('Jenis','=',2)->get();
         
         return view("master.Finance.MetodePembayaran-Input",[
-            'metodepembayaran' => $metodepembayaran
+            'metodepembayaran' => $metodepembayaran,
+            'rekeningakutansi' => $rekeningakutansi
         ]);
     }
 
@@ -56,6 +65,7 @@ class MetodePembayaranController extends Controller
 
             $model = new MetodePembayaran;
             $model->NamaMetodePembayaran = $request->input('NamaMetodePembayaran');
+            $model->AkunPembayaran = $request->input('AkunPembayaran');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -93,7 +103,8 @@ class MetodePembayaranController extends Controller
                             ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                 			->update(
                 				[
-                					'NamaMetodePembayaran'=>$request->input('NamaMetodePembayaran')
+                					'NamaMetodePembayaran'=>$request->input('NamaMetodePembayaran'),
+                                    'AkunPembayaran' => $request->input('AkunPembayaran')
                 				]
                 			);
 
@@ -121,6 +132,7 @@ class MetodePembayaranController extends Controller
 
             $model = new MetodePembayaran;
             $model->NamaMetodePembayaran = $request->input('NamaMetodePembayaran');
+            $model->AkunPembayaran = $request->input('AkunPembayaran');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -154,6 +166,7 @@ class MetodePembayaranController extends Controller
                             ->update(
                                 [
                                     'NamaMetodePembayaran'=>$request->input('NamaMetodePembayaran'),
+                                    'AkunPembayaran' => $request->input('AkunPembayaran')
                                 ]
                             );
 

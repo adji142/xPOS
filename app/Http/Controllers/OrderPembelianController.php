@@ -339,7 +339,7 @@ class OrderPembelianController extends Controller
 						}
 
 
-						$checkExists = OrderPembelianHeader::where('NoTransaksi','=',$jsonData['NoTransaksi'])
+						$checkExists = OrderPembelianDetail::where('NoTransaksi','=',$jsonData['NoTransaksi'])
 	           							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
 	           							->where('KodeItem','=', $key['KodeItem']);
 	           			if ($checkExists) {

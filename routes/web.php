@@ -26,6 +26,7 @@ use App\Http\Controllers\HargaJualController;
 use App\Http\Controllers\OrderPembelianController;
 use App\Http\Controllers\DocumentNumberingController;
 use App\Http\Controllers\FakturPembelianController;
+use App\Http\Controllers\PembayaranController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -344,3 +345,16 @@ Route::post('/fpembelian/storeJson', [FakturPembelianController::class, 'storeJs
 Route::post('/fpembelian/editJson', [FakturPembelianController::class, 'editJson'])->name('fpembelian-editJson')->middleware('auth');
 Route::post('/fpembelian/readheader', [FakturPembelianController::class, 'ViewHeader'])->name('fpembelian-readheader')->middleware('auth');
 Route::post('/fpembelian/readdetail', [FakturPembelianController::class, 'ViewDetail'])->name('fpembelian-readdetail')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Pembayaran Pembelian
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/pembayaranpembelian', [PembayaranController::class,'View'])->name('pembayaranpembelian')->middleware('auth');
+Route::get('/pembayaranpembelian/form/{id}', [PembayaranController::class,'Form'])->name('pembayaranpembelian-form')->middleware('auth');
+Route::post('/pembayaranpembelian/storeJson', [PembayaranController::class, 'storeJson'])->name('pembayaranpembelian-storeJson')->middleware('auth');
+Route::post('/pembayaranpembelian/editJson', [PembayaranController::class, 'editJson'])->name('pembayaranpembelian-editJson')->middleware('auth');
+Route::post('/pembayaranpembelian/readheader', [PembayaranController::class, 'ViewHeader'])->name('pembayaranpembelian-readheader')->middleware('auth');
+Route::post('/pembayaranpembelian/readdetail', [PembayaranController::class, 'ViewDetail'])->name('pembayaranpembelian-readdetail')->middleware('auth');

@@ -38,6 +38,7 @@ class FakturPembelianController extends Controller
     	$TglAwal = $request->input('TglAwal');
 	   	$TglAkhir = $request->input('TglAkhir');
 	   	$KodeVendor = $request->input('KodeVendor');
+	   	$Status = $request->input('Status');
 
 	   	$sql = "DISTINCT fakturpembelianheader.NoTransaksi, fakturpembelianheader.TglTransaksi,fakturpembelianheader.TglJatuhTempo, fakturpembelianheader.NoReff, fakturpembelianheader.KodeSupplier, supplier.NamaSupplier, fakturpembelianheader.Termin, terminpembayaran.NamaTermin, fakturpembelianheader.TotalPembelian, fakturpembelianheader.TotalPembayaran, fakturpembelianheader.TotalPembelian - COALESCE(fakturpembelianheader.TotalPembayaran,0) TotalHutang, COALESCE(orderpembelianheader.NoTransaksi, '') AS NoOrder, orderpembelianheader.TglTransaksi TglOrder ";
 	   	$model = FakturPembelianHeader::selectRaw($sql)
@@ -66,6 +67,9 @@ class FakturPembelianController extends Controller
 
     	if ($KodeVendor != "") {
     		$model->where("fakturpembelianheader.KodeSupplier", $KodeVendor);
+    	}
+    	if ($Status != "") {
+    		$model->where("fakturpembelianheader.Status", $Status);
     	}
    
         $data['data']= $model->get();
@@ -109,8 +113,17 @@ class FakturPembelianController extends Controller
 
 		$fakturheader = FakturPembelianHeader::where('NoTransaksi', $NoTransaksi)
 						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
-		$fakturdetail = FakturPembelianDetail::where('NoTransaksi', $NoTransaksi)
-						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+		// $fakturdetail = FakturPembelianDetail::where('NoTransaksi', $NoTransaksi)
+		// 				->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+		$sql = "fakturpembeliandetail.*, fakturpembeliandetail.Qty AS QtyFaktur, orderpembeliandetail.Qty AS QtyOrder";
+		$fakturdetail = FakturPembelianDetail::selectRaw($sql)
+						->leftJoin('orderpembeliandetail', function ($value){
+							$value->on('orderpembeliandetail.NoTransaksi','=','fakturpembeliandetail.BaseReff')
+							->on('orderpembeliandetail.NoUrut','=','fakturpembeliandetail.BaseLine')
+							->on('orderpembeliandetail.RecordOwnerID','=','fakturpembeliandetail.RecordOwnerID');
+						})
+						->where('fakturpembeliandetail.NoTransaksi',$NoTransaksi)
+						->where('fakturpembeliandetail.RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 
 		$satuan = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 		$gudang = Gudang::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
@@ -138,6 +151,19 @@ class FakturPembelianController extends Controller
 		$jsonData = $request->json()->all();
 
 		try {
+
+			if ($jsonData['KodeSupplier'] == "") {
+				$data['message'] = "Supplier Tidak boleh kosong";
+				$errorCount +=1;
+				goto jump;
+			}
+
+			if ($jsonData['KodeTermin'] == "") {
+				$data['message'] = "Termin Tidak boleh kosong";
+				$errorCount +=1;
+				goto jump;
+			}
+			
 			$currentDate = Carbon::now();
 			$Year = $currentDate->format('y');
 			$Month = $currentDate->format('m');
@@ -233,5 +259,145 @@ class FakturPembelianController extends Controller
 
 		return response()->json($data);
 	}
+
+	public function editJson(Request $request)
+	   {
+	       Log::debug($request->all());
+	       DB::beginTransaction();
+
+	       $errorCount = 0;
+	       $jsonData = $request->json()->all();
+
+	       try {
+	   
+	           $model = FakturPembelianHeader::where('NoTransaksi','=',$jsonData['NoTransaksi'])
+	           				->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
+	   
+	           if ($model) {
+	               $update = DB::table('fakturpembelianheader')
+	                           ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
+	                           ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+	                           ->update(
+	                               [
+	                                    'TglTransaksi' => $jsonData['TglTransaksi'],
+										'TglJatuhTempo' => $jsonData['TglJatuhTempo'],
+										'NoReff' => $jsonData['NoReff'],
+										'KodeSupplier' => $jsonData['KodeSupplier'],
+										'KodeTermin' => $jsonData['KodeTermin'],
+										'Termin' => $jsonData['Termin'],
+										'TotalTransaksi' => $jsonData['TotalTransaksi'],
+										'Potongan' => $jsonData['Potongan'],
+										'Pajak' => $jsonData['Pajak'],
+										'TotalPembelian' => $jsonData['TotalPembelian'],
+										'TotalRetur' => $jsonData['TotalRetur'],
+										'TotalPembayaran' => $jsonData['TotalPembayaran'],
+										'Status' => $jsonData['Status'],
+										'Keterangan' => $jsonData['Keterangan'],
+										'UpdatedBy' => Auth::user()->name
+	                               ]
+	                           );
+
+	                foreach ($jsonData['Detail'] as $key) {
+		           		if ($key['Qty'] == 0) {
+							$data['message'] = "Quantity Harus lebih dari 0";
+							$errorCount += 1;
+							goto jump;
+						}
+
+						if ($key['LineStatus'] == "C") {
+							goto skip;
+						}
+
+
+						$checkExists = FakturPembelianHeader::where('NoTransaksi','=',$jsonData['NoTransaksi'])
+	           							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+	           							->where('KodeItem','=', $key['KodeItem']);
+	           			if ($checkExists) {
+	           				$HargaNet= 0;
+	           				if ($key['Discount'] ==0) {
+								$HargaNet = $key['Qty'] * $key['Harga'];
+							}
+							else{
+								$HargaGros = $key->Qty * $key->Harga;
+								$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
+								$HargaNet = $HargaGros - $diskon;
+							}
+	           				$update = DB::table('fakturpembeliandetail')
+	                           ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
+	                           ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+	                           ->where('KodeItem','=', $key['KodeItem'])
+	                           ->update(
+									[
+										'NoUrut' => $key['NoUrut'],
+										'Qty' => $key['Qty'],
+										'Satuan' => $key['Satuan'],
+										'Harga' => $key['Harga'],
+										'Discount' => $key['Discount'],
+										'HargaNet' =>$HargaNet,
+										'KodeGudang' => $key['KodeGudang'],
+										'BaseReff' => $key['BaseReff'],
+										'BaseLine' => $key['BaseLine'],
+									]
+	                           );
+	           			}
+	           			else{
+	           				$modelDetail = new FakturPembelianDetail;
+			           		$modelDetail->NoTransaksi = $NoTransaksi;
+							$modelDetail->NoUrut = $key['NoUrut'];
+							$modelDetail->KodeItem = $key['KodeItem'];
+							$modelDetail->Qty = $key['Qty'];
+							$modelDetail->Satuan = $key['Satuan'];
+							$modelDetail->Harga = $key['Harga'];
+							$modelDetail->Discount = $key['Discount'];
+
+							$modelDetail->BaseReff = $key['BaseReff'];
+							$modelDetail->BaseLine = $key['BaseLine'];
+							$modelDetail->KodeGudang = $key['KodeGudang'];
+
+							if ($key['Discount'] ==0) {
+								$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
+							}
+							else{
+								$HargaGros = $key['Qty'] * $key['Harga'];
+								$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
+								$modelDetail->HargaNet = $HargaGros - $diskon;
+							}
+							$modelDetail->LineStatus = 'O';
+							$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+							$save = $modelDetail->save();
+
+							if (!$save) {
+								$data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
+								$errorCount += 1;
+								goto jump;
+							}
+	           			}
+	           			skip:
+		           }
+	               if ($update) {
+	                   $data['success'] = true;
+	               }else{
+	                   $data['message'] = 'Edit Models Gagal';
+	               }
+	           } else{
+	               $data['message'] = 'Models not found.';
+	           }
+	           jump:
+		        if ($errorCount > 0) {
+			        DB::rollback();
+			        $data['success'] = false;
+		        }
+		        else{
+			        DB::commit();
+			        $data['success'] = true;
+		        }
+	       } catch (Exception $e) {
+	           Log::debug($e->getMessage());
+	   
+	           $data['message'] = $e->getMessage();
+	       }
+	       return response()->json($data);
+	   }
 
 }

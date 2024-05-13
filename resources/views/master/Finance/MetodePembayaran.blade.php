@@ -49,6 +49,7 @@
 											<tr>
 												<th>id</th>
 												<th>Nama Metode Pembayaran</th>
+												<th>Akun Pembayaran</th>
 												<th class=" no-sort text-end">Action</th>
 											</tr>
 										</thead>
@@ -58,6 +59,7 @@
 												<tr>
 													<td>{{ $v['id'] }}</td>
 													<td>{{ $v['NamaMetodePembayaran'] }}</td>
+													<td>{{ $v['NamaRekening'] }}</td>
 													<td>
 														<div class="card-toolbar text-end">
 															<button class="btn p-0 shadow-none" type="button" id="dropdowneditButton1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

@@ -71,6 +71,20 @@
 	                            		</div>
 
 	                            		<div class="col-md-12">
+	                            			<label  class="text-body">Akun Pembayaran</label>
+	                            			<fieldset class="form-group mb-3">
+	                            				<select name="AkunPembayaran" id="AkunPembayaran" class="js-example-basic-single js-states form-control bg-transparent">
+													<option value="">Pilih Akun</option>
+													@foreach($rekeningakutansi as $ko)
+														<option value="{{ $ko->KodeRekening }}">
+				                                            {{ $ko->NamaRekening }}
+				                                        </option>
+													@endforeach
+												</select>
+	                            			</fieldset>
+	                            		</div>
+
+	                            		<div class="col-md-12">
 	                            			<button type="submit" class="btn btn-success text-white font-weight-bold me-1 mb-1">Simpan</button>
 	                            		</div>
 	                            	</div>
@@ -91,9 +105,13 @@
 
 @push('scripts')
 <script type="text/javascript">
-	$(function () {
-		$(document).ready(function () {
-			$('#LevelHarga').select2();
+	jQuery(function () {
+		jQuery(document).ready(function() {
+			var metodepembayaran = <?php echo $metodepembayaran ?>;
+			
+			if (metodepembayaran.length > 0) {
+				jQuery('#AkunPembayaran').val(metodepembayaran[0]["AkunPembayaran"]).trigger('change')
+			}
 		})
 	})
 </script>

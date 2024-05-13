@@ -86,10 +86,7 @@
                             				<select name="KodeSupplier" id="KodeSupplier" class="js-example-basic-single js-states form-control bg-transparent" >
 												<option value="-1">Pilih Supplier</option>
 												@foreach($supplier as $ko)
-													<option 
-                                                        value="{{ $ko->KodeSupplier }}"
-                                                        {{ count($fakturheader) > 0 ? $fakturheader[0]['KodeSupplier'] == $ko->KodeSupplier ? "selected" : '' :""}}
-                                                    >
+													<option value="{{ $ko->KodeSupplier }}">
                                                         {{ $ko->NamaSupplier }}
                                                     </option>
 												@endforeach
@@ -212,7 +209,9 @@
 	// });
 	var TotalTermin = 0;
 	var StatusTransaksi = "O";
-	var orderHeader = [];
+	var fakturHeader = [];
+	var fakturDetail = [];
+	var filteredOrderDetail = [];
 	var GetDate = '';
 	var NoOrderPembelian = '';
 	jQuery(function () {
@@ -228,14 +227,16 @@
 	    	jQuery('#TglJatuhTempo').val(NowDay);
 	    	// console.log(jQuery('#formtype').val())
 
-	    	orderHeader = <?php echo json_encode($fakturheader); ?>;
-	    	console.log(orderHeader)
+	    	fakturHeader = <?php echo json_encode($fakturheader); ?>;
+	    	fakturDetail = <?php echo json_encode($fakturdetail); ?>;
+	    	console.log(fakturHeader)
 			if (jQuery('#formtype').val() == "edit") {
-				formatCurrency(jQuery('#TotalTransaksi'), orderHeader[0]["TotalTransaksi"]);
-	      		formatCurrency(jQuery('#Potongan'), orderHeader[0]["Potongan"]);
-	      		formatCurrency(jQuery('#TotalPembelian'), orderHeader[0]["TotalPembelian"]);
-	      		StatusTransaksi = orderHeader[0]["Status"];
-
+				formatCurrency(jQuery('#TotalTransaksi'), fakturHeader[0]["TotalTransaksi"]);
+	      		formatCurrency(jQuery('#Potongan'), fakturHeader[0]["Potongan"]);
+	      		formatCurrency(jQuery('#TotalPembelian'), fakturHeader[0]["TotalPembelian"]);
+	      		StatusTransaksi = fakturHeader[0]["Status"];
+	      		var KodeSupplier = fakturHeader[0]["KodeSupplier"];
+	      		NoOrderPembelian = fakturDetail[0]["BaseReff"];
 	      		// console.log(StatusTransaksi)
 	      		if (StatusTransaksi != "O") {
 	      			jQuery('#KodeSupplier').attr('disabled',true);
@@ -244,8 +245,17 @@
 	      			jQuery('#TglJatuhTempo').attr('disabled',true);
 	      			jQuery('#NoReff').attr('disabled',true);
 	      			jQuery('#Keterangan').attr('disabled',true);
+	      			jQuery('#Status').attr('disabled',true);
+	      			jQuery('#btSave').attr('disabled',true);
 	      		}
-	      		BindGridDetail(<?php echo json_encode($orderdetail) ?>);
+	      		BindGridDetail(<?php echo json_encode($fakturdetail) ?>);
+	      		// CreateCombobox([])
+	      		jQuery('#KodeSupplier').val(KodeSupplier).trigger('change');
+	      		var combo = jQuery("#gridBox").dxDropDownBox("instance");
+	      		// combo.option("dataSource", filteredOrderDetail);
+	      		combo.option("valueExpr", "NoTransaksi");
+	      		combo.option("value", NoOrderPembelian);
+	      		// valueExpr: "NoTransaksi",
 			}
 			else{
 				BindGridDetail([])	
@@ -288,10 +298,11 @@
 	                'TglAwal' : '1999-01-01',
 	                'TglAkhir' : GetDate,
 	                'KodeVendor' :jQuery('#KodeSupplier').val(),
-	                'Status' : 'O'
+	                'Status' : (jQuery('#formtype').val()) == "add" ? 'O' : ''
 	            },
 	            dataType: 'json',
 	            success: function(response) {
+	            	filteredOrderDetail = response.data;
 	                CreateCombobox(response.data)
 	            }
 	        })
@@ -335,6 +346,7 @@
 						'BaseReff' : NoOrderPembelian,
 						'BaseLine' : allRowsData[i]['BaseLine'],
 						'KodeGudang' : allRowsData[i]['KodeGudang'],
+						'LineStatus':allRowsData[i]['LineStatus'],
       				}
       				
       				oDetail.push(oItem)
@@ -470,7 +482,8 @@
 	                		'QtyFaktur' : 0,
 	                		'Satuan' : v.Satuan,
 	                		'Harga' : parseFloat(v.Harga),
-	                		'Discount' : parseFloat(v.Discount)
+	                		'Discount' : parseFloat(v.Discount),
+	                		'LineStatus' : 'O'
 	                	}
 
 	                	oData.push(temp)
@@ -543,7 +556,9 @@
 		function CreateCombobox(data) {
 			jQuery('#gridBox').dxDropDownBox({
                 displayExpr(item) {
-                	CopyFromOrder(item);
+                	if (jQuery('#formtype').val() == "add") {
+                		CopyFromOrder(item);
+                	}
                 	NoOrderPembelian = item.NoTransaksi;
 			    	return `${item.NoTransaksi}`;
 			    },
@@ -621,13 +636,13 @@
 	                {
 	                    dataField: "NoUrut",
 	                    caption: "#",
-	                    allowEditing:false,
+	                    allowEditing:AllowManipulation,
 	                    allowSorting: false 
 	                },
 	                {
 	                    dataField: "BaseLine",
 	                    caption: "#",
-	                    allowEditing:false,
+	                    allowEditing:AllowManipulation,
 	                    allowSorting: false,
 	                    visible:false,
 	                },
@@ -664,7 +679,7 @@
 	                {
 	                    dataField: "QtyFaktur",
 	                    caption: "Qty Faktur",
-	                    allowEditing:true,
+	                    allowEditing:AllowManipulation,
 	                    format: { type: 'fixedPoint', precision: 2 },
 	                    allowSorting: false 
 	                },
@@ -678,19 +693,19 @@
 						    displayExpr: 'NamaSatuan',
 					    },
 					    allowSorting: false ,
-					    allowEditing:true
+					    allowEditing:AllowManipulation
 	                },
 	                {
 	                    dataField: "Harga",
 	                    caption: "Harga",
-	                    allowEditing:true,
+	                    allowEditing:AllowManipulation,
 	                    format: { type: 'fixedPoint', precision: 2 },
 	                    allowSorting: false 
 	                },
 	                {
 	                    dataField: "Discount",
 	                    caption: "Discount",
-	                    allowEditing:true,
+	                    allowEditing:AllowManipulation,
 	                    format: { type: 'fixedPoint', precision: 2 },
 	                    allowSorting: false 
 	                },
@@ -718,6 +733,13 @@
 	                    	return HargaNet
 	                    },
 	                    allowSorting: false 
+	                },
+	                {
+	                    dataField: "LineStatus",
+	                    caption: "LineStatus",
+	                    allowEditing:false,
+	                    allowSorting: false,
+	                    visible:false 
 	                },
 	            ],
 			    onContentReady: function(e) {
@@ -752,7 +774,7 @@
 
 			// console.log(dataGridInstance)
 			var allRowsData  = dataGridInstance.option("dataSource");
-        	var newData = { NoUrut: allRowsData.length + 1,KodeItem:"",KodeGudang:"", Qty: 0, Satuan: "", Harga:0, Discount:0, HargaNet:0 }
+        	var newData = { NoUrut: allRowsData.length + 1,BaseLine:-1,KodeItem:"",KodeGudang:"", QtyOrder: 0,QtyFaktur:0, Satuan: "", Harga:0, Discount:0, HargaNet:0,LineStatus:'' }
         	dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
         	dataGridInstance.refresh();
 
@@ -811,7 +833,7 @@
 	                    
 
 	                    var allRowsData  = dataGridInstance.option("dataSource");
-	                    var newData = { NoUrut: allRowsData.length+1,KodeItem:"", Qty: 0, Satuan: "", Harga:0, Discount:0, HargaNet:0 }
+	                    var newData = { NoUrut: allRowsData.length + 1,BaseLine:-1,KodeItem:"",KodeGudang:"", QtyOrder: 0,QtyFaktur:0, Satuan: "", Harga:0, Discount:0, HargaNet:0,LineStatus:'' }
         				dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
         				dataGridInstance.refresh();
 			        }

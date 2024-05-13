@@ -238,7 +238,7 @@
                     cellTemplate: function(cellElement, cellInfo) {
                         var link = "fpembelian/form/"+cellInfo.data.NoTransaksi;
                         var LinkAccess = "";
-                        // LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit' >Edit</a>";
+                        LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit' >Edit</a>";
 
                         LinkAccess += "<a href = '#' class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btBayar' >Bayar</a>";
 
