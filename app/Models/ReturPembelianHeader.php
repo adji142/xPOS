@@ -8,4 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class ReturPembelianHeader extends Model
 {
     use HasFactory;
+    protected $table = 'returpembelianheader';
 }

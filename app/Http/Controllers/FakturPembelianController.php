@@ -81,7 +81,7 @@ class FakturPembelianController extends Controller
 			
 			$NoTransaksi = $request->input('NoTransaksi');
 
-			$sql = "fakturpembeliandetail.NoUrut, fakturpembeliandetail.KodeItem, itemmaster.NamaItem, fakturpembeliandetail.Qty, fakturpembeliandetail.Harga, fakturpembeliandetail.Discount, fakturpembeliandetail.HargaNet";
+			$sql = "fakturpembeliandetail.NoUrut, fakturpembeliandetail.KodeItem, itemmaster.NamaItem, fakturpembeliandetail.Qty, fakturpembeliandetail.Harga, fakturpembeliandetail.Discount, fakturpembeliandetail.HargaNet, fakturpembeliandetail.KodeGudang, fakturpembeliandetail.Satuan";
 			$model = FakturPembelianDetail::selectRaw($sql)
 					->leftJoin('itemmaster', function ($value){
 						$value->on('fakturpembeliandetail.KodeItem','=','itemmaster.KodeItem')
@@ -98,6 +98,18 @@ class FakturPembelianController extends Controller
 	    $data['data']= $model->get();
 	    return response()->json($data);
 	}
+
+	public function FindHeader(Request $request)
+   	{
+   		$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+   		
+   		$NoTransaksi = $request->input('NoTransaksi');
+   		$orderheader = FakturPembelianHeader::where('NoTransaksi', $NoTransaksi)
+						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+
+		$data['data']= $orderheader;
+        return response()->json($data);
+   	}
 
 	public function Form($NoTransaksi = null)
 	{

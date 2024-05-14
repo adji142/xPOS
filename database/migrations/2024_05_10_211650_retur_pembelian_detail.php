@@ -13,7 +13,21 @@ class ReturPembelianDetail extends Migration
      */
     public function up()
     {
-        //
+        Schema::create('returpembeliandetail', function (Blueprint $table) {
+            $table->string('NoTransaksi');
+            $table->string('BaseReff');
+            $table->integer('NoUrut');
+            $table->integer('BaseLine');
+            $table->string('KodeItem');
+            $table->double('Qty');
+            $table->string('Satuan');
+            $table->double('Harga');
+            $table->double('HargaNet');
+            $table->string('LineStatus');
+            $table->string('KodeGudang');
+            $table->string('RecordOwnerID');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -23,6 +37,6 @@ class ReturPembelianDetail extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('returpembeliandetail');
     }
 }

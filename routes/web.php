@@ -27,6 +27,7 @@ use App\Http\Controllers\OrderPembelianController;
 use App\Http\Controllers\DocumentNumberingController;
 use App\Http\Controllers\FakturPembelianController;
 use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\ReturPembelianController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -345,6 +346,7 @@ Route::post('/fpembelian/storeJson', [FakturPembelianController::class, 'storeJs
 Route::post('/fpembelian/editJson', [FakturPembelianController::class, 'editJson'])->name('fpembelian-editJson')->middleware('auth');
 Route::post('/fpembelian/readheader', [FakturPembelianController::class, 'ViewHeader'])->name('fpembelian-readheader')->middleware('auth');
 Route::post('/fpembelian/readdetail', [FakturPembelianController::class, 'ViewDetail'])->name('fpembelian-readdetail')->middleware('auth');
+Route::post('/fpembelian/findheader', [FakturPembelianController::class, 'FindHeader'])->name('fpembelian-findheader')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------
@@ -358,3 +360,16 @@ Route::post('/pembayaranpembelian/storeJson', [PembayaranController::class, 'sto
 Route::post('/pembayaranpembelian/editJson', [PembayaranController::class, 'editJson'])->name('pembayaranpembelian-editJson')->middleware('auth');
 Route::post('/pembayaranpembelian/readheader', [PembayaranController::class, 'ViewHeader'])->name('pembayaranpembelian-readheader')->middleware('auth');
 Route::post('/pembayaranpembelian/readdetail', [PembayaranController::class, 'ViewDetail'])->name('pembayaranpembelian-readdetail')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Retur Pembelian
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/returpembelian', [ReturPembelianController::class,'View'])->name('returpembelian')->middleware('auth');
+Route::get('/returpembelian/form/{id}', [ReturPembelianController::class,'Form'])->name('returpembelian-form')->middleware('auth');
+Route::post('/returpembelian/storeJson', [ReturPembelianController::class, 'storeJson'])->name('returpembelian-storeJson')->middleware('auth');
+Route::post('/returpembelian/editJson', [ReturPembelianController::class, 'editJson'])->name('returpembelian-editJson')->middleware('auth');
+Route::post('/returpembelian/readheader', [ReturPembelianController::class, 'ViewHeader'])->name('returpembelian-readheader')->middleware('auth');
+Route::post('/returpembelian/readdetail', [ReturPembelianController::class, 'ViewDetail'])->name('returpembelian-readdetail')->middleware('auth');
