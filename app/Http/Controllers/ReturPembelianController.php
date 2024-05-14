@@ -118,7 +118,7 @@ class ReturPembelianController extends Controller
 		$gudang = Gudang::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
 		$returheader = ReturPembelianHeader::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-						->where('NoTransaksi','=', $NoTransaksi);
+						->where('NoTransaksi','=', $NoTransaksi)->get();
 
 	    return view("Transaksi.Pembelian.ReturPembelian-Input",[
 	        'supplier' => $supplier,
