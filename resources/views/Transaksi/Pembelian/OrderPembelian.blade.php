@@ -195,6 +195,11 @@
                     allowEditing:false
                 },
                 {
+                    dataField: "StatusDocument",
+                    caption: "Status",
+                    allowEditing:false
+                },
+                {
                     dataField: "TglTransaksi",
                     caption: "Tanggal",
                     allowEditing:false
@@ -239,7 +244,7 @@
                         var link = "opembelian/form/"+cellInfo.data.NoTransaksi;
                         LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit' >Edit</a>";
 
-                        LinkAccess += "<a href = '#' class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btCopyToFaktur' >Buat Faktur Pembelian</a>";
+                        // LinkAccess += "<a href = '#' class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btCopyToFaktur' >Buat Faktur Pembelian</a>";
 
                         cellElement.append(LinkAccess);
                     }

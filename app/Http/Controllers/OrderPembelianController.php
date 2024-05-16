@@ -37,7 +37,12 @@ class OrderPembelianController extends Controller
 	   		$KodeVendor = $request->input('KodeVendor');
 	   		$Status = $request->input('Status');
 
-	   		$sql = "orderpembelianheader.NoTransaksi, orderpembelianheader.TglTransaksi,orderpembelianheader.TglJatuhTempo, orderpembelianheader.NoReff, orderpembelianheader.KodeSupplier, supplier.NamaSupplier, orderpembelianheader.Termin, terminpembayaran.NamaTermin, orderpembelianheader.TotalPembelian, orderpembelianheader.TotalPembayaran, orderpembelianheader.TotalPembelian - COALESCE(orderpembelianheader.TotalPembayaran,0) TotalHutang";
+	   		$sql = "orderpembelianheader.NoTransaksi, orderpembelianheader.TglTransaksi,orderpembelianheader.TglJatuhTempo, orderpembelianheader.NoReff, orderpembelianheader.KodeSupplier, supplier.NamaSupplier, orderpembelianheader.Termin, terminpembayaran.NamaTermin, orderpembelianheader.TotalPembelian, orderpembelianheader.TotalPembayaran, orderpembelianheader.TotalPembelian - COALESCE(orderpembelianheader.TotalPembayaran,0) TotalHutang, 
+	   			CASE WHEN orderpembelianheader.Status = 'O' THEN 'OPEN' ELSE 
+	   				CASE WHEN orderpembelianheader.Status = 'C' THEN 'CLOSE' ELSE 
+	   					CASE WHEN orderpembelianheader.Status = 'D' THEN 'CANCEL' ELSE '' END
+	   				END
+	   			END AS StatusDocument";
 	   		$model = OrderPembelianHeader::selectRaw($sql)
         				->leftJoin('terminpembayaran', function ($value){
         					$value->on('orderpembelianheader.KodeTermin','=','terminpembayaran.id')

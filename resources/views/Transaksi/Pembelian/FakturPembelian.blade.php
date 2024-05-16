@@ -195,6 +195,11 @@
                     allowEditing:false
                 },
                 {
+                    dataField: "StatusDocument",
+                    caption: "Status",
+                    allowEditing:false
+                },
+                {
                     dataField: "TglTransaksi",
                     caption: "Tanggal",
                     allowEditing:false
@@ -227,6 +232,12 @@
                     format: { type: 'fixedPoint', precision: 2 }
                 },
                 {
+                    dataField: "TotalRetur",
+                    caption: "Retur",
+                    allowEditing:false,
+                    format: { type: 'fixedPoint', precision: 2 }
+                },
+                {
                     dataField: "TotalHutang",
                     caption: "Hutang",
                     allowEditing:false,
@@ -240,7 +251,7 @@
                         var LinkAccess = "";
                         LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit' >Edit</a>";
 
-                        LinkAccess += "<a href = '#' class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btBayar' >Bayar</a>";
+                        // LinkAccess += "<a href = '#' class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btBayar' >Bayar</a>";
 
                         cellElement.append(LinkAccess);
                     }
@@ -296,6 +307,12 @@
                 {
                     dataField: "Qty",
                     caption: "Qty",
+                    allowEditing:false,
+                    format: { type: 'fixedPoint', precision: 2 }
+                },
+                {
+                    dataField: "QtyRetur",
+                    caption: "Retur",
                     allowEditing:false,
                     format: { type: 'fixedPoint', precision: 2 }
                 },

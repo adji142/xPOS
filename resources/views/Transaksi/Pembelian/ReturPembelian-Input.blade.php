@@ -73,7 +73,7 @@
                             			<fieldset class="form-group mb-3">
                             				<select name="Status" id="Status" class="js-example-basic-single js-states form-control bg-transparent" >
 												<option value="O" {{ count($returheader) > 0 ? $returheader[0]['Status'] == 'O' ? "selected" : '' :""}} >OPEN</option>
-												<option value="C" {{ count($returheader) > 0 ? $returheader[0]['Status'] == 'C' ? "selected" : '' :""}} >CLOSE</option>
+												<option disabled="" value="C" {{ count($returheader) > 0 ? $returheader[0]['Status'] == 'C' ? "selected" : '' :""}} >CLOSE</option>
 												<option value="D" {{ count($returheader) > 0 ? $returheader[0]['Status'] == 'D' ? "selected" : '' :""}}>CANCEL</option>
 												
 											</select>
@@ -169,8 +169,8 @@
 	// });
 	var TotalTermin = 0;
 	var StatusTransaksi = "O";
-	var fakturHeader = [];
-	var fakturDetail = [];
+	var returHeader = [];
+	var returDetail = [];
 	var filteredOrderDetail = [];
 	var GetDate = '';
 	var NoOrderPembelian = '';
@@ -187,34 +187,36 @@
 	    	jQuery('#TglJatuhTempo').val(NowDay);
 	    	// console.log(jQuery('#formtype').val())
 
-	    	fakturHeader = <?php echo json_encode($returheader); ?>;
-	    	fakturDetail = <?php echo json_encode($fakturdetail); ?>;
-	    	
+	    	returHeader = <?php echo json_encode($returheader); ?>;
+	    	returDetail = <?php echo json_encode($returdetail); ?>;
+	    	console.log(returDetail)
 			if (jQuery('#formtype').val() == "edit") {
-				formatCurrency(jQuery('#TotalTransaksi'), fakturHeader[0]["TotalTransaksi"]);
-	      		formatCurrency(jQuery('#Potongan'), fakturHeader[0]["Potongan"]);
-	      		formatCurrency(jQuery('#TotalPembelian'), fakturHeader[0]["TotalPembelian"]);
-	      		StatusTransaksi = fakturHeader[0]["Status"];
-	      		var KodeSupplier = fakturHeader[0]["KodeSupplier"];
-	      		NoOrderPembelian = fakturDetail[0]["BaseReff"];
+				formatCurrency(jQuery('#TotalTransaksi'), returHeader[0]["TotalTransaksi"]);
+	      		formatCurrency(jQuery('#Potongan'), returHeader[0]["Potongan"]);
+	      		formatCurrency(jQuery('#TotalPembelian'), returHeader[0]["TotalPembelian"]);
+	      		StatusTransaksi = returHeader[0]["Status"];
+	      		var KodeSupplier = returHeader[0]["KodeSupplier"];
+	      		NoOrderPembelian = returDetail[0]["BaseReff"];
+
 	      		// console.log(StatusTransaksi)
 	      		if (StatusTransaksi != "O") {
 	      			jQuery('#KodeSupplier').attr('disabled',true);
-	      			jQuery('#KodeTermin').attr('disabled',true);
 	      			jQuery('#TglTransaksi').attr('disabled',true);
-	      			jQuery('#TglJatuhTempo').attr('disabled',true);
 	      			jQuery('#NoReff').attr('disabled',true);
 	      			jQuery('#Keterangan').attr('disabled',true);
 	      			jQuery('#Status').attr('disabled',true);
 	      			jQuery('#btSave').attr('disabled',true);
 	      		}
-	      		BindGridDetail(<?php echo json_encode($fakturdetail) ?>);
+	      		BindGridDetail(<?php echo json_encode($returdetail) ?>);
 	      		// CreateCombobox([])
 	      		jQuery('#KodeSupplier').val(KodeSupplier).trigger('change');
 	      		var combo = jQuery("#gridBox").dxDropDownBox("instance");
 	      		// combo.option("dataSource", filteredOrderDetail);
 	      		combo.option("valueExpr", "NoTransaksi");
 	      		combo.option("value", NoOrderPembelian);
+	      		if(StatusTransaksi != "O"){
+	      			combo.option("disabled", true);
+	      		}
 	      		// valueExpr: "NoTransaksi",
 			}
 			else{

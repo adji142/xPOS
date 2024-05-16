@@ -43,7 +43,12 @@ class ReturPembelianController extends Controller
 	   	$KodeVendor = $request->input('KodeVendor');
 	   	$Status = $request->input('Status');
 
-	   	$sql = "DISTINCT returpembelianheader.NoTransaksi, returpembelianheader.TglTransaksi, returpembelianheader.KodeSupplier, returpembelianheader.NoReff, returpembelianheader.Keterangan, returpembeliandetail.BaseReff AS NoFaktur, returpembelianheader.Posted, supplier.NamaSupplier, returpembelianheader.TotalTransaksi";
+	   	$sql = "DISTINCT returpembelianheader.NoTransaksi, returpembelianheader.TglTransaksi, returpembelianheader.KodeSupplier, returpembelianheader.NoReff, returpembelianheader.Keterangan, returpembeliandetail.BaseReff AS NoFaktur, returpembelianheader.Posted, supplier.NamaSupplier, returpembelianheader.TotalTransaksi, 
+	   		CASE WHEN returpembelianheader.Status = 'O' THEN 'OPEN' ELSE 
+   				CASE WHEN returpembelianheader.Status = 'C' THEN 'CLOSE' ELSE 
+   					CASE WHEN returpembelianheader.Status = 'D' THEN 'CANCEL' ELSE '' END
+   				END
+   			END AS StatusDocument";
 	   	$model = ReturPembelianHeader::selectRaw($sql)
 	   				->leftJoin('returpembeliandetail', function ($value){
 						$value->on('returpembeliandetail.NoTransaksi','=','returpembelianheader.NoTransaksi')
@@ -119,18 +124,19 @@ class ReturPembelianController extends Controller
 
 		$returheader = ReturPembelianHeader::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
 						->where('NoTransaksi','=', $NoTransaksi)->get();
+		$returdetail = ReturPembelianDetail::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+						->where('NoTransaksi','=', $NoTransaksi)->get();
 
 	    return view("Transaksi.Pembelian.ReturPembelian-Input",[
 	        'supplier' => $supplier,
 	        'termin' => $termin,
 	        'item' => $item,
-	        'orderheader' => $orderheader,
-	        'orderdetail' => $orderdetail,
 	        'fakturheader' => $fakturheader,
 	        'fakturdetail' => $fakturdetail,
 	        'satuan' => $satuan,
 	        'gudang' => $gudang,
-	        'returheader' => $returheader
+	        'returheader' => $returheader,
+	        'returdetail' => $returdetail
 	    ]);
 	}
 	public function storeJson(Request $request)
@@ -230,6 +236,96 @@ class ReturPembelianController extends Controller
 			}
 
 			jump:
+	        if ($errorCount > 0) {
+		        DB::rollback();
+		        $data['success'] = false;
+	        }
+	        else{
+		        DB::commit();
+		        $data['success'] = true;
+	        }
+		} catch (\Exception $e) {
+			Log::debug($e->getMessage());
+	        $data['message'] = $e->getMessage();
+		}
+
+		return response()->json($data);
+	}
+
+	public function editJson(Request $request){
+		Log::debug($request->all());
+		DB::beginTransaction();
+
+		$errorCount = 0;
+		$jsonData = $request->json()->all();
+
+		try {
+			$model = ReturPembelianHeader::where('NoTransaksi','=',$jsonData['NoTransaksi'])
+	           				->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
+	        if ($model) {
+	        	$update = DB::table('returpembelianheader')
+	                       ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
+	                       ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+	                       ->update(
+	                           [
+	                                'TglTransaksi' => $jsonData['TglTransaksi'],
+									'KodeSupplier' => $jsonData['KodeSupplier'],
+									'TotalTransaksi' => $jsonData['TotalTransaksi'],
+									'Status' => $jsonData['Status'],
+									'Keterangan' => $jsonData['Keterangan'],
+									'NoReff' => $jsonData['NoReff'],
+									'UpdatedBy' => Auth::user()->name
+	                           ]
+	                       );
+
+	            if (count($jsonData['Detail']) == 0) {
+	            	$data['message'] = "Data Detail Tidak boleh kosong";
+	            	$errorCount +=1;
+	            	goto jump;
+	            }
+
+	            // Delete Existing Data
+				$delete = DB::table('returpembeliandetail')
+	                ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
+	                ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+	                ->delete();
+
+	            if ($delete) {
+	            	$NoUrut = 0 ;
+	            	foreach ($jsonData['Detail'] as $key) {
+		            	if ($key['Qty'] == 0) {
+							goto skip;
+						}
+
+						$modelDetail = new ReturPembelianDetail;
+						$modelDetail->NoTransaksi = $jsonData['NoTransaksi'];
+						$modelDetail->BaseReff = $key['BaseReff'];
+						$modelDetail->NoUrut = $NoUrut;
+						$modelDetail->BaseLine = $key['BaseLine'];
+						$modelDetail->KodeItem = $key['KodeItem'];
+						$modelDetail->Qty = $key['Qty'];
+						$modelDetail->Satuan = $key['Satuan'];
+						$modelDetail->Harga = $key['Harga'];
+						$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
+						$modelDetail->LineStatus = $key['LineStatus'];
+						$modelDetail->KodeGudang = $key['KodeGudang'];
+						$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+						$save = $modelDetail->save();
+
+						if (!$save) {
+							$data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
+							$errorCount += 1;
+							goto jump;
+						}
+
+						$NoUrut +=1;
+
+						skip:
+		            }	
+	            }
+	        }
+	        jump:
 	        if ($errorCount > 0) {
 		        DB::rollback();
 		        $data['success'] = false;

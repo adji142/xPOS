@@ -253,8 +253,10 @@
 	      		jQuery('#KodeSupplier').val(KodeSupplier).trigger('change');
 	      		var combo = jQuery("#gridBox").dxDropDownBox("instance");
 	      		// combo.option("dataSource", filteredOrderDetail);
+	      		console.log(combo.option);
 	      		combo.option("valueExpr", "NoTransaksi");
 	      		combo.option("value", NoOrderPembelian);
+	      		combo.option("disabled", true);
 	      		// valueExpr: "NoTransaksi",
 			}
 			else{

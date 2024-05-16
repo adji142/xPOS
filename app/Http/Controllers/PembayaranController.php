@@ -33,7 +33,12 @@ class PembayaranController extends Controller
    		$TglAkhir = $request->input('TglAkhir');
    		$KodeVendor = $request->input('KodeVendor');
 
-   		$sql = "pembayaranheader.*, supplier.NamaSupplier";
+   		$sql = "pembayaranheader.*, supplier.NamaSupplier, 
+   				CASE WHEN pembayaranheader.Status = 'O' THEN 'OPEN' ELSE 
+	   				CASE WHEN pembayaranheader.Status = 'C' THEN 'CLOSE' ELSE 
+	   					CASE WHEN pembayaranheader.Status = 'D' THEN 'CANCEL' ELSE '' END
+	   				END
+	   			END AS StatusDocument";
    		$model = PembayaranHeader::selectRaw($sql)
    					->leftJoin('supplier', function ($value){
     					$value->on('pembayaranheader.KodeSupplier','=','supplier.KodeSupplier')

@@ -195,6 +195,11 @@
                     allowEditing:false
                 },
                 {
+                    dataField: "StatusDocument",
+                    caption: "Status",
+                    allowEditing:false
+                },
+                {
                     dataField: "TglTransaksi",
                     caption: "Tanggal Retur",
                     allowEditing:false

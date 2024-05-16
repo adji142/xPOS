@@ -28,6 +28,8 @@ use App\Http\Controllers\DocumentNumberingController;
 use App\Http\Controllers\FakturPembelianController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\ReturPembelianController;
+use App\Http\Controllers\PengakuanBarangController;
+use App\Http\Controllers\PenghapusanBarangController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -373,3 +375,30 @@ Route::post('/returpembelian/storeJson', [ReturPembelianController::class, 'stor
 Route::post('/returpembelian/editJson', [ReturPembelianController::class, 'editJson'])->name('returpembelian-editJson')->middleware('auth');
 Route::post('/returpembelian/readheader', [ReturPembelianController::class, 'ViewHeader'])->name('returpembelian-readheader')->middleware('auth');
 Route::post('/returpembelian/readdetail', [ReturPembelianController::class, 'ViewDetail'])->name('returpembelian-readdetail')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Pengakuan Barang
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/gr', [PengakuanBarangController::class,'View'])->name('gr')->middleware('auth');
+Route::get('/gr/form/{id}', [PengakuanBarangController::class,'Form'])->name('gr-form')->middleware('auth');
+Route::post('/gr/storeJson', [PengakuanBarangController::class, 'storeJson'])->name('gr-storeJson')->middleware('auth');
+Route::post('/gr/editJson', [PengakuanBarangController::class, 'editJson'])->name('gr-editJson')->middleware('auth');
+Route::post('/gr/readheader', [PengakuanBarangController::class, 'ViewHeader'])->name('gr-readheader')->middleware('auth');
+Route::post('/gr/readdetail', [PengakuanBarangController::class, 'ViewDetail'])->name('gr-readdetail')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Penghapusan Barang
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/gi', [PenghapusanBarangController::class,'View'])->name('gi')->middleware('auth');
+Route::get('/gi/form/{id}', [PenghapusanBarangController::class,'Form'])->name('gi-form')->middleware('auth');
+Route::post('/gi/storeJson', [PenghapusanBarangController::class, 'storeJson'])->name('gi-storeJson')->middleware('auth');
+Route::post('/gi/editJson', [PenghapusanBarangController::class, 'editJson'])->name('gi-editJson')->middleware('auth');
+Route::post('/gi/readheader', [PenghapusanBarangController::class, 'ViewHeader'])->name('gi-readheader')->middleware('auth');
+Route::post('/gi/readdetail', [PenghapusanBarangController::class, 'ViewDetail'])->name('gi-readdetail')->middleware('auth');

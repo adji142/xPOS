@@ -40,7 +40,12 @@ class FakturPembelianController extends Controller
 	   	$KodeVendor = $request->input('KodeVendor');
 	   	$Status = $request->input('Status');
 
-	   	$sql = "DISTINCT fakturpembelianheader.NoTransaksi, fakturpembelianheader.TglTransaksi,fakturpembelianheader.TglJatuhTempo, fakturpembelianheader.NoReff, fakturpembelianheader.KodeSupplier, supplier.NamaSupplier, fakturpembelianheader.Termin, terminpembayaran.NamaTermin, fakturpembelianheader.TotalPembelian, fakturpembelianheader.TotalPembayaran, fakturpembelianheader.TotalPembelian - COALESCE(fakturpembelianheader.TotalPembayaran,0) TotalHutang, COALESCE(orderpembelianheader.NoTransaksi, '') AS NoOrder, orderpembelianheader.TglTransaksi TglOrder ";
+	   	$sql = "DISTINCT fakturpembelianheader.NoTransaksi, fakturpembelianheader.TglTransaksi,fakturpembelianheader.TglJatuhTempo, fakturpembelianheader.NoReff, fakturpembelianheader.KodeSupplier, supplier.NamaSupplier, fakturpembelianheader.Termin, terminpembayaran.NamaTermin, fakturpembelianheader.TotalPembelian, fakturpembelianheader.TotalPembayaran, fakturpembelianheader.TotalPembelian - COALESCE(fakturpembelianheader.TotalPembayaran,0) - fakturpembelianheader.TotalRetur TotalHutang, COALESCE(orderpembelianheader.NoTransaksi, '') AS NoOrder, orderpembelianheader.TglTransaksi TglOrder, fakturpembelianheader.TotalRetur,
+	   		CASE WHEN fakturpembelianheader.Status = 'O' THEN 'OPEN' ELSE 
+   				CASE WHEN fakturpembelianheader.Status = 'C' THEN 'CLOSE' ELSE 
+   					CASE WHEN fakturpembelianheader.Status = 'D' THEN 'CANCEL' ELSE '' END
+   				END
+   			END AS StatusDocument ";
 	   	$model = FakturPembelianHeader::selectRaw($sql)
     				->leftJoin('terminpembayaran', function ($value){
     					$value->on('fakturpembelianheader.KodeTermin','=','terminpembayaran.id')
@@ -81,7 +86,7 @@ class FakturPembelianController extends Controller
 			
 			$NoTransaksi = $request->input('NoTransaksi');
 
-			$sql = "fakturpembeliandetail.NoUrut, fakturpembeliandetail.KodeItem, itemmaster.NamaItem, fakturpembeliandetail.Qty, fakturpembeliandetail.Harga, fakturpembeliandetail.Discount, fakturpembeliandetail.HargaNet, fakturpembeliandetail.KodeGudang, fakturpembeliandetail.Satuan";
+			$sql = "fakturpembeliandetail.NoUrut, fakturpembeliandetail.KodeItem, itemmaster.NamaItem, fakturpembeliandetail.Qty, fakturpembeliandetail.Harga, fakturpembeliandetail.Discount, fakturpembeliandetail.HargaNet, fakturpembeliandetail.KodeGudang, fakturpembeliandetail.Satuan, COALESCE(ret.QtyRetur,0) QtyRetur ";
 			$model = FakturPembelianDetail::selectRaw($sql)
 					->leftJoin('itemmaster', function ($value){
 						$value->on('fakturpembeliandetail.KodeItem','=','itemmaster.KodeItem')
@@ -92,8 +97,25 @@ class FakturPembelianController extends Controller
 						->on('orderpembeliandetail.NoUrut','=','fakturpembeliandetail.BaseLine')
 						->on('orderpembeliandetail.RecordOwnerID','=','fakturpembeliandetail.RecordOwnerID');
 					})
+					->leftJoinSub(
+        				DB::table('returpembeliandetail')
+        					->leftJoin('returpembelianheader', function ($value){
+								$value->on('returpembelianheader.NoTransaksi','=','returpembeliandetail.NoTransaksi')
+								->on('returpembelianheader.RecordOwnerID','=','returpembeliandetail.RecordOwnerID');
+							})
+        					->select('returpembeliandetail.BaseReff','returpembeliandetail.BaseLine','returpembeliandetail.KodeItem','returpembeliandetail.RecordOwnerID', DB::raw('SUM(Qty) as QtyRetur'))
+        					->where('returpembelianheader.Status','O')
+        					->groupBy('returpembeliandetail.BaseReff','returpembeliandetail.BaseLine','returpembeliandetail.KodeItem','returpembeliandetail.RecordOwnerID'),
+        				'ret',
+        				function ($value){
+        					$value->on('ret.KodeItem','=','fakturpembeliandetail.KodeItem')
+        							->on('ret.BaseLine','=','fakturpembeliandetail.NoUrut')
+        							->on('ret.BaseReff','=','fakturpembeliandetail.NoTransaksi')
+        							->on('ret.RecordOwnerID','=','fakturpembeliandetail.RecordOwnerID');
+        			})
 					->where('fakturpembeliandetail.NoTransaksi',$NoTransaksi)
-					->where('fakturpembeliandetail.RecordOwnerID',Auth::user()->RecordOwnerID);
+					->where('fakturpembeliandetail.RecordOwnerID',Auth::user()->RecordOwnerID)
+					->orderBy('fakturpembeliandetail.NoUrut');
 
 	    $data['data']= $model->get();
 	    return response()->json($data);

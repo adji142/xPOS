@@ -418,7 +418,7 @@
       		console.log(allRowsData)
       		for (var i = 0; i < allRowsData.length; i++) {
       			console.log(allRowsData[i]['QtyFaktur'])
-  				TotalPembelian += (typeof(allRowsData[i]['TotalPembelian'])) === "undefined" ? 0 : allRowsData[i]['TotalPembelian'];
+  				TotalPembelian += (typeof(allRowsData[i]['TotalHutang'])) === "undefined" ? 0 : allRowsData[i]['TotalHutang'];
       			TotalPembayaran += (typeof(allRowsData[i]['TotalPembayaran'])) == "undefined" ? 0 : allRowsData[i]['TotalPembayaran'];
       		}
 
@@ -501,7 +501,7 @@
 	                    allowSorting: true 
 	                },
 	                {
-	                    dataField: "TotalPembelian",
+	                    dataField: "TotalHutang",
 	                    caption: "Total Transaksi",
 	                    allowEditing:false,
 	                    format: { type: 'fixedPoint', precision: 2 },
