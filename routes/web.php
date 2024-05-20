@@ -30,6 +30,10 @@ use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\ReturPembelianController;
 use App\Http\Controllers\PengakuanBarangController;
 use App\Http\Controllers\PenghapusanBarangController;
+use App\Http\Controllers\PenerimaanKonsinyasiController;
+use App\Http\Controllers\ReturKonsinyasiController;
+use App\Http\Controllers\OrderPenjualanController;
+use App\Http\Controllers\FakturPenjualanController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -402,3 +406,62 @@ Route::post('/gi/storeJson', [PenghapusanBarangController::class, 'storeJson'])-
 Route::post('/gi/editJson', [PenghapusanBarangController::class, 'editJson'])->name('gi-editJson')->middleware('auth');
 Route::post('/gi/readheader', [PenghapusanBarangController::class, 'ViewHeader'])->name('gi-readheader')->middleware('auth');
 Route::post('/gi/readdetail', [PenghapusanBarangController::class, 'ViewDetail'])->name('gi-readdetail')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Konsinyasi
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/cons', [PenerimaanKonsinyasiController::class,'View'])->name('cons')->middleware('auth');
+Route::get('/cons/form/{id}', [PenerimaanKonsinyasiController::class,'Form'])->name('cons-form')->middleware('auth');
+Route::post('/cons/storeJson', [PenerimaanKonsinyasiController::class, 'storeJson'])->name('cons-storeJson')->middleware('auth');
+Route::post('/cons/editJson', [PenerimaanKonsinyasiController::class, 'editJson'])->name('cons-editJson')->middleware('auth');
+Route::post('/cons/readheader', [PenerimaanKonsinyasiController::class, 'ViewHeader'])->name('cons-readheader')->middleware('auth');
+Route::post('/cons/readdetail', [PenerimaanKonsinyasiController::class, 'ViewDetail'])->name('cons-readdetail')->middleware('auth');
+Route::post('/cons/findheader', [PenerimaanKonsinyasiController::class, 'FindHeader'])->name('cons-findheader')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Konsinyasi
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/retcons', [ReturKonsinyasiController::class,'View'])->name('retcons')->middleware('auth');
+Route::get('/retcons/form/{id}', [ReturKonsinyasiController::class,'Form'])->name('retcons-form')->middleware('auth');
+Route::post('/retcons/storeJson', [ReturKonsinyasiController::class, 'storeJson'])->name('retcons-storeJson')->middleware('auth');
+Route::post('/cons/editJson', [ReturKonsinyasiController::class, 'editJson'])->name('retcons-editJson')->middleware('auth');
+Route::post('/retcons/readheader', [ReturKonsinyasiController::class, 'ViewHeader'])->name('retcons-readheader')->middleware('auth');
+Route::post('/retcons/readdetail', [ReturKonsinyasiController::class, 'ViewDetail'])->name('retcons-readdetail')->middleware('auth');
+Route::post('/retcons/findheader', [ReturKonsinyasiController::class, 'FindHeader'])->name('retcons-findheader')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Order Penjualan
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/openjualan', [OrderPenjualanController::class,'View'])->name('openjualan')->middleware('auth');
+Route::get('/openjualan/form/{id}', [OrderPenjualanController::class,'Form'])->name('openjualan-form')->middleware('auth');
+Route::post('/openjualan/storeJson', [OrderPenjualanController::class, 'storeJson'])->name('openjualan-storeJson')->middleware('auth');
+Route::post('/openjualan/editJson', [OrderPenjualanController::class, 'editJson'])->name('openjualan-editJson')->middleware('auth');
+Route::post('/openjualan/readheader', [OrderPenjualanController::class, 'ViewHeader'])->name('openjualan-readheader')->middleware('auth');
+Route::post('/openjualan/readdetail', [OrderPenjualanController::class, 'ViewDetail'])->name('openjualan-readdetail')->middleware('auth');
+Route::post('/openjualan/findheader', [OrderPenjualanController::class, 'FindHeader'])->name('openjualan-findheader')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Faktur Penjualan
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/fpenjualan', [FakturPenjualanController::class,'View'])->name('fpenjualan')->middleware('auth');
+Route::get('/fpenjualan/form/{id}', [FakturPenjualanController::class,'Form'])->name('fpenjualan-form')->middleware('auth');
+Route::post('/fpenjualan/storeJson', [FakturPenjualanController::class, 'storeJson'])->name('fpenjualan-storeJson')->middleware('auth');
+Route::post('/fpenjualan/editJson', [FakturPenjualanController::class, 'editJson'])->name('fpenjualan-editJson')->middleware('auth');
+Route::post('/fpenjualan/readheader', [FakturPenjualanController::class, 'ViewHeader'])->name('fpenjualan-readheader')->middleware('auth');
+Route::post('/fpenjualan/readdetail', [FakturPenjualanController::class, 'ViewDetail'])->name('fpenjualan-readdetail')->middleware('auth');
+Route::post('/fpenjualan/findheader', [FakturPenjualanController::class, 'FindHeader'])->name('fpenjualan-findheader')->middleware('auth');
