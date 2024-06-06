@@ -61,6 +61,39 @@ class PelangganController extends Controller
         ]);
     }
 
+    public function ReadPelangganJson(Request $request)
+    {
+        $data = array('success'=>false, 'message'=>'', 'data'=>array());
+
+        $KodePelanggan = $request->input('KodePelanggan');
+        $GrupPelanggan = $request->input('GrupPelanggan');
+
+        $sql = "pelanggan.*, gruppelanggan.DiskonPersen";
+        $pelanggan = Pelanggan::selectRaw($sql)
+                        ->leftJoin('gruppelanggan', function ($value){
+                            $value->on('pelanggan.KodeGrupPelanggan','=','gruppelanggan.KodeGrup')
+                            ->on('pelanggan.RecordOwnerID','=','gruppelanggan.RecordOwnerID');
+                        })
+                        ->leftJoin('terminpembayaran', function ($value){
+                            $value->on('pelanggan.KodeGrupPelanggan','=','gruppelanggan.KodeGrup')
+                            ->on('pelanggan.RecordOwnerID','=','gruppelanggan.RecordOwnerID');
+                        })
+                        ->where('pelanggan.RecordOwnerID','=',Auth::user()->RecordOwnerID);
+
+        if ($KodePelanggan != "") {
+            $pelanggan->where('pelanggan.KodePelanggan','=',$KodePelanggan);
+        }
+
+        if ($GrupPelanggan != "") {
+            $pelanggan->where('pelanggan.KodeGrupPelanggan','=',$GrupPelanggan);
+        }
+
+        $data['success'] = true;
+        $data['data'] = $pelanggan->get();
+
+        return response()->json($data);
+    }
+
     public function Form($KodePelanggan = null)
     {
     	$pelanggan = Pelanggan::where('KodePelanggan','=',$KodePelanggan)->get();

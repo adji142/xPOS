@@ -33,6 +33,11 @@ class Company extends Migration
             $table->integer('isPostingAkutansi');
             $table->string('NamaPosPrinter');
             $table->string('FooterNota');
+            $table->string('LebarKertas')->nullable();
+            $table->string('JenisUsaha')->nullable();
+            $table->string('GudangPoS')->nullable();
+            $table->string('TerminBayarPoS')->nullable();
+            $table->string('AllowNegativeInventory')->nullable();
             $table->timestamps();
         });
     }

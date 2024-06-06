@@ -25,7 +25,8 @@ class FakturPenjualanDetail extends Migration
             $table->double('Discount');
             $table->double('HargaNet');
             $table->string('LineStatus');
-            $table->string('KodeGudang');
+            $table->string('KodeGudang');\
+            $table->string('Keterangan');
             $table->string('RecordOwnerID');
             $table->timestamps();
         });

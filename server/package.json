@@ -1,0 +1,17 @@
+{
+  "name": "printerserver",
+  "version": "1.0.0",
+  "description": "To connect external printer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "AIS System",
+  "license": "ISC",
+  "dependencies": {
+    "bluetooth-hci-socket": "^0.5.1",
+    "express": "^4.19.2",
+    "noble": "^1.9.1",
+    "react-native-bluetooth-escpos-printer": "^0.0.5"
+  }
+}

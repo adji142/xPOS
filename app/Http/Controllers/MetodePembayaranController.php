@@ -60,12 +60,16 @@ class MetodePembayaranController extends Controller
     	Log::debug($request->all());
         try {
             $this->validate($request, [
-                'NamaMetodePembayaran'=>'required'
+                'NamaMetodePembayaran'=>'required',
             ]);
 
             $model = new MetodePembayaran;
             $model->NamaMetodePembayaran = $request->input('NamaMetodePembayaran');
             $model->AkunPembayaran = $request->input('AkunPembayaran');
+            $model->Image = $request->input('image_base64');
+            $model->Active = $request->input('Active');
+            $model->MetodeVerifikasi = $request->input('MetodeVerifikasi');
+            $model->TipePembayaran = $request->input('TipePembayaran');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -104,7 +108,11 @@ class MetodePembayaranController extends Controller
                 			->update(
                 				[
                 					'NamaMetodePembayaran'=>$request->input('NamaMetodePembayaran'),
-                                    'AkunPembayaran' => $request->input('AkunPembayaran')
+                                    'AkunPembayaran' => $request->input('AkunPembayaran'),
+                                    'Image' => $request->input('image_base64'),
+                                    'Active' => $request->input('Active'),
+                                    'MetodeVerifikasi' => $request->input('MetodeVerifikasi'),
+                                    'TipePembayaran' => $request->input('TipePembayaran')
                 				]
                 			);
 

@@ -29,8 +29,10 @@ class FakturPenjualanHeader extends Migration
             $table->double('TotalRetur');
             $table->double('TotalPembayaran');
             $table->string('Status');
-            $table->string('Keterangan');
+            $table->string('Keterangan')->nullable();
             $table->integer('Posted');
+            $table->string('MetodeBayar')->nullable();
+            $table->string('ReffPembayaran')->nullable();
             $table->string('CreatedBy');
             $table->string('UpdatedBy');
             $table->string('RecordOwnerID');

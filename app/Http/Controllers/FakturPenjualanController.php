@@ -175,9 +175,121 @@ class FakturPenjualanController extends Controller
 	    ]);
 	}
 
+	public function storePoS(Request $request)
+	{
+		$data = array('success' => false, 'message' => '', 'data' => array(), 'LastTRX' => '' ,'Kembalian' => 0);
+		Log::debug($request->all());
+		DB::beginTransaction();
+
+		$errorCount = 0;
+		$jsonData = $request->json()->all();
+
+		$oKembalian = 0;
+		try {
+
+			if ($jsonData['KodePelanggan'] == "") {
+				$data['message'] = "Pelanggan Tidak boleh kosong";
+				$errorCount +=1;
+				goto jump;
+			}
+			
+			$currentDate = Carbon::now();
+			$Year = $currentDate->format('y');
+			$Month = $currentDate->format('m');
+
+			$numberingData = new DocumentNumbering();
+	        $NoTransaksi = $numberingData->GetNewDoc("OINV","fakturpenjualanheader","NoTransaksi");
+
+	        $data['LastTRX'] = $NoTransaksi;
+	        $model = new FakturPenjualanHeader;
+
+	        $model->Periode = $Year.$Month;
+	        $model->NoTransaksi= $NoTransaksi;
+
+	        $model->TglTransaksi = $jsonData['TglTransaksi'];
+			$model->TglJatuhTempo = $jsonData['TglJatuhTempo'];
+			$model->NoReff = $jsonData['NoReff'];
+			$model->KodePelanggan = $jsonData['KodePelanggan'];
+			$model->KodeTermin = $jsonData['KodeTermin'];
+			$model->Termin = $jsonData['Termin'];
+			$model->TotalTransaksi = $jsonData['TotalTransaksi'];
+			$model->Potongan = $jsonData['Potongan'];
+			$model->Pajak = $jsonData['Pajak'];
+			$model->TotalPembelian = $jsonData['TotalPembelian'];
+			$model->TotalRetur = $jsonData['TotalRetur'];
+			$model->TotalPembayaran = $jsonData['TotalPembayaran'];
+			$model->Status = $jsonData['Status'];
+			$model->Keterangan = $jsonData['Keterangan'];
+			$model->MetodeBayar = $jsonData['MetodeBayar'];
+			$model->ReffPembayaran = $jsonData['ReffPembayaran'];
+			$model->Posted = 0;
+			$model->CreatedBy = Auth::user()->name;
+			$model->UpdatedBy = "";
+            $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+   
+			$save = $model->save();
+
+
+			$oKembalian = floatval($jsonData['TotalPembayaran']) - floatval($jsonData['TotalPembelian']);
+			$data['Kembalian'] = $oKembalian;
+			foreach ($jsonData['Detail'] as $key) {
+				if ($key['Qty'] == 0) {
+					goto skip;
+				}
+
+				$modelDetail = new FakturPenjualanDetail;
+           		$modelDetail->NoTransaksi = $NoTransaksi;
+				$modelDetail->NoUrut = $key['NoUrut'];
+				$modelDetail->KodeItem = $key['KodeItem'];
+				$modelDetail->Qty = $key['Qty'];
+				$modelDetail->Satuan = $key['Satuan'];
+				$modelDetail->Harga = $key['Harga'];
+				$modelDetail->Discount = $key['Discount'];
+
+				$modelDetail->BaseReff = $key['BaseReff'];
+				$modelDetail->BaseLine = $key['BaseLine'];
+				$modelDetail->KodeGudang = $key['KodeGudang'];
+
+				$HargaGros = $key['Qty'] * $key['Harga'];
+				$modelDetail->HargaNet = $HargaGros - floatval($key['Discount']);
+				$modelDetail->LineStatus = $key['LineStatus'];
+				$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+				$save = $modelDetail->save();
+
+				if (!$save) {
+					$data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
+					$errorCount += 1;
+					goto jump;
+				}
+				skip:
+			}
+
+			// Auto Journal
+
+			// Generate Header :
+
+			jump:
+	        if ($errorCount > 0) {
+		        DB::rollback();
+		        $data['success'] = false;
+	        }
+	        else{
+		        DB::commit();
+		        $data['success'] = true;
+	        }
+
+		} catch (\Exception $e) {
+			Log::debug($e->getMessage());
+	        $data['message'] = $e->getMessage();
+		}
+
+		return response()->json($data);
+	}
+
 	public function storeJson(Request $request)
 	{
-		$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+		$data = array('success' => false, 'message' => '', 'data' => array(), 'LastTRX' => '' ,'Kembalian' => "");
 		Log::debug($request->all());
 		DB::beginTransaction();
 

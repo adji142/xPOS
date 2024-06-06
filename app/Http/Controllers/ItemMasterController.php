@@ -17,6 +17,7 @@ use App\Models\Rekening;
 use App\Models\Satuan;
 use App\Models\SettingAccount;
 use App\Models\ItemRakitan;
+use App\Models\Diskon;
 
 class ItemMasterController extends Controller
 {
@@ -27,6 +28,7 @@ class ItemMasterController extends Controller
         $KodeJenis = $request->input('KodeJenis');
         $Merk = $request->input('Merk');
         $TipeItem = $request->input('TipeItem');
+        $TipeItemIN = $request->input('TipeItemIN');
         $Active = $request->input('Active');
 
         $sql = "itemmaster.KodeItem, itemmaster.NamaItem, itemmaster.Barcode,itemmaster.HargaJual,itemmaster.HargaPokokPenjualan,itemmaster.HargaBeliTerakhir,itemmaster.Stock, itemmaster.StockMinimum, merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, itemmaster.Rak ";
@@ -48,6 +50,11 @@ class ItemMasterController extends Controller
        	if ($TipeItem != "") {
        		$itemmaster->where('itemmaster.TypeItem','=', $TipeItem);
        	}
+
+        if ($TipeItemIN != "") {
+          $itemmaster->whereIn('itemmaster.TypeItem',explode(',', $TipeItemIN));
+        }
+
        	if ($Active != "") {
        		$itemmaster->where('itemmaster.Active','=', $Active);
        	}
@@ -79,8 +86,10 @@ class ItemMasterController extends Controller
       $Merk = $request->input('Merk');
       $TipeItem = $request->input('TipeItem');
       $Active = $request->input('Active');
+      $Scan = $request->input('Scan');
+      $TipeItemIN = $request->input('TipeItemIN');
 
-      $sql = "itemmaster.KodeItem, itemmaster.NamaItem, itemmaster.Barcode,itemmaster.HargaJual,itemmaster.HargaPokokPenjualan,itemmaster.HargaBeliTerakhir,itemmaster.Stock, itemmaster.StockMinimum, merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, itemmaster.Rak, COALESCE(itemmaster.HargaJual,0) - COALESCE(itemmaster.HargaBeliTerakhir, 0) Margin";
+      $sql = "itemmaster.KodeItem, itemmaster.NamaItem, itemmaster.Barcode,itemmaster.HargaJual,itemmaster.HargaPokokPenjualan,itemmaster.HargaBeliTerakhir,itemmaster.Stock, itemmaster.StockMinimum, merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, itemmaster.Rak, COALESCE(itemmaster.HargaJual,0) - COALESCE(itemmaster.HargaBeliTerakhir, 0) Margin, itemmaster.Satuan ";
       $itemmaster = ItemMaster::selectRaw($sql)
               ->leftJoin('jenisitem', 'jenisitem.KodeJenis','=','itemmaster.KodeJenisItem')
               ->leftJoin('merk','merk.KodeMerk','=','itemmaster.KodeMerk')
@@ -99,8 +108,17 @@ class ItemMasterController extends Controller
       if ($TipeItem != "") {
         $itemmaster->where('itemmaster.TypeItem','=', $TipeItem);
       }
+
+      if ($TipeItemIN != "") {
+        $itemmaster->whereIn('itemmaster.TypeItem',explode(',', $TipeItemIN));
+      }
+        
       if ($Active != "") {
         $itemmaster->where('itemmaster.Active','=', $Active);
+      }
+
+      if ($Scan != "") {
+        $itemmaster->where(DB::raw("CONCAT(itemmaster.KodeItem,' ', itemmaster.NamaItem, ' ', itemmaster.Barcode,' ', merk.NamaMerk)"),'LIKE','%' . $Scan . '%');
       }
 
       $data['data'] = $itemmaster->get();
@@ -140,7 +158,8 @@ class ItemMasterController extends Controller
 
       $bahanrakitan = ItemRakitan::where('RecordOwnerID','=', Auth::user()->RecordOwnerID)
                       ->where('KodeItemHasil','=', $KodeItem)->get();
-
+      $diskon = Diskon::where('RecordOwnerID','=', Auth::user()->RecordOwnerID)
+                      ->where('KodeItem','=', $KodeItem)->get();
         
         return view("master.ItemMasterData.ItemMaster-Input",[
         	'itemmaster' => $itemmaster,
@@ -155,7 +174,8 @@ class ItemMasterController extends Controller
           'settingaccount' => $settingaccount,
           'supplier' => $supplier,
           'itembahanrakitan' => $itemmasterbahanrakitan,
-          'bahanrakitan' => $bahanrakitan
+          'bahanrakitan' => $bahanrakitan,
+          'diskon' => $diskon
         ]);
     }
 
@@ -196,6 +216,7 @@ class ItemMasterController extends Controller
           $model->AcctPenjualan = empty($jsonData['AcctPenjualan']) ? "" : $jsonData['AcctPenjualan'];
           $model->AcctPenjualanJasa = empty($jsonData['AcctPenjualanJasa']) ? "" : $jsonData['AcctPenjualanJasa'];
           $model->AcctPersediaan = empty($jsonData['AcctPersediaan']) ? "" : $jsonData['AcctPersediaan'];
+          $model->Gambar = $jsonData['Gambar'];
           $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
           $save = $model->save();
@@ -220,6 +241,26 @@ class ItemMasterController extends Controller
                   goto jump;
                 }
 
+              }
+            }
+
+            if (count($jsonData['DiskonSetting']) > 0) {
+              for ($i=0; $i < count($jsonData['DiskonSetting']) ; $i++) { 
+                $modelDiskon = new Diskon;
+                $modelDiskon->KodeItem = $jsonData['KodeItem'];
+                $modelDiskon->Minimal = $jsonData['DiskonSetting'][$i]['Minimal'];
+                $modelDiskon->Kelipatan = 0;
+                $modelDiskon->TipeDiskon = $jsonData['DiskonSetting'][$i]['TipeDiskon'];
+                $modelDiskon->Diskon = $jsonData['DiskonSetting'][$i]['Diskon'];
+                $modelDiskon->RecordOwnerID = $jsonData['DiskonSetting'][$i]['RecordOwnerID'];
+
+                $saveDiskon = $modelDiskon->save();
+
+                if (!$saveDiskon) {
+                  $data['message'] = 'Simpan Data Diskon Baris $i Gagal disimpan';
+                  $errorCount +=1;
+                  goto jump;
+                }
               }
             }
             $data['success'] = true;
@@ -298,6 +339,7 @@ class ItemMasterController extends Controller
                         'AcctPenjualan' => empty($jsonData['AcctPenjualan']) ? "" : $jsonData['AcctPenjualan'],
                         'AcctPenjualanJasa' => empty($jsonData['AcctPenjualanJasa']) ? "" : $jsonData['AcctPenjualanJasa'],
                         'AcctPersediaan' => empty($jsonData['AcctPersediaan']) ? "" : $jsonData['AcctPersediaan'],
+                        'Gambar' => $jsonData['Gambar']
                       ]
                     );
 
@@ -320,6 +362,30 @@ class ItemMasterController extends Controller
 
                     if (!$saveRakitan) {
                       $data['message'] = 'Simpan Data Rakitan Baris $i Gagal disimpan';
+                      $errorCount +=1;
+                      goto jump;
+                    }
+                  }
+                }
+
+                if (count($jsonData['DiskonSetting']) > 0) {
+                  $diskon = DB::table('diskon')
+                            ->where('KodeItem','=',  $jsonData['KodeItem'])
+                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->delete();
+                  for ($i=0; $i < count($jsonData['DiskonSetting']) ; $i++) { 
+                    $modelDiskon = new Diskon;
+                    $modelDiskon->KodeItem = $jsonData['KodeItem'];
+                    $modelDiskon->Minimal = $jsonData['DiskonSetting'][$i]['QtyMinimum'];
+                    $modelDiskon->Kelipatan = 0;
+                    $modelDiskon->TipeDiskon = $jsonData['DiskonSetting'][$i]['TipeDiskon'];
+                    $modelDiskon->Diskon = $jsonData['DiskonSetting'][$i]['Diskon'];
+                    $modelDiskon->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+                    $saveDiskon = $modelDiskon->save();
+
+                    if (!$saveDiskon) {
+                      $data['message'] = 'Simpan Data Diskon Baris $i Gagal disimpan';
                       $errorCount +=1;
                       goto jump;
                     }

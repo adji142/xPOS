@@ -121,11 +121,11 @@
 													<td>{{ $v['KodeItem'] }}</td>
 													<td>{{ $v['NamaItem'] }}</td>
 													<td>{{ $v['Barcode'] }}</td>
-													<td>{{ $v['HargaJual'] }}</td>
-													<td>{{ $v['HargaPokokPenjualan'] }}</td>
-													<td>{{ $v['HargaBeliTerakhir'] }}</td>
-													<td>{{ $v['Stock'] }}</td>
-													<td>{{ $v['StockMinimum'] }}</td>
+													<td>{{ number_format($v['HargaJual']) }}</td>
+													<td>{{ number_format($v['HargaPokokPenjualan']) }}</td>
+													<td>{{ number_format($v['HargaBeliTerakhir']) }}</td>
+													<td>{{ number_format($v['Stock']) }}</td>
+													<td>{{ number_format($v['StockMinimum']) }}</td>
 													<td>{{ $v['NamaJenis'] }}</td>
 													<td>{{ $v['NamaMerk'] }}</td>
 													<td>{{ $v['Rak'] }}</td>

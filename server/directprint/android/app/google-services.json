@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "393229246326",
+    "project_id": "receiptprinter-89dc0",
+    "storage_bucket": "receiptprinter-89dc0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:393229246326:android:360be9d0320262d562a457",
+        "android_client_info": {
+          "package_name": "ais.pos.directprint"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "393229246326-cn3d3au0io6jcd5urvam2lfpa0n3tpvl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ais.pos.directprint",
+            "certificate_hash": "925839854b615e121ab8670228d2386bacc77c26"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLvJ5xbRKX5cO0-xLmj4Zjfew9nknpyVc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

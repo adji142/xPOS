@@ -1,0 +1,14 @@
+C:\xampp74\htdocs\xpos\server\directprintdekstop\PoSDirectPrint\DirectPrintServices\bin\Debug\DirectPrintServices.exe.config
+C:\xampp74\htdocs\xpos\server\directprintdekstop\PoSDirectPrint\DirectPrintServices\bin\Debug\DirectPrintServices.exe
+C:\xampp74\htdocs\xpos\server\directprintdekstop\PoSDirectPrint\DirectPrintServices\bin\Debug\DirectPrintServices.pdb
+C:\xampp74\htdocs\xpos\server\directprintdekstop\PoSDirectPrint\DirectPrintServices\bin\Debug\DirectPrintServices.xml
+C:\xampp74\htdocs\xpos\server\directprintdekstop\PoSDirectPrint\DirectPrintServices\bin\Debug\EPSBasicControls.dll
+C:\xampp74\htdocs\xpos\server\directprintdekstop\PoSDirectPrint\DirectPrintServices\bin\Debug\EPSDataGrid.dll
+C:\xampp74\htdocs\xpos\server\directprintdekstop\PoSDirectPrint\DirectPrintServices\bin\Debug\EPSGridControls.dll
+C:\xampp74\htdocs\xpos\server\directprintdekstop\PoSDirectPrint\DirectPrintServices\bin\Debug\EPSTabControls.dll
+C:\xampp74\htdocs\xpos\server\directprintdekstop\PoSDirectPrint\DirectPrintServices\bin\Debug\EPSXAEvents.dll
+C:\xampp74\htdocs\xpos\server\directprintdekstop\PoSDirectPrint\DirectPrintServices\obj\Debug\DirectPrintServices.Resources.resources
+C:\xampp74\htdocs\xpos\server\directprintdekstop\PoSDirectPrint\DirectPrintServices\obj\Debug\DirectPrintServices.vbproj.GenerateResource.Cache
+C:\xampp74\htdocs\xpos\server\directprintdekstop\PoSDirectPrint\DirectPrintServices\obj\Debug\DirectPrintServices.exe
+C:\xampp74\htdocs\xpos\server\directprintdekstop\PoSDirectPrint\DirectPrintServices\obj\Debug\DirectPrintServices.xml
+C:\xampp74\htdocs\xpos\server\directprintdekstop\PoSDirectPrint\DirectPrintServices\obj\Debug\DirectPrintServices.pdb

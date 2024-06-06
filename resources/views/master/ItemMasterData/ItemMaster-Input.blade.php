@@ -1,7 +1,31 @@
 @extends('parts.header')
 	
 @section('content')
-
+<style type="text/css">
+  .xContainer{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    vertical-align: middle;
+  }
+  .image_result{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid black;
+    /*flex-grow: 1;*/
+    vertical-align: middle;
+    align-content: center;
+    flex-basis: 200;
+    width: 150px;
+    height: 200px;
+  }
+  .image_result img {
+    max-width: 100%; /* Fit the image to the container width */
+    height: 100%; /* Maintain the aspect ratio */
+  }
+</style>
 <!--begin::Subheader-->
 <div class="subheader py-2 py-lg-6 subheader-solid">
 	<div class="container-fluid">
@@ -49,12 +73,32 @@
 					<div class="col-12  px-4">
 						<div class="card card-custom gutter-b bg-white border-0" >
 							<div class="card-body" >
+
                             	<div class="form-group row">
+                            		<div class="col-md-12"> 
+                            			<fieldset class="form-group mb-3">
+                            				<textarea id = "image_base64" name = "image_base64" style="display: none;"> {{ count($itemmaster) > 0 ? $itemmaster[0]['Gambar'] : '' }} </textarea>
+                            				
+                            				<input type="file" id="Attachment" name="Attachment" accept=".jpg" class="btn btn-warning" style="display: none;"/>
+                            				<div class="xContainer">
+								                <div id="image_result" class="image_result">
+								                	@if (count($itemmaster) > 0)
+			                                    		<img src=" {{$itemmaster[0]['Gambar']}} ">
+			                                    	@else
+			                                    		<img src="https://www.generationsforpeace.org/wp-content/uploads/2018/03/empty.jpg">
+				                                	@endif
+								                </div>
+								            </div>
+                            			</fieldset>
+                            			
+                            		</div>
+                            		
+
                             		<div class="col-md-3"> 
-                            			<div class="checkbox">
+                            			<!-- <div class="checkbox">
                             				<label for="chkAutoNumbering">Kode Item / Atur Otomatis</label>
                             				<input type="checkbox" class="checkbox-input" id="chkAutoNumbering" {{ count($itemmaster) > 0 ? 'disabled' : '' }}>
-                            			</div>
+                            			</div> -->
                             			<fieldset class="form-group mb-3">
                             				<input type="text" class="form-control" id="KodeItem" name="KodeItem" placeholder="Masukan Kode Item" value="{{ count($itemmaster) > 0 ? $itemmaster[0]['KodeItem'] : '' }}" required="" {{ count($itemmaster) > 0 ? 'readonly' : '' }} >
                             			</fieldset>
@@ -90,7 +134,7 @@
                             				<select name="KodeJenisItem" id="KodeJenisItem" class="js-example-basic-single js-states form-control bg-transparent">
 												<option value="">Pilih Jenis Item</option>
 												@foreach($jenisitem as $ko)
-													<option value="{{ $ko->KodeJenis }}" {{ $ko->KodeJenis == count($itemmaster) > 0 ? $itemmaster[0]['KodeJenisItem'] : '' ? 'selected' : '' }}>
+													<option value="{{ $ko->KodeJenis }}" {{ $ko->KodeJenis == (count($itemmaster) > 0 ? $itemmaster[0]['KodeJenisItem'] : '') ? 'selected' : '' }}>
 			                                            {{ $ko->NamaJenis }}
 			                                        </option>
 												@endforeach
@@ -108,7 +152,7 @@
                             				<select name="KodeMerk" id="KodeMerk" class="js-example-basic-single js-states form-control bg-transparent">
 												<option value="">Pilih Merk</option>
 												@foreach($merk as $ko)
-													<option value="{{ $ko->KodeMerk }}" {{ $ko->KodeMerk == count($itemmaster) > 0 ? $itemmaster[0]['KodeMerk'] : '' ? 'selected' : '' }}>
+													<option value="{{ $ko->KodeMerk }}" {{ $ko->KodeMerk == (count($itemmaster) > 0 ? $itemmaster[0]['KodeMerk'] : '') ? 'selected' : '' }}>
 			                                            {{ $ko->NamaMerk }}
 			                                        </option>
 												@endforeach
@@ -126,7 +170,7 @@
                             				<select name="KodeSupplier" id="KodeSupplier" class="js-example-basic-single js-states form-control bg-transparent">
 												<option value="">Pilih Supplier</option>
 												@foreach($supplier as $ko)
-													<option value="{{ $ko->KodeSupplier }}" {{ $ko->KodeSupplier == count($itemmaster) > 0 ? $itemmaster[0]['KodeSupplier'] : '' ? 'selected' : '' }}>
+													<option value="{{ $ko->KodeSupplier }}" {{ $ko->KodeSupplier == (count($itemmaster) > 0 ? $itemmaster[0]['KodeSupplier'] : '') ? 'selected' : '' }}>
 			                                            {{ $ko->NamaSupplier }}
 			                                        </option>
 												@endforeach
@@ -161,6 +205,9 @@
                                         <li class="nav-item">
                                             <a class="nav-link" id="account-tab" data-bs-toggle="pill" href="#account" role="tab" aria-controls="account" aria-selected="false">Rakitan</a>
                                         </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="diskon-tab" data-bs-toggle="pill" href="#diskon" role="tab" aria-controls="diskon" aria-selected="false">Diskon</a>
+                                        </li>
                                     </ul>
                                     <div class="row">
 
@@ -182,7 +229,7 @@
 					                            				<select name="Satuan" id="Satuan" class="js-example-basic-single js-states form-control bg-transparent">
 																	<option value="">Pilih Satuan</option>
 																	@foreach($satuan as $ko)
-																		<option value="{{ $ko->KodeSatuan }}" {{ $ko->KodeSatuan == count($itemmaster) > 0 ? $itemmaster[0]['Satuan'] : '' ? 'selected' : '' }}>
+																		<option value="{{ $ko->KodeSatuan }}" {{ $ko->KodeSatuan == (count($itemmaster) > 0 ? $itemmaster[0]['Satuan'] : '') ? 'selected' : '' }}>
 								                                            {{ $ko->NamaSatuan }}
 								                                        </option>
 																	@endforeach
@@ -200,7 +247,7 @@
 					                            				<select name="KodeGudang" id="KodeGudang" class="js-example-basic-single js-states form-control bg-transparent">
 																	<option value="">Pilih Gudang</option>
 																	@foreach($gudang as $ko)
-																		<option value="{{ $ko->KodeGudang }}" {{ $ko->KodeGudang == count($itemmaster) > 0 ? $itemmaster[0]['KodeGudang'] : '' ? 'selected' : '' }}>
+																		<option value="{{ $ko->KodeGudang }}" {{ $ko->KodeGudang == (count($itemmaster) > 0 ? $itemmaster[0]['KodeGudang'] : '') ? 'selected' : '' }}>
 								                                            {{ $ko->NamaGudang }}
 								                                        </option>
 																	@endforeach
@@ -275,7 +322,7 @@
 					                            				<select name="AcctPenjualan" id="AcctPenjualan" class="js-example-basic-single js-states form-control bg-transparent">
 																	<option value="">Pilih Akun</option>
 																	@foreach($rekeningpenjualan as $ko)
-																		<option value="{{ $ko->KodeRekening }}" {{ $ko->KodeRekening == count($itemmaster) > 0 ? $itemmaster[0]['AcctPenjualan'] : '' ? 'selected' : '' }}>
+																		<option value="{{ $ko->KodeRekening }}" {{ $ko->KodeRekening == (count($itemmaster) > 0 ? $itemmaster[0]['AcctPenjualan'] : '') ? 'selected' : '' }}>
 								                                            {{ $ko->NamaRekening }}
 								                                        </option>
 																	@endforeach
@@ -289,7 +336,7 @@
 					                            				<select name="AcctPenjualanJasa" id="AcctPenjualanJasa" class="js-example-basic-single js-states form-control bg-transparent">
 																	<option value="">Pilih Akun</option>
 																	@foreach($rekeningpenjualan as $ko)
-																		<option value="{{ $ko->KodeRekening }}" {{ $ko->KodeRekening == count($itemmaster) > 0 ? $itemmaster[0]['AcctPenjualanJasa'] : '' ? 'selected' : '' }}>
+																		<option value="{{ $ko->KodeRekening }}" {{ $ko->KodeRekening == (count($itemmaster) > 0 ? $itemmaster[0]['AcctPenjualanJasa'] : '') ? 'selected' : '' }}>
 								                                            {{ $ko->NamaRekening }}
 								                                        </option>
 																	@endforeach
@@ -303,7 +350,7 @@
 					                            				<select name="AcctPersediaan" id="AcctPersediaan" class="js-example-basic-single js-states form-control bg-transparent">
 																	<option value="">Pilih Akun</option>
 																	@foreach($rekeninginventory as $ko)
-																		<option value="{{ $ko->KodeRekening }}" {{ $ko->KodeRekening == count($itemmaster) > 0 ? $itemmaster[0]['AcctPersediaan'] : '' ? 'selected' : '' }}>
+																		<option value="{{ $ko->KodeRekening }}" {{ $ko->KodeRekening == (count($itemmaster) > 0 ? $itemmaster[0]['AcctPersediaan'] : '') ? 'selected' : '' }}>
 								                                            {{ $ko->NamaRekening }}
 								                                        </option>
 																	@endforeach
@@ -325,6 +372,20 @@
                                                     	</div>
                                                     </div>
                                                 </div>
+
+                                                <div class="tab-pane fade" id="diskon" role="tabpanel" aria-labelledby="diskon-tab">
+                                                    <div class="row">
+                                                    	<div class="col-md-12">
+                                                    		<div class="dx-viewport demo-container">
+											                	<div id="data-grid-demo">
+											                  		<div id="gridContainerDiskon"></div>
+											                	</div>
+											              	</div>
+											              	<small style="color: red">Tekan Enter saat selesai edit data</small>
+                                                    	</div>
+                                                    </div>
+                                                </div>
+
 
                                             </div>
                                         </div>
@@ -487,9 +548,26 @@
 
 @push('scripts')
 <script type="text/javascript">
-	var oItem = <?php echo $itembahanrakitan; ?> 
+	var _URL = window.URL || window.webkitURL;
+    var _URLePub = window.URL || window.webkitURL;
+
+	var oItem = <?php echo $itembahanrakitan; ?> ;
+	var oJenisDiskon = [];
 	var oErrorList = [];
 	jQuery(document).ready(function() {
+
+		var otempItem = {
+			"KodeJenisDiskon" : "P",
+			"NamaJenisDiskon" : "Prosentase"
+		};
+		oJenisDiskon.push(otempItem);
+
+		var otempItem = {
+			"KodeJenisDiskon" : "N",
+			"NamaJenisDiskon" : "Nominal"
+		};
+		oJenisDiskon.push(otempItem);
+
 		var dataSetting = <?php echo $settingaccount; ?>	
 		// console.log(dataSetting);
 		jQuery('#AcctHPP').val(dataSetting[0]['InvAcctHargaPokokPenjualan']).trigger('change');
@@ -498,12 +576,31 @@
 		jQuery('#AcctPersediaan').val(dataSetting[0]['InvAcctPersediaan']).trigger('change');
 
 		var bahanrakitan = <?php echo $bahanrakitan ?>;
+		var diskon = <?php echo $diskon ?>;
 		if (bahanrakitan.length > 0) {
 			bindGrid(bahanrakitan)
 		}
 		else{
 			bindGrid([])
 		}
+		if (diskon.length > 0) {
+			var oDiskon = [];
+
+			var oIndex = 0;
+			$.each(diskon,function (k,v) {
+				var oItem = {Nomor:oIndex +1, QtyMinimum: v.Minimal, TipeDiskon:v.TipeDiskon, Diskon: v.Diskon}
+
+				// console.log(oItem)
+				oDiskon.push(oItem);
+				oIndex +=1;
+			})
+
+			bindDiskon(oDiskon)
+		}
+		else{
+			bindDiskon([])
+		}
+		// jQuery('#image_result').html("<img src ='https://www.generationsforpeace.org/wp-content/uploads/2018/03/empty.jpg' width = '400'> ");
 		SetEnableCommand();
 	});
 
@@ -756,8 +853,13 @@
 		jQuery('#btSaveItem').attr('disabled',true);
 
 		var oItemBahan = [];
+		var oDiskon = [];
+
 		var dataGridInstance = jQuery('#gridContainerRakitan').dxDataGrid('instance');
         var allRowsData  = dataGridInstance.getDataSource().items();
+
+        var GridDiskon = jQuery('#gridContainerDiskon').dxDataGrid('instance');
+        var RowDataDiskon  = GridDiskon.getDataSource().items();
 
 
         if (allRowsData.length > 0) {
@@ -771,6 +873,19 @@
 						'Satuan' : allRowsData[i]['Satuan'],
 					}
 					oItemBahan.push(item)
+        		}
+        	}
+        }
+
+        if (RowDataDiskon.length > 0) {
+        	for (var i = 0; i < RowDataDiskon.length; i++) {
+        		if (RowDataDiskon[i]['QtyMinimum'] > 0) {
+        			var item = {
+	        			'QtyMinimum' 	: RowDataDiskon[i]['QtyMinimum'],
+	        			'TipeDiskon' 	: RowDataDiskon[i]['TipeDiskon'],
+						'Diskon' 		: RowDataDiskon[i]['Diskon']
+					}
+					oDiskon.push(item)
         		}
         	}
         }
@@ -798,7 +913,9 @@
 			'AcctPenjualan' : jQuery('#AcctPenjualan').val(),
 			'AcctPenjualanJasa' : jQuery('#AcctPenjualanJasa').val(),
 			'AcctPersediaan' : jQuery('#AcctPersediaan').val(),
-			'BahanRakitan' : oItemBahan
+			'Gambar' : jQuery('#image_base64').val(),
+			'BahanRakitan' : oItemBahan,
+			'DiskonSetting' : oDiskon
         }
 
         var formtype = jQuery('#formtype').val();
@@ -876,6 +993,50 @@
         }
 
 	})
+
+	jQuery('#image_result').click(function(){
+        $('#Attachment').click();
+    });
+
+    $("#Attachment").change(function(){
+      var file = $(this)[0].files[0];
+      img = new Image();
+      img.src = _URL.createObjectURL(file);
+      var imgwidth = 0;
+      var imgheight = 0;
+      img.onload = function () {
+        imgwidth = this.width;
+        imgheight = this.height;
+        $('#width').val(imgwidth);
+        $('#height').val(imgheight);
+      }
+      readURL(this);
+      encodeImagetoBase64(this);
+      // alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+    });
+
+    function readURL(input) {
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+          
+        reader.onload = function (e) {
+          // console.log(e.target.result);
+          $('#image_result').html("<img src ='"+e.target.result+"'> ");
+        }
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+    function encodeImagetoBase64(element) {
+      $('#image_base64').val('');
+        var file = element.files[0];
+        var reader = new FileReader();
+        reader.onloadend = function() {
+          // $(".link").attr("href",reader.result);
+          // $(".link").text(reader.result);
+          $('#image_base64').val(reader.result);
+        }
+        reader.readAsDataURL(file);
+    }
 
 	// Repopulate
 	function FillComboJenis(KodeJenis) {
@@ -1030,7 +1191,135 @@
 		})
 	}
 	
+	function bindDiskon(data) {
+		var dataGridInstance = jQuery("#gridContainerDiskon").dxDataGrid({
+			allowColumnResizing: true,
+			dataSource: data,
+			keyExpr: "Nomor",
+			showBorders: true,
+            allowColumnReordering: true,
+            allowColumnResizing: true,
+            columnAutoWidth: true,
+            showBorders: true,
+            paging: {
+                enabled: true,
+                pageSize: 30
+            },
+            editing: {
+                mode: "row",
+                allowUpdating: true,
+                allowDeleting: true,
+                texts: {
+                    confirmDeleteMessage: ''  
+                }
+            },
+            columns:[
+            	{
+                    type: "buttons",
+                    buttons: ["edit", "delete"],
+                    visible: true,
+                    fixed: true,
+                },
+                {
+                    dataField: "Nomor",
+                    caption: "#",
+                    allowEditing:false
+                },
+                {
+                    dataField: "QtyMinimum",
+                    caption: "Qty Minimum",
+                    allowEditing:true
+                },
+                {
+                	// oJenisDiskon
+                    dataField: "TipeDiskon",
+                    caption: "Tipe Diskon",
+                    allowEditing:true,
+                    lookup: {
+					    dataSource: oJenisDiskon,
+					    valueExpr: 'KodeJenisDiskon',
+					    displayExpr: 'NamaJenisDiskon',
+				    },
+                },
+                {
+                    dataField: "Diskon",
+                    caption: "Diskon",
+                    allowEditing:true
+                },
+            ],
+            onContentReady: function(e) {
+	            var rowData = dataGridInstance.option("dataSource");
+	            if (rowData.length == 1) {
+	            	dataGridInstance.editRow(0)	
+	            }
+	        },
+	        onCellClick:function (e) {
+	        	// console.log(dataGridInstance.option("dataSource"))
+	            var rowData = dataGridInstance.option("dataSource");
+	            var columnIndex = e.columnIndex;
+	            // console.log(e)
+	        	if (columnIndex >= 1 && columnIndex <= 5) {
+	                dataGridInstance.editRow(e.rowIndex)	
+	            }
+	            dataGridInstance.option("focusedColumnIndex", columnIndex);	
+	            // dataGridInstance.addRow();
 
+	            var allRowsData  = dataGridInstance.option("dataSource");
+	            var blankCount = 0;
+	            for (var i = 0; i < allRowsData.length; i++) {
+	    			if (allRowsData[i]["QtyMinimum"] == 0) {
+	    				blankCount += 1;
+	    			}
+	    		}
+
+	    		if (blankCount == 1) {
+	    			var newData = {Nomor:allRowsData.length +1, QtyMinimum: 0, TipeDiskon:"", Diskon: 0}
+					dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
+					dataGridInstance.refresh();
+	    		}
+	        },
+		}).dxDataGrid('instance');
+
+		var allRowsData  = dataGridInstance.option("dataSource");
+		var newData = {Nomor:allRowsData.length +1, QtyMinimum: 0, TipeDiskon:"", Diskon: 0}
+    	dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
+    	dataGridInstance.refresh();	
+
+    	dataGridInstance.on('rowUpdated', function(e) {
+    		var allRowsData  = dataGridInstance.option("dataSource");
+    		var blankCount = 0;
+
+    		for (var i = 0; i < allRowsData.length; i++) {
+    			if (allRowsData[i]["QtyMinimum"] == 0) {
+    				blankCount += 1;
+    			}
+    		}
+
+    		if (blankCount == 1) {
+    			var newData = {Nomor:allRowsData.length +1, QtyMinimum: 0, TipeDiskon:"", Diskon: 0}
+				dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
+				dataGridInstance.refresh();
+    		}
+    	});
+
+    	dataGridInstance.on('editorPreparing',function (e) {
+    		if (e.parentType === "dataRow" && e.dataField === "QtyMinimum") {
+    			e.editorOptions.onFocusOut = (x) => {
+    				dataGridInstance.saveEditData();
+    			}
+    		}
+    		// else if (e.parentType === "dataRow" && e.dataField === "TipeDiskon") {
+    		// 	e.editorOptions.onFocusOut = (x) => {
+		    // 		dataGridInstance.saveEditData();
+		    // 	}
+    		// }
+    		else if (e.parentType === "dataRow" && e.dataField === "Diskon") {
+    			e.editorOptions.onFocusOut = (x) => {
+		    		dataGridInstance.saveEditData();
+		    	}
+    		}
+    	});
+	}
 	function bindGrid(data) {
 		// console.log(oItem)
 		var dataGridInstance = jQuery("#gridContainerRakitan").dxDataGrid({

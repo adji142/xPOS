@@ -16,7 +16,11 @@ class MetodePembayaran extends Migration
         Schema::create('metodepembayaran', function (Blueprint $table) {
             $table->id();
             $table->string('NamaMetodePembayaran');
-            $table->string('AkunPembayaran');
+            $table->string('AkunPembayaran')->nullable();
+            $table->text('Image')->nullable();
+            $table->string('Active');
+            $table->string('MetodeVerifikasi');
+            $table->string('TipePembayaran');
             $table->string('RecordOwnerID');
             $table->timestamps();
         });

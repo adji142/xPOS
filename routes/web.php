@@ -34,6 +34,10 @@ use App\Http\Controllers\PenerimaanKonsinyasiController;
 use App\Http\Controllers\ReturKonsinyasiController;
 use App\Http\Controllers\OrderPenjualanController;
 use App\Http\Controllers\FakturPenjualanController;
+use App\Http\Controllers\PoSController;
+use App\Http\Controllers\BluetoothController;
+use App\Http\Controllers\PrinterController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -75,7 +79,7 @@ Route::post('/pelanggan/edit', [PelangganController::class, 'edit'])->name('pela
 Route::delete('/pelanggan/delete/{id}', [PelangganController::class, 'deletedata'])->name('pelanggan-delete')->middleware('auth');
 Route::post('/pelanggan/demografi', [PelangganController::class, 'ReadDemografi'])->name('demografipelanggan')->middleware('auth');
 Route::get('/pelanggan/export', [PelangganController::class,'Export'])->name('pelanggan-export')->middleware('auth');
-
+Route::post('/pelanggan/viewJson', [PelangganController::class, 'ReadPelangganJson'])->name('pelanggan-viewJson')->middleware('auth');
 /*
 |--------------------------------------------------------------------------
 | Supplier
@@ -465,3 +469,18 @@ Route::post('/fpenjualan/editJson', [FakturPenjualanController::class, 'editJson
 Route::post('/fpenjualan/readheader', [FakturPenjualanController::class, 'ViewHeader'])->name('fpenjualan-readheader')->middleware('auth');
 Route::post('/fpenjualan/readdetail', [FakturPenjualanController::class, 'ViewDetail'])->name('fpenjualan-readdetail')->middleware('auth');
 Route::post('/fpenjualan/findheader', [FakturPenjualanController::class, 'FindHeader'])->name('fpenjualan-findheader')->middleware('auth');
+Route::get('/fpenjualan/pos', [PoSController::class, 'View'])->name('fpenjualan-pos')->middleware('auth');
+Route::post('/fpenjualan/getDiskon', [PoSController::class, 'GetDiscount'])->name('fpenjualan-getDiskon')->middleware('auth');
+Route::post('/fpenjualan/retailPos', [FakturPenjualanController::class, 'storePoS'])->name('fpenjualan-retailPos')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Printing Section
+|--------------------------------------------------------------------------
+|
+*/
+
+Route::get('/bluetooth/scan', [BluetoothController::class, 'scan'])->name('bluetooth-scan')->middleware('auth');
+Route::get('/bluetooth/connect/{id}', [BluetoothController::class, 'connect'])->name('bluetooth-connect')->middleware('auth');
+Route::post('/print/test', [PrinterController::class, 'PrintRecieptTest'])->name('print-test')->middleware('auth');
+Route::post('/print/retail', [PrinterController::class, 'PrintRecieptRetail'])->name('print-retail')->middleware('auth');

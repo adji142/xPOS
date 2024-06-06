@@ -11,6 +11,9 @@ use Log;
 use charlieuki\ReceiptPrinter\ReceiptPrinter as ReceiptPrinter;
 
 use App\Models\Company;
+use App\Models\Printer;
+use App\Models\Gudang;
+use App\Models\Termin;
 
 class CompanyController extends Controller
 {
@@ -22,12 +25,18 @@ class CompanyController extends Controller
 
     	// exec("print /d:USB001: D:\testprinting.txt");
         $company = Company::Where('KodePartner','=',Auth::user()->RecordOwnerID)->get();
+        $printer = Printer::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+        $gudang = Gudang::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+        $temin = Termin::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
         $title = 'Delete Data Perusahaan !';
         $text = "Are you sure you want to delete ?";
         confirmDelete($title, $text);
         return view("setting.CompanySetting",[
-            'company' => $company
+            'company' => $company,
+            'printer' => $printer,
+            'gudang' => $gudang,
+            'temin' => $temin
         ]);
     }
     public function edit(Request $request){
@@ -59,6 +68,11 @@ class CompanyController extends Controller
                                     'isPostingAkutansi' => empty($request->input('isPostingAkutansi')) ? 0 : $request->input('isPostingAkutansi'),
 									'NamaPosPrinter' => empty($request->input('NamaPosPrinter')) ? "" : $request->input('NamaPosPrinter'),
 									'FooterNota' => empty($request->input('FooterNota')) ? "" : $request->input('FooterNota'),
+                                    'LebarKertas' => empty($request->input('LebarKertas')) ? "" : $request->input('LebarKertas'),
+                                    'JenisUsaha' => empty($request->input('JenisUsaha')) ? "" : $request->input('JenisUsaha'),
+                                    'GudangPoS' => empty($request->input('GudangPoS')) ? "" : $request->input('GudangPoS'),
+                                    'TerminBayarPoS' => empty($request->input('TerminBayarPoS')) ? "" : $request->input('TerminBayarPoS'),
+                                    'AllowNegativeInventory' => empty($request->input('AllowNegativeInventory')) ? "" : $request->input('AllowNegativeInventory'),
                 				]
                 			);
 
