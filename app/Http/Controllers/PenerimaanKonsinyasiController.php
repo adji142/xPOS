@@ -129,7 +129,9 @@ class PenerimaanKonsinyasiController extends Controller
 						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();    
 		$termin = Termin::where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 		$item = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-					->where('Active','Y')->get();
+					->where('Active','Y')
+					->where('isKonsinyasi','Y')
+					->get();
 
 		$konsinyasiheader = PenerimaanKonsinyasiHeader::where('NoTransaksi', $NoTransaksi)
 						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
@@ -218,6 +220,11 @@ class PenerimaanKonsinyasiController extends Controller
 			foreach ($jsonData['Detail'] as $key) {
 				if ($key['Qty'] == 0) {
 					goto skip;
+				}
+				if ($key['KodeGudang'] == "") {
+					$data['message'] = "Gudang Penerima tidak boleh kosong";
+					$errorCount +=1;
+					goto jump;
 				}
 
 				$modelDetail = new PenerimaanKonsinyasiDetail;
@@ -324,6 +331,12 @@ class PenerimaanKonsinyasiController extends Controller
 
 						if ($key['LineStatus'] == "C") {
 							goto skip;
+						}
+
+						if ($key['KodeGudang'] == "") {
+							$data['message'] = "Gudang Penerima tidak boleh kosong";
+							$errorCount +=1;
+							goto jump;
 						}
 
 

@@ -21,9 +21,9 @@ class JenisItemController extends Controller
                     for ($i = 0; $i < count($field); $i++){
                         $query->orwhere($field[$i], 'like',  '%' . $keyword .'%');
                     }      
-                })->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
+                })->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
-        $jenisitem = $jenisitem->paginate(4);
+        // $jenisitem = $jenisitem->paginate(4);
 
         $title = 'Delete Grup Pelanggan !';
         $text = "Are you sure you want to delete ?";

@@ -18,6 +18,7 @@ use App\Models\Satuan;
 use App\Models\SettingAccount;
 use App\Models\ItemRakitan;
 use App\Models\Diskon;
+use App\Models\ItemKonversi;
 
 class ItemMasterController extends Controller
 {
@@ -31,33 +32,37 @@ class ItemMasterController extends Controller
         $TipeItemIN = $request->input('TipeItemIN');
         $Active = $request->input('Active');
 
-        $sql = "itemmaster.KodeItem, itemmaster.NamaItem, itemmaster.Barcode,itemmaster.HargaJual,itemmaster.HargaPokokPenjualan,itemmaster.HargaBeliTerakhir,itemmaster.Stock, itemmaster.StockMinimum, merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, itemmaster.Rak ";
-        $itemmaster = ItemMaster::selectRaw($sql)
-        				->leftJoin('jenisitem', 'jenisitem.KodeJenis','=','itemmaster.KodeJenisItem')
-        				->leftJoin('merk','merk.KodeMerk','=','itemmaster.KodeMerk')
-        				->leftJoin('gudang', 'gudang.KodeGudang','=','itemmaster.KodeGudang')
-        				->leftJoin('supplier','supplier.KodeSupplier','=','itemmaster.KodeSupplier')
-        				->leftJoin('satuan', 'satuan.KodeSatuan','=','itemmaster.Satuan')
-        				->where('itemmaster.RecordOwnerID','=',Auth::user()->RecordOwnerID);
-       	if ($KodeJenis != "") {
-       		$itemmaster->where('itemmaster.KodeJenisItem','=', $KodeJenis);
-       	}
+        // $sql = "itemmaster.KodeItem, itemmaster.NamaItem, itemmaster.Barcode,itemmaster.HargaJual,itemmaster.HargaPokokPenjualan,itemmaster.HargaBeliTerakhir,itemmaster.Stock, itemmaster.StockMinimum, merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, itemmaster.Rak ";
+        // $itemmaster = ItemMaster::selectRaw($sql)
+        // 				->leftJoin('jenisitem', 'jenisitem.KodeJenis','=','itemmaster.KodeJenisItem')
+        // 				->leftJoin('merk','merk.KodeMerk','=','itemmaster.KodeMerk')
+        // 				->leftJoin('gudang', 'gudang.KodeGudang','=','itemmaster.KodeGudang')
+        // 				->leftJoin('supplier','supplier.KodeSupplier','=','itemmaster.KodeSupplier')
+        // 				->leftJoin('satuan', 'satuan.KodeSatuan','=','itemmaster.Satuan')
+        // 				->where('itemmaster.RecordOwnerID','=',Auth::user()->RecordOwnerID);
+       	// if ($KodeJenis != "") {
+       	// 	$itemmaster->where('itemmaster.KodeJenisItem','=', $KodeJenis);
+       	// }
 
-       	if ($Merk != "") {
-       		$itemmaster->where('itemmaster.KodeMerk','=', $Merk);
-       	}
+       	// if ($Merk != "") {
+       	// 	$itemmaster->where('itemmaster.KodeMerk','=', $Merk);
+       	// }
 
-       	if ($TipeItem != "") {
-       		$itemmaster->where('itemmaster.TypeItem','=', $TipeItem);
-       	}
+       	// if ($TipeItem != "") {
+       	// 	$itemmaster->where('itemmaster.TypeItem','=', $TipeItem);
+       	// }
 
-        if ($TipeItemIN != "") {
-          $itemmaster->whereIn('itemmaster.TypeItem',explode(',', $TipeItemIN));
-        }
+        // if ($TipeItemIN != "") {
+        //   $itemmaster->whereIn('itemmaster.TypeItem',explode(',', $TipeItemIN));
+        // }
 
-       	if ($Active != "") {
-       		$itemmaster->where('itemmaster.Active','=', $Active);
-       	}
+       	// if ($Active != "") {
+       	// 	$itemmaster->where('itemmaster.Active','=', $Active);
+       	// }
+
+        $oItem = new ItemMaster();
+        $itemmaster = $oItem->GetItemData(Auth::user()->RecordOwnerID,$KodeJenis, $Merk, $TipeItem,$TipeItemIN, $Active, '', 0);
+
 
        	// JenisItem
        	$jenisitem = JenisItem::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
@@ -89,39 +94,62 @@ class ItemMasterController extends Controller
       $Scan = $request->input('Scan');
       $TipeItemIN = $request->input('TipeItemIN');
 
-      $sql = "itemmaster.KodeItem, itemmaster.NamaItem, itemmaster.Barcode,itemmaster.HargaJual,itemmaster.HargaPokokPenjualan,itemmaster.HargaBeliTerakhir,itemmaster.Stock, itemmaster.StockMinimum, merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, itemmaster.Rak, COALESCE(itemmaster.HargaJual,0) - COALESCE(itemmaster.HargaBeliTerakhir, 0) Margin, itemmaster.Satuan ";
-      $itemmaster = ItemMaster::selectRaw($sql)
-              ->leftJoin('jenisitem', 'jenisitem.KodeJenis','=','itemmaster.KodeJenisItem')
-              ->leftJoin('merk','merk.KodeMerk','=','itemmaster.KodeMerk')
-              ->leftJoin('gudang', 'gudang.KodeGudang','=','itemmaster.KodeGudang')
-              ->leftJoin('supplier','supplier.KodeSupplier','=','itemmaster.KodeSupplier')
-              ->leftJoin('satuan', 'satuan.KodeSatuan','=','itemmaster.Satuan')
-              ->where('itemmaster.RecordOwnerID','=',Auth::user()->RecordOwnerID);
-      if ($KodeJenis != "") {
-        $itemmaster->where('itemmaster.KodeJenisItem','=', $KodeJenis);
-      }
+      // $sql = "itemmaster.KodeItem, itemmaster.NamaItem, itemmaster.Barcode,itemmaster.HargaJual,itemmaster.HargaPokokPenjualan,itemmaster.HargaBeliTerakhir,itemmaster.Stock, itemmaster.StockMinimum, merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, itemmaster.Rak, COALESCE(itemmaster.HargaJual,0) - COALESCE(itemmaster.HargaBeliTerakhir, 0) Margin, itemmaster.Satuan ";
+      // $itemmaster = ItemMaster::selectRaw($sql)
+      //         ->leftJoin('jenisitem', 'jenisitem.KodeJenis','=','itemmaster.KodeJenisItem')
+      //         ->leftJoin('merk','merk.KodeMerk','=','itemmaster.KodeMerk')
+      //         ->leftJoin('gudang', 'gudang.KodeGudang','=','itemmaster.KodeGudang')
+      //         ->leftJoin('supplier','supplier.KodeSupplier','=','itemmaster.KodeSupplier')
+      //         ->leftJoin('satuan', 'satuan.KodeSatuan','=','itemmaster.Satuan')
+      //         ->where('itemmaster.RecordOwnerID','=',Auth::user()->RecordOwnerID);
+      // if ($KodeJenis != "") {
+      //   $itemmaster->where('itemmaster.KodeJenisItem','=', $KodeJenis);
+      // }
 
-      if ($Merk != "") {
-        $itemmaster->where('itemmaster.KodeMerk','=', $Merk);
-      }
+      // if ($Merk != "") {
+      //   $itemmaster->where('itemmaster.KodeMerk','=', $Merk);
+      // }
 
-      if ($TipeItem != "") {
-        $itemmaster->where('itemmaster.TypeItem','=', $TipeItem);
-      }
+      // if ($TipeItem != "") {
+      //   $itemmaster->where('itemmaster.TypeItem','=', $TipeItem);
+      // }
 
-      if ($TipeItemIN != "") {
-        $itemmaster->whereIn('itemmaster.TypeItem',explode(',', $TipeItemIN));
-      }
+      // if ($TipeItemIN != "") {
+      //   $itemmaster->whereIn('itemmaster.TypeItem',explode(',', $TipeItemIN));
+      // }
         
-      if ($Active != "") {
-        $itemmaster->where('itemmaster.Active','=', $Active);
-      }
+      // if ($Active != "") {
+      //   $itemmaster->where('itemmaster.Active','=', $Active);
+      // }
 
-      if ($Scan != "") {
-        $itemmaster->where(DB::raw("CONCAT(itemmaster.KodeItem,' ', itemmaster.NamaItem, ' ', itemmaster.Barcode,' ', merk.NamaMerk)"),'LIKE','%' . $Scan . '%');
-      }
+      // if ($Scan != "") {
+      //   $itemmaster->where(DB::raw("CONCAT(itemmaster.KodeItem,' ', itemmaster.NamaItem, ' ', itemmaster.Barcode,' ', merk.NamaMerk)"),'LIKE','%' . $Scan . '%');
+      // }
+
+      $oItem = new ItemMaster();
+      $itemmaster = $oItem->GetItemData(Auth::user()->RecordOwnerID,$KodeJenis, $Merk, $TipeItem,$TipeItemIN, $Active, $Scan,1);
 
       $data['data'] = $itemmaster->get();
+
+      return response()->json($data);
+    }
+
+    public function Find(Request $request)
+    {
+      $data = array('success'=>false, 'message'=>'', 'data'=>array());
+      $KodeItem = $request->input('KodeItem');
+      $Barcode = $request->input('Barcode');
+
+      $oItem = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID);
+
+      if ($KodeItem != "") {
+        $oItem->where('KodeItem', $KodeItem);
+      }
+      if ($Barcode != "") {
+        $oItem->where('Barcode', $Barcode);
+      }
+
+      $data['data'] = $oItem->get();
 
       return response()->json($data);
     }
@@ -160,6 +188,8 @@ class ItemMasterController extends Controller
                       ->where('KodeItemHasil','=', $KodeItem)->get();
       $diskon = Diskon::where('RecordOwnerID','=', Auth::user()->RecordOwnerID)
                       ->where('KodeItem','=', $KodeItem)->get();
+      $itemkonversi = ItemKonversi::where('RecordOwnerID','=', Auth::user()->RecordOwnerID)
+                      ->where('KodeItem','=', $KodeItem)->get();
         
         return view("master.ItemMasterData.ItemMaster-Input",[
         	'itemmaster' => $itemmaster,
@@ -175,7 +205,8 @@ class ItemMasterController extends Controller
           'supplier' => $supplier,
           'itembahanrakitan' => $itemmasterbahanrakitan,
           'bahanrakitan' => $bahanrakitan,
-          'diskon' => $diskon
+          'diskon' => $diskon,
+          'itemkonversi' => $itemkonversi
         ]);
     }
 
@@ -252,12 +283,50 @@ class ItemMasterController extends Controller
                 $modelDiskon->Kelipatan = 0;
                 $modelDiskon->TipeDiskon = $jsonData['DiskonSetting'][$i]['TipeDiskon'];
                 $modelDiskon->Diskon = $jsonData['DiskonSetting'][$i]['Diskon'];
-                $modelDiskon->RecordOwnerID = $jsonData['DiskonSetting'][$i]['RecordOwnerID'];
+                $modelDiskon->RecordOwnerID = Auth::user()->RecordOwnerID;
 
                 $saveDiskon = $modelDiskon->save();
 
                 if (!$saveDiskon) {
                   $data['message'] = 'Simpan Data Diskon Baris $i Gagal disimpan';
+                  $errorCount +=1;
+                  goto jump;
+                }
+              }
+            }
+
+            if (count($jsonData['ItemKonversi']) > 0) {
+              for ($i=0; $i < count($jsonData['ItemKonversi']); $i++) { 
+                if ($jsonData['ItemKonversi'][$i]['Satuan'] == "") {
+                  $data['message'] = 'Satuan Konversi tidak boleh kosong';
+                  $errorCount +=1;
+                  goto jump;
+                }
+                if ($jsonData['ItemKonversi'][$i]['Barcode'] == "") {
+                  $data['message'] = 'Barcode Pada Item Konversi Tidak Boleh Kosong';
+                  $errorCount +=1;
+                  goto jump;
+                }
+                $oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
+                          ->where('Barcode',$jsonData['ItemKonversi'][$i]['Barcode'])->get();
+                if ($oItem->count() > 0) {
+                  $data['message'] = 'Barcode '.$jsonData['ItemKonversi'][$i]['Barcode'].' Sudah digunakan pada Item Lain';
+                  $errorCount +=1;
+                  goto jump;
+                }
+                $modelKonversi = new ItemKonversi; 
+                $modelKonversi->KodeItem = $jsonData['KodeItem'];
+                $modelKonversi->Satuan = $jsonData['ItemKonversi'][$i]['Satuan'];
+                $modelKonversi->QtyKonversi = $jsonData['ItemKonversi'][$i]['QtyKonversi'];
+                $modelKonversi->HargaPokok = $jsonData['ItemKonversi'][$i]['HargaPokok'];
+                $modelKonversi->HargaJual = $jsonData['ItemKonversi'][$i]['HargaJual'];
+                $modelKonversi->Barcode = $jsonData['ItemKonversi'][$i]['Barcode'];
+                $modelKonversi->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+                $saveKonversi = $modelKonversi->save();
+
+                if (!$saveKonversi) {
+                  $data['message'] = 'Simpan Data Konversi Baris $i Gagal disimpan';
                   $errorCount +=1;
                   goto jump;
                 }
@@ -391,6 +460,49 @@ class ItemMasterController extends Controller
                     }
                   }
                 }
+
+                if (count($jsonData['ItemKonversi']) > 0) {
+                  $itemkonversi = DB::table('itemkonversi')
+                            ->where('KodeItem','=',  $jsonData['KodeItem'])
+                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->delete();
+                  for ($i=0; $i < count($jsonData['ItemKonversi']); $i++) { 
+                    if ($jsonData['ItemKonversi'][$i]['Satuan'] == "") {
+                      $data['message'] = 'Satuan Konversi tidak boleh kosong';
+                      $errorCount +=1;
+                      goto jump;
+                    }
+                    if ($jsonData['ItemKonversi'][$i]['Barcode'] == "") {
+                      $data['message'] = 'Barcode Pada Item Konversi Tidak Boleh Kosong';
+                      $errorCount +=1;
+                      goto jump;
+                    }
+                    $oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
+                              ->where('Barcode',$jsonData['ItemKonversi'][$i]['Barcode'])->get();
+                    if ($oItem->count() > 0) {
+                      $data['message'] = 'Barcode '.$jsonData['ItemKonversi'][$i]['Barcode'].' Sudah digunakan pada Item Lain';
+                      $errorCount +=1;
+                      goto jump;
+                    }
+                    $modelKonversi = new ItemKonversi; 
+                    $modelKonversi->KodeItem = $jsonData['KodeItem'];
+                    $modelKonversi->Satuan = $jsonData['ItemKonversi'][$i]['Satuan'];
+                    $modelKonversi->QtyKonversi = $jsonData['ItemKonversi'][$i]['QtyKonversi'];
+                    $modelKonversi->HargaPokok = $jsonData['ItemKonversi'][$i]['HargaPokok'];
+                    $modelKonversi->HargaJual = $jsonData['ItemKonversi'][$i]['HargaJual'];
+                    $modelKonversi->Barcode = $jsonData['ItemKonversi'][$i]['Barcode'];
+                    $modelKonversi->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+                    $saveKonversi = $modelKonversi->save();
+
+                    if (!$saveKonversi) {
+                      $data['message'] = 'Simpan Data Konversi Baris $i Gagal disimpan';
+                      $errorCount +=1;
+                      goto jump;
+                    }
+                  }
+                }
+
                 $data['success'] =  true;
             } else{
                 // throw new \Exception('Item not found.');

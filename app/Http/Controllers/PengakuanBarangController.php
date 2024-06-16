@@ -63,14 +63,19 @@ class PengakuanBarangController extends Controller
     {
     	$pengakuanheader = PengakuanBarangHeader::where('NoTransaksi', $NoTransaksi)
     						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
-    	$pengakuandetail = PengakuanBarangDetail::where('NoTransaksi', $NoTransaksi)
-    						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+    	$pengakuandetail = PengakuanBarangDetail::selectRaw("pengakuanbarangdetail.*, itemmaster.NamaItem")
+    						->leftJoin('itemmaster', function ($value){
+								$value->on('pengakuanbarangdetail.KodeItem','=','itemmaster.KodeItem')
+								->on('pengakuanbarangdetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+							})
+    						->where('pengakuanbarangdetail.NoTransaksi', $NoTransaksi)
+    						->where('pengakuanbarangdetail.RecordOwnerID', Auth::user()->RecordOwnerID)->get();
     	$item = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
 						->where('Active','Y')->get();
 		$satuan = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 		$gudang = Gudang::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
-    	return view("Transaksi.Inventory.PengakuanStock-Input",[
+    	return view("Transaksi.Inventory.PengakuanStock-Input2",[
 	        'item' => $item,
 	        'pengakuanheader' => $pengakuanheader,
 	        'pengakuandetail' => $pengakuandetail,
@@ -127,6 +132,12 @@ class PengakuanBarangController extends Controller
            	foreach ($jsonData['Detail'] as $key) {
            		if ($key['Qty'] == 0) {
 					$data['message'] = "Quantity Harus lebih dari 0";
+					$errorCount += 1;
+					goto jump;
+				}
+
+				if ($key['KodeGudang'] == "") {
+					$data['message'] = "Gudang Tidak boleh kosong";
 					$errorCount += 1;
 					goto jump;
 				}

@@ -142,27 +142,36 @@ class FakturPembelianController extends Controller
 					->where('Active','Y')->get();
 		$orderheader = OrderPembelianHeader::where('NoTransaksi', $NoTransaksi)
 						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
-		$orderdetail = OrderPembelianDetail::where('NoTransaksi', $NoTransaksi)
-						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+		$orderdetail = OrderPembelianDetail::selectRaw("orderpembeliandetail.*, itemmaster.NamaItem")
+							->leftJoin('itemmaster', function ($value){
+	        					$value->on('orderpembeliandetail.KodeItem','=','itemmaster.KodeItem')
+	        					->on('orderpembeliandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+	        				})
+							->where('orderpembeliandetail.NoTransaksi', $NoTransaksi)
+							->where('orderpembeliandetail.RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 
 		$fakturheader = FakturPembelianHeader::where('NoTransaksi', $NoTransaksi)
 						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 		// $fakturdetail = FakturPembelianDetail::where('NoTransaksi', $NoTransaksi)
 		// 				->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
-		$sql = "fakturpembeliandetail.*, fakturpembeliandetail.Qty AS QtyFaktur, orderpembeliandetail.Qty AS QtyOrder";
+		$sql = "fakturpembeliandetail.*, fakturpembeliandetail.Qty AS QtyFaktur, orderpembeliandetail.Qty AS QtyOrder, itemmaster.NamaItem";
 		$fakturdetail = FakturPembelianDetail::selectRaw($sql)
 						->leftJoin('orderpembeliandetail', function ($value){
 							$value->on('orderpembeliandetail.NoTransaksi','=','fakturpembeliandetail.BaseReff')
 							->on('orderpembeliandetail.NoUrut','=','fakturpembeliandetail.BaseLine')
 							->on('orderpembeliandetail.RecordOwnerID','=','fakturpembeliandetail.RecordOwnerID');
 						})
+						->leftJoin('itemmaster', function ($value){
+        					$value->on('fakturpembeliandetail.KodeItem','=','itemmaster.KodeItem')
+        					->on('fakturpembeliandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+        				})
 						->where('fakturpembeliandetail.NoTransaksi',$NoTransaksi)
 						->where('fakturpembeliandetail.RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 
 		$satuan = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 		$gudang = Gudang::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
-	    return view("Transaksi.Pembelian.FakturPembelian-Input",[
+	    return view("Transaksi.Pembelian.FakturPembelian-Input2",[
 	        'supplier' => $supplier,
 	        'termin' => $termin,
 	        'item' => $item,
@@ -234,6 +243,18 @@ class FakturPembelianController extends Controller
 			foreach ($jsonData['Detail'] as $key) {
 				if ($key['Qty'] == 0) {
 					goto skip;
+				}
+
+				if ($key['Qty'] > $key['QtyOrder']) {
+					$data["message"] = "Qty Faktur Item " . $key['NamaItem']." Melebihi Qty Order";
+					$errorCount +=1;
+					goto jump;
+				}
+
+				if ($key['KodeGudang'] == "") {
+					$data["message"] = "Gudang Penerima Belum ditentukan";
+					$errorCount +=1;
+					goto jump;
 				}
 
 				$modelDetail = new FakturPembelianDetail;

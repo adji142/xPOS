@@ -368,8 +368,8 @@
 	<!-- End DevExpress -->
 	<script src="{{asset('js/slick.min.js')}}"></script>
 	<script src="{{asset('api/jqueryvalidate/jquery.validate.min.js')}}"></script>
-	<script src="{{asset('api/apexcharts/apexcharts.js')}}"></script>
-	<script src="{{asset('api/apexcharts/scriptcharts.js')}}"></script> 
+	<!-- <script src="{{asset('api/apexcharts/apexcharts.js')}}"></script>
+	<script src="{{asset('api/apexcharts/scriptcharts.js')}}"></script>  -->
 	<script src="{{asset('api/pace/pace.js')}}"></script>
 	<script src="{{asset('api/mcustomscrollbar/jquery.mCustomScrollbar.concat.min.js')}}"></script>
 	<script src="{{asset('api/quill/quill.min.js')}}"></script>

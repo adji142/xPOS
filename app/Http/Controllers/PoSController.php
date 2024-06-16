@@ -13,6 +13,7 @@ use App\Models\Pelanggan;
 use App\Models\ItemMaster;
 use App\Models\Diskon;
 use App\Models\MetodePembayaran;
+use App\Models\Sales;
 
 require_once(app_path('Libraries/phpserial/src/PhpSerial.php'));
 class PoSController extends Controller
@@ -20,6 +21,9 @@ class PoSController extends Controller
     public function View(Request $request)
     {
         $pelanggan = Pelanggan::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                    ->where('Status','=',1)
+                    ->get();
+        $sales = Sales::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                     ->where('Status','=',1)
                     ->get();
         $company = Company::Where('KodePartner','=',Auth::user()->RecordOwnerID)->get();
@@ -33,7 +37,8 @@ class PoSController extends Controller
             'pelanggan' => $pelanggan,
             'company' => $company,
             'itemServices' =>$itemServices,
-            'metodepembayaran' => $metodepembayaran
+            'metodepembayaran' => $metodepembayaran,
+            'sales' => $sales
         ]);
     }
 

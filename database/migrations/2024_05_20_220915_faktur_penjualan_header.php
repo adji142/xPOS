@@ -15,8 +15,9 @@ class FakturPenjualanHeader extends Migration
     {
         Schema::create('fakturpenjualanheader', function (Blueprint $table) {
             $table->string('Periode');
-            $table->string('NoTransaksi');
-            $table->date('TglTransaksi');
+            $table->string('Transaksi');
+            $table->string('NoTransaksi')->unique();
+            $table->datetime('TglTransaksi');
             $table->date('TglJatuhTempo');
             $table->string('NoReff');
             $table->string('KodePelanggan');
@@ -33,6 +34,7 @@ class FakturPenjualanHeader extends Migration
             $table->integer('Posted');
             $table->string('MetodeBayar')->nullable();
             $table->string('ReffPembayaran')->nullable();
+            $table->string('KodeSales')->nullable();
             $table->string('CreatedBy');
             $table->string('UpdatedBy');
             $table->string('RecordOwnerID');

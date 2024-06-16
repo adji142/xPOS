@@ -1,7 +1,14 @@
 @extends('parts.header')
 	
 @section('content')
-
+<style type="text/css">
+    .disabled-link {
+        pointer-events: none; /* Disables click events */
+        color: gray; /* Changes the color to indicate the link is disabled */
+        text-decoration: none; /* Optional: Remove underline */
+        cursor: default; /* Changes the cursor to indicate it's not clickable */
+    }
+</style>
 <div class="subheader py-2 py-lg-6 subheader-solid">
 	<div class="container-fluid">
 		<nav aria-label="breadcrumb">
@@ -195,6 +202,11 @@
                     allowEditing:false
                 },
                 {
+                    dataField: "Transaksi",
+                    caption: "TRX",
+                    allowEditing:false,
+                },
+                {
                     dataField: "StatusDocument",
                     caption: "Status",
                     allowEditing:false
@@ -249,7 +261,11 @@
                     cellTemplate: function(cellElement, cellInfo) {
                         var link = "fpenjualan/form/"+cellInfo.data.NoTransaksi;
                         var LinkAccess = "";
-                        LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit' >Edit</a>";
+                        if (cellInfo.data.Transaksi == 'POS') {
+                            LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1 disabled-link' id = 'btEdit' disabled>Edit</a>";
+                        }else{
+                            LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit' disabled>Edit</a>";
+                        }
 
                         // LinkAccess += "<a href = '#' class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btBayar' >Bayar</a>";
 
@@ -292,7 +308,16 @@
                 {
                     dataField: "NoUrut",
                     caption: "#",
-                    allowEditing:false
+                    allowEditing:false,
+                    visible: false
+                },
+                {
+                    caption: "#",
+                    allowEditing:false,
+                    cellTemplate: function(container, options) {
+                        var index = options.rowIndex + 1; // Menghitung nomor urut (dimulai dari 1)
+                        $("<div>").text(index).appendTo(container);
+                    }
                 },
                 {
                     dataField: "KodeItem",

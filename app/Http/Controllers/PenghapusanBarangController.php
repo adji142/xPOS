@@ -63,14 +63,19 @@ class PenghapusanBarangController extends Controller
     {
     	$penghapusanheader = PenghapusanBarangHeader::where('NoTransaksi', $NoTransaksi)
     						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
-    	$penghapusandetail = PenghapusanBarangDetail::where('NoTransaksi', $NoTransaksi)
-    						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+    	$penghapusandetail = PenghapusanBarangDetail::selectRaw("penghapusanbarangdetail.*, itemmaster.NamaItem")
+    						->leftJoin('itemmaster', function ($value){
+								$value->on('penghapusanbarangdetail.KodeItem','=','itemmaster.KodeItem')
+								->on('penghapusanbarangdetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+							})
+    						->where('penghapusanbarangdetail.NoTransaksi', $NoTransaksi)
+    						->where('penghapusanbarangdetail.RecordOwnerID', Auth::user()->RecordOwnerID)->get();
     	$item = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
 						->where('Active','Y')->get();
 		$satuan = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 		$gudang = Gudang::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
-    	return view("Transaksi.Inventory.PenghapusanStock-Input",[
+    	return view("Transaksi.Inventory.PenghapusanStock-Input2",[
 	        'item' => $item,
 	        'penghapusanheader' => $penghapusanheader,
 	        'penghapusandetail' => $penghapusandetail,

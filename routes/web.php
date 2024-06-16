@@ -37,6 +37,8 @@ use App\Http\Controllers\FakturPenjualanController;
 use App\Http\Controllers\PoSController;
 use App\Http\Controllers\BluetoothController;
 use App\Http\Controllers\PrinterController;
+use App\Http\Controllers\ReturPenjualanController;
+use App\Http\Controllers\DeliveryNoteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -247,6 +249,7 @@ Route::post('/rekening/getjson', [RekeningController::class, 'ViewJson'])->name(
 */
 Route::get('/itemmaster', [ItemMasterController::class,'View'])->name('itemmaster')->middleware('auth');
 Route::post('/itemmaster/read', [ItemMasterController::class, 'ViewJson'])->name('itemmaster-ViewJson')->middleware('auth');
+Route::post('/itemmaster/find', [ItemMasterController::class, 'Find'])->name('itemmaster-find')->middleware('auth');
 Route::get('/itemmaster/form/{id}', [ItemMasterController::class,'Form'])->name('itemmaster-form')->middleware('auth');
 Route::post('/itemmaster/edit', [ItemMasterController::class, 'edit'])->name('itemmaster-edit')->middleware('auth');
 Route::post('/itemmaster/store', [ItemMasterController::class, 'store'])->name('itemmaster-store')->middleware('auth');
@@ -435,7 +438,7 @@ Route::post('/cons/findheader', [PenerimaanKonsinyasiController::class, 'FindHea
 Route::get('/retcons', [ReturKonsinyasiController::class,'View'])->name('retcons')->middleware('auth');
 Route::get('/retcons/form/{id}', [ReturKonsinyasiController::class,'Form'])->name('retcons-form')->middleware('auth');
 Route::post('/retcons/storeJson', [ReturKonsinyasiController::class, 'storeJson'])->name('retcons-storeJson')->middleware('auth');
-Route::post('/cons/editJson', [ReturKonsinyasiController::class, 'editJson'])->name('retcons-editJson')->middleware('auth');
+Route::post('/retcons/editJson', [ReturKonsinyasiController::class, 'editJson'])->name('retcons-editJson')->middleware('auth');
 Route::post('/retcons/readheader', [ReturKonsinyasiController::class, 'ViewHeader'])->name('retcons-readheader')->middleware('auth');
 Route::post('/retcons/readdetail', [ReturKonsinyasiController::class, 'ViewDetail'])->name('retcons-readdetail')->middleware('auth');
 Route::post('/retcons/findheader', [ReturKonsinyasiController::class, 'FindHeader'])->name('retcons-findheader')->middleware('auth');
@@ -472,6 +475,21 @@ Route::post('/fpenjualan/findheader', [FakturPenjualanController::class, 'FindHe
 Route::get('/fpenjualan/pos', [PoSController::class, 'View'])->name('fpenjualan-pos')->middleware('auth');
 Route::post('/fpenjualan/getDiskon', [PoSController::class, 'GetDiscount'])->name('fpenjualan-getDiskon')->middleware('auth');
 Route::post('/fpenjualan/retailPos', [FakturPenjualanController::class, 'storePoS'])->name('fpenjualan-retailPos')->middleware('auth');
+Route::post('/fpenjualan/editStatus', [FakturPenjualanController::class, 'EditTransactionStatus'])->name('fpenjualan-editStatus')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Retur Penjualan
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/returpenjualan', [ReturPenjualanController::class,'View'])->name('returpenjualan')->middleware('auth');
+Route::get('/returpenjualan/form/{id}', [ReturPenjualanController::class,'Form'])->name('returpenjualan-form')->middleware('auth');
+Route::post('/returpenjualan/storeJson', [ReturPenjualanController::class, 'storeJson'])->name('returpenjualan-storeJson')->middleware('auth');
+Route::post('/returpenjualan/editJson', [ReturPenjualanController::class, 'editJson'])->name('returpenjualan-editJson')->middleware('auth');
+Route::post('/returpenjualan/readheader', [ReturPenjualanController::class, 'ViewHeader'])->name('returpenjualan-readheader')->middleware('auth');
+Route::post('/returpenjualan/readdetail', [ReturPenjualanController::class, 'ViewDetail'])->name('returpenjualan-readdetail')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------
@@ -484,3 +502,17 @@ Route::get('/bluetooth/scan', [BluetoothController::class, 'scan'])->name('bluet
 Route::get('/bluetooth/connect/{id}', [BluetoothController::class, 'connect'])->name('bluetooth-connect')->middleware('auth');
 Route::post('/print/test', [PrinterController::class, 'PrintRecieptTest'])->name('print-test')->middleware('auth');
 Route::post('/print/retail', [PrinterController::class, 'PrintRecieptRetail'])->name('print-retail')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Delivery Note
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/delivery', [DeliveryNoteController::class,'View'])->name('delivery')->middleware('auth');
+Route::get('/delivery/form/{id}', [DeliveryNoteController::class,'Form'])->name('delivery-form')->middleware('auth');
+Route::post('/delivery/storeJson', [DeliveryNoteController::class, 'storeJson'])->name('delivery-storeJson')->middleware('auth');
+Route::post('/delivery/editJson', [DeliveryNoteController::class, 'editJson'])->name('delivery-editJson')->middleware('auth');
+Route::post('/delivery/readheader', [DeliveryNoteController::class, 'ViewHeader'])->name('delivery-readheader')->middleware('auth');
+Route::post('/delivery/readdetail', [DeliveryNoteController::class, 'ViewDetail'])->name('delivery-readdetail')->middleware('auth');

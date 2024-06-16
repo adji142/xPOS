@@ -21,9 +21,7 @@ class SatuanController extends Controller
                     for ($i = 0; $i < count($field); $i++){
                         $query->orwhere($field[$i], 'like',  '%' . $keyword .'%');
                     }      
-                })->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
-
-        $satuan = $satuan->paginate(4);
+                })->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
         $title = 'Delete Grup Pelanggan !';
         $text = "Are you sure you want to delete ?";

@@ -113,7 +113,7 @@ License: You must have a valid license purchased only from themeforest(the above
 					<div class="topbar-item folder-data">
 					 <div class="btn btn-icon  w-auto h-auto btn-clean d-flex align-items-center py-0 me-3"  data-bs-toggle="modal" data-bs-target="#folderpop"
 					 >
-						 <span class="badge badge-pill badge-primary">5</span>
+						 <span class="badge badge-pill badge-primary" id="_draftCount">5</span>
 						 <span class="symbol symbol-35  symbol-light-success">
 							 <span class="symbol-label bg-warning font-size-h5 ">
 								 <svg width="20px" height="20px" xmlns="http://www.w3.org/2000/svg" fill="#ffff"  viewBox="0 0 16 16">
@@ -199,22 +199,12 @@ License: You must have a valid license purchased only from themeforest(the above
 				</div>
 				<div class="col-xl-9 col-lg-8 col-md-8">
 				     <div class="">
-						<div class="card card-custom gutter-b bg-white border-0 table-contentpos">
+						<div class="card card-custom gutter-b bg-white border-0" >
 							<div class="card-body">
-								<div class="d-flex justify-content-between colorfull-select">
-									<div class="selectmain">
-										<label class="text-dark d-flex" >Pilih Pelanggan 
-											<!-- <span class="badge badge-secondary white rounded-circle"  data-bs-toggle="modal" data-bs-target="#choosecustomer">
-											<svg xmlns="http://www.w3.org/2000/svg" class="svg-sm" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_122" x="0px" y="0px" width="512px" height="512px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve">
-												<g>
-												<rect x="234.362" y="128" width="43.263" height="256"></rect>
-												<rect x="128" y="234.375" width="256" height="43.25"></rect>
-												</g>
-												</svg>
-											</span> -->
-										
-										</label>
-										<select class="arabic-select select-down" id="KodePelanggan" name="KodePelanggan">
+								<div class="row">
+									<div class="col-md-3">
+										<label class="text-dark" >Pilih Pelanggan </label>
+										<select class="js-example-basic-single js-states form-control bg-transparent" id="KodePelanggan" name="KodePelanggan">
 											<option value="">Pilih Pelanggan</option>
 											@foreach($pelanggan as $ko)
 												<option value="{{ $ko->KodePelanggan }}">
@@ -223,7 +213,23 @@ License: You must have a valid license purchased only from themeforest(the above
 											@endforeach
 										</select>
 									</div>
+									<div class="col-md-3">
+										<label class="text-dark " >Pilih Sales </label>
+										<select class="js-example-basic-single js-states form-control bg-transparent" id="KodeSales" name="KodeSales">
+											<option value="">Pilih Sales</option>
+											@foreach($sales as $ko)
+												<option value="{{ $ko->KodeSales }}">
+                                                    {{ $ko->NamaSales }}
+                                                </option>
+											@endforeach
+										</select>
+									</div>
+									<div class="col-md-6" style="text-align: center;">
+										<label class="text-dark" >Nomor Dokumen</label>
+										<h2><div id="_NoTransaksi"></div></h2>
+									</div>	
 								</div>
+								
 							</div>	
 						</div>
 						<div class="card card-custom gutter-b bg-white border-0 table-contentpos">
@@ -510,46 +516,9 @@ License: You must have a valid license purchased only from themeforest(the above
 			</button>
 		  </div>
 		  <div class="modal-body pos-ordermain">
-			  <div class="row">
-				  <div class="col-lg-4">
-					  <div class="pos-order">
-						<h3 class="pos-order-title" >Order 1</h3>
-						<div class="orderdetail-pos">
-							<p>
-								<strong>Customer Name</strong>
-								Sophia Hale
-							</p>
-							<p>
-								<strong>Address</strong>
-								9825 Johnsaon Dr.Columbo,MD21044
-							</p>
-							<p>
-								<strong>Payment Status</strong>
-								Pending
-							</p>
-							<p>
-								<strong>Total Items</strong>
-								10
-							</p>
-							<p>
-								<strong>Amount to Pay</strong>
-								$722
-							</p>
-						</div>
-						<div class="d-flex justify-content-end">
-							<a href="#" class="confirm-delete ms-3" title="Delete"><i class="fas fa-edit"></i></a>
-							<a href="#" class="confirm-delete ms-3" title="Delete"><i class="fas fa-trash-alt"></i></a>
-						</div>
-					  </div>
-				  </div>
-			  </div>
-		  </div>
-		  <div class="modal-footer border-0">
-			  <div class="row">
-				  <div class="col-12 px-4">
-					<a href="#" class="btn btn-primary">Submit</a>
-				  </div>
-			  </div>
+				<div id="_draftOrderList">
+			  		
+				</div>
 		  </div>
 		</div>
 	</div>	  	  
@@ -610,7 +579,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 
 <div class="modal fade text-left" id="LookupItem" tabindex="-1" role="dialog" aria-labelledby="LookupItem" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-scrollable  modal-dialog-centered modal-lg" role="document">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg" role="document">
 		<div class="modal-content">
 		  <div class="modal-header">
 			<h3 class="modal-title" id="myModalLabel1444">Add Shipping Cost</h3>
@@ -689,7 +658,6 @@ License: You must have a valid license purchased only from themeforest(the above
 	});
 	jQuery(function () {
 		jQuery(document).ready(function() {
-			console.log('Test');
 			$('#_Barcode').focus();
 			bindGrid([]);
 
@@ -701,6 +669,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			});
 
 			jQuery('#KodePelanggan').select2();
+			jQuery('#KodeSales').select2();
 
 			var now = new Date();
 	    	var day = ("0" + now.getDate()).slice(-2);
@@ -717,7 +686,9 @@ License: You must have a valid license purchased only from themeforest(the above
 
 	    	_Company = <?php echo $company ?>;
 
-	    	
+	    	LoadDraftOrderList();
+
+	    	jQuery('#_NoTransaksi').text("<OTOMATIS>");
 		});
 
 
@@ -754,53 +725,68 @@ License: You must have a valid license purchased only from themeforest(the above
 
 		            	}
 		            	else{
-		            		var objIndex = allRowsData.findIndex(obj => obj.KodeItem == response.data[0]['KodeItem']);
+		            		if (response.data.length > 0) {
+		            			var objIndex = allRowsData.findIndex(obj => obj.KodeItem == response.data[0]['KodeItem']);
 
-		            		// console.log(objIndex);
-		            		// console.log(allRowsData)
-		            		if (objIndex != -1) {
-		            			var oDiskon = CalculateDiskon(response.data[0]['KodeItem'],1);
+			            		// console.log(objIndex);
+			            		// console.log(allRowsData)
+			            		if (objIndex != -1) {
+			            			var oDiskon = CalculateDiskon(response.data[0]['KodeItem'],1);
 
-		            			allRowsData[objIndex].DiskonPersen = (oDiskon.DiskonType) == 'P' ? oDiskon.Diskon : 0;
-		            			allRowsData[objIndex].DiskonRp = (oDiskon.DiskonType) == 'N' ? oDiskon.Diskon : 0;
+			            			allRowsData[objIndex].DiskonPersen = (oDiskon.DiskonType) == 'P' ? oDiskon.Diskon : 0;
+			            			allRowsData[objIndex].DiskonRp = (oDiskon.DiskonType) == 'N' ? oDiskon.Diskon : 0;
 
-		            			if (_DiskonGrupCustomer > 0) {
-							    	allRowsData[objIndex].DiskonPersen += _DiskonGrupCustomer;
-							    }
+			            			if (_DiskonGrupCustomer > 0) {
+								    	allRowsData[objIndex].DiskonPersen += _DiskonGrupCustomer;
+								    }
 
-		            			allRowsData[objIndex].Qty = allRowsData[objIndex].Qty + 1;
+			            			allRowsData[objIndex].Qty = allRowsData[objIndex].Qty + 1;
 
-		            			bindGrid(allRowsData);
-		            			dataGridInstance.refresh();
+			            			bindGrid(allRowsData);
+			            			dataGridInstance.refresh();
+			            		}
+			            		else{
+			            			var dataSource = dataGridInstance.getDataSource();
+			            			var oDiskon = CalculateDiskon(response.data[0]['KodeItem'],1);
+			            			var Diskoncust = 0;
+
+			            			if (_DiskonGrupCustomer > 0) {
+								    	Diskoncust = _DiskonGrupCustomer;
+								    }
+			            			var item = {
+				            			'LineNumber' 	: allRowsData.length +1,
+				            			'KodeItem' 	 	: response.data[0]['KodeItem'],
+				            			'NamaItem'	 	: response.data[0]['NamaItem'],
+				            			'Qty'	 	 	: 1,
+				            			'QtyKonversi'	: response.data[0]['QtyKonversi'],
+				            			'Satuan'		: response.data[0]['Satuan'],
+				            			'Harga' 	 	: response.data[0]['HargaJual'],
+				            			'DiskonPersen' 	: ((oDiskon.DiskonType) == 'P' ? oDiskon.Diskon : 0) + Diskoncust,
+				            			'DiskonRp' 	 	: (oDiskon.DiskonType) == 'N' ? oDiskon.Diskon : 0,
+				            			'Total' 	 	: 0
+				            		}
+
+				            		dataSource.store().insert(item).then(function() {
+								        dataSource.reload();
+								    })
+
+				     //        		dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), item]);
+									// dataGridInstance.refresh();
+			            		}
+			            		_LastInputed = response.data[0]['KodeItem'];
 		            		}
 		            		else{
-		            			var dataSource = dataGridInstance.getDataSource();
-		            			var oDiskon = CalculateDiskon(response.data[0]['KodeItem'],1);
-		            			var Diskoncust = 0;
-
-		            			if (_DiskonGrupCustomer > 0) {
-							    	Diskoncust = _DiskonGrupCustomer;
-							    }
-		            			var item = {
-			            			'LineNumber' 	: allRowsData.length +1,
-			            			'KodeItem' 	 	: response.data[0]['KodeItem'],
-			            			'NamaItem'	 	: response.data[0]['NamaItem'],
-			            			'Qty'	 	 	: 1,
-			            			'Harga' 	 	: response.data[0]['HargaJual'],
-			            			'DiskonPersen' 	: ((oDiskon.DiskonType) == 'P' ? oDiskon.Diskon : 0) + Diskoncust,
-			            			'DiskonRp' 	 	: (oDiskon.DiskonType) == 'N' ? oDiskon.Diskon : 0,
-			            			'Total' 	 	: 0
-			            		}
-
-			            		dataSource.store().insert(item).then(function() {
-							        dataSource.reload();
-							    })
-
-			     //        		dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), item]);
-								// dataGridInstance.refresh();
+		            			Swal.fire({
+			                      icon: "error",
+			                      title: "Error",
+			                      text: "Data Tidak ditemukan",
+			                    }).then((result) => {
+								  // location.reload();
+								  $('#_Barcode').val("")
+								  // $('#_Barcode').focus()
+								});	
 		            		}
 
-		            		_LastInputed = response.data[0]['KodeItem'];
 		            	}
 
 		            	CalculateTotal();
@@ -1005,167 +991,582 @@ License: You must have a valid license purchased only from themeforest(the above
 		});
 
 		$('#btSimpanPembayaran').click(function () {
-			SaveData('O',$('#btSimpanPembayaran'),'Submit');
+			SaveData('C',$('#btSimpanPembayaran'),'Submit');
 		});
+	});
 
-		function PrintStruk(NoTransaksi) {
-			$.ajax({
-				async:false,
-				url: "{{route('print-retail')}}",
-				type: 'POST',
-				headers: {
-	                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
-	            },
-	            data: {'NoTransaksi':NoTransaksi},
-	            success: function(response) {
-	            	if (response.success == true) {
-	            		Swal.fire({
+	function LoadDraftOrderList() {
+		$.ajax({
+			async:false,
+			url: "{{route('fpenjualan-readheader')}}",
+			type: 'POST',
+			headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+            },
+            data: {
+            	'TglAwal':'1999-01-01',
+            	'TglAkhir' : _Tanggal,
+            	'KodePelanggan' : '',
+            	'Status' : 'T'
+           	},
+            success: function(response) {
+            	// console.log(response);
+            	jQuery('#_draftCount').text(response.data.length);
+
+            	if (response.data.length > 0) {
+            		jQuery('#_draftOrderList').empty();
+            		var xHTML = '<div class="row">';
+            		$.each(response.data,function (k,v) {
+            			var xNoTransaksi = "'"+v.NoTransaksi+"'";
+            			xHTML += '<div class="col-lg-4">';
+            			xHTML += '	<div class="pos-order">';
+            			xHTML += '		<center><h4 class="pos-order-title" >'+v.NoTransaksi+'</h4></center>';
+            			xHTML += '			<div class="orderdetail-pos">';
+            			xHTML += '				<p><strong>Customer Name</strong> '+v.NamaPelanggan+'</p>';
+            			xHTML += '				<p><strong>Payment Status</strong> Pending</p>';
+            			xHTML += '				<p><strong>Total Item</strong> '+v.TotalItems+' Items</p>';
+            			xHTML += '				<p><strong>Total Transaksi</strong> '+v.TotalHutang.toLocaleString('en-US')+'</p>';
+            			xHTML += '			</div>';
+            			xHTML += '			<div class="d-flex justify-content-end">';
+            			xHTML += '				<a class="confirm-delete ms-3" title="Edit" onClick = "editDraft('+xNoTransaksi+')"><i class="fas fa-edit"></i></a>';
+            			xHTML += '				<a class="confirm-delete ms-3" title="Delete" onClick = "deleteDraft('+xNoTransaksi+')"><i class="fas fa-trash-alt"></i></a>';
+            			xHTML += '			</div>';
+            			xHTML += '	</div>';
+            			xHTML += '</div>';
+            			
+            		});
+
+            		xHTML += '</div>';
+
+            		console.log(xHTML);
+
+            			jQuery('#_draftOrderList').html(xHTML);
+            	}
+            }
+		});
+	}
+
+	function PrintStruk(NoTransaksi) {
+		$.ajax({
+			async:false,
+			url: "{{route('print-retail')}}",
+			type: 'POST',
+			headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+            },
+            data: {'NoTransaksi':NoTransaksi},
+            success: function(response) {
+            	if (response.success == true) {
+            		Swal.fire({
+                      icon: "success",
+                      title: "Sukses",
+                      text: "Data Penjualan Berhasil Disimpan",
+                    }).then((result) => {
+					  location.reload();
+					});
+            	}
+            	else{
+            		Swal.fire({
+                      icon: "error",
+                      title: "Opps...",
+                      text: response.message,
+                    });
+            	}
+            }
+		});
+	}
+
+	function GetItemInfo(KodeItem) {
+		var oReturnData = {};
+
+		$.ajax({
+            async:false,
+            type: 'post',
+            url: "{{route('itemmaster-ViewJson')}}",
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+            },
+            data: {
+                'KodeJenis' : '',
+			    'Merk' 		: '',
+			    'TipeItem' 	: '',
+				'Active' 	: 'Y',
+				'Scan'		: KodeItem,
+				'TipeItemIN' : '1,3'
+            },
+            dataType: 'json',
+            success: function(response) {
+            	if (response.data.length > 0) {
+            		oReturnData = response.data;
+            	}
+            }
+        });
+
+        return oReturnData;
+	}
+
+	function CalculateDiskon(KodeItem, Qty) {
+		var DiskReturn = {};
+
+		$.ajax({
+            async:false,
+            type: 'post',
+            url: "{{route('fpenjualan-getDiskon')}}",
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+            },
+            data: {
+                'KodeItem' : KodeItem,
+                'Qty' 		: Qty
+            },
+            dataType: 'json',
+            success: function(response) {
+            	DiskReturn ={
+            		Diskon : response.Diskon,
+            		DiskonType : response.TipeDiskon
+            	}
+            }
+        });
+
+		return DiskReturn;
+	}
+
+	
+
+	function bindGridLookupServices(data) {
+		var dataGridInstance = jQuery("#gridLookupServices").dxDataGrid({
+			allowColumnResizing: true,
+			dataSource: data,
+			keyExpr: "NoUrut",
+			showBorders: true,
+            allowColumnResizing: true,
+            columnAutoWidth: true,
+            showBorders: true,
+            paging: {
+                enabled: true,
+                pageSize: 30
+            },
+            editing: {
+                mode: "row",
+                allowUpdating: true,
+                allowDeleting: true,
+                texts: {
+                    confirmDeleteMessage: ''  
+                }
+            },
+            columns: [
+            	{
+                    dataField: "NoUrut",
+                    caption: "#",
+                    allowEditing:false,
+                    allowSorting: false 
+                },
+                {
+                    dataField: "KodeItem",
+                    caption: "Jasa",
+                    lookup: {
+					    dataSource: <?php echo $itemServices ?>,
+					    valueExpr: 'KodeItem',
+					    displayExpr: 'NamaItem',
+				    },
+				    allowSorting: false,
+				    allowEditing:true
+                },
+                {
+                    dataField: "Jumlah",
+                    caption: "Jumlah",
+                    allowEditing:true,
+                    format: { type: 'fixedPoint', precision: 2 },
+                    allowSorting: false 
+                },
+                {
+                    dataField: "Keterangan",
+                    caption: "Keterangan",
+                    allowEditing:true,
+                    allowSorting: false 
+                },
+            ],
+            onContentReady: function(e) {
+	            var rowData = dataGridInstance.option("dataSource");
+	            if (rowData.length == 1) {
+	            	dataGridInstance.editRow(0)	
+	            }
+	        },
+	        onCellClick:function (e) {
+	            var rowData = dataGridInstance.option("dataSource");
+	            var columnIndex = e.columnIndex;
+	            console.log(e)
+	        	if (columnIndex >= 1 && columnIndex <= 5) {
+	                dataGridInstance.editRow(e.rowIndex)	
+	            }
+	            dataGridInstance.option("focusedColumnIndex", columnIndex);	
+	        },
+		}).dxDataGrid('instance');
+
+		var allRowsData  = dataGridInstance.option("dataSource");
+    	var newData = { NoUrut: allRowsData.length + 1,KodeItem:"", Jumlah: 0, Keterangan:'' }
+    	dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
+    	dataGridInstance.refresh();
+
+    	dataGridInstance.on('rowUpdated', function(e) {
+    		// console.log(e)
+    		CalculateTotal();
+    	});
+
+    	dataGridInstance.on('editorPreparing',function (e) {
+    		if (e.parentType === "dataRow" && e.dataField === "KodeItem") {
+    			e.editorOptions.onFocusOut = (x) => {
+    				var rowIndex = dataGridInstance.getRowIndexByKey(e.row.key);
+
+    				dataGridInstance.cellValue(rowIndex, "Jumlah", 0);
+		            dataGridInstance.cellValue(rowIndex, "Keterangan", '');
+		            // dataGridInstance.cellValue(rowIndex, "Qty", 1);
+
+		            dataGridInstance.refresh();
+
+		            dataGridInstance.saveEditData();
+
+		            var allRowsData  = dataGridInstance.option("dataSource");
+                    var newData = { NoUrut: allRowsData.length + 1,KodeItem:"", Jumlah: 0, Keterangan:'' }
+    				dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
+    				dataGridInstance.refresh();
+    			}
+    		}
+    		else if (e.parentType === "dataRow" && e.dataField === "Jumlah") {
+		    	e.editorOptions.onFocusOut = (x) => {
+		    		dataGridInstance.saveEditData();
+		    		CalculateTotal();
+		    	}
+		    }
+		    else if (e.parentType === "dataRow" && e.dataField === "Keterangan") {
+		    	e.editorOptions.onFocusOut = (x) => {
+		    		dataGridInstance.saveEditData();
+		    	}
+		    }
+    	})
+	}
+
+	function bindGridLookup(data) {
+		// gridLookupItem
+		var dataGridInstance = jQuery("#gridLookupItem").dxDataGrid({
+			allowColumnResizing: true,
+			dataSource: data,
+			keyExpr: "KodeItem",
+			showBorders: true,
+            allowColumnResizing: true,
+            columnAutoWidth: true,
+            showBorders: true,
+            paging: {
+                enabled: true,
+                pageSize: 30
+            },
+            editing: {
+                mode: "row",
+                texts: {
+                    confirmDeleteMessage: ''  
+                }
+            },
+            selection: {
+                mode: "single" // Enable single selection mode
+            },
+            searchPanel: {
+	            visible: true,
+	            width: 240,
+	            placeholder: "Search..."
+	        },
+            columns: [
+            	{
+                    dataField: "KodeItem",
+                    caption: "Kode Item",
+                    allowSorting: true,
+                    allowEditing : false
+                },
+                {
+                    dataField: "Barcode",
+                    caption: "Barcode",
+                    allowSorting: true,
+                    allowEditing : false
+                },
+                {
+                    dataField: "NamaItem",
+                    caption: "Nama Item",
+                    allowSorting: true,
+                    allowEditing : false
+                },
+                {
+                    dataField: "Stock",
+                    caption: "Stock",
+                    allowSorting: true,
+                    allowEditing : false,
+                    format: { type: 'fixedPoint', precision: 2 },
+                },
+                {
+                    dataField: "Satuan",
+                    caption: "Sat",
+                    allowSorting: true,
+                    allowEditing : false
+                },
+            ]
+		}).dxDataGrid('instance');
+	}
+	function bindGrid(data) {
+		var dataGridInstance = jQuery("#gridContainerDetail").dxDataGrid({
+			allowColumnResizing: true,
+			dataSource: data,
+			keyExpr: "LineNumber",
+			showBorders: true,
+            allowColumnResizing: true,
+            columnAutoWidth: true,
+            showBorders: true,
+            paging: {
+                enabled: false,
+                pageSize: 30
+            },
+            editing: {
+                mode: "row",
+                // allowAdding:true,
+                allowUpdating: true,
+                allowDeleting: true,
+                texts: {
+                    confirmDeleteMessage: ''  
+                }
+            },
+            columns: [
+            	{
+                    dataField: "LineNumber",
+                    caption: "#",
+                    allowSorting: false,
+                    visible:false,
+                },
+                {
+                    dataField: "KodeItem",
+                    caption: "Item",
+				    allowSorting: false,
+				    allowEditing:false,
+				    visible:false
+                },
+                {
+                    dataField: "NamaItem",
+                    caption: "Item",
+				    allowSorting: false,
+				    allowEditing:false,
+                },
+                {
+                    dataField: "Qty",
+                    caption: "Qty",
+				    allowSorting: false,
+				    allowEditing:true,
+				    format: { type: 'fixedPoint', precision: 2 },
+                },
+                {
+                    dataField: "QtyKonversi",
+                    caption: "QtyKonversi",
+				    allowSorting: false,
+				    allowEditing:true,
+				    format: { type: 'fixedPoint', precision: 2 },
+				    visible:false
+                },
+                {
+                    dataField: "Satuan",
+                    caption: "#",
+				    allowSorting: false,
+				    allowEditing:false,
+                },
+                {
+                    dataField: "Harga",
+                    caption: "Harga",
+				    allowSorting: false,
+				    allowEditing:false,
+				    format: { type: 'fixedPoint', precision: 2 },
+                },
+                {
+                    dataField: "DiskonPersen",
+                    caption: "Diskon(%)",
+				    allowSorting: false,
+				    allowEditing:true,
+				    format: { type: 'fixedPoint', precision: 2 },
+                },
+                {
+                    dataField: "DiskonRp",
+                    caption: "Diskon(Rp)",
+				    allowSorting: false,
+				    allowEditing:true,
+				    format: { type: 'fixedPoint', precision: 2 },
+                },
+                {
+                    dataField: "Total",
+                    caption: "Total",
+				    allowSorting: false,
+				    allowEditing:false,
+				    format: { type: 'fixedPoint', precision: 2 },
+				    calculateCellValue:function (rowData) {
+                    	var HargaNet = 0;
+                    	var HargaGross = 0;
+
+                    	if (rowData.DiskonPersen > 0) {
+                    		HargaGross = rowData.Qty * rowData.Harga;
+                    		var diskon = HargaGross * rowData.DiskonPersen / 100;
+                    		HargaNet = HargaGross - diskon;
+                    	}
+                    	else if (rowData.DiskonRp > 0) {
+                    		HargaGross = rowData.Qty * rowData.Harga;
+                    		HargaNet = HargaGross - rowData.DiskonRp;
+                    	}
+                    	else{
+                    		HargaNet = rowData.Qty * rowData.Harga;
+                    		HargaGross = rowData.Qty * rowData.Harga;
+                    	}
+
+                    	return HargaNet
+                    },
+                },
+            ],
+            onCellClick:function (e) {
+	        	// console.log(dataGridInstance.option("dataSource"))
+	            var rowData = dataGridInstance.option("dataSource");
+	            var columnIndex = e.columnIndex;
+	            // console.log(e)
+	        	if (columnIndex >= 1 && columnIndex <= 5) {
+	                dataGridInstance.editRow(e.rowIndex)	
+	            }
+	            dataGridInstance.option("focusedColumnIndex", columnIndex);	
+	        },
+	        onEditorPreparing: function(e) {
+                if (e.parentType === 'dataRow' && e.dataField === 'DiskonRp') {
+                    if (e.row.data.DiskonPersen > 0) {
+                        e.editorOptions.disabled = true;
+                    }
+                    else if (e.row.data.DiskonRp > 0) {
+                    	e.editorOptions.disabled = true;
+                    }
+                }
+            },
+            onRowRemoved: function(e) {
+		        CalculateTotal();
+		    }
+		}).dxDataGrid('instance');
+
+		dataGridInstance.on('rowUpdated', function(e) {
+    		// console.log(e)
+    		CalculateTotal();
+    	})
+	}
+	
+	function SaveData(Status, ButonObject, ButtonDefaultText) {
+		ButonObject.text('Tunggu Sebentar.....');
+  		ButonObject.attr('disabled',true);
+
+  		var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
+  		var allRowsData  = dataGridInstance.getDataSource().items();
+
+  		var NoTransaksi = "";
+  		if (jQuery('#_NoTransaksi').text() != "<OTOMATIS>") {
+  			NoTransaksi = jQuery('#_NoTransaksi').text();
+  		}
+  		// console.log(allRowsData)
+  		var oDetail = [];
+
+  		for (var i = 0; i < allRowsData.length; i++) {
+  			// Things[i]
+  			if (allRowsData[i]['KodeItem'] != "") {
+  				var oItemMaster = GetItemInfo(allRowsData[i]['KodeItem']);
+  				var oDisk = 0;
+
+  				if (allRowsData[i]['DiskonPersen'] > 0) {
+  					oDisk += (allRowsData[i]['Qty'] * allRowsData[i]['Harga']) * allRowsData[i]['DiskonPersen'] / 100;
+  				}
+
+  				if (allRowsData[i]['DiskonRp'] > 0) {
+  					oDisk += allRowsData[i]['DiskonRp'];
+  				}
+
+  				console.log(oItemMaster[0].Satuan);
+
+  				var oItem = {
+  					'NoUrut' : allRowsData[i]['LineNumber'],
+					'KodeItem' : allRowsData[i]['KodeItem'],
+					'Qty' : allRowsData[i]['Qty'] * allRowsData[i]['QtyKonversi'],
+					'QtyKonversi' : allRowsData[i]['QtyKonversi'],
+					'Satuan' : allRowsData[i]['Satuan'],
+					'Harga' : allRowsData[i]['Harga'],
+					'Discount' : oDisk,
+					'HargaNet' : (allRowsData[i]['Qty'] * allRowsData[i]['Total']) - oDisk,
+					'BaseReff' : 'POS',
+					'BaseLine' : -1,
+					'KodeGudang' : _Company[0]['GudangPoS'],
+					'LineStatus': Status,
+  				}
+  				
+  				oDetail.push(oItem)
+  			}
+  		}
+
+  		if (_ServicesData.length > 0) {
+  			for (var i = 0; i < _ServicesData.length; i++) {
+  				var oItem = {
+  					'NoUrut' : oDetail.length + 1,
+					'KodeItem' : _ServicesData[i]['KodeItem'],
+					'Qty' : 1,
+					'Satuan' : '',
+					'Harga' : _ServicesData[i]['Jumlah'],
+					'Discount' : 0,
+					'HargaNet' : _ServicesData[i]['Jumlah'],
+					'BaseReff' : '',
+					'BaseLine' : -1,
+					'KodeGudang' : 'UMM',
+					'LineStatus': Status,
+  				}
+  				
+  				oDetail.push(oItem)
+  			}
+  		}
+
+  		// jQuery('#_NoTransaksi').text()
+  		var oData = {
+			'NoTransaksi' : NoTransaksi,
+			'TglTransaksi' : _Tanggal + " " + _Jam,
+			'TglJatuhTempo' : _Tanggal,
+			'NoReff' : 'POS',
+			'KodeSales' : jQuery('#KodeSales').val(),
+			'KodePelanggan' : jQuery('#KodePelanggan').val(),
+			'KodeTermin' : _Company[0]['TerminBayarPoS'],
+			'Termin' : 0,
+			'TotalTransaksi' : jQuery('#_SubTotal').attr("originalvalue"),
+			'Potongan' : jQuery('#_TotalDiskon').attr("originalvalue"),
+			'Pajak' : 0,
+			'TotalPembelian' : jQuery('#_GrandTotal').attr("originalvalue"),
+			'TotalRetur' : 0,
+			'TotalPembayaran' : (Status) == 'T' ? 0 : jQuery('#JumlahBayar').attr("originalvalue"),
+			'Status' : Status,
+			'Keterangan' : '',
+			'MetodeBayar' : _KodeMetodePembayaran,
+			'ReffPembayaran' : $('#NomorRefrensiPembayaran').val(),
+			'Detail' : oDetail
+		}
+
+		// Save Data
+
+		$.ajax({
+			async:false,
+			url: (NoTransaksi) == "" ? "{{route('fpenjualan-retailPos')}}" : "{{route('fpenjualan-editJson')}}",
+			type: 'POST',
+			contentType: 'application/json',
+			headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+            },
+            data: JSON.stringify(oData),
+            success: function(response) {
+            	if (response.success == true) {
+            		if(Status == 'T'){
+            			Swal.fire({
 	                      icon: "success",
 	                      title: "Sukses",
-	                      text: "Data Penjualan Berhasil Disimpan",
+	                      text: "Data Berhasil disimpan",
 	                    }).then((result) => {
 						  location.reload();
 						});
-	            	}
-	            	else{
-	            		Swal.fire({
-	                      icon: "error",
-	                      title: "Opps...",
-	                      text: response.message,
-	                    });
-	            	}
-	            }
-			});
-		}
-
-		function GetItemInfo(KodeItem) {
-			var oReturnData = {};
-
-			$.ajax({
-	            async:false,
-	            type: 'post',
-	            url: "{{route('itemmaster-ViewJson')}}",
-	            headers: {
-	                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
-	            },
-	            data: {
-	                'KodeJenis' : '',
-				    'Merk' 		: '',
-				    'TipeItem' 	: '',
-					'Active' 	: 'Y',
-					'Scan'		: KodeItem,
-					'TipeItemIN' : '1,3'
-	            },
-	            dataType: 'json',
-	            success: function(response) {
-	            	if (response.data.length > 0) {
-	            		oReturnData = response.data;
-	            	}
-	            }
-	        });
-
-	        return oReturnData;
-		}
-
-		function SaveData(Status, ButonObject, ButtonDefaultText) {
-			ButonObject.text('Tunggu Sebentar.....');
-      		ButonObject.attr('disabled',true);
-
-      		var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
-      		var allRowsData  = dataGridInstance.getDataSource().items();
-      		// console.log(allRowsData)
-      		var oDetail = [];
-
-      		for (var i = 0; i < allRowsData.length; i++) {
-      			// Things[i]
-      			if (allRowsData[i]['KodeItem'] != "") {
-      				var oItemMaster = GetItemInfo(allRowsData[i]['KodeItem']);
-      				var oDisk = 0;
-
-      				if (allRowsData[i]['DiskonPersen'] > 0) {
-      					oDisk += (allRowsData[i]['Qty'] * allRowsData[i]['Harga']) * allRowsData[i]['DiskonPersen'] / 100;
-      				}
-
-      				if (allRowsData[i]['DiskonRp'] > 0) {
-      					oDisk += allRowsData[i]['DiskonRp'];
-      				}
-
-      				console.log(oItemMaster[0].Satuan);
-
-      				var oItem = {
-      					'NoUrut' : allRowsData[i]['LineNumber'],
-						'KodeItem' : allRowsData[i]['KodeItem'],
-						'Qty' : allRowsData[i]['Qty'],
-						'Satuan' : oItemMaster[0].Satuan,
-						'Harga' : allRowsData[i]['Harga'],
-						'Discount' : oDisk,
-						'HargaNet' : (allRowsData[i]['Qty'] * allRowsData[i]['Total']) - oDisk,
-						'BaseReff' : 'POS',
-						'BaseLine' : -1,
-						'KodeGudang' : _Company[0]['GudangPoS'],
-						'LineStatus': Status,
-      				}
-      				
-      				oDetail.push(oItem)
-      			}
-      		}
-
-      		if (_ServicesData.length > 0) {
-      			for (var i = 0; i < _ServicesData.length; i++) {
-      				var oItem = {
-      					'NoUrut' : oDetail.length + 1,
-						'KodeItem' : _ServicesData[i]['KodeItem'],
-						'Qty' : 1,
-						'Satuan' : '',
-						'Harga' : _ServicesData[i]['Jumlah'],
-						'Discount' : 0,
-						'HargaNet' : _ServicesData[i]['Jumlah'],
-						'BaseReff' : '',
-						'BaseLine' : -1,
-						'KodeGudang' : 'UMM',
-						'LineStatus': Status,
-      				}
-      				
-      				oDetail.push(oItem)
-      			}
-      		}
-
-      		
-      		var oData = {
-				'NoTransaksi' : '',
-				'TglTransaksi' : _Tanggal,
-				'TglJatuhTempo' : _Tanggal,
-				'NoReff' : 'POS',
-				'KodePelanggan' : jQuery('#KodePelanggan').val(),
-				'KodeTermin' : _Company[0]['TerminBayarPoS'],
-				'Termin' : 0,
-				'TotalTransaksi' : jQuery('#_SubTotal').attr("originalvalue"),
-				'Potongan' : jQuery('#_TotalDiskon').attr("originalvalue"),
-				'Pajak' : 0,
-				'TotalPembelian' : jQuery('#_GrandTotal').attr("originalvalue"),
-				'TotalRetur' : 0,
-				'TotalPembayaran' : jQuery('#JumlahBayar').attr("originalvalue"),
-				'Status' : Status,
-				'Keterangan' : '',
-				'MetodeBayar' : _KodeMetodePembayaran,
-				'ReffPembayaran' : $('#NomorRefrensiPembayaran').val(),
-				'Detail' : oDetail
-			}
-
-			// Save Data
-
-			$.ajax({
-				async:false,
-				url: "{{route('fpenjualan-retailPos')}}",
-				type: 'POST',
-				contentType: 'application/json',
-				headers: {
-	                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
-	            },
-	            data: JSON.stringify(oData),
-	            success: function(response) {
-	            	if (response.success == true) {
-	            		let formattedAmount = parseFloat(response.Kembalian).toLocaleString('en-US', {
+            		}else{
+            			let formattedAmount = parseFloat(response.Kembalian).toLocaleString('en-US', {
 				            style: 'decimal',
 				            minimumFractionDigits: 2,
 				            maximumFractionDigits: 2
@@ -1187,415 +1588,85 @@ License: You must have a valid license purchased only from themeforest(the above
 						  	location.reload();
 						  }
 						});
-	            	}
-	            	else{
-	            		Swal.fire({
-	                      icon: "error",
-	                      title: "Opps...",
-	                      text: response.message,
-	                    })
-	                    ButonObject.text(ButtonDefaultText);
-      					ButonObject.attr('disabled',false);
-	            	}
-	            }
-			});
+            		}
+            	}
+            	else{
+            		Swal.fire({
+                      icon: "error",
+                      title: "Opps...",
+                      text: response.message,
+                    })
+                    ButonObject.text(ButtonDefaultText);
+  					ButonObject.attr('disabled',false);
+            	}
+            }
+		});
 
-			ButonObject.text(ButtonDefaultText);
-      		ButonObject.attr('disabled',false);
-		}
+		ButonObject.text(ButtonDefaultText);
+  		ButonObject.attr('disabled',false);
+	}
 
-		function CalculateDiskon(KodeItem, Qty) {
-			var DiskReturn = {};
+	function formatCurrency(input, amount) {
+		input.attr("originalvalue", amount);
+        let formattedAmount = parseFloat(amount).toLocaleString('en-US', {
+            style: 'decimal',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
 
-			$.ajax({
-	            async:false,
-	            type: 'post',
-	            url: "{{route('fpenjualan-getDiskon')}}",
-	            headers: {
-	                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
-	            },
-	            data: {
-	                'KodeItem' : KodeItem,
-	                'Qty' 		: Qty
-	            },
-	            dataType: 'json',
-	            success: function(response) {
-	            	DiskReturn ={
-	            		Diskon : response.Diskon,
-	            		DiskonType : response.TipeDiskon
-	            	}
-	            }
-	        });
+        // Set the formatted value to the input field
+        input.val(formattedAmount);
+    }
 
-			return DiskReturn;
-		}
+	function CalculateTotal() {
+		var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
+  		var allRowsData  = dataGridInstance.getDataSource().items();
+  		// console.log(allRowsData)
 
-		function CalculateTotal() {
-			var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
-      		var allRowsData  = dataGridInstance.getDataSource().items();
-      		// console.log(allRowsData)
+  		var _tempTotalItem = 0;
+  		var _tempSubTotal = 0;
+  		var _tempTotalDiskon = 0;
+  		var _tempTotalTax = 0;
+  		var _tempTotalServices = 0;
+  		var _tempGrandTotal = 0;
 
-      		var _tempTotalItem = 0;
-      		var _tempSubTotal = 0;
-      		var _tempTotalDiskon = 0;
-      		var _tempTotalTax = 0;
-      		var _tempTotalServices = 0;
-      		var _tempGrandTotal = 0;
+  		dataGridInstance.getDataSource().store().load().done(function (data) {
+  			_tempTotalItem = data.length;
+	        for (var i = 0; i < data.length; i++) {
+	        	console.log(data[i]['Diskon'])
+	        	var _Total = data[i]['Qty'] * data[i]['Harga'];
+      			_tempSubTotal += _Total;
+      			if (data[i]['DiskonPersen'] > 0) {
+      				_tempTotalDiskon += data[i]['Qty'] * data[i]['Harga'] * (data[i]['DiskonPersen'] / 100);
+      				// console.log(_TotalDiskon)
+      			}
+      			else if (data[i]['DiskonRp'] > 0) {
+      				_tempTotalDiskon += data[i]['DiskonRp'];
+      			}
+      		}
+	    });
 
-      		dataGridInstance.getDataSource().store().load().done(function (data) {
-      			_tempTotalItem = data.length;
-		        for (var i = 0; i < data.length; i++) {
-		        	console.log(data[i]['Diskon'])
-		        	var _Total = data[i]['Qty'] * data[i]['Harga'];
-	      			_tempSubTotal += _Total;
-	      			if (data[i]['DiskonPersen'] > 0) {
-	      				_tempTotalDiskon += data[i]['Qty'] * data[i]['Harga'] * (data[i]['DiskonPersen'] / 100);
-	      				// console.log(_TotalDiskon)
-	      			}
-	      			else if (data[i]['DiskonRp'] > 0) {
-	      				_tempTotalDiskon += data[i]['DiskonRp'];
-	      			}
-	      		}
-		    });
-
-		    // Jasa
-		    for (var i = 0; i < _ServicesData.length; i++) {
-		    	_tempTotalServices += parseFloat(_ServicesData[i]['Jumlah']);
-		    }
-
-		    // Diskon Grup Customer
-
-		    formatCurrency($('#_TotalItem'), _tempTotalItem);
-		    formatCurrency($('#_SubTotal'), _tempSubTotal);
-		    formatCurrency($('#_TotalDiskon'), _tempTotalDiskon);
-		    formatCurrency($('#_TotalServices'), _tempTotalServices);
-		    formatCurrency($('#_GrandTotal'), _tempSubTotal + _tempTotalServices - _tempTotalDiskon);
-
-      		// $('#_TotalItem').text(_tempTotalItem);
-      		// $('#_SubTotal').text(_tempSubTotal);
-      		// $('#_GrandTotal').text(_tempSubTotal - _tempTotalDiskon);
-
-      		$('#_Barcode').val('');
-      		$('#_Barcode').focus();
-		}
-
-		function bindGridLookupServices(data) {
-			var dataGridInstance = jQuery("#gridLookupServices").dxDataGrid({
-				allowColumnResizing: true,
-				dataSource: data,
-				keyExpr: "NoUrut",
-				showBorders: true,
-	            allowColumnResizing: true,
-	            columnAutoWidth: true,
-	            showBorders: true,
-	            paging: {
-	                enabled: true,
-	                pageSize: 30
-	            },
-	            editing: {
-	                mode: "row",
-	                allowUpdating: true,
-	                allowDeleting: true,
-	                texts: {
-	                    confirmDeleteMessage: ''  
-	                }
-	            },
-	            columns: [
-	            	{
-	                    dataField: "NoUrut",
-	                    caption: "#",
-	                    allowEditing:false,
-	                    allowSorting: false 
-	                },
-	                {
-	                    dataField: "KodeItem",
-	                    caption: "Jasa",
-	                    lookup: {
-						    dataSource: <?php echo $itemServices ?>,
-						    valueExpr: 'KodeItem',
-						    displayExpr: 'NamaItem',
-					    },
-					    allowSorting: false,
-					    allowEditing:true
-	                },
-	                {
-	                    dataField: "Jumlah",
-	                    caption: "Jumlah",
-	                    allowEditing:true,
-	                    format: { type: 'fixedPoint', precision: 2 },
-	                    allowSorting: false 
-	                },
-	                {
-	                    dataField: "Keterangan",
-	                    caption: "Keterangan",
-	                    allowEditing:true,
-	                    allowSorting: false 
-	                },
-	            ],
-	            onContentReady: function(e) {
-		            var rowData = dataGridInstance.option("dataSource");
-		            if (rowData.length == 1) {
-		            	dataGridInstance.editRow(0)	
-		            }
-		        },
-		        onCellClick:function (e) {
-		            var rowData = dataGridInstance.option("dataSource");
-		            var columnIndex = e.columnIndex;
-		            console.log(e)
-		        	if (columnIndex >= 1 && columnIndex <= 5) {
-		                dataGridInstance.editRow(e.rowIndex)	
-		            }
-		            dataGridInstance.option("focusedColumnIndex", columnIndex);	
-		        },
-			}).dxDataGrid('instance');
-
-			var allRowsData  = dataGridInstance.option("dataSource");
-        	var newData = { NoUrut: allRowsData.length + 1,KodeItem:"", Jumlah: 0, Keterangan:'' }
-        	dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
-        	dataGridInstance.refresh();
-
-        	dataGridInstance.on('rowUpdated', function(e) {
-        		// console.log(e)
-        		CalculateTotal();
-        	});
-
-        	dataGridInstance.on('editorPreparing',function (e) {
-        		if (e.parentType === "dataRow" && e.dataField === "KodeItem") {
-        			e.editorOptions.onFocusOut = (x) => {
-        				var rowIndex = dataGridInstance.getRowIndexByKey(e.row.key);
-
-        				dataGridInstance.cellValue(rowIndex, "Jumlah", 0);
-			            dataGridInstance.cellValue(rowIndex, "Keterangan", '');
-			            // dataGridInstance.cellValue(rowIndex, "Qty", 1);
-
-			            dataGridInstance.refresh();
-
-			            dataGridInstance.saveEditData();
-
-			            var allRowsData  = dataGridInstance.option("dataSource");
-	                    var newData = { NoUrut: allRowsData.length + 1,KodeItem:"", Jumlah: 0, Keterangan:'' }
-        				dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
-        				dataGridInstance.refresh();
-        			}
-        		}
-        		else if (e.parentType === "dataRow" && e.dataField === "Jumlah") {
-			    	e.editorOptions.onFocusOut = (x) => {
-			    		dataGridInstance.saveEditData();
-			    		CalculateTotal();
-			    	}
-			    }
-			    else if (e.parentType === "dataRow" && e.dataField === "Keterangan") {
-			    	e.editorOptions.onFocusOut = (x) => {
-			    		dataGridInstance.saveEditData();
-			    	}
-			    }
-        	})
-		}
-
-		function bindGridLookup(data) {
-			// gridLookupItem
-			var dataGridInstance = jQuery("#gridLookupItem").dxDataGrid({
-				allowColumnResizing: true,
-				dataSource: data,
-				keyExpr: "KodeItem",
-				showBorders: true,
-	            allowColumnResizing: true,
-	            columnAutoWidth: true,
-	            showBorders: true,
-	            paging: {
-	                enabled: true,
-	                pageSize: 30
-	            },
-	            editing: {
-	                mode: "row",
-	                texts: {
-	                    confirmDeleteMessage: ''  
-	                }
-	            },
-	            selection: {
-	                mode: "single" // Enable single selection mode
-	            },
-	            searchPanel: {
-		            visible: true,
-		            width: 240,
-		            placeholder: "Search..."
-		        },
-	            columns: [
-	            	{
-	                    dataField: "KodeItem",
-	                    caption: "Kode Item",
-	                    allowSorting: true,
-	                    allowEditing : false
-	                },
-	                {
-	                    dataField: "Barcode",
-	                    caption: "Barcode",
-	                    allowSorting: true,
-	                    allowEditing : false
-	                },
-	                {
-	                    dataField: "NamaItem",
-	                    caption: "Nama Item",
-	                    allowSorting: true,
-	                    allowEditing : false
-	                },
-	                {
-	                    dataField: "Stock",
-	                    caption: "Stock",
-	                    allowSorting: true,
-	                    allowEditing : false,
-	                    format: { type: 'fixedPoint', precision: 2 },
-	                },
-	                {
-	                    dataField: "NamaSatuan",
-	                    caption: "Sat",
-	                    allowSorting: true,
-	                    allowEditing : false
-	                },
-	            ]
-			}).dxDataGrid('instance');
-		}
-		function bindGrid(data) {
-			var dataGridInstance = jQuery("#gridContainerDetail").dxDataGrid({
-				allowColumnResizing: true,
-				dataSource: data,
-				keyExpr: "LineNumber",
-				showBorders: true,
-	            allowColumnResizing: true,
-	            columnAutoWidth: true,
-	            showBorders: true,
-	            paging: {
-	                enabled: false,
-	                pageSize: 30
-	            },
-	            editing: {
-	                mode: "row",
-	                // allowAdding:true,
-	                allowUpdating: true,
-	                allowDeleting: true,
-	                texts: {
-	                    confirmDeleteMessage: ''  
-	                }
-	            },
-	            columns: [
-	            	{
-	                    dataField: "LineNumber",
-	                    caption: "#",
-	                    allowSorting: false,
-	                    visible:false,
-	                },
-	                {
-	                    dataField: "KodeItem",
-	                    caption: "Item",
-					    allowSorting: false,
-					    allowEditing:false,
-					    visible:false
-	                },
-	                {
-	                    dataField: "NamaItem",
-	                    caption: "Item",
-					    allowSorting: false,
-					    allowEditing:false,
-	                },
-	                {
-	                    dataField: "Qty",
-	                    caption: "Qty",
-					    allowSorting: false,
-					    allowEditing:true,
-					    format: { type: 'fixedPoint', precision: 2 },
-	                },
-	                {
-	                    dataField: "Harga",
-	                    caption: "Harga",
-					    allowSorting: false,
-					    allowEditing:false,
-					    format: { type: 'fixedPoint', precision: 2 },
-	                },
-	                {
-	                    dataField: "DiskonPersen",
-	                    caption: "Diskon(%)",
-					    allowSorting: false,
-					    allowEditing:true,
-					    format: { type: 'fixedPoint', precision: 2 },
-	                },
-	                {
-	                    dataField: "DiskonRp",
-	                    caption: "Diskon(Rp)",
-					    allowSorting: false,
-					    allowEditing:true,
-					    format: { type: 'fixedPoint', precision: 2 },
-	                },
-	                {
-	                    dataField: "Total",
-	                    caption: "Total",
-					    allowSorting: false,
-					    allowEditing:false,
-					    format: { type: 'fixedPoint', precision: 2 },
-					    calculateCellValue:function (rowData) {
-	                    	var HargaNet = 0;
-	                    	var HargaGross = 0;
-
-	                    	if (rowData.DiskonPersen > 0) {
-	                    		HargaGross = rowData.Qty * rowData.Harga;
-	                    		var diskon = HargaGross * rowData.DiskonPersen / 100;
-	                    		HargaNet = HargaGross - diskon;
-	                    	}
-	                    	else if (rowData.DiskonRp > 0) {
-	                    		HargaGross = rowData.Qty * rowData.Harga;
-	                    		HargaNet = HargaGross - rowData.DiskonRp;
-	                    	}
-	                    	else{
-	                    		HargaNet = rowData.Qty * rowData.Harga;
-	                    		HargaGross = rowData.Qty * rowData.Harga;
-	                    	}
-
-	                    	return HargaNet
-	                    },
-	                },
-	            ],
-	            onCellClick:function (e) {
-		        	// console.log(dataGridInstance.option("dataSource"))
-		            var rowData = dataGridInstance.option("dataSource");
-		            var columnIndex = e.columnIndex;
-		            // console.log(e)
-		        	if (columnIndex >= 1 && columnIndex <= 5) {
-		                dataGridInstance.editRow(e.rowIndex)	
-		            }
-		            dataGridInstance.option("focusedColumnIndex", columnIndex);	
-		        },
-		        onEditorPreparing: function(e) {
-                    if (e.parentType === 'dataRow' && e.dataField === 'DiskonRp') {
-                        if (e.row.data.DiskonPersen > 0) {
-                            e.editorOptions.disabled = true;
-                        }
-                        else if (e.row.data.DiskonRp > 0) {
-                        	e.editorOptions.disabled = true;
-                        }
-                    }
-                },
-                onRowRemoved: function(e) {
-			        CalculateTotal();
-			    }
-			}).dxDataGrid('instance');
-
-			dataGridInstance.on('rowUpdated', function(e) {
-        		// console.log(e)
-        		CalculateTotal();
-        	})
-		}
-
-		function formatCurrency(input, amount) {
-			input.attr("originalvalue", amount);
-	        let formattedAmount = parseFloat(amount).toLocaleString('en-US', {
-	            style: 'decimal',
-	            minimumFractionDigits: 2,
-	            maximumFractionDigits: 2
-	        });
-
-	        // Set the formatted value to the input field
-	        input.val(formattedAmount);
+	    // Jasa
+	    for (var i = 0; i < _ServicesData.length; i++) {
+	    	_tempTotalServices += parseFloat(_ServicesData[i]['Jumlah']);
 	    }
-	});
+
+	    // Diskon Grup Customer
+
+	    formatCurrency($('#_TotalItem'), _tempTotalItem);
+	    formatCurrency($('#_SubTotal'), _tempSubTotal);
+	    formatCurrency($('#_TotalDiskon'), _tempTotalDiskon);
+	    formatCurrency($('#_TotalServices'), _tempTotalServices);
+	    formatCurrency($('#_GrandTotal'), _tempSubTotal + _tempTotalServices - _tempTotalDiskon);
+
+  		// $('#_TotalItem').text(_tempTotalItem);
+  		// $('#_SubTotal').text(_tempSubTotal);
+  		// $('#_GrandTotal').text(_tempSubTotal - _tempTotalDiskon);
+
+  		$('#_Barcode').val('');
+  		$('#_Barcode').focus();
+	}
+
 
 	function SetEnableCommand() {
     	var ErrorCount = 0;
@@ -1619,5 +1690,128 @@ License: You must have a valid license purchased only from themeforest(the above
     		$('#btSimpanPembayaran').attr('disabled',false);
     	}
 
+    }
+    function editDraft(NoTransaksi) {
+    	jQuery('#_NoTransaksi').text(NoTransaksi)
+    	var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
+        var dataSource = dataGridInstance.getDataSource();
+        dataGridInstance.option("dataSource", []);
+    	// Load Header
+    	$.ajax({
+			async:false,
+			url: "{{route('fpenjualan-findheader')}}",
+			type: 'POST',
+			headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+            },
+            data: {
+            	'NoTransaksi':NoTransaksi
+           	},
+            success: function(response) {
+            	if (response.data.length > 0) {
+            		jQuery('#KodePelanggan').val(response.data[0]['KodePelanggan']).trigger('change');
+            		jQuery('#KodeSales').val(response.data[0]['KodeSales']).trigger('change');
+            	}
+            	else{
+
+            	}
+            }
+		});
+
+		// Load Detail
+		$.ajax({
+			async:false,
+			url: "{{route('fpenjualan-readdetail')}}",
+			type: 'POST',
+			headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+            },
+            data: {
+            	'NoTransaksi':NoTransaksi
+           	},
+            success: function(response) {
+            	// console.log(response)
+            	
+
+            	var xLine = 0;
+            	$.each(response.data,function (k,v) {
+            		var item = {
+	        			'LineNumber' 	: xLine,
+	        			'KodeItem' 	 	: v.KodeItem,
+	        			'NamaItem'	 	: v.NamaItem,
+	        			'Qty'	 	 	: v.Qty,
+	        			'QtyKonversi'	: v.QtyKonversi,
+	        			'Satuan'		: v.Satuan,
+	        			'Harga' 	 	: v.Harga,
+	        			'DiskonPersen' 	: 0,
+	        			'DiskonRp' 	 	: 0,
+	        			'Total' 	 	: 0
+	        		}
+
+	        		dataSource.store().insert(item).then(function() {
+				        dataSource.reload();
+				    })
+				    xLine +=1;
+            	});
+            	CalculateTotal()
+
+            	jQuery('#folderpop').modal('hide');
+            }
+		});
+    }
+
+    function editDataTransaksi(NoTransaksi, Status) {
+    	$.ajax({
+			async:false,
+			url: "{{route('fpenjualan-editStatus')}}",
+			type: 'POST',
+			headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+            },
+            data: {
+            	'NoTransaksi':NoTransaksi,
+            	'Status' : Status
+           	},
+            success: function(response) {
+            	if (response.success == true) {
+            		Swal.fire({
+                      icon: "success",
+                      title: "Horray..",
+                      text: "Data Berhasil Dihapus",
+                    }).then((result) => {
+					  location.reload();
+					});
+            	}
+            	else{
+            		Swal.fire({
+                      icon: "error",
+                      title: "wooopss..",
+                      text: response.message,
+                    });
+            	}
+            }
+		});
+    }
+
+    function deleteDraft(NoTransaksi) {
+    	jQuery('#_NoTransaksi').text(NoTransaksi)
+    	// editDraft(NoTransaksi);
+    	Swal.fire({
+		  title: "Hapus Data Draff Penjualan",
+		  text: "Hapus Draft penjualan ini ?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3085d6",
+		  cancelButtonColor: "#d33",
+		  confirmButtonText: "Hapus",
+		  cancelButtonText: "Jangan Hapus"
+		}).then((result) => {
+		  if (result.isConfirmed) {
+		    editDataTransaksi(NoTransaksi, 'D')
+		  }
+		  else{
+		  	location.reload();
+		  }
+		});
     }
 </script>

@@ -19,6 +19,7 @@ use App\Models\Satuan;
 use App\Models\DocumentNumbering;
 use App\Models\Gudang;
 use App\Models\AutoPosting;
+use App\Models\Company;
 
 class FakturPenjualanController extends Controller
 {
@@ -40,12 +41,16 @@ class FakturPenjualanController extends Controller
 	   	$KodePelanggan = $request->input('KodePelanggan');
 	   	$Status = $request->input('Status');
 
-	   	$sql = "DISTINCT fakturpenjualanheader.NoTransaksi, fakturpenjualanheader.TglTransaksi,fakturpenjualanheader.TglJatuhTempo, fakturpenjualanheader.NoReff, fakturpenjualanheader.KodePelanggan, pelanggan.NamaPelanggan, fakturpenjualanheader.Termin, terminpembayaran.NamaTermin, fakturpenjualanheader.TotalPembelian, fakturpenjualanheader.TotalPembayaran, fakturpenjualanheader.TotalPembelian - COALESCE(fakturpenjualanheader.TotalPembayaran,0) - fakturpenjualanheader.TotalRetur TotalHutang, COALESCE(orderpenjualanheader.NoTransaksi, '') AS NoOrder, orderpenjualanheader.TglTransaksi TglOrder, fakturpenjualanheader.TotalRetur,
+	   	$sql = "DISTINCT fakturpenjualanheader.NoTransaksi, DATE_FORMAT(fakturpenjualanheader.TglTransaksi, '%d-%m-%Y %H:%i') TglTransaksi,fakturpenjualanheader.TglJatuhTempo, fakturpenjualanheader.NoReff, fakturpenjualanheader.KodePelanggan, pelanggan.NamaPelanggan, fakturpenjualanheader.Termin, terminpembayaran.NamaTermin, fakturpenjualanheader.TotalPembelian, fakturpenjualanheader.TotalPembayaran, fakturpenjualanheader.TotalPembelian - COALESCE(fakturpenjualanheader.TotalPembayaran,0) - fakturpenjualanheader.TotalRetur TotalHutang, COALESCE(orderpenjualanheader.NoTransaksi, '') AS NoOrder, orderpenjualanheader.TglTransaksi TglOrder, fakturpenjualanheader.TotalRetur,
 	   		CASE WHEN fakturpenjualanheader.Status = 'O' THEN 'OPEN' ELSE 
-   				CASE WHEN fakturpenjualanheader.Status = 'C' THEN 'CLOSE' ELSE 
-   					CASE WHEN fakturpenjualanheader.Status = 'D' THEN 'CANCEL' ELSE '' END
+   				CASE WHEN fakturpenjualanheader.Status = 'T' THEN 'DRAFT' ELSE 
+   					CASE WHEN fakturpenjualanheader.Status = 'D' THEN 'CANCEL' ELSE
+   						CASE WHEN  fakturpenjualanheader.TotalPembelian - COALESCE(fakturpenjualanheader.TotalPembayaran,0) - fakturpenjualanheader.TotalRetur <= 0 THEN 'LUNAS' ELSE
+   							CASE WHEN  fakturpenjualanheader.TotalPembelian - COALESCE(fakturpenjualanheader.TotalPembayaran,0) - fakturpenjualanheader.TotalRetur > 0 THEN 'BELUM LUNAS' ELSE '' END
+   						END
+   					END
    				END
-   			END AS StatusDocument ";
+   			END AS StatusDocument, fakturpenjualanheader.Transaksi, COUNT(*) TotalItems ";
 	   	$model = FakturPenjualanHeader::selectRaw($sql)
     				->leftJoin('terminpembayaran', function ($value){
     					$value->on('fakturpenjualanheader.KodeTermin','=','terminpembayaran.id')
@@ -67,7 +72,7 @@ class FakturPenjualanController extends Controller
     					$value->on('orderpenjualanheader.NoTransaksi','=','orderpenjualandetail.NoTransaksi')
     					->on('orderpenjualanheader.RecordOwnerID','=','orderpenjualandetail.RecordOwnerID');
     				})
-    				->whereBetween('fakturpenjualanheader.TglTransaksi',[$TglAwal, $TglAkhir])
+    				->whereBetween(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'),[$TglAwal, $TglAkhir])
     				->where('fakturpenjualanheader.RecordOwnerID',Auth::user()->RecordOwnerID);
 
     	if ($KodePelanggan != "") {
@@ -76,7 +81,8 @@ class FakturPenjualanController extends Controller
     	if ($Status != "") {
     		$model->where("fakturpenjualanheader.Status", $Status);
     	}
-   
+    	$model->groupBy('fakturpenjualanheader.NoTransaksi', 'fakturpenjualanheader.TglTransaksi', 'fakturpenjualanheader.TglJatuhTempo', 'fakturpenjualanheader.NoReff', 'fakturpenjualanheader.KodePelanggan', 'pelanggan.NamaPelanggan', 'fakturpenjualanheader.Termin', 'terminpembayaran.NamaTermin', 'fakturpenjualanheader.TotalPembelian', 'fakturpenjualanheader.TotalPembayaran', 'fakturpenjualanheader.TotalRetur', 'orderpenjualanheader.NoTransaksi', 'orderpenjualanheader.TglTransaksi', 'fakturpenjualanheader.Status', 'fakturpenjualanheader.Transaksi');
+   		$model->orderBy('fakturpenjualanheader.TglTransaksi','DESC');
         $data['data']= $model->get();
         return response()->json($data);
     }
@@ -86,7 +92,7 @@ class FakturPenjualanController extends Controller
 			
 			$NoTransaksi = $request->input('NoTransaksi');
 
-			$sql = "fakturpenjualandetail.NoUrut, fakturpenjualandetail.KodeItem, itemmaster.NamaItem, fakturpenjualandetail.Qty, fakturpenjualandetail.Harga, fakturpenjualandetail.Discount, fakturpenjualandetail.HargaNet, fakturpenjualandetail.KodeGudang, fakturpenjualandetail.Satuan, COALESCE(ret.QtyRetur,0) QtyRetur ";
+			$sql = "fakturpenjualandetail.NoUrut, fakturpenjualandetail.KodeItem, itemmaster.NamaItem, fakturpenjualandetail.Qty, fakturpenjualandetail.Harga, fakturpenjualandetail.Discount, fakturpenjualandetail.HargaNet, fakturpenjualandetail.KodeGudang, fakturpenjualandetail.Satuan, COALESCE(ret.QtyRetur,0) QtyRetur, fakturpenjualandetail.QtyKonversi";
 			$model = FakturPenjualanDetail::selectRaw($sql)
 					->leftJoin('itemmaster', function ($value){
 						$value->on('fakturpenjualandetail.KodeItem','=','itemmaster.KodeItem')
@@ -184,6 +190,8 @@ class FakturPenjualanController extends Controller
 		$errorCount = 0;
 		$jsonData = $request->json()->all();
 
+		$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
+
 		$oKembalian = 0;
 		try {
 
@@ -198,14 +206,30 @@ class FakturPenjualanController extends Controller
 			$Month = $currentDate->format('m');
 
 			$numberingData = new DocumentNumbering();
-	        $NoTransaksi = $numberingData->GetNewDoc("OINV","fakturpenjualanheader","NoTransaksi");
+			// if ($jsonData['Status'] == 'T') {
+			// 	$NoTransaksi = $numberingData->GetNewDoc("POSDRF","fakturpenjualanheader","NoTransaksi");
+			// 	if ($jsonData['NoTransaksi'] != '') {
+			// 		DB::table('fakturpenjualanheader')
+	  //       			->where('NoTransaksi','=', $jsonData['NoTransaksi'])
+	  //                   ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+	  //       			->update(
+	  //       				[
+	  //       					'Status'=> 'C',
+	  //       					'UpdatedBy' => Auth::user()->name
+	  //       				]
+	  //       			);
+			// 	}
+			// }else{
+			// 	$NoTransaksi = $numberingData->GetNewDoc("POS","fakturpenjualanheader","NoTransaksi");
+			// }
+			$NoTransaksi = $numberingData->GetNewDoc("POS","fakturpenjualanheader","NoTransaksi");
 
 	        $data['LastTRX'] = $NoTransaksi;
 	        $model = new FakturPenjualanHeader;
 
 	        $model->Periode = $Year.$Month;
 	        $model->NoTransaksi= $NoTransaksi;
-
+	        $model->Transaksi= 'POS';
 	        $model->TglTransaksi = $jsonData['TglTransaksi'];
 			$model->TglJatuhTempo = $jsonData['TglJatuhTempo'];
 			$model->NoReff = $jsonData['NoReff'];
@@ -222,6 +246,7 @@ class FakturPenjualanController extends Controller
 			$model->Keterangan = $jsonData['Keterangan'];
 			$model->MetodeBayar = $jsonData['MetodeBayar'];
 			$model->ReffPembayaran = $jsonData['ReffPembayaran'];
+			$model->KodeSales = $jsonData['KodeSales'];
 			$model->Posted = 0;
 			$model->CreatedBy = Auth::user()->name;
 			$model->UpdatedBy = "";
@@ -237,11 +262,32 @@ class FakturPenjualanController extends Controller
 					goto skip;
 				}
 
+				if ($oCompany) {
+					if ($oCompany->AllowNegativeInventory == NULL || $oCompany->AllowNegativeInventory == 'N') {
+						$oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
+									->where('KodeItem',$key['KodeItem'])
+									->where('Stock','>',0)
+									->get();
+
+						if (count($oItem) == 0) {
+							$data['message'] = "Stock Item ".$key['KodeItem'].' Tidak Cukup';
+							$errorCount += 1;
+							goto jump;		
+						}
+					}
+				}
+				else{
+					$data['message'] = "Partner Tidak ditemukan";
+					$errorCount += 1;
+					goto jump;
+				}
+
 				$modelDetail = new FakturPenjualanDetail;
            		$modelDetail->NoTransaksi = $NoTransaksi;
 				$modelDetail->NoUrut = $key['NoUrut'];
 				$modelDetail->KodeItem = $key['KodeItem'];
 				$modelDetail->Qty = $key['Qty'];
+				$modelDetail->QtyKonversi = $key['QtyKonversi'];
 				$modelDetail->Satuan = $key['Satuan'];
 				$modelDetail->Harga = $key['Harga'];
 				$modelDetail->Discount = $key['Discount'];
@@ -321,6 +367,7 @@ class FakturPenjualanController extends Controller
 
 	        $model->Periode = $Year.$Month;
 	        $model->NoTransaksi= $NoTransaksi;
+	        $model->Transaksi= 'TRX';
 
 	        $model->TglTransaksi = $jsonData['TglTransaksi'];
 			$model->TglJatuhTempo = $jsonData['TglJatuhTempo'];
@@ -337,6 +384,7 @@ class FakturPenjualanController extends Controller
 			$model->Status = $jsonData['Status'];
 			$model->Keterangan = $jsonData['Keterangan'];
 			$model->Posted = 0;
+			$model->KodeSales = $jsonData['KodeSales'];
 			$model->CreatedBy = Auth::user()->name;
 			$model->UpdatedBy = "";
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
@@ -353,6 +401,7 @@ class FakturPenjualanController extends Controller
 				$modelDetail->NoUrut = $key['NoUrut'];
 				$modelDetail->KodeItem = $key['KodeItem'];
 				$modelDetail->Qty = $key['Qty'];
+				$modelDetail->QtyKonversi = 1;
 				$modelDetail->Satuan = $key['Satuan'];
 				$modelDetail->Harga = $key['Harga'];
 				$modelDetail->Discount = $key['Discount'];
@@ -408,6 +457,8 @@ class FakturPenjualanController extends Controller
 
 	public function editJson(Request $request)
    {
+   		$data = array('success' => false, 'message' => '', 'data' => array(), 'LastTRX' => '' ,'Kembalian' => "");
+
        Log::debug($request->all());
        DB::beginTransaction();
 
@@ -455,10 +506,10 @@ class FakturPenjualanController extends Controller
 					}
 
 
-					$checkExists = FakturPenjualanHeader::where('NoTransaksi','=',$jsonData['NoTransaksi'])
+					$checkExists = FakturPenjualanDetail::where('NoTransaksi','=',$jsonData['NoTransaksi'])
            							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-           							->where('KodeItem','=', $key['KodeItem']);
-           			if ($checkExists) {
+           							->where('KodeItem','=', $key['KodeItem'])->get();
+           			if (count($checkExists) > 0) {
            				$HargaNet= 0;
            				if ($key['Discount'] ==0) {
 							$HargaNet = $key['Qty'] * $key['Harga'];
@@ -488,10 +539,11 @@ class FakturPenjualanController extends Controller
            			}
            			else{
            				$modelDetail = new FakturPenjualanDetail;
-		           		$modelDetail->NoTransaksi = $NoTransaksi;
+		           		$modelDetail->NoTransaksi = $jsonData['NoTransaksi'];
 						$modelDetail->NoUrut = $key['NoUrut'];
 						$modelDetail->KodeItem = $key['KodeItem'];
 						$modelDetail->Qty = $key['Qty'];
+						$modelDetail->QtyKonversi = $key['QtyKonversi'];
 						$modelDetail->Satuan = $key['Satuan'];
 						$modelDetail->Harga = $key['Harga'];
 						$modelDetail->Discount = $key['Discount'];
@@ -508,7 +560,7 @@ class FakturPenjualanController extends Controller
 							$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
 							$modelDetail->HargaNet = $HargaGros - $diskon;
 						}
-						$modelDetail->LineStatus = 'O';
+						$modelDetail->LineStatus = $key['LineStatus'];
 						$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
 						$save = $modelDetail->save();
@@ -544,5 +596,38 @@ class FakturPenjualanController extends Controller
            $data['message'] = $e->getMessage();
        }
        return response()->json($data);
+   }
+
+   public function EditTransactionStatus(Request $request)
+   {
+   		$data = array('success' => false, 'message' => '', 'data' => array(), 'LastTRX' => '' ,'Kembalian' => "");
+
+   		$NoTransaksi = $request->input('NoTransaksi');
+   		$Status = $request->input('Status');
+   		
+   		try {
+   			$model = FakturPenjualanHeader::where('NoTransaksi','=',$NoTransaksi)
+           				->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
+   
+	       	if ($model) {
+	           $update = DB::table('fakturpenjualanheader')
+	                   ->where('NoTransaksi','=', $NoTransaksi)
+	                   ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+	                   ->update(
+	                       [
+								'Status' => $Status,
+								'UpdatedBy' => Auth::user()->name
+	                       ]
+	                   );
+	            $data['success'] = true;
+	        }
+	        else{
+	        	$data['message'] = "Data Penjualan Tidak ditemukan";
+	        }	
+   		} catch (\Exception $e) {
+   			$data['message'] = "Gagal Menyimpan Data ".$e->getMessage();
+   		}
+
+   		return response()->json($data);
    }
 }

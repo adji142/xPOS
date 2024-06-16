@@ -95,10 +95,10 @@
                             		
 
                             		<div class="col-md-3"> 
-                            			<!-- <div class="checkbox">
-                            				<label for="chkAutoNumbering">Kode Item / Atur Otomatis</label>
-                            				<input type="checkbox" class="checkbox-input" id="chkAutoNumbering" {{ count($itemmaster) > 0 ? 'disabled' : '' }}>
-                            			</div> -->
+                            			<div class="checkbox">
+                            				<label for="chkAutoNumbering">Kode Item</label>
+                            				<!-- <input type="checkbox" class="checkbox-input" id="chkAutoNumbering" {{ count($itemmaster) > 0 ? 'disabled' : '' }}> -->
+                            			</div>
                             			<fieldset class="form-group mb-3">
                             				<input type="text" class="form-control" id="KodeItem" name="KodeItem" placeholder="Masukan Kode Item" value="{{ count($itemmaster) > 0 ? $itemmaster[0]['KodeItem'] : '' }}" required="" {{ count($itemmaster) > 0 ? 'readonly' : '' }} >
                             			</fieldset>
@@ -274,30 +274,38 @@
 					                            		<div class="col-md-6">
 					                            			<label  class="text-body">Qty Minimum</label>
 					                            			<fieldset class="form-group mb-3">
-					                            				<input type="text" class="form-control" id="StockMinimum" name="StockMinimum" value="{{ count($itemmaster) > 0 ? $itemmaster[0]['StockMinimum'] : '0' }}" readonly="">
+					                            				<input type="text" class="form-control" id="StockMinimum" name="StockMinimum" value="{{ count($itemmaster) > 0 ? $itemmaster[0]['StockMinimum'] : '0' }}">
 					                            			</fieldset>
 					                            		</div>
 
 					                            		<div class="col-md-4">
 					                            			<label  class="text-body">Harga Pokok</label>
 					                            			<fieldset class="form-group mb-3">
-					                            				<input type="text" class="form-control" id="HargaPokokPenjualan" name="HargaPokokPenjualan" value="{{ count($itemmaster) > 0 ? $itemmaster[0]['HargaPokokPenjualan'] : '0' }}" readonly="">
+					                            				<input type="text" class="form-control" id="HargaPokokPenjualan" name="HargaPokokPenjualan" value="{{ count($itemmaster) > 0 ? $itemmaster[0]['HargaPokokPenjualan'] : '0' }}" {{ count($itemmaster) > 0 ? $itemmaster[0]['HargaPokokPenjualan'] > 0 ? "readonly" : "" : "" }}>
 					                            			</fieldset>
 					                            		</div>
 
 					                            		<div class="col-md-4">
 					                            			<label  class="text-body">Harga Jual</label>
 					                            			<fieldset class="form-group mb-3">
-					                            				<input type="text" class="form-control" id="HargaJual" name="HargaJual" value="{{ count($itemmaster) > 0 ? $itemmaster[0]['HargaJual'] : '0' }}" readonly="">
+					                            				<input type="text" class="form-control" id="HargaJual" name="HargaJual" value="{{ count($itemmaster) > 0 ? $itemmaster[0]['HargaJual'] : '0' }}">
 					                            			</fieldset>
 					                            		</div>
 
 					                            		<div class="col-md-4">
 					                            			<label  class="text-body">Harga Beli Terakhir</label>
 					                            			<fieldset class="form-group mb-3">
-					                            				<input type="text" class="form-control" id="HargaBeliTerakhir" name="HargaBeliTerakhir" value="{{ count($itemmaster) > 0 ? $itemmaster[0]['HargaBeliTerakhir'] : '0' }}" readonly="">
+					                            				<input type="text" class="form-control" id="HargaBeliTerakhir" name="HargaBeliTerakhir" value="{{ count($itemmaster) > 0 ? $itemmaster[0]['HargaBeliTerakhir'] : '0' }}" {{ count($itemmaster) > 0 ? $itemmaster[0]['HargaBeliTerakhir'] > 0 ? "readonly" : "" : "" }}>
 					                            			</fieldset>
 					                            		</div>
+					                            		<center><b>Konversi Satuan</b></center>
+					                            		<hr>
+					                            		<div class="col-md-12">
+                                                    		<div id="gridContainerKonversi">
+                                                    				
+                                                    		</div>
+											              	<small style="color: red">Tekan Enter saat selesai edit data</small>
+                                                    	</div>
                                                 	</div>
                                                 </div>
                                                 <div class="tab-pane fade" id="service" role="tabpanel" aria-labelledby="service-tab">
@@ -363,11 +371,7 @@
                                                 <div class="tab-pane fade" id="account" role="tabpanel" aria-labelledby="account-tab">
                                                     <div class="row">
                                                     	<div class="col-md-12">
-                                                    		<div class="dx-viewport demo-container">
-											                	<div id="data-grid-demo">
-											                  		<div id="gridContainerRakitan"></div>
-											                	</div>
-											              	</div>
+											              	<div id="gridContainerRakitan"></div>
 											              	<small style="color: red">Tekan Enter saat selesai edit data</small>
                                                     	</div>
                                                     </div>
@@ -376,12 +380,9 @@
                                                 <div class="tab-pane fade" id="diskon" role="tabpanel" aria-labelledby="diskon-tab">
                                                     <div class="row">
                                                     	<div class="col-md-12">
-                                                    		<div class="dx-viewport demo-container">
-											                	<div id="data-grid-demo">
-											                  		<div id="gridContainerDiskon"></div>
-											                	</div>
-											              	</div>
+                                                    		<div id="gridContainerDiskon"></div>
 											              	<small style="color: red">Tekan Enter saat selesai edit data</small>
+
                                                     	</div>
                                                     </div>
                                                 </div>
@@ -577,6 +578,7 @@
 
 		var bahanrakitan = <?php echo $bahanrakitan ?>;
 		var diskon = <?php echo $diskon ?>;
+		var itemkonversi = <?php echo $itemkonversi ?>;
 		if (bahanrakitan.length > 0) {
 			bindGrid(bahanrakitan)
 		}
@@ -599,6 +601,24 @@
 		}
 		else{
 			bindDiskon([])
+		}
+
+		if (itemkonversi.length > 0) {
+			var oKonversi = [];
+
+			var oIndex = 0;
+			$.each(itemkonversi,function (k,v) {
+				var newData = {Nomor : oIndex +1,Satuan: v.Satuan, QtyKonversi: v.QtyKonversi, HargaPokok:v.HargaPokok, HargaJual: v.HargaJual,Barcode:v.Barcode}
+
+				// console.log(newData)
+				oKonversi.push(newData);
+				oIndex +=1;
+			})
+
+			bindKonversi(oKonversi)
+		}
+		else{
+			bindKonversi([])	
 		}
 		// jQuery('#image_result').html("<img src ='https://www.generationsforpeace.org/wp-content/uploads/2018/03/empty.jpg' width = '400'> ");
 		SetEnableCommand();
@@ -854,12 +874,18 @@
 
 		var oItemBahan = [];
 		var oDiskon = [];
+		var oKonversi = [];
 
 		var dataGridInstance = jQuery('#gridContainerRakitan').dxDataGrid('instance');
         var allRowsData  = dataGridInstance.getDataSource().items();
 
         var GridDiskon = jQuery('#gridContainerDiskon').dxDataGrid('instance');
         var RowDataDiskon  = GridDiskon.getDataSource().items();
+
+        var GridKonversi = jQuery('#gridContainerKonversi').dxDataGrid('instance');
+        var RowDataKonversi  = GridKonversi.getDataSource().items();
+
+        console.log(RowDataKonversi);
 
 
         if (allRowsData.length > 0) {
@@ -890,6 +916,21 @@
         	}
         }
 
+        if (RowDataKonversi.length > 0) {
+        	for (var i = 0; i < RowDataKonversi.length; i++) {
+        		if (RowDataKonversi[i]['Satuan'] != "") {
+        			var item = {
+	        			'Satuan' : RowDataKonversi[i]['Satuan'],
+						'QtyKonversi' : RowDataKonversi[i]['QtyKonversi'],
+						'HargaPokok' : RowDataKonversi[i]['HargaPokok'],
+						'HargaJual' : RowDataKonversi[i]['HargaJual'],
+						'Barcode' : RowDataKonversi[i]['Barcode'],
+					}
+					oKonversi.push(item)
+        		}
+        	}
+        }
+
         var oData = {
         	'KodeItem' : jQuery('#KodeItem').val(),
 			'NamaItem' : jQuery('#NamaItem').val(),
@@ -915,7 +956,8 @@
 			'AcctPersediaan' : jQuery('#AcctPersediaan').val(),
 			'Gambar' : jQuery('#image_base64').val(),
 			'BahanRakitan' : oItemBahan,
-			'DiskonSetting' : oDiskon
+			'DiskonSetting' : oDiskon,
+			'ItemKonversi' : oKonversi
         }
 
         var formtype = jQuery('#formtype').val();
@@ -1189,6 +1231,192 @@
 		        jQuery('#KodeGudang').val(KodeGudang).trigger('change');
             }
 		})
+	}
+
+	function bindKonversi(data) {
+		var datagridKonversi = jQuery("#gridContainerKonversi").dxDataGrid({
+			allowColumnResizing: true,
+			dataSource: data,
+			keyExpr: "Nomor",
+			showBorders: true,
+            allowColumnReordering: true,
+            allowColumnResizing: true,
+            columnAutoWidth: true,
+            showBorders: true,
+            paging: {
+                enabled: true,
+                pageSize: 30
+            },
+            editing: {
+                mode: "row",
+                allowUpdating: true,
+                allowDeleting: true,
+                texts: {
+                    confirmDeleteMessage: ''  
+                }
+            },
+            columns:[
+            	{
+                    type: "buttons",
+                    buttons: ["edit", "delete"],
+                    visible: true,
+                    fixed: true,
+                },
+                {
+                    dataField: "Nomor",
+                    caption: "#",
+                    allowEditing:false,
+                },
+                {
+                	// oJenisDiskon
+                    dataField: "Satuan",
+                    caption: "Satuan",
+                    allowEditing:true,
+                    lookup: {
+					    dataSource: <?php echo $satuan; ?>,
+					    valueExpr: 'KodeSatuan',
+					    displayExpr: 'NamaSatuan',
+				    },
+				     editorType: "dxSelectBox"
+                },
+                {
+                    dataField: "QtyKonversi",
+                    caption: "Qty Konversi",
+                    allowEditing:true,
+                },
+                {
+                    dataField: "HargaPokok",
+                    caption: "Harga Pokok Konversi",
+                    allowEditing:true,
+                    format: { type: 'fixedPoint', precision: 2 },
+                },
+                {
+                    dataField: "HargaJual",
+                    caption: "Harga Jual Konversi",
+                    allowEditing:true,
+                    format: { type: 'fixedPoint', precision: 2 },
+                },
+                {
+                    dataField: "Barcode",
+                    caption: "Barcode Konversi",
+                    allowEditing:true,
+                },
+            ],
+	        onCellClick:function (e) {
+	        	// console.log(dataGridInstance.option("dataSource"))
+	            var rowData = datagridKonversi.option("dataSource");
+	            var columnIndex = e.columnIndex;
+	            // console.log(e)
+	        	if (columnIndex >= 1 && columnIndex <= 5) {
+	                datagridKonversi.editRow(e.rowIndex)	
+	            }
+	            datagridKonversi.option("focusedColumnIndex", columnIndex);	
+	            // dataGridInstance.addRow();
+
+	            var allRowsData  = datagridKonversi.option("dataSource");
+	            var blankCount = 0;
+	            for (var i = 0; i < allRowsData.length; i++) {
+	    			if (allRowsData[i]["Satuan"] == "") {
+	    				blankCount += 1;
+	    			}
+	    		}
+
+	    		if (blankCount == 1) {
+	    			var newData = {Nomor: allRowsData.length +1, Satuan: "", QtyKonversi: 0, HargaPokok:0, HargaJual: 0,Barcode:""}
+					datagridKonversi.option("dataSource", [...datagridKonversi.option("dataSource"), newData]);
+					datagridKonversi.refresh();
+	    		}
+	        },
+		}).dxDataGrid('instance');
+
+		var allRowsData  = datagridKonversi.option("dataSource");
+		var newData = {Nomor: allRowsData.length +1,Satuan: "", QtyKonversi: 0, HargaPokok:0, HargaJual: 0,Barcode:""}
+    	datagridKonversi.option("dataSource", [...datagridKonversi.option("dataSource"), newData]);
+    	datagridKonversi.refresh();	
+
+    	datagridKonversi.on('rowUpdated', function(e) {
+    		var allRowsData  = datagridKonversi.option("dataSource");
+    		var blankCount = 0;
+
+    		for (var i = 0; i < allRowsData.length; i++) {
+    			if (allRowsData[i]["Satuan"] == "") {
+    				blankCount += 1;
+    			}
+    		}
+
+    		if (blankCount == 1) {
+    			var newData = {Nomor: allRowsData.length +1,Satuan: "", QtyKonversi: 0, HargaPokok:0, HargaJual: 0,Barcode:""}
+				datagridKonversi.option("dataSource", [...datagridKonversi.option("dataSource"), newData]);
+				datagridKonversi.refresh();
+    		}
+    	});
+
+    	datagridKonversi.on('rowUpdated', function(e) {
+    		console.log(e)
+    		// CalculateTotal();
+    		var rowIndex = datagridKonversi.getRowIndexByKey(e.key);
+			console.log(e.data.QtyKonversi)
+
+			var HargaPokokKonversi = parseFloat(e.data.QtyKonversi) * parseFloat(jQuery('#HargaPokokPenjualan').val());
+			var JualKonversi = parseFloat(e.data.QtyKonversi) * parseFloat(jQuery('#HargaJual').val());
+			datagridKonversi.cellValue(rowIndex, "HargaPokok", HargaPokokKonversi);
+			datagridKonversi.cellValue(rowIndex, "HargaJual", JualKonversi);
+    	});
+
+    	datagridKonversi.on('editorPreparing',function (e) {
+    		if (e.parentType === "dataRow" && e.dataField === "Satuan") {
+    			e.editorOptions.onFocusOut = (x) => {
+    				if (jQuery('#HargaPokokPenjualan').val() == 0) {
+    					Swal.fire({
+	                      icon: "error",
+	                      title: "Opps...",
+	                      text: "Harga Pokok Item Harus di isi terlebih dahulu",
+	                    }).then((result)=>{
+		      				bindKonversi([]);
+			            });
+    				}
+
+    				if (jQuery('#HargaJual').val() == 0) {
+    					Swal.fire({
+	                      icon: "error",
+	                      title: "Opps...",
+	                      text: "Harga Jual Item Harus di isi terlebih dahulu",
+	                    }).then((result)=>{
+		      				bindKonversi([]);
+			            });
+    				}
+
+		    		datagridKonversi.saveEditData();
+		    	}
+    		}
+    		else if (e.parentType === "dataRow" && e.dataField === "QtyKonversi") {
+    			e.editorOptions.onFocusOut = (x) => {
+    				var rowIndex = datagridKonversi.getRowIndexByKey(e.row.key);
+    				console.log(e.row.data.QtyKonversi)
+
+    				var HargaPokokKonversi = parseFloat(e.row.data.QtyKonversi) * parseFloat(jQuery('#HargaPokokPenjualan').val());
+    				var JualKonversi = parseFloat(e.row.data.QtyKonversi) * parseFloat(jQuery('#HargaJual').val());
+    				datagridKonversi.cellValue(rowIndex, "HargaPokok", HargaPokokKonversi);
+    				datagridKonversi.cellValue(rowIndex, "HargaJual", JualKonversi);
+		    		datagridKonversi.saveEditData();
+		    	}
+    		}
+    		else if (e.parentType === "dataRow" && e.dataField === "HargaPokok") {
+    			e.editorOptions.onFocusOut = (x) => {
+		    		datagridKonversi.saveEditData();
+		    	}
+    		}
+    		else if (e.parentType === "dataRow" && e.dataField === "HargaJual") {
+    			e.editorOptions.onFocusOut = (x) => {
+		    		datagridKonversi.saveEditData();
+		    	}
+    		}
+    		else if (e.parentType === "dataRow" && e.dataField === "Barcode") {
+    			e.editorOptions.onFocusOut = (x) => {
+		    		datagridKonversi.saveEditData();
+		    	}
+    		}
+    	});
 	}
 	
 	function bindDiskon(data) {

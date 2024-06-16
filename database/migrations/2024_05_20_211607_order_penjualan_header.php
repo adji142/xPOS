@@ -16,7 +16,7 @@ class OrderPenjualanHeader extends Migration
         Schema::create('orderpenjualanheader', function (Blueprint $table) {
             $table->string('Periode');
             $table->string('NoTransaksi');
-            $table->date('TglTransaksi');
+            $table->datetime('TglTransaksi');
             $table->date('TglJatuhTempo');
             $table->string('NoReff');
             $table->string('KodePelanggan');

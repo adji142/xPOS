@@ -95,61 +95,7 @@
 					<div class="col-12  px-4">
 						<div class="card card-custom gutter-b bg-white border-0" >
 							<div class="card-body" >
-								<div class="table-responsive" id="printableTable">
-									<table id="orderTable" class="display" style="width:100%">
-										<thead>
-											<tr>
-												<th>Kode Item</th>
-												<th>Nama Item</th>
-												<th>Barcode</th>
-												<th>Harga Jual</th>
-												<th>Harga Pokok</th>
-												<th>Harga Pembelian</th>
-												<th>Stock</th>
-												<th>Min. Stock</th>
-												<th>Jenis Item</th>
-												<th>Merk</th>
-												<th>Rak</th>
-												<th>Tipe Item</th>
-												<th class=" no-sort text-end">Action</th>
-											</tr>
-										</thead>
-										<tbody>
-											@if (count($itemmaster) > 0)
-												@foreach($itemmaster as $v)
-												<tr>
-													<td>{{ $v['KodeItem'] }}</td>
-													<td>{{ $v['NamaItem'] }}</td>
-													<td>{{ $v['Barcode'] }}</td>
-													<td>{{ number_format($v['HargaJual']) }}</td>
-													<td>{{ number_format($v['HargaPokokPenjualan']) }}</td>
-													<td>{{ number_format($v['HargaBeliTerakhir']) }}</td>
-													<td>{{ number_format($v['Stock']) }}</td>
-													<td>{{ number_format($v['StockMinimum']) }}</td>
-													<td>{{ $v['NamaJenis'] }}</td>
-													<td>{{ $v['NamaMerk'] }}</td>
-													<td>{{ $v['Rak'] }}</td>
-													<td>{{ $v['ItemType'] }}</td>
-													<td>
-														<div class="card-toolbar text-end">
-															<button class="btn p-0 shadow-none" type="button" id="dropdowneditButton1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-																<span class="svg-icon">
-																	<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-three-dots text-body" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-																		<path fill-rule="evenodd" d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"></path>
-																	</svg>
-																</span>
-															</button>
-															<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdowneditButton1"  style="position: absolute; transform: translate3d(1001px, 111px, 0px); top: 0px; left: 0px; will-change: transform;">
-																<a class="dropdown-item" href="{{ url('itemmaster/form/' . $v['KodeItem']) }}">Edit</a>
-															</div>
-														</div>
-													</td>
-												</tr>
-												@endforeach
-											@endif
-										</tbody>
-									</table>
-								</div>
+								<div id="GridItemMaster"></div>
 							</div>
 						</div>
 					</div>
@@ -165,15 +111,124 @@
 
 @push('scripts')
 <script type="text/javascript">
-	jQuery(document).ready(function() {
-		jQuery('#orderTable').DataTable({
-			"pagingType": "simple_numbers",
-	  
-		"columnDefs": [ {
-		  "targets"  : 'no-sort',
-		  "orderable": false,
-		}]
+	jQuery(function () {
+		jQuery(document).ready(function() {
+			var oItem = <?php echo $itemmaster ?>;
+			BindGrid(oItem);
 		});
-	} );
+
+		function BindGrid(data) {
+			var dataGridInstance = jQuery("#GridItemMaster").dxDataGrid({
+				allowColumnResizing: true,
+				dataSource: data,
+				keyExpr: "KodeItem",
+				showBorders: true,
+	            allowColumnResizing: true,
+	            columnAutoWidth: true,
+	            showBorders: true,
+	            paging: {
+	                enabled: true,
+	                pageSize: 20
+	            },
+	            editing: {
+	                mode: "row",
+	                allowUpdating: true,
+	                texts: {
+	                    confirmDeleteMessage: ''  
+	                }
+	            },
+	            searchPanel: {
+	                visible: true,
+	                width: 240,
+	                placeholder: "Search..."
+	            },
+	            export: {
+	                enabled: true,
+	                fileName: "Daftar Item Master"
+	            },
+	            selection:{
+		            mode: "single"
+		        },
+	            columns: [
+	            	{
+	                    type: "buttons",
+	                    buttons: ["edit", "delete"],
+	                    visible: true,
+	                    fixed: true,
+	                },
+	            	{
+	                    dataField: "KodeItem",
+	                    caption: "Kode Item",
+	                    allowEditing:false, 
+	                },
+	                {
+	                    dataField: "NamaItem",
+	                    caption: "Nama Item",
+	                    allowEditing:false, 
+	                },
+	                {
+	                    dataField: "Barcode",
+	                    caption: "Barcode",
+	                    allowEditing:false, 
+	                },
+	                {
+	                    dataField: "HargaJual",
+	                    caption: "Harga Jual",
+	                    allowEditing:false, 
+	                    format: { type: 'fixedPoint', precision: 2 },
+	                },
+	                {
+	                    dataField: "HargaPokokPenjualan",
+	                    caption: "HPP",
+	                    allowEditing:false, 
+	                    format: { type: 'fixedPoint', precision: 2 },
+	                },
+	                {
+	                    dataField: "HargaBeliTerakhir",
+	                    caption: "Harga Beli Terakhir",
+	                    allowEditing:false, 
+	                    format: { type: 'fixedPoint', precision: 2 },
+	                },
+	                {
+	                    dataField: "Stock",
+	                    caption: "Stock",
+	                    allowEditing:false, 
+	                    format: { type: 'fixedPoint', precision: 2 },
+	                },
+	                {
+	                    dataField: "StockMinimum",
+	                    caption: "Min Stock",
+	                    allowEditing:false, 
+	                    format: { type: 'fixedPoint', precision: 2 },
+	                },
+	                {
+	                    dataField: "NamaJenis",
+	                    caption: "Jenis Item",
+	                    allowEditing:false, 
+	                },
+	                {
+	                    dataField: "NamaMerk",
+	                    caption: "Merk",
+	                    allowEditing:false, 
+	                },
+	                {
+	                    dataField: "Rak",
+	                    caption: "Rak",
+	                    allowEditing:false, 
+	                },
+	                {
+	                    dataField: "ItemType",
+	                    caption: "Item Type",
+	                    allowEditing:false, 
+	                },
+	            ],
+	            onEditingStart: function(e) {
+	                var baseUrl = "{{ url('/') }}";
+
+	                location.replace(baseUrl + '/itemmaster/form/'+e.data.KodeItem);
+	            },
+			})
+		}
+	})
 </script>
 @endpush

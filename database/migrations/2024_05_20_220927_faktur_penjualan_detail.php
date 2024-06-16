@@ -20,12 +20,13 @@ class FakturPenjualanDetail extends Migration
             $table->integer('BaseLine');
             $table->string('KodeItem');
             $table->double('Qty');
+            $table->double('QtyKonversi');
             $table->string('Satuan');
             $table->double('Harga');
             $table->double('Discount');
             $table->double('HargaNet');
             $table->string('LineStatus');
-            $table->string('KodeGudang');\
+            $table->string('KodeGudang');
             $table->string('Keterangan');
             $table->string('RecordOwnerID');
             $table->timestamps();

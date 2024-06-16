@@ -127,7 +127,7 @@ class ReturPembelianController extends Controller
 		$returdetail = ReturPembelianDetail::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
 						->where('NoTransaksi','=', $NoTransaksi)->get();
 
-	    return view("Transaksi.Pembelian.ReturPembelian-Input",[
+	    return view("Transaksi.Pembelian.ReturPembelian-Input2",[
 	        'supplier' => $supplier,
 	        'termin' => $termin,
 	        'item' => $item,
@@ -191,6 +191,12 @@ class ReturPembelianController extends Controller
 			foreach ($jsonData['Detail'] as $key) {
 				if ($key['Qty'] == 0) {
 					goto skip;
+				}
+
+				if ($key['KodeGudang'] == "") {
+					$data['message'] = "Gudang Penerima tidak boleh kosong";
+					$errorCount +=1;
+					goto jump;
 				}
 
 				$Pembayaran = PembayaranDetail::selectRaw("pembayarandetail.*")

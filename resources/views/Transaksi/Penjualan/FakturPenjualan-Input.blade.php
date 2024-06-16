@@ -783,7 +783,7 @@
         	dataGridInstance.on('rowUpdated', function(e) {
         		// console.log(e)
         		CalculateTotal();
-        	})
+        	});
         	// Validasi duplicate Row
         	dataGridInstance.on('dataErrorOccurred',function (e) {
 			console.log(e)

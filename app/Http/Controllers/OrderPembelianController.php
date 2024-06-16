@@ -107,11 +107,16 @@ class OrderPembelianController extends Controller
 						->where('Active','Y')->get();
 			$orderheader = OrderPembelianHeader::where('NoTransaksi', $NoTransaksi)
 							->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
-			$orderdetail = OrderPembelianDetail::where('NoTransaksi', $NoTransaksi)
-							->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+			$orderdetail = OrderPembelianDetail::selectRaw("orderpembeliandetail.*, itemmaster.NamaItem")
+							->leftJoin('itemmaster', function ($value){
+	        					$value->on('orderpembeliandetail.KodeItem','=','itemmaster.KodeItem')
+	        					->on('orderpembeliandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+	        				})
+							->where('orderpembeliandetail.NoTransaksi', $NoTransaksi)
+							->where('orderpembeliandetail.RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 			$satuan = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
-		    return view("Transaksi.Pembelian.OrderPembelian-Input",[
+		    return view("Transaksi.Pembelian.OrderPembelian-Input2",[
 		        'supplier' => $supplier,
 		        'termin' => $termin,
 		        'item' => $item,

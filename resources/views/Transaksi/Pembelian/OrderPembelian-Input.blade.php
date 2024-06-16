@@ -193,6 +193,29 @@
 	
 </div>
 
+<div class="modal fade text-left w-100" id="modallookupItem" tabindex="-1" role="dialog" aria-labelledby="myModalLabel16" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" role="document">
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <h4 class="modal-title" id="myModalLabel16">Daftar Item Master</h4>
+		  <button type="button" class="close rounded-pill btn btn-sm btn-icon btn-primary m-0" data-bs-dismiss="modal" aria-label="Close">
+			<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+			<path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+			</svg>	
+			</button>
+		</div>
+		<div class="modal-body">
+		  <div id="gridLookupitem"></div>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-primary ms-1" id="btSelectItem" data-bs-dismiss="modal">
+				<span class="">Pilih Item</span>
+			</button>
+			</div> 		
+	  </div>
+	</div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -214,7 +237,8 @@
 	    	jQuery('#TglTransaksi').val(NowDay);
 	    	jQuery('#TglJatuhTempo').val(NowDay);
 	    	// console.log(jQuery('#formtype').val())
-
+	    	jQuery('#modallookupItem').modal({backdrop: 'static', keyboard: false})
+			jQuery('#modallookupItem').modal('show');
 	    	orderHeader = <?php echo json_encode($orderheader); ?>;
 	    	// console.log(orderHeader)
 			if (jQuery('#formtype').val() == "edit") {
