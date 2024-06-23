@@ -490,7 +490,30 @@
 	            jQuery('#btSave').text('Save');
 	            jQuery('#btSave').attr('disabled',false);
 			}
-		})
+		});
+
+		jQuery('#btSelectItem').click(function () {
+			var dataGridInstance = jQuery('#gridLookupitem').dxDataGrid('instance');
+			var dataGridDetailInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
+
+			var selectedRows = dataGridInstance.getSelectedRowsData();
+
+			console.log(selectedRows);
+			if (selectedRows.length > 0) {
+
+				dataGridDetailInstance.cellValue(_selectedRow, "KodeItem", selectedRows[0]["KodeItem"]);
+            	dataGridDetailInstance.cellValue(_selectedRow, "NamaItem", selectedRows[0]["NamaItem"]);
+            	dataGridDetailInstance.cellValue(_selectedRow, "QtyOrder", 0);
+            	dataGridDetailInstance.cellValue(_selectedRow, "QtyFaktur", 0);
+	            dataGridDetailInstance.cellValue(_selectedRow, "Harga", selectedRows[0]["HargaBeliTerakhir"]);
+	            dataGridDetailInstance.cellValue(_selectedRow, "Discount", 0);
+	            dataGridDetailInstance.cellValue(_selectedRow, "HargaNet", 0);
+	            dataGridDetailInstance.cellValue(_selectedRow, "Satuan", selectedRows[0]["Satuan"]);
+	            dataGridDetailInstance.refresh();
+	            dataGridDetailInstance.saveEditData();
+				CalculateTotal();
+			}
+		});
 		
 
 		function CopyFromOrder(Data) {

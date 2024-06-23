@@ -65,7 +65,7 @@ class ItemMaster extends Model
         if ($ShowKonversi == 1) {
           // Union with item konversi
 
-          $sql2 = "itemmaster.KodeItem, itemmaster.NamaItem, itemkonversi.Barcode,itemkonversi.HargaJual,itemkonversi.HargaPokok,itemmaster.HargaBeliTerakhir,itemmaster.Stock, itemmaster.StockMinimum, merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, itemmaster.Rak,itemkonversi.QtyKonversi,itemkonversi.Satuan  ";
+          $sql2 = "itemmaster.KodeItem, itemmaster.NamaItem, itemkonversi.Barcode,itemkonversi.HargaJual,itemkonversi.HargaPokok,itemmaster.HargaBeliTerakhir,itemmaster.Stock, itemmaster.StockMinimum, merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, itemmaster.Rak,CASE WHEN COALESCE(itemkonversi.QtyKonversi,0) = 0 then 1 else COALESCE(itemkonversi.QtyKonversi,0) end QtyKonversi,itemkonversi.Satuan  ";
           $itemmaster2 = ItemMaster::selectRaw($sql2)
                   ->leftJoin('jenisitem', function ($value){
                     $value->on('jenisitem.KodeJenis','=','itemmaster.KodeJenisItem')
@@ -121,4 +121,6 @@ class ItemMaster extends Model
 
        	return $itemmaster;
     }
+
+    
 }

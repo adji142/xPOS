@@ -14,13 +14,17 @@ use App\Models\ItemMaster;
 use App\Models\Diskon;
 use App\Models\MetodePembayaran;
 use App\Models\Sales;
+use App\Models\GrupPelanggan;
+use App\Models\Provinsi;
 
 require_once(app_path('Libraries/phpserial/src/PhpSerial.php'));
 class PoSController extends Controller
 {
     public function View(Request $request)
     {
-        $pelanggan = Pelanggan::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+        $sql = "pelanggan.*, CONCAT(COALESCE(NoTlp1,''),CASE WHEN COALESCE(NoTlp2,'') != '' THEN ' / ' ELSE '' END , COALESCE(NoTlp2,'')) NoTlpConcat ";
+        $pelanggan = Pelanggan::selectRaw($sql)
+                    ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                     ->where('Status','=',1)
                     ->get();
         $sales = Sales::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
@@ -33,12 +37,17 @@ class PoSController extends Controller
                             ->where('TypeItem','=',4)->get();
         $metodepembayaran = MetodePembayaran::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
+        $gruppelanggan = GrupPelanggan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+        $provinsi = Provinsi::all();
+
     	return view("Transaksi.Penjualan.PoS.NormalPoS",[
             'pelanggan' => $pelanggan,
             'company' => $company,
             'itemServices' =>$itemServices,
             'metodepembayaran' => $metodepembayaran,
-            'sales' => $sales
+            'sales' => $sales,
+            'gruppelanggan' => $gruppelanggan,
+            'provinsi' => $provinsi
         ]);
     }
 

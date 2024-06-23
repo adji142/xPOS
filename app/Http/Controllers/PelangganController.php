@@ -13,6 +13,7 @@ use App\Models\GrupPelanggan;
 use App\Models\Pelanggan;
 use App\Models\Provinsi;
 use App\Exports\PelangganExport;
+use App\Models\DocumentNumbering;
 
 class PelangganController extends Controller
 {
@@ -51,13 +52,13 @@ class PelangganController extends Controller
 		                    }      
 		                })->where('pelanggan.RecordOwnerID','=',Auth::user()->RecordOwnerID);
 
-        $pelanggan = $pelanggan->paginate(4);
+        // $pelanggan = $pelanggan->paginate(4);
 
         $title = 'Delete Pelanggan !';
         $text = "Are you sure you want to delete ?";
         confirmDelete($title, $text);
         return view("master.BussinessPartner.Pelanggan",[
-            'pelanggan' => $pelanggan, 
+            'pelanggan' => $pelanggan->get(), 
         ]);
     }
 
@@ -116,11 +117,8 @@ class PelangganController extends Controller
                 'KodeGrupPelanggan'=>'required',
             ]);
 
-            $KodePelanggan = "";
-            $prefix = "CS";
-            $lastNoTrx = Pelanggan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-            ->where(DB::raw('LEFT(KodePelanggan,2)'),'=',$prefix)->count()+1;
-            $KodePelanggan = $prefix.str_pad($lastNoTrx, 4, '0', STR_PAD_LEFT);
+            $numberingData = new DocumentNumbering();
+            $KodePelanggan = $numberingData->GetNewDoc("PLG","pelanggan","KodePelanggan");
 
             $model = new Pelanggan;
             $model->KodePelanggan = $KodePelanggan;
@@ -154,6 +152,56 @@ class PelangganController extends Controller
             alert()->error('Error',$e->getMessage());
             return redirect()->back();
         }
+    }
+
+    public function storeJson(Request $request)
+    {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'LastTRX' => '' ,'Kembalian' => 0);
+        Log::debug($request->all());
+        try {
+            $this->validate($request, [
+                'NamaPelanggan'=>'required',
+                'KodeGrupPelanggan'=>'required',
+            ]);
+
+            $numberingData = new DocumentNumbering();
+            $KodePelanggan = $numberingData->GetNewDoc("PLG","pelanggan","KodePelanggan");
+
+            $model = new Pelanggan;
+            $model->KodePelanggan = $KodePelanggan;
+            $model->NamaPelanggan = $request->input('NamaPelanggan');
+            $model->KodeGrupPelanggan = $request->input('KodeGrupPelanggan');
+            $model->LimitPiutang = $request->input('LimitPiutang');
+            $model->ProvID = $request->input('ProvID');
+            $model->KotaID = $request->input('KotaID');
+            $model->KelID = $request->input('KelID');
+            $model->KecID = $request->input('KecID');
+            $model->Email = $request->input('Email');
+            $model->NoTlp1 = $request->input('NoTlp1');
+            $model->NoTlp2 = $request->input('NoTlp2');
+            $model->Alamat = $request->input('Alamat');
+            $model->Keterangan = $request->input('Keterangan');
+            $model->Status = $request->input('Status');
+            $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+            $save = $model->save();
+
+            if ($save) {
+                $data['success'] = true;
+                $data['message'] = 'Data Pelanggan Berhasil disimpan.';
+                $data['LastTRX'] = $KodePelanggan;
+                
+            }else{
+                $data['success'] = false;
+                $data['message'] = 'Penambahan Data Gagal';
+            }
+        } catch (\Exception $e) {
+            Log::debug($e->getMessage());
+
+            $data['success'] = false;
+            $data['message'] = 'Penambahan Data Gagal : '.$e->getMessage();
+        }
+        return response()->json($data);
     }
 
     public function edit(Request $request)

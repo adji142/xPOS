@@ -17,12 +17,12 @@ class PembayaranPenjualanHeader extends Migration
             $table->string('Periode');
             $table->string('NoTransaksi');
             $table->date('TglTransaksi');
-            $table->string('KodeSupplier');
+            $table->string('KodePelanggan');
             $table->double('TotalPembelian');
             $table->double('TotalPembayaran');
             $table->string('KodeMetodePembayaran');
-            $table->string('NoReff');
-            $table->string('Keterangan');
+            $table->string('NoReff')->nullable();
+            $table->string('Keterangan')->nullable();
             $table->string('CreatedBy');
             $table->string('UpdatedBy');
             $table->integer('Posted');

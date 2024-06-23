@@ -68,7 +68,7 @@
                             			
                             		</div>
 
-                            		<div class="col-md-3">
+                            		<div class="col-md-2">
                             			<label  class="text-body">Status</label>
                             			<fieldset class="form-group mb-3">
                             				<select name="Status" id="Status" class="js-example-basic-single js-states form-control bg-transparent" >
@@ -80,7 +80,7 @@
                             			</fieldset>
                             		</div>
 
-                            		<div class="col-md-6">
+                            		<div class="col-md-4">
                             			<label  class="text-body">Pelanggan</label>
                             			<fieldset class="form-group mb-3">
                             				<select name="KodePelanggan" id="KodePelanggan" class="js-example-basic-single js-states form-control bg-transparent" >
@@ -95,25 +95,31 @@
                             			</fieldset>
                             		</div>
 
-                            		<div class="col-md-8">
+                            		<div class="col-md-3">
                             			<label  class="text-body">Refrensi Dokumen</label>
                             			<fieldset class="form-group mb-3">
-                            				<div id="gridBox"></div>
+                            				<select name="BaseType" id="BaseType" class="js-example-basic-single js-states form-control bg-transparent" >
+                            					<option value="">Pilih Refrensi Dokumen</option>
+                            					<option value="ODLN">Surat Jalan</option>
+                            					<option value="OINV">Faktur Penjualan</option>
+                            				</select>
                             			</fieldset>
                             		</div>
+                            		<div class="col-md-3">
+                            			<label  class="text-body">Tanggal Transaksi</label>
+                            			<fieldset class="form-group">
+                            				<input type="date" class="form-control" id="TglTransaksi" name="TglTransaksi" placeholder="<Auto>" value="{{ count($returheader) > 0 ? $returheader[0]['TglTransaksi'] : '' }}" required="">
+                            			</fieldset>
+                            		</div>
+
                             		<div class="col-md-8">
-                            			<label  class="text-body">Isi Nomor Faktur Pembelian</label>
+                            			<label  class="text-body"><div id="lblRefrensi">Isi Nomor Faktur Pembelian</div></label>
                             			<fieldset class="form-group mb-3">
                             				<div id="gridBox"></div>
                             			</fieldset>
                             		</div>
 
-                            		<div class="col-md-3">
-                            			<label  class="text-body">Tanggal Transaksi</label>
-                            			<fieldset class="form-group mb-3">
-                            				<input type="date" class="form-control" id="TglTransaksi" name="TglTransaksi" placeholder="<Auto>" value="{{ count($returheader) > 0 ? $returheader[0]['TglTransaksi'] : '' }}" required="">
-                            			</fieldset>
-                            		</div>
+                            		
 
                             		<div class="col-md-6">
                             			<label  class="text-body">No Reff</label>
@@ -122,7 +128,7 @@
                             			</fieldset>
                             		</div>
 
-                            		<div class="col-md-12">
+                            		<div class="col-md-6">
                             			<label  class="text-body">Keterangan</label>
                             			<fieldset class="form-group mb-3">
                             				<input type="text" class="form-control" id="Keterangan" name="Keterangan" placeholder="Masukan Keterangan" value="{{ count($returheader) > 0 ? $returheader[0]['Keterangan'] : '' }}" >
@@ -254,28 +260,6 @@
 
 		});
 
-		jQuery('#KodePelanggan').change(function () {
-			$.ajax({
-	            async:false,
-	            type: 'post',
-	            url: "{{route('fpembelian-readheader')}}",
-	            headers: {
-	                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
-	            },
-	            data: {
-	                'TglAwal' : '1999-01-01',
-	                'TglAkhir' : GetDate,
-	                'KodeVendor' :jQuery('#KodePelanggan').val(),
-	                'Status' : ''
-	            },
-	            dataType: 'json',
-	            success: function(response) {
-	            	filteredOrderDetail = response.data;
-	                CreateCombobox(response.data)
-	            }
-	        })
-		});
-
 		jQuery('#TglTransaksi').change(function () {
 			const dateString = jQuery('#TglTransaksi').val();
 			const dateObject = new Date(dateString);
@@ -312,6 +296,7 @@
 						'HargaNet' : allRowsData[i]['HargaNet'],
 						'BaseReff' : NoOrderPembelian,
 						'BaseLine' : allRowsData[i]['BaseLine'],
+						'BaseType' : jQuery('#BaseType').val(),
 						'KodeGudang' : allRowsData[i]['KodeGudang'],
 						'LineStatus':allRowsData[i]['LineStatus'],
       				}
@@ -414,62 +399,147 @@
 			}
 		});
 		
+		jQuery('#BaseType').change(function () {
+			var labelText = "";
+
+			console.log("asdasd");
+
+			if (jQuery('#BaseType').val() == "ODLN") {
+				labelText = "Pilih Nomor Surat Jalan";
+
+				$.ajax({
+		            async:false,
+		            type: 'post',
+		            url: "{{route('delivery-readheader')}}",
+		            headers: {
+		                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+		            },
+		            data: {
+		                'TglAwal' : '1999-01-01',
+		                'TglAkhir' : GetDate,
+		                'KodePelanggan' :jQuery('#KodePelanggan').val(),
+		                'Status' : 'O'
+		            },
+		            dataType: 'json',
+		            success: function(response) {
+		            	filteredOrderDetail = response.data;
+		                CreateCombobox(response.data)
+		            }
+		        });
+			}
+			else if (jQuery('#BaseType').val() == "OINV") {
+				labelText = "Pilih Nomor Faktur Penjualan";
+
+				$.ajax({
+		            async:false,
+		            type: 'post',
+		            url: "{{route('fpenjualan-readheader')}}",
+		            headers: {
+		                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+		            },
+		            data: {
+		                'TglAwal' : '1999-01-01',
+		                'TglAkhir' : GetDate,
+		                'KodePelanggan' :jQuery('#KodePelanggan').val(),
+		                'Status' : 'O'
+		            },
+		            dataType: 'json',
+		            success: function(response) {
+		            	filteredOrderDetail = response.data;
+		                CreateCombobox(response.data)
+		            }
+		        });
+			}
+			else{
+				labelText = "Pilih Refrensi";	
+			}
+
+			jQuery('#lblRefrensi').text(labelText);
+		});
 
 		function CopyFromOrder(Data) {
 			var oData = [];
-			$.ajax({
-	            async:false,
-	            type: 'post',
-	            url: "{{route('fpembelian-readdetail')}}",
-	            headers: {
-	                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
-	            },
-	            data: {
-	                'NoTransaksi' : Data.NoTransaksi,
-	            },
-	            dataType: 'json',
-	            success: function(response) {
-	                // BindGridOrder(response.data)
-	                var index = 1;
-	                $.each(response.data,function (k,v) {
-	                	var temp = {
-	                		'NoUrut' : index,
-	                		'BaseLine' : v.NoUrut,
-	                		'KodeItem' : v.KodeItem,
-	                		'KodeGudang' : v.KodeGudang,
-	                		'Qty' : parseFloat(v.Qty),
-	                		'Satuan' : v.Satuan,
-	                		'Harga' : parseFloat(v.Harga),
-	                		'LineStatus' : 'O'
-	                	}
+			if (typeof Data != "undefined" ) {
 
-	                	oData.push(temp)
+				if (jQuery('#BaseType').val() == "ODLN") {
+					$.ajax({
+			            async:false,
+			            type: 'post',
+			            url: "{{route('delivery-readdetail')}}",
+			            headers: {
+			                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+			            },
+			            data: {
+			                'NoTransaksi' : Data.NoTransaksi,
+			            },
+			            dataType: 'json',
+			            success: function(response) {
+			                // BindGridOrder(response.data)
+			                var index = 1;
+			                $.each(response.data,function (k,v) {
+			                	var temp = {
+			                		'NoUrut' : index,
+			                		'BaseLine' : v.NoUrut,
+			                		'KodeItem' : v.KodeItem,
+			                		'NamaItem' : v.NamaItem,
+			                		'KodeGudang' : v.KodeGudang,
+			                		'Qty' : parseFloat(v.Qty),
+			                		'Satuan' : v.Satuan,
+			                		'Harga' : parseFloat(v.Harga),
+			                		'LineStatus' : 'O'
+			                	}
 
-	                	index +=1;
-	                });
-	                
-	                BindGridDetail(oData)
-	            }
-	        });
+			                	oData.push(temp)
 
-			// Get Header
-	        $.ajax({
-	            async:false,
-	            type: 'post',
-	            url: "{{route('fpembelian-findheader')}}",
-	            headers: {
-	                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
-	            },
-	            data: {
-	                'NoTransaksi' : Data.NoTransaksi,
-	            },
-	            dataType: 'json',
-	            success: function(response) {
-	                jQuery('#TglTransaksi').val(response.data[0]["TglTransaksi"]);
-	                jQuery('#NoReff').val(response.data[0]["NoReff"]);
-	                jQuery('#Keterangan').val(response.data[0]["Keterangan"]);
-	            }
-	        })
+			                	index +=1;
+			                });
+			                
+			                BindGridDetail(oData)
+			            }
+			        });
+				}
+				else if (jQuery('#BaseType').val() == "OINV") {
+					$.ajax({
+			            async:false,
+			            type: 'post',
+			            url: "{{route('fpenjualan-readdetail')}}",
+			            headers: {
+			                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+			            },
+			            data: {
+			                'NoTransaksi' : Data.NoTransaksi,
+			            },
+			            dataType: 'json',
+			            success: function(response) {
+			                // BindGridOrder(response.data)
+			                var index = 1;
+			                $.each(response.data,function (k,v) {
+			                	var temp = {
+			                		'NoUrut' : index,
+			                		'BaseLine' : v.NoUrut,
+			                		'KodeItem' : v.KodeItem,
+			                		'NamaItem' : v.NamaItem,
+			                		'KodeGudang' : v.KodeGudang,
+			                		'Qty' : parseFloat(v.Qty),
+			                		'Satuan' : v.Satuan,
+			                		'Harga' : parseFloat(v.Harga),
+			                		'LineStatus' : 'O'
+			                	}
+
+			                	oData.push(temp)
+
+			                	index +=1;
+			                });
+			                
+			                BindGridDetail(oData)
+			            }
+			        });
+				}
+				else{
+					TipeRefrensi = "Pilih Refrensi";	
+				}
+			}
+			CalculateTotal();
 		}
 		function CalculateTotal() {
 			var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
@@ -494,17 +564,31 @@
 		}
 
 		function CreateCombobox(data) {
+			var TipeRefrensi = "";
+
+			if (jQuery('#BaseType').val() == "ODLN") {
+				TipeRefrensi = "Pilih Nomor Surat Jalan";
+			}
+			else if (jQuery('#BaseType').val() == "OINV") {
+				TipeRefrensi = "Pilih Nomor Faktur Penjualan";
+			}
+			else{
+				TipeRefrensi = "Pilih Refrensi";	
+			}
 			jQuery('#gridBox').dxDropDownBox({
                 displayExpr(item) {
                 	if (jQuery('#formtype').val() == "add") {
                 		CopyFromOrder(item);
                 	}
-                	NoOrderPembelian = item.NoTransaksi;
-			    	return `${item.NoTransaksi}`;
+
+                	if (typeof item != "undefined") {
+	                    NoOrderPembelian = item.NoTransaksi;
+			    		return `${item.NoTransaksi}`;
+	                }
 			    },
-			    placeholder: 'Pilih Nomor Order',
+			    placeholder: TipeRefrensi,
                 dataSource:data,
-                showClearButton: true,
+                // showClearButton: true,
                 contentTemplate: function(e) {
                 	const value = e.component.option('value');
                 	const $dataGrid = jQuery('<div>').dxDataGrid({
@@ -533,7 +617,7 @@
 				        e.component.close();
 				      });
                 	return $dataGrid;
-                }
+                },
 			})
 
 			// jQuery("#gridBox").append(customDropDown);
@@ -588,15 +672,16 @@
 	                },
 	                {
 	                    dataField: "KodeItem",
-	                    caption: "Item",
-	                    lookup: {
-						    dataSource: <?php echo $item ?>,
-						    valueExpr: 'KodeItem',
-						    displayExpr: 'NamaItem',
-					    },
-					    width: 350,
+	                    caption: "Kode Item",
 					    allowSorting: false,
-					    allowEditing:false
+					    allowEditing:AllowManipulation
+	                },
+	                {
+	                    dataField: "NamaItem",
+	                    caption: "Nama Item",
+					    width: 250,
+					    allowSorting: false,
+					    allowEditing:AllowManipulation
 	                },
 	                {
 	                    dataField: "KodeGudang",

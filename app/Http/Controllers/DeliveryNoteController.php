@@ -49,7 +49,7 @@ class DeliveryNoteController extends Controller
    						CASE WHEN deliverynoteheader.Status = 'C' THEN 'CLOSE' ELSE '' END
    						END
    					END
-   				END AS StatusDocument ";
+   				END AS StatusDocument, CONCAT(deliverynoteheader.DeliveryStatus,' ', COALESCE(deliverynoteheader.KeteranganPengiriman,' ')) as DeliveryStatus,deliverynoteheader.Transaksi ";
 	   	$deliverynote = DeliveryNoteHeader::selectRaw($sql)
    						->leftJoin('deliverynotedetail', function ($value){
 	    					$value->on('deliverynotedetail.NoTransaksi','=','deliverynoteheader.NoTransaksi')
@@ -103,13 +103,13 @@ class DeliveryNoteController extends Controller
 							})
         					->select('returpenjualandetail.BaseReff','returpenjualandetail.BaseLine','returpenjualandetail.BaseType','returpenjualandetail.KodeItem','returpenjualandetail.RecordOwnerID', DB::raw('SUM(Qty) as QtyRetur'))
         					->where('returpenjualanheader.Status','O')
-        					->groupBy('returpenjualandetail.BaseReff','returpenjualandetail.BaseLine','returpenjualandetail.KodeItem','returpenjualandetail.RecordOwnerID'),
+        					->groupBy('returpenjualandetail.BaseReff','returpenjualandetail.BaseLine','returpenjualandetail.KodeItem','returpenjualandetail.RecordOwnerID','returpenjualandetail.BaseType'),
         				'ret',
         				function ($value){
         					$value->on('ret.KodeItem','=','deliverynotedetail.KodeItem')
         							->on('ret.BaseLine','=','deliverynotedetail.NoUrut')
         							->on('ret.BaseReff','=','deliverynotedetail.NoTransaksi')
-        							->on('ret.returpenjualandetail','=','ODLN')
+        							->on('ret.BaseType','=', DB::raw("'ODLN'"))
         							->on('ret.RecordOwnerID','=','deliverynotedetail.RecordOwnerID');
         			})
 					->where('deliverynotedetail.NoTransaksi',$NoTransaksi)
@@ -137,8 +137,8 @@ class DeliveryNoteController extends Controller
 		$pelanggan = Pelanggan::where('Status', 1)
 						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();    
 		$termin = Termin::where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
-		$item = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-					->where('Active','Y')->get();
+		$oItem = new ItemMaster();
+    	$item = $oItem->GetItemData(Auth::user()->RecordOwnerID,'', '', '','', 'Y', '',1)->get();
 		$orderheader = OrderPenjualanHeader::where('NoTransaksi', $NoTransaksi)
 						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 		$orderdetail = OrderPenjualanDetail::where('NoTransaksi', $NoTransaksi)
@@ -148,12 +148,16 @@ class DeliveryNoteController extends Controller
 						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 		// $fakturdetail = FakturPenjualanDetail::where('NoTransaksi', $NoTransaksi)
 		// 				->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
-		$sql = "deliverynotedetail.*, deliverynotedetail.Qty AS QtyFaktur, orderpenjualandetail.Qty AS QtyOrder";
+		$sql = "deliverynotedetail.*, deliverynotedetail.Qty AS QtyFaktur, orderpenjualandetail.Qty AS QtyOrder, itemmaster.NamaItem, deliverynotedetail.Qty AS QtyKirim";
 		$deliverydetail = DeliveryNoteDetail::selectRaw($sql)
 						->leftJoin('orderpenjualandetail', function ($value){
 							$value->on('orderpenjualandetail.NoTransaksi','=','deliverynotedetail.BaseReff')
 							->on('orderpenjualandetail.NoUrut','=','deliverynotedetail.BaseLine')
 							->on('orderpenjualandetail.RecordOwnerID','=','deliverynotedetail.RecordOwnerID');
+						})
+						->leftJoin('itemmaster', function ($value){
+							$value->on('itemmaster.KodeItem','=','deliverynotedetail.KodeItem')
+							->on('itemmaster.RecordOwnerID','=','deliverynotedetail.RecordOwnerID');
 						})
 						->where('deliverynotedetail.NoTransaksi',$NoTransaksi)
 						->where('deliverynotedetail.RecordOwnerID', Auth::user()->RecordOwnerID)->get();
@@ -195,11 +199,15 @@ class DeliveryNoteController extends Controller
 			$Month = $currentDate->format('m');
 
 			$numberingData = new DocumentNumbering();
-	        $NoTransaksi = $numberingData->GetNewDoc("OINV","deliverynoteheader","NoTransaksi");
+	        $NoTransaksi = $numberingData->GetNewDoc("ODLN","deliverynoteheader","NoTransaksi");
 	        $model = new DeliveryNoteHeader;
-	        $model->Periode = $jsonData['Periode'];
-			$model->NoTransaksi = $jsonData['NoTransaksi'];
+	        $model->Periode = $Year.$Month;
+			$model->NoTransaksi = $NoTransaksi;
+			$model->Transaksi = $jsonData['Transaksi'];
 			$model->TglTransaksi = $jsonData['TglTransaksi'];
+			$model->TglJatuhTempo = $jsonData['TglJatuhTempo'];
+			$model->KodeTermin = $jsonData['KodeTermin'];
+			$model->Termin = $jsonData['Termin'];
 			$model->NoReff = $jsonData['NoReff'];
 			$model->KodePelanggan = $jsonData['KodePelanggan'];
 			$model->TotalTransaksi = $jsonData['TotalTransaksi'];
@@ -208,6 +216,7 @@ class DeliveryNoteController extends Controller
 			$model->TotalPembelian = $jsonData['TotalPembelian'];
 			$model->Status = $jsonData['Status'];
 			$model->DeliveryStatus = $jsonData['DeliveryStatus'];
+			$model->KeteranganPengiriman = $jsonData['KeteranganPengiriman'];
 			$model->Keterangan = $jsonData['Keterangan'];
 			$model->RecordOwnerID = Auth::user()->RecordOwnerID;
 			$model->CreatedBy = Auth::user()->name;
@@ -216,8 +225,20 @@ class DeliveryNoteController extends Controller
 
 			$save = $model->save();
 			foreach ($jsonData['Detail'] as $key) {
-				if ($key['Qty'] == 0) {
+				if ($key['QtyKirim'] == 0) {
 					goto skip;
+				}
+
+				if ($key["KodeGudang"] == "") {
+					$data['Gudang Harus diisi'];
+					$errorCount +=1;
+					goto jump;
+				}
+
+				if ($key['QtyOrder'] < $key['QtyKirim']) {
+					$data['Qty Kirim tidak boleh melebihi Qty Order'];
+					$errorCount +=1;
+					goto jump;
 				}
 
 				$modelDetail = new DeliveryNoteDetail;
@@ -228,22 +249,23 @@ class DeliveryNoteController extends Controller
 				$modelDetail->BaseType = $key['BaseType'];
 				$modelDetail->NoUrut = $key['NoUrut'];
 				$modelDetail->KodeItem = $key['KodeItem'];
-				$modelDetail->Qty = $key['Qty'];
+				$modelDetail->Qty = $key['QtyKirim'];
 				$modelDetail->QtyKonversi = $key['QtyKonversi'];
+				$modelDetail->QtyRetur = 0;
 				$modelDetail->Satuan = $key['Satuan'];
 				$modelDetail->Harga = $key['Harga'];
 				$modelDetail->Discount = $key['Discount'];
 				if ($key['Discount'] ==0) {
-					$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
+					$modelDetail->HargaNet = $key['QtyKirim'] * $key['Harga'];
 				}
 				else{
-					$HargaGros = $key['Qty'] * $key['Harga'];
+					$HargaGros = $key['QtyKirim'] * $key['Harga'];
 					$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
 					$modelDetail->HargaNet = $HargaGros - $diskon;
 				}
 				$modelDetail->LineStatus = 'O';
 				$modelDetail->KodeGudang = $key['KodeGudang'];
-				$modelDetail->Keterangan = $key['Keterangan'];
+				$modelDetail->Keterangan = "";
 				$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
 				$save = $modelDetail->save();
@@ -267,6 +289,7 @@ class DeliveryNoteController extends Controller
 	        else{
 		        DB::commit();
 		        $data['success'] = true;
+		        $data['LastTRX'] = $NoTransaksi;
 	        }
 		} catch (\Exception $e) {
 			Log::debug($e->getMessage());
@@ -289,7 +312,7 @@ class DeliveryNoteController extends Controller
        try {
        		$model = DeliveryNoteHeader::where('NoTransaksi','=',$jsonData['NoTransaksi'])
            				->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
-           	if ($mode) {
+           	if ($model) {
            		$update = DB::table('deliverynoteheader')
                            ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
@@ -436,7 +459,7 @@ class DeliveryNoteController extends Controller
    		$Status = $request->input('Status');
    		
    		try {
-   			$model = DeliverNoteHeader::where('NoTransaksi','=',$NoTransaksi)
+   			$model = DeliveryNoteHeader::where('NoTransaksi','=',$NoTransaksi)
            				->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
    
 	       	if ($model) {
@@ -467,9 +490,10 @@ class DeliveryNoteController extends Controller
 
    		$NoTransaksi = $request->input('NoTransaksi');
    		$DeliveryStatus = $request->input('DeliveryStatus');
+   		$KeteranganPengiriman = $request->input('KeteranganPengiriman');
    		
    		try {
-   			$model = DeliverNoteHeader::where('NoTransaksi','=',$NoTransaksi)
+   			$model = DeliveryNoteHeader::where('NoTransaksi','=',$NoTransaksi)
            				->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
    
 	       	if ($model) {
@@ -479,6 +503,7 @@ class DeliveryNoteController extends Controller
 	                   ->update(
 	                       [
 								'DeliveryStatus' => $DeliveryStatus,
+								'KeteranganPengiriman' => $KeteranganPengiriman,
 								'UpdatedBy' => Auth::user()->name
 	                       ]
 	                   );

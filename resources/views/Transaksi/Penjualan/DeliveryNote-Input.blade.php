@@ -11,6 +11,9 @@
 .dx-dropdowneditor-overlay {
     z-index: 10000!important ; /* Adjust the z-index value as needed */
 }
+.dx-dropdowneditor-input-wrapper{
+    height: 50% !important;
+}
 
 </style>
 <div class="subheader py-2 py-lg-6 subheader-solid">
@@ -80,7 +83,7 @@
                             			</fieldset>
                             		</div>
 
-                            		<div class="col-md-6">
+                            		<div class="col-md-3">
                             			<label  class="text-body">Pelanggan</label>
                             			<fieldset class="form-group mb-3">
                             				<select name="KodePelanggan" id="KodePelanggan" class="js-example-basic-single js-states form-control bg-transparent" >
@@ -94,6 +97,24 @@
 											</select>
                             			</fieldset>
                             		</div>
+
+                                    <div class="col-md-3">
+                                        <label  class="text-body">Termin</label>
+                                        <fieldset class="form-group mb-3">
+                                            <select name="KodeTermin" id="KodeTermin" class="js-example-basic-single js-states form-control bg-transparent" >
+                                                <option value="-1">Pilih Termin</option>
+                                                @foreach($termin as $ko)
+                                                    <option 
+                                                        value="{{ $ko->id }}"
+                                                        {{ count($orderheader) > 0 ? $orderheader[0]['KodeTermin'] == $ko->id ? "selected" : '' :""}}
+                                                    >
+                                                        {{ $ko->NamaTermin }}
+                                                    </option>
+                                                @endforeach
+                                                
+                                            </select>
+                                        </fieldset>
+                                    </div>
 
                             		<div class="col-md-12">
                             			<label  class="text-body">Isi Nomor Order</label>
@@ -109,7 +130,14 @@
                             			</fieldset>
                             		</div>
 
-                            		<div class="col-md-6">
+                                    <div class="col-md-3">
+                                        <label  class="text-body">Tanggal Jatuh Tempo</label>
+                                        <fieldset class="form-group mb-3">
+                                            <input type="date" class="form-control" id="TglJatuhTempo" name="TglJatuhTempo" placeholder="<Auto>" value="{{ count($orderheader) > 0 ? $orderheader[0]['TglJatuhTempo'] : '' }}" required="">
+                                        </fieldset>
+                                    </div>
+
+                            		<div class="col-md-3">
                             			<label  class="text-body">No Reff</label>
                             			<fieldset class="form-group mb-3">
                             				<input type="text" class="form-control" id="NoReff" name="NoReff" placeholder="Masukan No Reff" value="{{ count($deliveryheader) > 0 ? $deliveryheader[0]['NoReff'] : '' }}" >
@@ -131,7 +159,7 @@
                                     </div>
 
                             		<div class="col-md-12">
-                            			<!-- <div id="gridContainerDetail"></div> -->
+                            			<div id="gridContainerDetail"></div>
 						              	<small style="color: red">Tekan Enter saat selesai edit data</small>
                             		</div>
 
@@ -178,19 +206,49 @@
 	</div>
 	
 </div>
+
+<div class="modal fade text-left w-100" id="modallookupItem" tabindex="-1" role="dialog" aria-labelledby="myModalLabel16" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="myModalLabel16">Daftar Item Master</h4>
+          <button type="button" class="close rounded-pill btn btn-sm btn-icon btn-primary m-0" data-bs-dismiss="modal" aria-label="Close">
+            <svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+            </svg>  
+            </button>
+        </div>
+        <div class="modal-body">
+          <div id="gridLookupitem"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary ms-1" id="btSelectItem" data-bs-dismiss="modal">
+                <span class="">Pilih Item</span>
+            </button>
+            </div>      
+      </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
+@extends('parts.generaljs')
 
 <script type="text/javascript">
     var StatusTransaksi = "O";
-    var fakturHeader = [];
-    var fakturDetail = [];
+    var deliveryheader = [];
+    var deliverydetail = [];
     var filteredOrderDetail = [];
     var GetDate = '';
     var NoOrderPembelian = '';
 
     var _KodeSatuan = '';
+
+    var oItemMaster = [];
+    var _selectedRow = -1;
+
+    var TotalTermin = 0;
 
     jQuery(function () {
         jQuery(document).ready(function() {
@@ -202,19 +260,20 @@
             GetDate = now.getFullYear()+"-"+month+"-"+day;
 
             jQuery('#TglTransaksi').val(NowDay);
+            jQuery('#TglJatuhTempo').val(NowDay)
 
             deliveryheader = <?php echo json_encode($deliveryheader); ?>;
             deliverydetail = <?php echo json_encode($deliverydetail); ?>;
 
-            CreateItemCombobox(<?php echo $item ?>);
+            oItemMaster = <?php echo $item ?>;
 
             if (jQuery('#formtype').val() == "edit") {
-                formatCurrency(jQuery('#TotalTransaksi'), fakturHeader[0]["TotalTransaksi"]);
-                formatCurrency(jQuery('#Potongan'), fakturHeader[0]["Potongan"]);
-                formatCurrency(jQuery('#TotalPembelian'), fakturHeader[0]["TotalPembelian"]);
-                StatusTransaksi = fakturHeader[0]["Status"];
-                var KodePelanggan = fakturHeader[0]["KodePelanggan"];
-                NoOrderPembelian = fakturDetail[0]["BaseReff"];
+                formatCurrency(jQuery('#TotalTransaksi'), deliveryheader[0]["TotalTransaksi"]);
+                formatCurrency(jQuery('#Potongan'), deliveryheader[0]["Potongan"]);
+                formatCurrency(jQuery('#TotalPembelian'), deliveryheader[0]["TotalPembelian"]);
+                StatusTransaksi = deliveryheader[0]["Status"];
+                var KodePelanggan = deliveryheader[0]["KodePelanggan"];
+                NoOrderPembelian = deliverydetail[0]["BaseReff"];
 
                 if (StatusTransaksi != "O") {
                     jQuery('#KodePelanggan').attr('disabled',true);
@@ -222,6 +281,7 @@
                     jQuery('#NoReff').attr('disabled',true);
                     jQuery('#Keterangan').attr('disabled',true);
                     jQuery('#Status').attr('disabled',true);
+                    jQuery('#KodeTermin').attr('disabled',true);
                     jQuery('#btSave').attr('disabled',true);
                 }
                 BindGridDetail(<?php echo json_encode($deliverydetail) ?>);
@@ -260,6 +320,41 @@
             })
         });
 
+        jQuery('#KodeTermin').change(function () {
+            var oTermin = <?php echo $termin ?>;
+
+            for (var i = 0; i < oTermin.length; i++) {
+                // Things[i]
+                if (oTermin[i]["id"] == jQuery('#KodeTermin').val()) {
+                    TotalTermin = parseFloat(oTermin[i]["JumlahHari"]) + parseFloat(oTermin[i]["ExtraDays"])
+                    break;
+                }
+            }
+
+            const dateString = jQuery('#TglTransaksi').val();
+            const dateObject = new Date(dateString);
+
+            dateObject.setDate(dateObject.getDate() + TotalTermin);
+            var day = ("0" + dateObject.getDate()).slice(-2);
+            var month = ("0" + (dateObject.getMonth() + 1)).slice(-2);
+            var NowDay = dateObject.getFullYear()+"-"+month+"-"+day;
+
+            jQuery('#TglJatuhTempo').val(NowDay)
+
+        });
+
+        jQuery('#TglTransaksi').change(function () {
+            const dateString = jQuery('#TglTransaksi').val();
+            const dateObject = new Date(dateString);
+
+            dateObject.setDate(dateObject.getDate() + TotalTermin);
+            var day = ("0" + dateObject.getDate()).slice(-2);
+            var month = ("0" + (dateObject.getMonth() + 1)).slice(-2);
+            var NowDay = dateObject.getFullYear()+"-"+month+"-"+day;
+
+            jQuery('#TglJatuhTempo').val(NowDay)
+        })
+
         jQuery('#btSave').click(function () {
             jQuery('#btSave').text('Tunggu Sebentar.....');
             jQuery('#btSave').attr('disabled',true);
@@ -275,14 +370,16 @@
                     var oItem = {
                         'NoUrut' : allRowsData[i]['NoUrut'],
                         'KodeItem' : allRowsData[i]['KodeItem'],
-                        'Qty' : allRowsData[i]['QtyKirim'],
+                        'QtyOrder' : allRowsData[i]['QtyOrder'],
+                        'QtyKirim' : allRowsData[i]['QtyKirim'] * allRowsData[i]['QtyKonversi'],
+                        'QtyKonversi' : allRowsData[i]['QtyKonversi'],
                         'Satuan' : allRowsData[i]['Satuan'],
                         'Harga' : allRowsData[i]['Harga'],
                         'Discount' : allRowsData[i]['Discount'],
                         'HargaNet' : allRowsData[i]['HargaNet'],
-                        'BaseReff' : NoOrderPembelian,
+                        'BaseReff' : (NoOrderPembelian) != "" ? NoOrderPembelian : "",
                         'BaseLine' : allRowsData[i]['BaseLine'],
-                        'BaseType' : (NoOrderPembelian) != "" ? NoOrderPembelian:"",
+                        'BaseType' : (NoOrderPembelian) != "" ? "ORDR" : "",
                         'KodeGudang' : allRowsData[i]['KodeGudang'],
                         'LineStatus':allRowsData[i]['LineStatus'],
                     }
@@ -294,6 +391,9 @@
             var oData = {
                 'NoTransaksi' : jQuery('#NoTransaksi').val(),
                 'TglTransaksi' : jQuery('#TglTransaksi').val(),
+                'TglJatuhTempo' : jQuery('#TglJatuhTempo').val(),
+                'KodeTermin' : jQuery('#KodeTermin').val(),
+                'Termin' : TotalTermin,
                 'NoReff' : jQuery('#NoReff').val(),
                 'KodePelanggan' : jQuery('#KodePelanggan').val(),
                 'TotalTransaksi' : jQuery('#TotalTransaksi').attr("originalvalue"),
@@ -303,6 +403,10 @@
                 'Status' : jQuery('#Status').val(),
                 'Keterangan' : jQuery('#Keterangan').val(),
                 'DeliveryStatus' : "Dokumen Dibuat",
+                'Transaksi' : 'PJL',
+                'MetodeBayar' :'',
+                'ReffPembayaran' : '',
+                'KodeSales' :'',
                 'Detail' : oDetail
             }
 
@@ -318,16 +422,34 @@
                     success: function(response) {
                         if (response.success == true) {
                             Swal.fire({
-                                html: "Data berhasil disimpan!",
-                                icon: "success",
-                                title: "Horray...",
-                                // text: "Data berhasil disimpan! <br> " + response.Kembalian,
-                            }).then((result)=>{
-                                jQuery('#btSave').text('Save');
-                                jQuery('#btSave').attr('disabled',false);
-                                // location.reload();
-                                window.location.href = '{{url("delivery")}}';
+                              title: "Buat Faktur",
+                              text: "Buat Faktur untuk transaksi Surat Jalan : "+ response.LastTRX,
+                              icon: "success",
+                              showCancelButton: true,
+                              confirmButtonColor: "#3085d6",
+                              cancelButtonColor: "#d33",
+                              confirmButtonText: "Buat Faktur",
+                              cancelButtonText: "Selesai"
+                            }).then((result) => {
+                              if (result.isConfirmed) {
+                                SaveFaktur(oData, response.LastTRX);
+                              }
+                              else{
+                                location.reload();
+                              }
                             });
+
+                            // Swal.fire({
+                            //     html: "Data berhasil disimpan!",
+                            //     icon: "success",
+                            //     title: "Horray...",
+                            //     // text: "Data berhasil disimpan! <br> " + response.Kembalian,
+                            // }).then((result)=>{
+                            //     jQuery('#btSave').text('Save');
+                            //     jQuery('#btSave').attr('disabled',false);
+                            //     // location.reload();
+                            //     window.location.href = '{{url("delivery")}}';
+                            // });
                         }
                         else{
                             Swal.fire({
@@ -352,6 +474,7 @@
                     data: JSON.stringify(oData),
                     success: function(response) {
                         if (response.success == true) {
+
                             Swal.fire({
                                 html: "Data berhasil disimpan!",
                                 icon: "success",
@@ -390,44 +513,171 @@
 
     });
 
-    function CopyFromOrder(Data) {
-        var oData = [];
-        $.ajax({
-            async:false,
-            type: 'post',
-            url: "{{route('openjualan-readdetail')}}",
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
-            },
-            data: {
-                'NoTransaksi' : Data.NoTransaksi,
-            },
-            dataType: 'json',
-            success: function(response) {
-                // BindGridOrder(response.data)
-                var index = 1;
-                $.each(response.data,function (k,v) {
-                    var temp = {
-                        'NoUrut' : index,
-                        'BaseLine' : v.NoUrut,
-                        'KodeItem' : v.KodeItem,
-                        'KodeGudang' : "",
-                        'QtyOrder'  : parseFloat(v.Qty),
-                        'QtyKirim' : 0,
-                        'Satuan' : v.Satuan,
-                        'Harga' : parseFloat(v.Harga),
-                        'Discount' : parseFloat(v.Discount),
-                        'LineStatus' : 'O'
-                    }
+    jQuery('#btSelectItem').click(function () {
+        var dataGridInstance = jQuery('#gridLookupitem').dxDataGrid('instance');
+        var dataGridDetailInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
 
-                    oData.push(temp)
+        var selectedRows = dataGridInstance.getSelectedRowsData();
 
-                    index +=1;
-                });
-                console.log(oData)
-                BindGridDetail(oData)
+        console.log(selectedRows);
+        if (selectedRows.length > 0) {
+
+            dataGridDetailInstance.cellValue(_selectedRow, "KodeItem", selectedRows[0]["KodeItem"]);
+            dataGridDetailInstance.cellValue(_selectedRow, "NamaItem", selectedRows[0]["NamaItem"]);
+            dataGridDetailInstance.cellValue(_selectedRow, "QtyOrder", 0);
+            dataGridDetailInstance.cellValue(_selectedRow, "QtyKirim", 1);
+            dataGridDetailInstance.cellValue(_selectedRow, "Harga", selectedRows[0]["HargaJual"]);
+            dataGridDetailInstance.cellValue(_selectedRow, "Discount", 0);
+            dataGridDetailInstance.cellValue(_selectedRow, "HargaNet", 0);
+            dataGridDetailInstance.cellValue(_selectedRow, "Satuan", selectedRows[0]["Satuan"]);
+            dataGridDetailInstance.refresh();
+            dataGridDetailInstance.saveEditData();
+            CalculateTotal();
+        }
+    });
+
+    function SaveFaktur(oData, oBaseReff) {
+        var xNewObject = [];
+        for (var i = 0; i < oData.Detail.length; i++) {
+            var oItem = {
+                'NoUrut' :i,
+                'KodeItem' : oData.Detail[i]['KodeItem'],
+                'Qty' : oData.Detail[i]['QtyKirim'],
+                'QtyKonversi' : oData.Detail[i]['QtyKonversi'],
+                'Satuan' : oData.Detail[i]['Satuan'],
+                'Harga' : oData.Detail[i]['Harga'],
+                'Discount' : oData.Detail[i]['Discount'],
+                'HargaNet' : oData.Detail[i]['HargaNet'],
+                'BaseReff' : oBaseReff,
+                'BaseLine' : oData.Detail[i]['NoUrut'],
+                'KodeGudang' : oData.Detail[i]['KodeGudang'],
+                'LineStatus':oData.Detail[i]['LineStatus'],
             }
-        });
+            
+            xNewObject.push(oItem)
+        }
+
+
+        var fData = {
+            'NoTransaksi' : '',
+            'TglTransaksi' : oData['TglTransaksi'],
+            'TglJatuhTempo' :  oData['TglJatuhTempo'],
+            'NoReff' : oBaseReff,
+            'KodePelanggan' : oData['KodePelanggan'],
+            'KodeTermin' : oData['KodeTermin'],
+            'Termin' : TotalTermin,
+            'TotalTransaksi' : jQuery('#TotalTransaksi').attr("originalvalue"),
+            'Potongan' : jQuery('#Potongan').attr("originalvalue"),
+            'Pajak' : 0,
+            'TotalPembelian' : jQuery('#TotalPembelian').attr("originalvalue"),
+            'TotalRetur' : 0,
+            'TotalPembayaran' : 0,
+            'Status' : jQuery('#Status').val(),
+            'Keterangan' : jQuery('#Keterangan').val(),
+            'Detail' : xNewObject
+        }
+
+        if (jQuery('#formtype').val() == "add") {
+            $.ajax({
+                url: "{{route('fpenjualan-storeJson')}}",
+                type: 'POST',
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+                },
+                data: JSON.stringify(fData),
+                success: function(response) {
+                    if (response.success == true) {
+                        Swal.fire({
+                            html: "Data berhasil disimpan!",
+                            icon: "success",
+                            title: "Horray...",
+                            // text: "Data berhasil disimpan! <br> " + response.Kembalian,
+                        }).then((result)=>{
+                            jQuery('#btSave').text('Save');
+                            jQuery('#btSave').attr('disabled',false);
+                            // location.reload();
+                            window.location.href = '{{url("delivery")}}';
+                        });
+                    }
+                    else{
+                        Swal.fire({
+                          icon: "error",
+                          title: "Opps...",
+                          text: response.message,
+                        })
+                        jQuery('#btSave').text('Save');
+                        jQuery('#btSave').attr('disabled',false);
+                    }
+                }
+            })
+        }
+    }
+
+    function CopyFromOrder(Data) {
+        console.log(Data);
+        var oData = [];
+        if (typeof Data != "undefined" ) {
+            $.ajax({
+                async:false,
+                type: 'post',
+                url: "{{route('openjualan-readdetail')}}",
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+                },
+                data: {
+                    'NoTransaksi' : Data.NoTransaksi,
+                },
+                dataType: 'json',
+                success: function(response) {
+                    // BindGridOrder(response.data)
+                    var index = 1;
+                    $.each(response.data,function (k,v) {
+                        var temp = {
+                            'NoUrut' : index,
+                            'BaseLine' : v.NoUrut,
+                            'KodeItem' : v.KodeItem,
+                            'NamaItem' : v.NamaItem,
+                            'KodeGudang' : "",
+                            'QtyOrder'  : parseFloat(v.Qty),
+                            'QtyKirim' : 0,
+                            'QtyKonversi' : parseFloat(v.QtyKonversi),
+                            'Satuan' : v.Satuan,
+                            'Harga' : parseFloat(v.Harga),
+                            'Discount' : parseFloat(v.Discount),
+                            'LineStatus' : 'O'
+                        }
+
+                        oData.push(temp)
+
+                        index +=1;
+                    });
+                    console.log(oData)
+                    BindGridDetail(oData)
+                }
+            });
+
+            // Get Header
+            $.ajax({
+                async:false,
+                type: 'post',
+                url: "{{route('openjualan-findheader')}}",
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+                },
+                data: {
+                    'NoTransaksi' : Data.NoTransaksi,
+                },
+                dataType: 'json',
+                success: function(response) {
+                    jQuery('#KodeTermin').val(response.data[0]["KodeTermin"]).trigger('change');
+                    jQuery('#TglTransaksi').val(response.data[0]["TglTransaksi"]);
+                    jQuery('#TglJatuhTempo').val(response.data[0]["TglJatuhTempo"]);
+                    jQuery('#NoReff').val(response.data[0]["NoReff"]);
+                    jQuery('#Keterangan').val(response.data[0]["Keterangan"]);
+                }
+            })
+        }
 
         CalculateTotal();
     }
@@ -473,8 +723,11 @@
                 if (jQuery('#formtype').val() == "add") {
                     CopyFromOrder(item);
                 }
-                NoOrderPembelian = item.NoTransaksi;
-                return `${item.NoTransaksi}`;
+                console.log(item)
+                if (typeof item != "undefined") {
+                    NoOrderPembelian = item.NoTransaksi;
+                    return `${item.NoTransaksi}`;
+                }
             },
             placeholder: 'Pilih Nomor Order',
             dataSource:data,
@@ -484,49 +737,6 @@
                 const $dataGrid = jQuery('<div>').dxDataGrid({
                     dataSource: e.component.getDataSource(),
                     columns: ['NoTransaksi', 'TglTransaksi', 'TglJatuhTempo'],
-                    hoverStateEnabled: true,
-                    paging: { enabled: true, pageSize: 10 },
-                    filterRow: { visible: true },
-                    scrolling: { mode: 'virtual' },
-                    selection: { mode: 'single' },
-                    selectedRowKeys: [value],
-                    height: '100%',
-                    showBorders: true,
-                    errorRowEnabled: false,
-                    onSelectionChanged(selectedItems) {
-                      const keys = selectedItems.selectedRowKeys;
-                      const hasSelection = keys.length;
-
-                      e.component.option('value', hasSelection ? keys[0] : "");
-                    },
-                  });
-
-                dataGrid = $dataGrid.dxDataGrid('instance');
-                e.component.on('valueChanged', (args) => {
-                    dataGrid.selectRows(args.value, false);
-                    e.component.close();
-                  });
-                return $dataGrid;
-            }
-        })
-
-        // jQuery("#gridBox").append(customDropDown);
-    }
-
-
-    function CreateItemCombobox(data) {
-        jQuery('#ItemgridBox').dxDropDownBox({
-            displayExpr(item) {
-                return `${item.NamaItem}`;
-            },
-            placeholder: 'Pilih Nomor Order',
-            dataSource:data,
-            showClearButton: true,
-            contentTemplate: function(e) {
-                const value = e.component.option('value');
-                const $dataGrid = jQuery('<div>').dxDataGrid({
-                    dataSource: e.component.getDataSource(),
-                    columns: ['KodeItem', 'NamaItem', 'Satuan'],
                     hoverStateEnabled: true,
                     paging: { enabled: true, pageSize: 10 },
                     filterRow: { visible: true },
@@ -605,46 +815,16 @@
                 },
                 {
                     dataField: "KodeItem",
-                    caption: "Item",
-                    lookup: {
-                        dataSource: <?php echo $item ?>,
-                        valueExpr: 'KodeItem',
-                        displayExpr: 'NamaItem',
-                    },
-                    width: 350,
+                    caption: "Kode Item",
                     allowSorting: false,
-                    allowEditing:AllowManipulation,
-                    editorOptions:{
-                        contentTemplate: function(e) {
-                            const value = e.component.option('value');
-                            const $dataGrid = jQuery('<div>').dxDataGrid({
-                                dataSource: e.component.getDataSource(),
-                                columns: ['KodeItem', 'NamaItem', 'Satuan'],
-                                hoverStateEnabled: true,
-                                paging: { enabled: true, pageSize: 10 },
-                                filterRow: { visible: true },
-                                scrolling: { mode: 'virtual' },
-                                selection: { mode: 'single' },
-                                selectedRowKeys: [value],
-                                height: '100%',
-                                showBorders: true,
-                                errorRowEnabled: false,
-                                onSelectionChanged(selectedItems) {
-                                  const keys = selectedItems.selectedRowKeys;
-                                  const hasSelection = keys.length;
-
-                                  e.component.option('value', hasSelection ? keys[0] : "");
-                                },
-                              });
-
-                            dataGrid = $dataGrid.dxDataGrid('instance');
-                            e.component.on('valueChanged', (args) => {
-                                dataGrid.selectRows(args.value, false);
-                                e.component.close();
-                              });
-                            return $dataGrid;
-                        }
-                    }
+                    allowEditing:AllowManipulation
+                },
+                {
+                    dataField: "NamaItem",
+                    caption: "Nama Item",
+                    width: 250,
+                    allowSorting: false,
+                    allowEditing:AllowManipulation
                 },
                 {
                     dataField: "KodeGudang",
@@ -670,6 +850,14 @@
                     allowEditing:AllowManipulation,
                     format: { type: 'fixedPoint', precision: 2 },
                     allowSorting: false 
+                },
+                {
+                    dataField: "QtyKonversi",
+                    caption: "Qty QtyKonversi",
+                    allowEditing: false,
+                    format: { type: 'fixedPoint', precision: 2 },
+                    allowSorting: false ,
+                    visible:false
                 },
                 {
                     dataField: "Satuan",
@@ -730,110 +918,230 @@
                     visible:false 
                 },
             ],
-            // onContentReady: function(e) {
-            //     var rowData = dataGridInstance.option("dataSource");
-            //     if (rowData.length == 1) {
-            //         dataGridInstance.editRow(0) 
-            //     }
-            // },
+            onContentReady: function(e) {
+                var rowData = dataGridInstance.option("dataSource");
+                if (rowData.length == 1) {
+                    // dataGridInstance.editRow(0)  
+                }
+            },
             onCellClick:function (e) {
+                // console.log(dataGridInstance.option("dataSource"))
                 var rowData = dataGridInstance.option("dataSource");
                 var columnIndex = e.columnIndex;
-                console.log(e)
+                // console.log(e)
                 if (columnIndex >= 1 && columnIndex <= 5) {
                     dataGridInstance.editRow(e.rowIndex)    
                 }
-                dataGridInstance.option("focusedColumnIndex", columnIndex); 
-            }
+                dataGridInstance.option("focusedColumnIndex", columnIndex);
+
+                var allRowsData  = dataGridInstance.option("dataSource");
+                var blankCount = 0;
+
+                for (var i = 0; i < allRowsData.length; i++) {
+                    if (allRowsData[i]["KodeItem"] == "") {
+                        blankCount += 1;
+                    }
+                }
+                if (blankCount == 1) {
+                    var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"", Qty: 0, Satuan: "", Harga:0, Discount:0, HargaNet:0,LineStatus:"O" }
+                    dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
+                    dataGridInstance.refresh();
+                }
+            },
         }).dxDataGrid('instance');
+        
+        dataGridInstance.on('rowUpdated', function(e) {
+                var allRowsData  = dataGridInstance.option("dataSource");
+                var blankCount = 0;
 
-        // var xItem = '<?php echo json_encode($item); ?>'
-        // var oItem = JSON.parse(xItem);
+                for (var i = 0; i < allRowsData.length; i++) {
+                    if (allRowsData[i]["KodeItem"] == "") {
+                        blankCount += 1;
+                    }
+                }
 
-        // // Initial data
-        var allRowsData  = dataGridInstance.option("dataSource");
-        var newData = { NoUrut: allRowsData.length + 1,BaseLine:-1,KodeItem:"",KodeGudang:"", QtyOrder: 0,QtyKirim:0, Satuan: "", Harga:0, Discount:0, HargaNet:0,LineStatus:'' }
-        dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
-        dataGridInstance.refresh();
+                if (blankCount == 1) {
+                    var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"", Qty: 0, Satuan: "", Harga:0, Discount:0, HargaNet:0,LineStatus:"O" }
+                    dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
+                    dataGridInstance.refresh();
+                }
 
-        // dataGridInstance.on('rowUpdated', function(e) {
-        //     CalculateTotal();
-        // });
+                CalculateTotal();
+            })
 
-        // // Validasi duplicate Row
-        // dataGridInstance.on('dataErrorOccurred',function (e) {
-        // console.log(e)
-        //     alert("Data Sudah terpakai di baris lain");
-        //     e.error.message = "Data Sudah terpakai di baris lain";
-        //     e.error.url = "";
-        //     dataGridInstance.refresh();
-        //     dataGridInstance.cancelEditData();
-        //     // SetEnableCommand();
-        // });
+            dataGridInstance.on('editorPreparing',function (e) {
+                if (e.parentType === "dataRow" && e.dataField == "KodeItem"){
 
-        // dataGridInstance.on('editorPreparing',function (e) {
-        //     if (e.parentType === "dataRow" && e.dataField === "KodeItem") {
-        //         e.editorOptions.onFocusOut = (x) => {
-        //             // same here
-        //             var rowIndex = dataGridInstance.getRowIndexByKey(e.row.key);
-        //             var allRowsData  = dataGridInstance.getDataSource().items();
+                    var dataField = e.dataField;
+                    var xItem = "";
+                    var rowIndex = dataGridInstance.getRowIndexByKey(e.row.key);
+                    _selectedRow = rowIndex;
+                    e.editorOptions.onValueChanged = function(args) {
+                        xItem = args.value;
+                        // Optionally, perform actions when value changes
+                    };
 
-        //             var Satuan = "";
-        //             // for (var i = 0; i < oItem.length; i++) {
-        //             //     console.log(oItem[i].KodeItem + " == " +e.row.cells[1].value);
-        //             //     // console.log(e.row.values)
-        //             //     if (oItem[i].KodeItem == e.row.cells[1].value) {
-        //             //         Satuan = oItem[i].Satuan;
-        //             //         break;
-        //             //     }
-        //             // }
 
-                    
-        //             if (e.row.cells[1].value != "") {
-        //                 FindItem(e.row.cells[1].value)
-        //             }
+                    e.editorElement.on("focusout", function () {
+                        console.log(xItem)
+                        var filteredItem = oItemMaster.filter(function (oData) {
+                            return oData.KodeItem.includes(xItem);
+                        });
+                        // console.log(filteredItem);
+                        if (filteredItem.length == 0) {
+                            Swal.fire({
+                              icon: "error",
+                              title: "#Informasi",
+                              text: "Kode Item " + xItem+" Tidak ditemukan",
+                            }).then((result) => {
+                                dataGridInstance.refresh();
+                                dataGridInstance.cancelEditData();
+                            });
+                        }
+                        else if (filteredItem.length == 1) {
+                            dataGridInstance.cellValue(rowIndex, "KodeItem", xItem);
+                            dataGridInstance.cellValue(rowIndex, "NamaItem", filteredItem[0]["NamaItem"]);
+                            dataGridInstance.cellValue(rowIndex, "Qty", 1);
+                            dataGridInstance.cellValue(rowIndex, "Harga", filteredItem[0]["HargaBeliTerakhir"]);
+                            dataGridInstance.cellValue(rowIndex, "Discount", 0);
+                            dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
+                            dataGridInstance.cellValue(rowIndex, "Satuan", filteredItem[0]["Satuan"]);
+                            dataGridInstance.refresh();
+                            dataGridInstance.saveEditData();
+                        }
+                        else{
+                            jQuery('#modallookupItem').modal({backdrop: 'static', keyboard: false})
+                            jQuery('#modallookupItem').modal('show');
+                            // console.log(orderHeader)
+                            var ColumnData = [
+                                {
+                                    dataField: "KodeItem",
+                                    caption: "Kode Item",
+                                    allowSorting: true,
+                                    allowEditing : false
+                                },
+                                {
+                                    dataField: "Barcode",
+                                    caption: "Barcode",
+                                    allowSorting: true,
+                                    allowEditing : false
+                                },
+                                {
+                                    dataField: "NamaItem",
+                                    caption: "Nama Item",
+                                    allowSorting: true,
+                                    allowEditing : false
+                                },
+                                {
+                                    dataField: "Stock",
+                                    caption: "Stock",
+                                    allowSorting: true,
+                                    allowEditing : false,
+                                    format: { type: 'fixedPoint', precision: 2 },
+                                },
+                                {
+                                    dataField: "Satuan",
+                                    caption: "Sat",
+                                    allowSorting: true,
+                                    allowEditing : false
+                                },
+                            ];
+                            BindLookupServices("gridLookupitem", "KodeItem", oItemMaster, ColumnData);
+                        }
+                    });
+                }
+                else if (e.parentType === "dataRow" && e.dataField == "NamaItem"){
+                    var dataField = e.dataField;
+                    var xItem = "";
+                    var rowIndex = dataGridInstance.getRowIndexByKey(e.row.key);
+                    _selectedRow = rowIndex;
+                    e.editorOptions.onValueChanged = function(args) {
+                        xItem = args.value;
+                        // Optionally, perform actions when value changes
+                    };
 
-        //             console.log(e.row.cells[1].value);
+                    e.editorElement.on("focusout", function () {
+                        var filteredItem = oItemMaster.filter(function (oData) {
+                            return oData.NamaItem.includes(xItem);
+                        });
+                        // console.log(filteredItem);
+                        if (filteredItem.length == 0) {
+                            Swal.fire({
+                              icon: "error",
+                              title: "#Informasi",
+                              text: "Nama Item " + xItem+" Tidak ditemukan",
+                            }).then((result) => {
+                                dataGridInstance.refresh();
+                                dataGridInstance.cancelEditData();
+                            });
+                        }
+                        else if (filteredItem.length == 1) {
+                            dataGridInstance.cellValue(rowIndex, "KodeItem", xItem);
+                            dataGridInstance.cellValue(rowIndex, "NamaItem", filteredItem[0]["NamaItem"]);
+                            dataGridInstance.cellValue(rowIndex, "Qty", 1);
+                            dataGridInstance.cellValue(rowIndex, "Harga", filteredItem[0]["HargaBeliTerakhir"]);
+                            dataGridInstance.cellValue(rowIndex, "Discount", 0);
+                            dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
+                            dataGridInstance.cellValue(rowIndex, "Satuan", filteredItem[0]["Satuan"]);
+                            dataGridInstance.refresh();
+                            dataGridInstance.saveEditData();
+                        }
+                        else{
+                            jQuery('#modallookupItem').modal({backdrop: 'static', keyboard: false})
+                            jQuery('#modallookupItem').modal('show');
+                            // console.log(orderHeader)
+                            var ColumnData = [
+                                {
+                                    dataField: "KodeItem",
+                                    caption: "Kode Item",
+                                    allowSorting: true,
+                                    allowEditing : false
+                                },
+                                {
+                                    dataField: "Barcode",
+                                    caption: "Barcode",
+                                    allowSorting: true,
+                                    allowEditing : false
+                                },
+                                {
+                                    dataField: "NamaItem",
+                                    caption: "Nama Item",
+                                    allowSorting: true,
+                                    allowEditing : false
+                                },
+                                {
+                                    dataField: "Stock",
+                                    caption: "Stock",
+                                    allowSorting: true,
+                                    allowEditing : false,
+                                    format: { type: 'fixedPoint', precision: 2 },
+                                },
+                                {
+                                    dataField: "Satuan",
+                                    caption: "Sat",
+                                    allowSorting: true,
+                                    allowEditing : false
+                                },
+                            ];
+                            BindLookupServices("gridLookupitem", "KodeItem", oItemMaster, ColumnData);
+                        }
+                    });
+                }
+                else if (e.parentType === "dataRow" && e.dataField == "KodeGudang"){
+                    e.editorElement.on("focusout", function () {
+                        dataGridInstance.refresh();
+                        dataGridInstance.saveEditData();
+                    });
+                }
 
-        //             dataGridInstance.cellValue(rowIndex, "QtyKirim", 1);
-        //             dataGridInstance.cellValue(rowIndex, "Harga", 0);
-        //             dataGridInstance.cellValue(rowIndex, "Discount", 0);
-        //             dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
-        //             dataGridInstance.cellValue(rowIndex, "Satuan", _KodeSatuan);
+                CalculateTotal();
+            });
 
-        //             dataGridInstance.refresh()
-
-        //             dataGridInstance.saveEditData();
-                    
-
-        //             var allRowsData  = dataGridInstance.option("dataSource");
-        //             var newData = { NoUrut: allRowsData.length + 1,BaseLine:-1,KodeItem:"",KodeGudang:"", QtyOrder: 0,QtyKirim:0, Satuan: "", Harga:0, Discount:0, HargaNet:0,LineStatus:'' }
-        //             dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
-        //             dataGridInstance.refresh();
-        //         }
-        //         e.editorOptions.onFocusIn = (x) => {
-        //             console.log(x)
-        //         }
-        //     }
-        //     else if (e.parentType === "dataRow" && e.dataField === "Qty") {
-        //         e.editorOptions.onFocusOut = (x) => {
-        //             dataGridInstance.saveEditData();
-        //         }
-        //     }
-
-        //     else if (e.parentType === "dataRow" && e.dataField === "Satuan") {
-        //         e.editorOptions.onFocusOut = (x) => {
-        //             dataGridInstance.saveEditData();
-        //         }
-        //     }
-
-        //     else if (e.parentType === "dataRow" && e.dataField === "KodeGudang") {
-        //         e.editorOptions.onFocusOut = (x) => {
-        //             dataGridInstance.saveEditData();
-        //         }
-        //     }
-
-        // });
+            var allRowsData  = dataGridInstance.option("dataSource");
+            var newData = { NoUrut: allRowsData.length + 1,KodeItem:"", Qty: 0, Satuan: "", Harga:0, Discount:0, HargaNet:0 ,LineStatus:"O"}
+            dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
+            dataGridInstance.refresh();
+        
     }
 
     function FindItem(KodeItem) {

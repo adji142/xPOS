@@ -45,8 +45,10 @@ class FakturPenjualanController extends Controller
 	   		CASE WHEN fakturpenjualanheader.Status = 'O' THEN 'OPEN' ELSE 
    				CASE WHEN fakturpenjualanheader.Status = 'T' THEN 'DRAFT' ELSE 
    					CASE WHEN fakturpenjualanheader.Status = 'D' THEN 'CANCEL' ELSE
-   						CASE WHEN  fakturpenjualanheader.TotalPembelian - COALESCE(fakturpenjualanheader.TotalPembayaran,0) - fakturpenjualanheader.TotalRetur <= 0 THEN 'LUNAS' ELSE
-   							CASE WHEN  fakturpenjualanheader.TotalPembelian - COALESCE(fakturpenjualanheader.TotalPembayaran,0) - fakturpenjualanheader.TotalRetur > 0 THEN 'BELUM LUNAS' ELSE '' END
+   						CASE WHEN  fakturpenjualanheader.TotalPembelian - COALESCE(fakturpenjualanheader.TotalPembayaran,0) - fakturpenjualanheader.TotalRetur <= 0 && fakturpenjualanheader.TotalRetur = 0 THEN 'LUNAS' ELSE
+   							CASE WHEN  fakturpenjualanheader.TotalPembelian - COALESCE(fakturpenjualanheader.TotalPembayaran,0) - fakturpenjualanheader.TotalRetur > 0 THEN 'BELUM LUNAS' ELSE 
+   								CASE WHEN fakturpenjualanheader.Status = 'C' THEN 'CLOSE' ELSE '' END
+   							END
    						END
    					END
    				END
@@ -155,20 +157,24 @@ class FakturPenjualanController extends Controller
 						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 		// $fakturdetail = FakturPenjualanDetail::where('NoTransaksi', $NoTransaksi)
 		// 				->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
-		$sql = "fakturpenjualandetail.*, fakturpenjualandetail.Qty AS QtyFaktur, orderpenjualandetail.Qty AS QtyOrder";
+		$sql = "fakturpenjualandetail.*, fakturpenjualandetail.Qty AS QtyFaktur, orderpenjualandetail.Qty AS QtyOrder, itemmaster.NamaItem";
 		$fakturdetail = FakturPenjualanDetail::selectRaw($sql)
 						->leftJoin('orderpenjualandetail', function ($value){
 							$value->on('orderpenjualandetail.NoTransaksi','=','fakturpenjualandetail.BaseReff')
 							->on('orderpenjualandetail.NoUrut','=','fakturpenjualandetail.BaseLine')
 							->on('orderpenjualandetail.RecordOwnerID','=','fakturpenjualandetail.RecordOwnerID');
 						})
+						->leftJoin('itemmaster', function ($value){
+	                      $value->on('fakturpenjualandetail.KodeItem','=','itemmaster.KodeItem')
+	                      ->on('fakturpenjualandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+	                    })
 						->where('fakturpenjualandetail.NoTransaksi',$NoTransaksi)
 						->where('fakturpenjualandetail.RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 
 		$satuan = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 		$gudang = Gudang::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
-	    return view("Transaksi.Penjualan.FakturPenjualan-Input",[
+	    return view("Transaksi.Penjualan.FakturPenjualan-Input2",[
 	        'pelanggan' => $pelanggan,
 	        'termin' => $termin,
 	        'item' => $item,
@@ -288,6 +294,7 @@ class FakturPenjualanController extends Controller
 				$modelDetail->KodeItem = $key['KodeItem'];
 				$modelDetail->Qty = $key['Qty'];
 				$modelDetail->QtyKonversi = $key['QtyKonversi'];
+				$modelDetail->QtyRetur = 0;
 				$modelDetail->Satuan = $key['Satuan'];
 				$modelDetail->Harga = $key['Harga'];
 				$modelDetail->Discount = $key['Discount'];
@@ -339,6 +346,8 @@ class FakturPenjualanController extends Controller
 		Log::debug($request->all());
 		DB::beginTransaction();
 
+		$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
+		
 		$errorCount = 0;
 		$jsonData = $request->json()->all();
 
@@ -369,6 +378,9 @@ class FakturPenjualanController extends Controller
 	        $model->NoTransaksi= $NoTransaksi;
 	        $model->Transaksi= 'TRX';
 
+	        $model->Periode = $Year.$Month;
+	        $model->NoTransaksi= $NoTransaksi;
+	        $model->Transaksi= 'PJL';
 	        $model->TglTransaksi = $jsonData['TglTransaksi'];
 			$model->TglJatuhTempo = $jsonData['TglJatuhTempo'];
 			$model->NoReff = $jsonData['NoReff'];
@@ -383,8 +395,10 @@ class FakturPenjualanController extends Controller
 			$model->TotalPembayaran = $jsonData['TotalPembayaran'];
 			$model->Status = $jsonData['Status'];
 			$model->Keterangan = $jsonData['Keterangan'];
+			$model->MetodeBayar = empty($jsonData['MetodeBayar']) ? "" : $jsonData['MetodeBayar'];
+			$model->ReffPembayaran = empty($jsonData['ReffPembayaran']) ? "" : $jsonData['ReffPembayaran'];
+			$model->KodeSales = empty($jsonData['KodeSales']) ? "" : $jsonData['KodeSales'];
 			$model->Posted = 0;
-			$model->KodeSales = $jsonData['KodeSales'];
 			$model->CreatedBy = Auth::user()->name;
 			$model->UpdatedBy = "";
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
@@ -396,12 +410,32 @@ class FakturPenjualanController extends Controller
 					goto skip;
 				}
 
+				if ($oCompany) {
+					if ($oCompany->AllowNegativeInventory == NULL || $oCompany->AllowNegativeInventory == 'N') {
+						$oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
+									->where('KodeItem',$key['KodeItem'])
+									->where('Stock','>',0)
+									->get();
+
+						if (count($oItem) == 0) {
+							$data['message'] = "Stock Item ".$key['KodeItem'].' Tidak Cukup';
+							$errorCount += 1;
+							goto jump;		
+						}
+					}
+				}
+				else{
+					$data['message'] = "Partner Tidak ditemukan";
+					$errorCount += 1;
+					goto jump;
+				}
+
 				$modelDetail = new FakturPenjualanDetail;
            		$modelDetail->NoTransaksi = $NoTransaksi;
 				$modelDetail->NoUrut = $key['NoUrut'];
 				$modelDetail->KodeItem = $key['KodeItem'];
 				$modelDetail->Qty = $key['Qty'];
-				$modelDetail->QtyKonversi = 1;
+				$modelDetail->QtyKonversi = $key['QtyKonversi'];
 				$modelDetail->Satuan = $key['Satuan'];
 				$modelDetail->Harga = $key['Harga'];
 				$modelDetail->Discount = $key['Discount'];
@@ -409,6 +443,11 @@ class FakturPenjualanController extends Controller
 				$modelDetail->BaseReff = $key['BaseReff'];
 				$modelDetail->BaseLine = $key['BaseLine'];
 				$modelDetail->KodeGudang = $key['KodeGudang'];
+
+				$HargaGros = $key['Qty'] * $key['Harga'];
+				$modelDetail->HargaNet = $HargaGros - floatval($key['Discount']);
+				$modelDetail->LineStatus = $key['LineStatus'];
+				$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
 				if ($key['Discount'] ==0) {
 					$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];

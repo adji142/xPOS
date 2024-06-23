@@ -39,6 +39,8 @@ use App\Http\Controllers\BluetoothController;
 use App\Http\Controllers\PrinterController;
 use App\Http\Controllers\ReturPenjualanController;
 use App\Http\Controllers\DeliveryNoteController;
+use App\Http\Controllers\PembayaranPenjualanController;
+use App\Http\Controllers\BiayaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -77,6 +79,7 @@ Route::delete('/gruppelanggan/delete/{id}', [GrupPelangganController::class, 'de
 Route::get('/pelanggan', [PelangganController::class,'View'])->name('pelanggan')->middleware('auth');
 Route::get('/pelanggan/form/{id}', [PelangganController::class,'Form'])->name('pelanggan-form')->middleware('auth');
 Route::post('/pelanggan/store', [PelangganController::class, 'store'])->name('pelanggan-store')->middleware('auth');
+Route::post('/pelanggan/storejson', [PelangganController::class, 'storeJson'])->name('pelanggan-storeJson')->middleware('auth');
 Route::post('/pelanggan/edit', [PelangganController::class, 'edit'])->name('pelanggan-edit')->middleware('auth');
 Route::delete('/pelanggan/delete/{id}', [PelangganController::class, 'deletedata'])->name('pelanggan-delete')->middleware('auth');
 Route::post('/pelanggan/demografi', [PelangganController::class, 'ReadDemografi'])->name('demografipelanggan')->middleware('auth');
@@ -516,3 +519,31 @@ Route::post('/delivery/storeJson', [DeliveryNoteController::class, 'storeJson'])
 Route::post('/delivery/editJson', [DeliveryNoteController::class, 'editJson'])->name('delivery-editJson')->middleware('auth');
 Route::post('/delivery/readheader', [DeliveryNoteController::class, 'ViewHeader'])->name('delivery-readheader')->middleware('auth');
 Route::post('/delivery/readdetail', [DeliveryNoteController::class, 'ViewDetail'])->name('delivery-readdetail')->middleware('auth');
+Route::post('/delivery/editdeliverystatus', [DeliveryNoteController::class, 'EditDeliveryStatus'])->name('delivery-editdeliverystatus')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Pembayaran Penjualan
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/pembayaranpenjualan', [PembayaranPenjualanController::class,'View'])->name('pembayaranpenjualan')->middleware('auth');
+Route::get('/pembayaranpenjualan/form/{id}', [PembayaranPenjualanController::class,'Form'])->name('pembayaranpenjualan-form')->middleware('auth');
+Route::post('/pembayaranpenjualan/storeJson', [PembayaranPenjualanController::class, 'storeJson'])->name('pembayaranpenjualan-storeJson')->middleware('auth');
+Route::post('/pembayaranpenjualan/editJson', [PembayaranPenjualanController::class, 'editJson'])->name('pembayaranpenjualan-editJson')->middleware('auth');
+Route::post('/pembayaranpenjualan/readheader', [PembayaranPenjualanController::class, 'ViewHeader'])->name('pembayaranpenjualan-readheader')->middleware('auth');
+Route::post('/pembayaranpenjualan/readdetail', [PembayaranPenjualanController::class, 'ViewDetail'])->name('pembayaranpenjualan-readdetail')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Accounting Biaya
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/biaya', [BiayaController::class,'View'])->name('biaya')->middleware('auth');
+Route::get('/biaya/form/{id}', [BiayaController::class,'Form'])->name('biaya-form')->middleware('auth');
+Route::post('/biaya/storeJson', [BiayaController::class, 'storeJson'])->name('biaya-storeJson')->middleware('auth');
+Route::post('/biaya/editJson', [BiayaController::class, 'editJson'])->name('biaya-editJson')->middleware('auth');
+Route::post('/biaya/readheader', [BiayaController::class, 'ViewHeader'])->name('biaya-readheader')->middleware('auth');
+Route::post('/biaya/readdetail', [BiayaController::class, 'ViewDetail'])->name('biaya-readdetail')->middleware('auth');

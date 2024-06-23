@@ -18,6 +18,7 @@ class OrderPenjualanDetail extends Migration
             $table->integer('NoUrut');
             $table->string('KodeItem');
             $table->double('Qty');
+            $table->double('QtyKonversi');
             $table->string('Satuan');
             $table->double('Harga');
             $table->double('Discount');

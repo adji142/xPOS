@@ -66,6 +66,17 @@ License: You must have a valid license purchased only from themeforest(the above
 		.horizontal-list li.active {
 		    background-color: #ffcc00; /* Change to the desired color when clicked */
 		}
+		/* Style for text alignment */
+		.aligned-textbox {
+		    text-align: right; /* Change 'center' to 'left' or 'right' for different alignments */
+		}
+		.dx-dropdowneditor-overlay {
+		    z-index: 10000!important ; /* Adjust the z-index value as needed */
+		}
+		.dx-dropdowneditor-input-wrapper{
+		    height: 50% !important;
+		}
+
 	</style>
 </head>
 <!--end::Head-->
@@ -202,35 +213,51 @@ License: You must have a valid license purchased only from themeforest(the above
 						<div class="card card-custom gutter-b bg-white border-0" >
 							<div class="card-body">
 								<div class="row">
-									<div class="col-md-3">
-										<label class="text-dark" >Pilih Pelanggan </label>
-										<select class="js-example-basic-single js-states form-control bg-transparent" id="KodePelanggan" name="KodePelanggan">
-											<option value="">Pilih Pelanggan</option>
-											@foreach($pelanggan as $ko)
-												<option value="{{ $ko->KodePelanggan }}">
-                                                    {{ $ko->NamaPelanggan }}
-                                                </option>
-											@endforeach
-										</select>
-									</div>
-									<div class="col-md-3">
-										<label class="text-dark " >Pilih Sales </label>
-										<select class="js-example-basic-single js-states form-control bg-transparent" id="KodeSales" name="KodeSales">
-											<option value="">Pilih Sales</option>
-											@foreach($sales as $ko)
-												<option value="{{ $ko->KodeSales }}">
-                                                    {{ $ko->NamaSales }}
-                                                </option>
-											@endforeach
-										</select>
-									</div>
-									<div class="col-md-6" style="text-align: center;">
+									<div class="col-md-12" style="text-align: center;">
 										<label class="text-dark" >Nomor Dokumen</label>
 										<h2><div id="_NoTransaksi"></div></h2>
 									</div>	
 								</div>
 								
 							</div>	
+						</div>
+						<div class="card card-custom gutter-b bg-white border-0 table-contentpos">
+							<div class="card-body" >
+								<div class="form-group row mb-0">
+									<label> <b>Bussiness Partner Area</b> </label>
+									<div class="col-md-6">
+										<label class="text-dark" >Pilih Pelanggan </label>
+										<fieldset class="form-group mb-3 d-flex">
+											<select class="js-example-basic-single js-states form-control bg-transparent" id="KodePelanggan" name="KodePelanggan">
+												<option value="">Pilih Pelanggan</option>
+												@foreach($pelanggan as $ko)
+													<option value="{{ $ko->KodePelanggan }}">
+	                                                    {{ $ko->NamaPelanggan }}
+	                                                </option>
+												@endforeach
+											</select>
+											<button class="btn-success btn ms-1 white pt-1 pb-1 d-flex align-items-center justify-content-center" id="btSearchCustomer">Cari</button>
+											<button class="btn-secondary btn ms-1 white pt-1 pb-1 d-flex align-items-center justify-content-center" id="btAddCustomer">Add</button>
+										</fieldset>
+										
+									</div>
+
+									<div class="col-md-6">
+										<label class="text-dark " >Pilih Sales </label>
+										<fieldset class="form-group mb-3 d-flex">
+											<select class="js-example-basic-single js-states form-control bg-transparent" id="KodeSales" name="KodeSales">
+												<option value="">Pilih Sales</option>
+												@foreach($sales as $ko)
+													<option value="{{ $ko->KodeSales }}">
+	                                                    {{ $ko->NamaSales }}
+	                                                </option>
+												@endforeach
+											</select>
+										</fieldset>
+									</div>
+
+								</div>
+							</div>
 						</div>
 						<div class="card card-custom gutter-b bg-white border-0 table-contentpos">
 							<div class="card-body" >
@@ -608,6 +635,191 @@ License: You must have a valid license purchased only from themeforest(the above
 	</div>	  	  
 </div>
 
+<div class="modal fade text-left" id="LookupCustomer" tabindex="-1" role="dialog" aria-labelledby="LookupCustomer" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h3 class="modal-title" id="myModalLabel1444">Cari Member / Pelanggan</h3>
+			<button type="button" class="close rounded-pill btn btn-sm btn-icon btn-light btn-hover-primary m-0" data-bs-dismiss="modal" aria-label="Close">
+			  <svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+				  <path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+			  </svg>
+			</button>
+		  </div>
+		  <div class="modal-body">
+			<div class="col-md-12">
+				<div class="dx-viewport demo-container">
+                	<div id="data-grid-demo">
+                  		<div id="gridLookupCustomer"></div>
+                	</div>
+              	</div>
+			</div>
+			<hr>
+			<div class="form-group row justify-content-end mb-0">
+				<div class="col-md-6  text-end">
+					<button type="button" class="btn btn-primary" id="btPilihCustomer">Pilih Data</button>
+				</div>
+			</div>
+		  </div>
+		</div>
+	</div>	  	  
+</div>
+
+
+<div class="modal fade text-left" id="LookupAddCustomer" tabindex="-1" role="dialog" aria-labelledby="LookupAddCustomer" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h3 class="modal-title" id="myModalLabel1444">Tambah Member / Pelanggan</h3>
+			<button type="button" class="close rounded-pill btn btn-sm btn-icon btn-light btn-hover-primary m-0" data-bs-dismiss="modal" aria-label="Close">
+			  <svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+				  <path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+			  </svg>
+			</button>
+		  </div>
+		  <div class="modal-body">
+			<div class="col-md-12">
+				<div class="form-group row">
+					<div class="col-md-12">
+            			<label  class="text-body">Kode Pelanggan</label>
+            			<fieldset class="form-group mb-3">
+            				<input type="text" class="form-control" id="ModalKodePelanggan" name="ModalKodePelanggan" placeholder="<AUTO>" readonly="" >
+            			</fieldset>
+            			
+            		</div>
+            		
+            		<div class="col-md-12">
+            			<label  class="text-body">Nama Pelanggan</label>
+            			<fieldset class="form-group mb-3">
+            				<input type="text" class="form-control" id="ModalNamaPelanggan" name="ModalNamaPelanggan" placeholder="Masukan Nama Pelanggan" required="">
+            			</fieldset>
+            			
+            		</div>
+
+            		<div class="col-md-6">
+            			<label  class="text-body">Grup Pelanggan</label>
+            			<fieldset class="form-group mb-3">
+            				<select name="ModalKodeGrupPelanggan" id="ModalKodeGrupPelanggan" class="js-example-basic-single js-states form-control bg-transparent" name="state" required="">
+								<option value="">Pilih Kelompok Pelanggan</option>
+								@foreach($gruppelanggan as $ko)
+									<option value="{{ $ko->KodeGrup }}">
+                                        {{ $ko->NamaGrup }}
+                                    </option>
+								@endforeach
+								
+							</select>
+            			</fieldset>
+            			
+            		</div>
+
+            		<div class="col-md-6">
+            			<label  class="text-body">Limit Piutang</label>
+            			<fieldset class="form-group mb-3">
+            				<input type="number" class="form-control" id="ModalLimitPiutang" name="ModalLimitPiutang" placeholder="Masukan Limit Piutang" value="0">
+            			</fieldset>
+            			
+            		</div>
+
+            		<div class="col-md-3">
+            			<label  class="text-body">Provinsi</label>
+            			<fieldset class="form-group mb-3">
+            				<select name="ModalProvID" id="ModalProvID" class="js-example-basic-single js-states form-control bg-transparent" name="state" >
+								<option value="-1">Pilih Provinsi</option>
+								@foreach($provinsi as $ko)
+									<option value="{{ $ko->prov_id }}">
+                                        {{ $ko->prov_name }}
+                                    </option>
+								@endforeach
+								
+							</select>
+            			</fieldset>
+            		</div>
+
+            		<div class="col-md-3">
+            			<label  class="text-body">Kota</label>
+            			<fieldset class="form-group mb-3">
+            				<select name="ModalKotaID" id="ModalKotaID" class="js-example-basic-single js-states form-control bg-transparent" name="state" >
+								<option value="-1">Pilih Kota</option>
+							</select>
+            			</fieldset>
+            		</div>
+
+            		<div class="col-md-3">
+            			<label  class="text-body">Kecamatan</label>
+            			<fieldset class="form-group mb-3">
+            				<select name="ModalKecID" id="ModalKecID" class="js-example-basic-single js-states form-control bg-transparent" name="state" >
+								<option value="-1">Pilih Kecamatan</option>
+							</select>
+            			</fieldset>
+            		</div>
+
+            		<div class="col-md-3">
+            			<label  class="text-body">Kelurahan</label>
+            			<fieldset class="form-group mb-3">
+            				<select name="ModalKelID" id="ModalKelID" class="js-example-basic-single js-states form-control bg-transparent" name="state" >
+								<option value="-1">Pilih Kelurahan</option>
+							</select>
+            			</fieldset>
+            		</div>
+
+            		<div class="col-md-12">
+            			<label  class="text-body">Alamat</label>
+            			<fieldset class="form-group mb-12">
+            				<textarea class="form-control" id="ModalAlamat" name="ModalAlamat" rows="3" placeholder="Masukan Alamat"></textarea>
+            			</fieldset>
+            		</div>
+
+            		<div class="col-md-6">
+            			<label  class="text-body">Email</label>
+            			<fieldset class="form-group mb-3">
+            				<input type="mail" class="form-control" id="ModalEmail" name="ModalEmail" placeholder="Masukan Email" >
+            			</fieldset>
+            		</div>
+
+            		<div class="col-md-3">
+            			<label  class="text-body">NoTlp</label>
+            			<fieldset class="form-group mb-3">
+            				<input type="number" class="form-control" id="ModalNoTlp1" name="ModalNoTlp1" placeholder="621325058258" required="">
+            			</fieldset>
+            		</div>
+
+            		<div class="col-md-3">
+            			<label  class="text-body">Kontak Lain</label>
+            			<fieldset class="form-group mb-3">
+            				<input type="number" class="form-control" id="ModalNoTlp2" name="ModalNoTlp2" placeholder="621325058258" >
+            			</fieldset>
+            		</div>
+
+            		<div class="col-md-12">
+            			<label  class="text-body">Keterangan Lain</label>
+            			<fieldset class="form-group mb-12">
+            				<textarea class="form-control" id="ModalKeterangan" name="ModalKeterangan" rows="3" placeholder="Masukan Keterangan"></textarea>
+            			</fieldset>
+            		</div>
+
+            		<div class="col-md-12">
+            			<label  class="text-body">Status</label>
+            			<fieldset class="form-group mb-3">
+            				<select name="ModalStatus" id="ModalStatus" class="js-example-basic-single js-states form-control bg-transparent" name="state" >
+								<option value="1">Active</option>
+								<option value="0">Inactive</option>
+							</select>
+            			</fieldset>
+            			
+            		</div>
+				</div>
+			</div>
+			<hr>
+			<div class="form-group row justify-content-end mb-0">
+				<div class="col-md-6  text-end">
+					<button type="button" class="btn btn-primary" id="btSaveAddCustomer">Simpan Data</button>
+				</div>
+			</div>
+		  </div>
+		</div>
+	</div>	  	  
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{{ asset('js/plugin.bundle.min.js')}}"></script>
 <script src="{{ asset('js/bootstrap.bundle.min.js')}}"></script>
@@ -634,6 +846,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	var _Tanggal = '';
 	var _Jam = '';
 	var _Company = [];
+	var _Pelanggan = [];
 	var _KodeMetodePembayaran = -1;
 
 	document.addEventListener('DOMContentLoaded', () => {
@@ -668,6 +881,10 @@ License: You must have a valid license purchased only from themeforest(the above
 				dropdownParent: $('#shippingcost')
 			});
 
+			jQuery('.js-example-basic-single').select2({
+				dropdownParent: $('#LookupAddCustomer')
+			});
+
 			jQuery('#KodePelanggan').select2();
 			jQuery('#KodeSales').select2();
 
@@ -685,8 +902,10 @@ License: You must have a valid license purchased only from themeforest(the above
 	    	_Jam = hours+":"+minutes+":"+seconds;
 
 	    	_Company = <?php echo $company ?>;
-
+	    	_Pelanggan = <?php echo $pelanggan ?>;
+	    	console.log(_Pelanggan);
 	    	LoadDraftOrderList();
+	    	bindGridLookupCustomer(_Pelanggan);
 
 	    	jQuery('#_NoTransaksi').text("<OTOMATIS>");
 		});
@@ -993,6 +1212,180 @@ License: You must have a valid license purchased only from themeforest(the above
 		$('#btSimpanPembayaran').click(function () {
 			SaveData('C',$('#btSimpanPembayaran'),'Submit');
 		});
+
+		$('#btSearchCustomer').click(function () {
+			jQuery('#LookupCustomer').modal({backdrop: 'static', keyboard: false})
+			jQuery('#LookupCustomer').modal('show');
+		});
+
+		$('#btPilihCustomer').click(function () {
+			var dataGridInstance = jQuery('#gridLookupCustomer').dxDataGrid('instance');
+			var selectedRows = dataGridInstance.getSelectedRowsData();
+
+			console.log(selectedRows);
+			if (selectedRows.length > 0) {
+				jQuery('#LookupCustomer').modal('hide');
+				jQuery('#KodePelanggan').val(selectedRows[0]['KodePelanggan']).trigger('change');
+			}
+		});
+
+		jQuery('#btAddCustomer').click(function () {
+			jQuery('#LookupAddCustomer').modal({backdrop: 'static', keyboard: false})
+			jQuery('#LookupAddCustomer').modal('show');
+		})
+
+		jQuery('#ModalProvID').change(function () {
+			$.ajax({
+                async   : false,
+                type    : "post",
+                url     : "{{route('demografipelanggan')}}",
+                data    : {
+                            'Table' : 'dem_kota',
+                            'Field' : 'prov_id',
+                            'Value' : jQuery('#ModalProvID').val(),
+                            '_token': '{{ csrf_token() }}',
+                        },
+                dataType: "json",
+                success: function (response) {
+                    // console.log(response);
+                    if (response.data.length > 0) {
+                    	$('#ModalKotaID').empty();
+                    	var newOption = $('<option>', {
+			            	value: -1,
+			            	text: "Pilih Kota"
+			          	});
+			          	$('#ModalKotaID').append(newOption); 
+			          	$.each(response.data,function (k,v) {
+				            var newOption = $('<option>', {
+				            	value: v.city_id,
+				            	text: v.city_name
+				        	});
+
+				        	$('#ModalKotaID').append(newOption);
+				        });
+                    }
+                }
+            });
+		});
+
+
+		jQuery('#ModalKotaID').change(function () {
+			console.log('Test masuk')
+			$.ajax({
+                async   : false,
+                type    : "post",
+                url     : "{{route('demografipelanggan')}}",
+                data    : {
+                            'Table' : 'dem_kecamatan',
+                            'Field' : 'kota_id',
+                            'Value' : $('#ModalKotaID').val(),
+                            '_token': '{{ csrf_token() }}',
+                        },
+                dataType: "json",
+                success: function (response) {
+                    // console.log(response);
+                    if (response.data.length > 0) {
+                    	$('#ModalKecID').empty();
+                    	var newOption = $('<option>', {
+			            	value: -1,
+			            	text: "Pilih Kecamatan"
+			          	});
+			          	$('#ModalKecID').append(newOption); 
+			          	$.each(response.data,function (k,v) {
+				            var newOption = $('<option>', {
+				            	value: v.dis_id,
+				            	text: v.dis_name
+				        	});
+
+				        	$('#ModalKecID').append(newOption);
+				        });
+                    }
+                }
+            });
+		});
+
+
+		jQuery('#ModalKecID').change(function () {
+			console.log('Test masuk')
+			$.ajax({
+                async   : false,
+                type    : "post",
+                url     : "{{route('demografipelanggan')}}",
+                data    : {
+                            'Table' : 'dem_kelurahan',
+                            'Field' : 'kec_id',
+                            'Value' : $('#ModalKecID').val(),
+                            '_token': '{{ csrf_token() }}',
+                        },
+                dataType: "json",
+                success: function (response) {
+                    // console.log(response);
+                    if (response.data.length > 0) {
+                    	$('#ModalKelID').empty();
+                    	var newOption = $('<option>', {
+			            	value: -1,
+			            	text: "Pilih Kelurahan"
+			          	});
+			          	$('#ModalKelID').append(newOption); 
+			          	$.each(response.data,function (k,v) {
+				            var newOption = $('<option>', {
+				            	value: v.subdis_id,
+				            	text: v.subdis_name
+				        	});
+
+				        	$('#ModalKelID').append(newOption);
+				        });
+                    }
+                }
+            });
+		});
+
+		jQuery('#btSaveAddCustomer').click(function () {
+			$.ajax({
+                async   : false,
+                type    : "post",
+                url     : "{{route('pelanggan-storeJson')}}",
+                headers: {
+	                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+	            },
+                data    : {
+                	'NamaPelanggan' : jQuery('#ModalNamaPelanggan').val(),
+                	'KodeGrupPelanggan' : jQuery('#ModalKodeGrupPelanggan').val(),
+                	'LimitPiutang' : jQuery('#ModalLimitPiutang').val(),
+                	'ProvID' : jQuery('#ModalProvID').val(),
+                	'KotaID' : jQuery('#ModalKotaID').val(),
+                	'KelID' : jQuery('#ModalKelID').val(),
+                	'KecID' : jQuery('#ModalKecID').val(),
+                	'Email' : jQuery('#ModalEmail').val(),
+                	'NoTlp1' : jQuery('#ModalNoTlp1').val(),
+                	'NoTlp2' : jQuery('#ModalNoTlp2').val(),
+                	'Alamat' : jQuery('#ModalAlamat').val(),
+                	'Keterangan' : jQuery('#ModalKeterangan').val(),
+                	'Status' : jQuery('#ModalStatus').val()
+                },
+                dataType: "json",
+                success: function (response) {
+                    // console.log(response);
+                    if (response.success == true) {
+                    	jQuery('#LookupAddCustomer').modal('hide');
+                    	var newOption = $('<option>', {
+			            	value: response.LastTRX,
+			            	text: jQuery('#ModalNamaPelanggan').val()
+			          	});
+			          	jQuery('#KodePelanggan').append(newOption);
+			          	jQuery('#KodePelanggan').val(response.LastTRX).trigger('change');
+                    }
+                    else{
+                    	Swal.fire({
+	                      icon: "error",
+	                      title: "Opps...",
+	                      text: response.message,
+	                    });
+                    }
+                }
+            });
+		});
+
 	});
 
 	function LoadDraftOrderList() {
@@ -1451,6 +1844,57 @@ License: You must have a valid license purchased only from themeforest(the above
     		CalculateTotal();
     	})
 	}
+
+	function bindGridLookupCustomer(data) {
+		// gridLookupItem
+		var dataGridInstance = jQuery("#gridLookupCustomer").dxDataGrid({
+			allowColumnResizing: true,
+			dataSource: data,
+			keyExpr: "KodePelanggan",
+			showBorders: true,
+            allowColumnResizing: true,
+            columnAutoWidth: true,
+            showBorders: true,
+            paging: {
+                enabled: true,
+                pageSize: 30
+            },
+            editing: {
+                mode: "row",
+                texts: {
+                    confirmDeleteMessage: ''  
+                }
+            },
+            selection: {
+                mode: "single" // Enable single selection mode
+            },
+            searchPanel: {
+	            visible: true,
+	            width: 240,
+	            placeholder: "Search..."
+	        },
+            columns: [
+            	{
+                    dataField: "KodePelanggan",
+                    caption: "Kode Pelanggan",
+                    allowSorting: true,
+                    allowEditing : false
+                },
+                {
+                    dataField: "NamaPelanggan",
+                    caption: "Nama Pelanggan",
+                    allowSorting: true,
+                    allowEditing : false
+                },
+                {
+                    dataField: "NoTlpConcat",
+                    caption: "No. HP",
+                    allowSorting: true,
+                    allowEditing : false
+                },
+            ]
+		}).dxDataGrid('instance');
+	}
 	
 	function SaveData(Status, ButonObject, ButtonDefaultText) {
 		ButonObject.text('Tunggu Sebentar.....');
@@ -1814,4 +2258,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		  }
 		});
     }
+
+
+    
 </script>

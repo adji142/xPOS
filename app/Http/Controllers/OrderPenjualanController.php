@@ -71,7 +71,7 @@ class OrderPenjualanController extends Controller
 	   		
    		$NoTransaksi = $request->input('NoTransaksi');
 
-   		$sql = "orderpenjualandetail.NoUrut, orderpenjualandetail.KodeItem, itemmaster.NamaItem, orderpenjualandetail.Qty, orderpenjualandetail.Harga, orderpenjualandetail.Discount, orderpenjualandetail.HargaNet, orderpenjualandetail.Satuan";
+   		$sql = "orderpenjualandetail.NoUrut, orderpenjualandetail.KodeItem, itemmaster.NamaItem, orderpenjualandetail.Qty,orderpenjualandetail.QtyKonversi, orderpenjualandetail.Harga, orderpenjualandetail.Discount, orderpenjualandetail.HargaNet, orderpenjualandetail.Satuan";
    		$model = OrderPenjualanDetail::selectRaw($sql)
     				->leftJoin('itemmaster', function ($value){
     					$value->on('orderpenjualandetail.KodeItem','=','itemmaster.KodeItem')
@@ -99,15 +99,24 @@ class OrderPenjualanController extends Controller
     	$pelanggan = Pelanggan::where('Status', 1)
 							->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();    
 		$termin = Termin::where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
-		$item = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-					->where('Active','Y')->get();
+
+    $oItem = new ItemMaster();
+    $item = $oItem->GetItemData(Auth::user()->RecordOwnerID,'', '', '','', 'Y', '',1)->get();
+
+		// $item = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+		// 			->where('Active','Y')->get();
 		$orderheader = OrderPenjualanHeader::where('NoTransaksi', $NoTransaksi)
 						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
-		$orderdetail = OrderPenjualanDetail::where('NoTransaksi', $NoTransaksi)
-						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+		$orderdetail = OrderPenjualanDetail::selectRaw("orderpenjualandetail.*, itemmaster.NamaItem")
+                    ->leftJoin('itemmaster', function ($value){
+                      $value->on('orderpenjualandetail.KodeItem','=','itemmaster.KodeItem')
+                      ->on('orderpenjualandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+                    })
+                    ->where('orderpenjualandetail.NoTransaksi', $NoTransaksi)
+						        ->where('orderpenjualandetail.RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 		$satuan = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
-	    return view("Transaksi.Penjualan.OrderPenjualan-Input",[
+	    return view("Transaksi.Penjualan.OrderPenjualan-Input2",[
 	        'pelanggan' => $pelanggan,
 	        'termin' => $termin,
 	        'item' => $item,
@@ -172,19 +181,20 @@ class OrderPenjualanController extends Controller
 
            foreach ($jsonData['Detail'] as $key) {
            		if ($key['Qty'] == 0) {
-					$data['message'] = "Quantity Harus lebih dari 0";
-					$errorCount += 1;
-					goto jump;
-				}
+    					$data['message'] = "Quantity Harus lebih dari 0";
+    					$errorCount += 1;
+    					goto jump;
+    				}
 
            		$modelDetail = new OrderPenjualanDetail;
            		$modelDetail->NoTransaksi = $NoTransaksi;
-				$modelDetail->NoUrut = $key['NoUrut'];
-				$modelDetail->KodeItem = $key['KodeItem'];
-				$modelDetail->Qty = $key['Qty'];
-				$modelDetail->Satuan = $key['Satuan'];
-				$modelDetail->Harga = $key['Harga'];
-				$modelDetail->Discount = $key['Discount'];
+      				$modelDetail->NoUrut = $key['NoUrut'];
+      				$modelDetail->KodeItem = $key['KodeItem'];
+      				$modelDetail->Qty = $key['Qty'];
+              $modelDetail->QtyKonversi = $key['QtyKonversi'];
+      				$modelDetail->Satuan = $key['Satuan'];
+      				$modelDetail->Harga = $key['Harga'];
+      				$modelDetail->Discount = $key['Discount'];
 
 				if ($key['Discount'] ==0) {
 					$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
@@ -291,6 +301,7 @@ class OrderPenjualanController extends Controller
 								[
 									'NoUrut' => $key['NoUrut'],
 									'Qty' => $key['Qty'],
+                  'QtyKonversi' => $key['QtyKonversi'],
 									'Satuan' => $key['Satuan'],
 									'Harga' => $key['Harga'],
 									'Discount' => $key['Discount'],
@@ -309,6 +320,7 @@ class OrderPenjualanController extends Controller
 						$modelDetail->NoUrut = $key['NoUrut'];
 						$modelDetail->KodeItem = $key['KodeItem'];
 						$modelDetail->Qty = $key['Qty'];
+            $modelDetail->QtyKonversi = $key['QtyKonversi'];
 						$modelDetail->Satuan = $key['Satuan'];
 						$modelDetail->Harga = $key['Harga'];
 						$modelDetail->Discount = $key['Discount'];

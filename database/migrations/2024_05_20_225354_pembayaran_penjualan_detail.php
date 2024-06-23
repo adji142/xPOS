@@ -19,6 +19,7 @@ class PembayaranPenjualanDetail extends Migration
             $table->string('BaseReff');
             $table->double('TotalPembayaran');
             $table->string('KodeMetodePembayaran');
+            $table->string('Keterangan');
             $table->string('RecordOwnerID');
             $table->timestamps();
         });

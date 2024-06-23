@@ -160,7 +160,7 @@ class ReturPenjualanController extends Controller
 			$Month = $currentDate->format('m');
 
 			$numberingData = new DocumentNumbering();
-	        $NoTransaksi = $numberingData->GetNewDoc("RTB","returpenjualanheader","NoTransaksi");
+	        $NoTransaksi = $numberingData->GetNewDoc("RPJ","returpenjualanheader","NoTransaksi");
 
 	        $model = new ReturPenjualanHeader;
 
@@ -213,6 +213,7 @@ class ReturPenjualanController extends Controller
 				$modelDetail->NoTransaksi = $NoTransaksi;
 				$modelDetail->BaseReff = $key['BaseReff'];
 				$modelDetail->NoUrut = $NoUrut;
+				$modelDetail->BaseType = $key['BaseType'];
 				$modelDetail->BaseLine = $key['BaseLine'];
 				$modelDetail->KodeItem = $key['KodeItem'];
 				$modelDetail->Qty = $key['Qty'];

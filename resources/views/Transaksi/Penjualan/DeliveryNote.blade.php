@@ -74,7 +74,7 @@
 									</div>
 									<div class="col-md-3">
 										<br>
-										<button class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1">Cari Data</button>
+										<button class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1" id="btSearch">Cari Data</button>
 									</div>
 								</div>
 							</div>
@@ -107,6 +107,44 @@
 	
 </div>
 
+
+<div class="modal fade text-left w-100" id="modalStatusPengiriman" tabindex="-1" role="dialog" aria-labelledby="myModalLabel16" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="myModalLabel16">Update Delivery Status</h4>
+          <button type="button" class="close rounded-pill btn btn-sm btn-icon btn-primary m-0" data-bs-dismiss="modal" aria-label="Close">
+            <svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+            </svg>  
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <input type="hidden" name="ModalNoTransaksi" id="ModalNoTransaksi">
+                <label for="exampleInputEmail1">Status Pengiriman</label>
+                <select name="ModalDeliveryStatus" id="ModalDeliveryStatus" class="js-states form-control bg-transparent" >
+                    <option value="Dokumen Dibuat">Dokumen Dibuat</option>
+                    <option value="Barang Diserahkan Kurir">Barang Diserahkan Kurir</option>
+                    <option value="Barang Dalam Perjalanan">Barang Dalam Perjalanan</option>
+                    <option value="Barang Sampai Tujuan">Barang Sampai Tujuan</option>
+                    <option value="Barang Diterima">Barang Diterima</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="exampleInputEmail1">Keterangan</label>
+                <input type="text" name="ModalKeteranganPengiriman" class="form-control" id="ModalKeteranganPengiriman">
+                <small>Informasi Seperti Resi dan keterangan lain bisa dimasukan pada kolomini</small>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary ms-1" id="btSimpanDeliveryStatus" data-bs-dismiss="modal">
+                <span class="">Simpan</span>
+            </button>
+        </div>      
+      </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -125,6 +163,54 @@
         GetHeader();
 		bindGridDetail([]);
 	});
+
+    jQuery('#btSearch').click(function () {
+        GetHeader();
+    });
+
+    jQuery('#btSimpanDeliveryStatus').click(function () {
+        jQuery('#btSimpanDeliveryStatus').text('Tunggu Sebentar ....');
+        jQuery('#btSimpanDeliveryStatus').attr('disabled',true);
+
+        $.ajax({
+            async:false,
+            type: 'post',
+            url: "{{route('delivery-editdeliverystatus')}}",
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+            },
+            data: {
+                'NoTransaksi' : jQuery('#ModalNoTransaksi').val(),
+                'DeliveryStatus' : jQuery('#ModalDeliveryStatus').val(),
+                'KeteranganPengiriman' :jQuery('#ModalKeteranganPengiriman').val()
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success == true) {
+                    Swal.fire({
+                        html: "Data berhasil disimpan!",
+                        icon: "success",
+                        title: "Horray...",
+                        // text: "Data berhasil disimpan! <br> " + response.Kembalian,
+                    }).then((result)=>{
+                        jQuery('#btSimpanDeliveryStatus').text('Save');
+                        jQuery('#btSimpanDeliveryStatus').attr('disabled',false);
+                        // location.reload();
+                        window.location.href = '{{url("delivery")}}';
+                    });
+                }
+                else{
+                    Swal.fire({
+                      icon: "error",
+                      title: "Opps...",
+                      text: response.message,
+                    })
+                    jQuery('#btSimpanDeliveryStatus').text('Save');
+                    jQuery('#btSimpanDeliveryStatus').attr('disabled',false);
+                }
+            }
+        })
+    })
 
     function GetHeader() {
         $.ajax({
@@ -176,7 +262,7 @@
             showBorders: true,
             paging: {
                 enabled: true,
-                pageSize: 30
+                pageSize: 10
             },
             editing: {
                 mode: "row",
@@ -203,12 +289,17 @@
                 },
                 {
                     dataField: "Transaksi",
-                    caption: "TRX",
-                    allowEditing:false,
+                    caption: "Sumber Data",
+                    allowEditing:false
                 },
                 {
                     dataField: "StatusDocument",
                     caption: "Status",
+                    allowEditing:false
+                },
+                {
+                    dataField: "DeliveryStatus",
+                    caption: "Status Pengiriman",
                     allowEditing:false
                 },
                 {
@@ -217,41 +308,13 @@
                     allowEditing:false
                 },
                 {
-                    dataField: "TglJatuhTempo",
-                    caption: "Jatuh Tempo",
-                    allowEditing:false
-                },
-                {
                     dataField: "NamaPelanggan",
                     caption: "Pelanggan",
                     allowEditing:false
                 },
                 {
-                    dataField: "NamaTermin",
-                    caption: "Termin",
-                    allowEditing:false
-                },
-                {
                     dataField: "TotalPembelian",
                     caption: "Total",
-                    allowEditing:false,
-                    format: { type: 'fixedPoint', precision: 2 }
-                },
-                {
-                    dataField: "TotalPembayaran",
-                    caption: "diBayar",
-                    allowEditing:false,
-                    format: { type: 'fixedPoint', precision: 2 }
-                },
-                {
-                    dataField: "TotalRetur",
-                    caption: "Retur",
-                    allowEditing:false,
-                    format: { type: 'fixedPoint', precision: 2 }
-                },
-                {
-                    dataField: "TotalHutang",
-                    caption: "Piutang",
                     allowEditing:false,
                     format: { type: 'fixedPoint', precision: 2 }
                 },
@@ -265,6 +328,15 @@
                             LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1 disabled-link' id = 'btEdit' disabled>Edit</a>";
                         }else{
                             LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit' disabled>Edit</a>";
+                        }
+
+                        var NoTransaksi = "'"+cellInfo.data.NoTransaksi+"'";
+                        var Status = cellInfo.data.StatusDocument;
+
+                        if (Status !=  "OPEN") {
+                            LinkAccess += '<button class="btn btn-outline-danger font-weight-bold me-1 mb-1" disabled onClick="EditStatusDelivery('+NoTransaksi+')" >Edit Status Pengiriman</button>';
+                        }else{
+                            LinkAccess += '<button class="btn btn-outline-danger font-weight-bold me-1 mb-1" onClick="EditStatusDelivery('+NoTransaksi+')" >Edit Status Pengiriman</button>';
                         }
 
                         // LinkAccess += "<a href = '#' class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btBayar' >Bayar</a>";
@@ -362,5 +434,12 @@
             ]
 		});
 	}
+
+    function EditStatusDelivery(NoTransaksi) {
+        jQuery('#modalStatusPengiriman').modal({backdrop: 'static', keyboard: false})
+        jQuery('#modalStatusPengiriman').modal('show');
+
+        jQuery('#ModalNoTransaksi').val(NoTransaksi);
+    }
 </script>
 @endpush

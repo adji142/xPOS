@@ -15,16 +15,21 @@ class DeliveryNoteHeader extends Migration
     {
         Schema::create('deliverynoteheader', function (Blueprint $table) {
             $table->string('Periode');
+            $table->string('Transaksi');
             $table->string('NoTransaksi')->unique();
             $table->date('TglTransaksi');
-            $table->string('NoReff');
+            $table->date('TglJatuhTempo');
+            $table->string('NoReff')->nullable();
             $table->string('KodePelanggan');
+            $table->string('KodeTermin');
+            $table->string('Termin');
             $table->double('TotalTransaksi');
             $table->double('Potongan');
             $table->double('Pajak');
             $table->double('TotalPembelian');
             $table->string('Status');
             $table->string('DeliveryStatus');
+            $table->string('KeteranganPengiriman');
             $table->string('Keterangan')->nullable();
             $table->string('CreatedBy')->nullable();
             $table->string('UpdatedBy')->nullable();
