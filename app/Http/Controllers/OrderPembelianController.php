@@ -73,11 +73,26 @@ class OrderPembelianController extends Controller
 	   		
 	   		$NoTransaksi = $request->input('NoTransaksi');
 
-	   		$sql = "orderpembeliandetail.NoUrut, orderpembeliandetail.KodeItem, itemmaster.NamaItem, orderpembeliandetail.Qty, orderpembeliandetail.Harga, orderpembeliandetail.Discount, orderpembeliandetail.HargaNet, orderpembeliandetail.Satuan";
+	   		$sql = "orderpembeliandetail.NoUrut, orderpembeliandetail.KodeItem, itemmaster.NamaItem, orderpembeliandetail.Qty, orderpembeliandetail.Harga, orderpembeliandetail.Discount, orderpembeliandetail.HargaNet, orderpembeliandetail.Satuan, orderpembeliandetail.VatPercent, orderpembeliandetail.Qty - COALESCE(faktur.Qty,0) OutStanding ";
 	   		$model = OrderPembelianDetail::selectRaw($sql)
         				->leftJoin('itemmaster', function ($value){
         					$value->on('orderpembeliandetail.KodeItem','=','itemmaster.KodeItem')
         					->on('orderpembeliandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+        				})
+        				->leftJoinSub(
+        					DB::table('fakturpembeliandetail')
+        						->select('fakturpembeliandetail.NoTransaksi', 'fakturpembeliandetail.Basereff','fakturpembeliandetail.RecordOwnerID','fakturpembeliandetail.KodeItem','fakturpembeliandetail.BaseLine','fakturpembelianheader.Status', 'fakturpembeliandetail.Qty')
+        						->leftJoin('fakturpembelianheader', function ($value){
+		        					$value->on('fakturpembelianheader.NoTransaksi','=','fakturpembeliandetail.NoTransaksi')
+		        					->on('fakturpembelianheader.RecordOwnerID','=','fakturpembeliandetail.RecordOwnerID');
+		        				})
+        						->where('fakturpembelianheader.Status','<>', 'D'),
+        						'faktur',
+        					function($value){
+        						$value->on('faktur.Basereff','orderpembeliandetail.NoTransaksi')
+        						->on('faktur.RecordOwnerID','=','orderpembeliandetail.RecordOwnerID')
+	        					->on('faktur.KodeItem','=','orderpembeliandetail.KodeItem')
+	        					->on('faktur.BaseLine','=','orderpembeliandetail.NoUrut');
         				})
         				->where('orderpembeliandetail.NoTransaksi',$NoTransaksi)
         				->where('orderpembeliandetail.RecordOwnerID',Auth::user()->RecordOwnerID);
@@ -262,6 +277,7 @@ class OrderPembelianController extends Controller
 					$modelDetail->Qty = $key['Qty'];
 					$modelDetail->Satuan = $key['Satuan'];
 					$modelDetail->Harga = $key['Harga'];
+					$modelDetail->VatPercent = $key['VatPercent'];
 					$modelDetail->Discount = $key['Discount'];
 
 					if ($key['Discount'] ==0) {
@@ -271,6 +287,11 @@ class OrderPembelianController extends Controller
 						$HargaGros = $key->Qty * $key->Harga;
 						$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
 						$modelDetail->HargaNet = $HargaGros - $diskon;
+					}
+
+					if ($key['VatPercent'] > 0) {
+						$NilaiTax = (100 + $key['VatPercent']) / 100;
+						$modelDetail->HargaNet *= $NilaiTax;
 					}
 					$modelDetail->LineStatus = 'O';
 					$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
@@ -356,11 +377,18 @@ class OrderPembelianController extends Controller
 	           				$HargaNet= 0;
 	           				if ($key['Discount'] ==0) {
 								$HargaNet = $key['Qty'] * $key['Harga'];
+								// var_dump($HargaNet);
 							}
 							else{
 								$HargaGros = $key->Qty * $key->Harga;
 								$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
 								$HargaNet = $HargaGros - $diskon;
+							}
+
+							if ($key['VatPercent'] > 0) {
+								$NilaiTax = (100 + $key['VatPercent']) / 100;
+								$HargaNet *= $NilaiTax;
+								// var_dump($HargaNet);
 							}
 	           				$update = DB::table('orderpembeliandetail')
 	                           ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
@@ -391,6 +419,7 @@ class OrderPembelianController extends Controller
 							$modelDetail->Satuan = $key['Satuan'];
 							$modelDetail->Harga = $key['Harga'];
 							$modelDetail->Discount = $key['Discount'];
+							$modelDetail->VatPercent = $key['VatPercent'];
 
 							if ($key['Discount'] ==0) {
 								$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
@@ -399,6 +428,11 @@ class OrderPembelianController extends Controller
 								$HargaGros = $key->Qty * $key->Harga;
 								$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
 								$modelDetail->HargaNet = $HargaGros - $diskon;
+							}
+
+							if ($key['VatPercent'] > 0) {
+								$NilaiTax = (100 + $key['VatPercent']) / 100;
+								$modelDetail->HargaNet *= $NilaiTax;
 							}
 							$modelDetail->LineStatus = 'O';
 							$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;

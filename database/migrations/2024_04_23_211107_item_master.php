@@ -36,6 +36,7 @@ class ItemMaster extends Migration
             $table->string('AcctPenjualan');
             $table->string('AcctPenjualanJasa');
             $table->string('AcctPersediaan');
+            $table->double('VatPercent');
             $table->string('RecordOwnerID');
             $table->timestamps();
         });

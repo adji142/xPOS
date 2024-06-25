@@ -262,11 +262,13 @@
 	    	fakturDetail = <?php echo json_encode($fakturdetail); ?>;
 	    	oItemMaster = <?php echo $item ?>;
 
-	    	console.log(fakturHeader)
+	    	// console.log(fakturHeader)
 			if (jQuery('#formtype').val() == "edit") {
 				formatCurrency(jQuery('#TotalTransaksi'), fakturHeader[0]["TotalTransaksi"]);
 	      		formatCurrency(jQuery('#Potongan'), fakturHeader[0]["Potongan"]);
 	      		formatCurrency(jQuery('#TotalPembelian'), fakturHeader[0]["TotalPembelian"]);
+	      		formatCurrency(jQuery('#Pajak'), fakturHeader[0]["Pajak"]);
+
 	      		StatusTransaksi = fakturHeader[0]["Status"];
 	      		var KodeSupplier = fakturHeader[0]["KodeSupplier"];
 	      		NoOrderPembelian = fakturDetail[0]["BaseReff"];
@@ -286,7 +288,7 @@
 	      		jQuery('#KodeSupplier').val(KodeSupplier).trigger('change');
 	      		var combo = jQuery("#gridBox").dxDropDownBox("instance");
 	      		// combo.option("dataSource", filteredOrderDetail);
-	      		console.log(combo.option);
+	      		// console.log(combo.option);
 	      		combo.option("valueExpr", "NoTransaksi");
 	      		combo.option("value", NoOrderPembelian);
 	      		combo.option("disabled", true);
@@ -363,7 +365,7 @@
 
       		var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
       		var allRowsData  = dataGridInstance.getDataSource().items();
-      		console.log(allRowsData)
+      		// console.log(allRowsData)
       		var oDetail = [];
 
       		for (var i = 0; i < allRowsData.length; i++) {
@@ -379,6 +381,7 @@
 						'Satuan' : allRowsData[i]['Satuan'],
 						'Harga' : allRowsData[i]['Harga'],
 						'Discount' : allRowsData[i]['Discount'],
+						'VatPercent' : allRowsData[i]['VatPercent'],
 						'HargaNet' : allRowsData[i]['HargaNet'],
 						'BaseReff' : NoOrderPembelian,
 						'BaseLine' : allRowsData[i]['BaseLine'],
@@ -400,7 +403,7 @@
 				'Termin' : TotalTermin,
 				'TotalTransaksi' : jQuery('#TotalTransaksi').attr("originalvalue"),
 				'Potongan' : jQuery('#Potongan').attr("originalvalue"),
-				'Pajak' : 0,
+				'Pajak' : jQuery('#Pajak').attr('originalvalue'),
 				'TotalPembelian' : jQuery('#TotalPembelian').attr("originalvalue"),
 				'TotalRetur' : 0,
 				'TotalPembayaran' : 0,
@@ -498,7 +501,7 @@
 
 			var selectedRows = dataGridInstance.getSelectedRowsData();
 
-			console.log(selectedRows);
+			// console.log(selectedRows);
 			if (selectedRows.length > 0) {
 
 				dataGridDetailInstance.cellValue(_selectedRow, "KodeItem", selectedRows[0]["KodeItem"]);
@@ -507,6 +510,7 @@
             	dataGridDetailInstance.cellValue(_selectedRow, "QtyFaktur", 0);
 	            dataGridDetailInstance.cellValue(_selectedRow, "Harga", selectedRows[0]["HargaBeliTerakhir"]);
 	            dataGridDetailInstance.cellValue(_selectedRow, "Discount", 0);
+	            dataGridDetailInstance.cellValue(_selectedRow, "VatPercent", selectedRows[0]["VatPercent"]);
 	            dataGridDetailInstance.cellValue(_selectedRow, "HargaNet", 0);
 	            dataGridDetailInstance.cellValue(_selectedRow, "Satuan", selectedRows[0]["Satuan"]);
 	            dataGridDetailInstance.refresh();
@@ -533,25 +537,28 @@
 	                // BindGridOrder(response.data)
 	                var index = 1;
 	                $.each(response.data,function (k,v) {
-	                	var temp = {
-	                		'NoUrut' : index,
-	                		'BaseLine' : v.NoUrut,
-	                		'KodeItem' : v.KodeItem,
-	                		'NamaItem' : v.NamaItem,
-	                		'KodeGudang' : "",
-	                		'QtyOrder'	: parseFloat(v.Qty),
-	                		'QtyFaktur' : 0,
-	                		'Satuan' : v.Satuan,
-	                		'Harga' : parseFloat(v.Harga),
-	                		'Discount' : parseFloat(v.Discount),
-	                		'LineStatus' : 'O'
+	                	if (v.OutStanding > 0) {
+	                		var temp = {
+		                		'NoUrut' : index,
+		                		'BaseLine' : v.NoUrut,
+		                		'KodeItem' : v.KodeItem,
+		                		'NamaItem' : v.NamaItem,
+		                		'KodeGudang' : "",
+		                		'QtyOrder'	: parseFloat(v.OutStanding),
+		                		'QtyFaktur' : 0,
+		                		'Satuan' : v.Satuan,
+		                		'Harga' : parseFloat(v.Harga),
+		                		'Discount' : parseFloat(v.Discount),
+		                		'VatPercent' : parseFloat(v.VatPercent),
+		                		'LineStatus' : 'O'
+		                	}
+
+		                	oData.push(temp)
+
+		                	index +=1;
 	                	}
-
-	                	oData.push(temp)
-
-	                	index +=1;
 	                });
-	                console.log(oData)
+	                // console.log(oData)
 	                BindGridDetail(oData)
 	            }
 	        });
@@ -570,7 +577,7 @@
 	            dataType: 'json',
 	            success: function(response) {
 	                jQuery('#KodeTermin').val(response.data[0]["KodeTermin"]).trigger('change');
-	                jQuery('#TglTransaksi').val(response.data[0]["TglTransaksi"]);
+	                // jQuery('#TglTransaksi').val(response.data[0]["TglTransaksi"]);
 	                jQuery('#TglJatuhTempo').val(response.data[0]["TglJatuhTempo"]);
 	                jQuery('#NoReff').val(response.data[0]["NoReff"]);
 	                jQuery('#Keterangan').val(response.data[0]["Keterangan"]);
@@ -594,24 +601,32 @@
 
       			if (allRowsData[i]['KodeItem'] != "") {
 
-      				console.log(allRowsData[i]['QtyFaktur'])
+      				// console.log(allRowsData[i]['QtyFaktur'])
       				var Qty = (typeof(allRowsData[i]['QtyFaktur'])) === "undefined" ? 0 : allRowsData[i]['QtyFaktur'];
 	      			var Harga = (typeof(allRowsData[i]['Harga'])) == "undefined" ? 0 : allRowsData[i]['Harga'];
 	      			var Discount = (typeof(allRowsData[i]['Discount'])) == "undefined" ? 0 : allRowsData[i]['Discount'];
+	      			var PPN = (typeof(allRowsData[i]['VatPercent'])) == "undefined" ? 0 : allRowsData[i]['VatPercent'];
 
       				TotalTransaksi += Qty * Harga;
-      				console.log(TotalTransaksi)
+      				// console.log(TotalTransaksi)
 	      			if (Discount > 0) {
 
 	      				var diskon = TotalTransaksi * Discount / 100
 	      				TotalPotongan += parseFloat(diskon);
 	      			}
+	      			if (PPN > 0 && TotalTransaksi > 0) {
+	      				var Gross = (Qty * Harga) - TotalPotongan;
+	      				TotalPajak +=  (parseFloat(allRowsData[i]['VatPercent']) / 100) * Gross;
+	      				console.log(allRowsData[i]['VatPercent'] + " > " + Gross)
+	      			}
+	      			// console.log(TotalPajak)
       			}
       		}
 
       		formatCurrency(jQuery('#TotalTransaksi'), TotalTransaksi);
       		formatCurrency(jQuery('#Potongan'), TotalPotongan);
-      		formatCurrency(jQuery('#TotalPembelian'), TotalTransaksi - TotalPotongan);
+      		formatCurrency(jQuery('#TotalPembelian'), TotalTransaksi - TotalPotongan + TotalPajak);
+      		formatCurrency(jQuery('#Pajak'), TotalPajak);
 		}
 
 		function CreateCombobox(data) {
@@ -630,7 +645,17 @@
                 	const value = e.component.option('value');
                 	const $dataGrid = jQuery('<div>').dxDataGrid({
 				        dataSource: e.component.getDataSource(),
-				        columns: ['NoTransaksi', 'TglTransaksi', 'TglJatuhTempo'],
+				        columns: [
+				        	'NoTransaksi', 
+				        	'TglTransaksi', 
+				        	{
+			                    dataField: "TotalPembelian",
+			                    caption: "Total",
+			                    allowEditing:false,
+			                    format: { type: 'fixedPoint', precision: 2 },
+			                    allowSorting: false 
+			                },
+				        ],
 				        hoverStateEnabled: true,
 				        paging: { enabled: true, pageSize: 10 },
 				        filterRow: { visible: true },
@@ -665,7 +690,7 @@
 			if (StatusTransaksi != "O") {
 				AllowManipulation = false;
 			}
-			console.log(AllowManipulation)
+			// console.log(AllowManipulation)
 			var dataGridInstance = jQuery("#gridContainerDetail").dxDataGrid({
 				allowColumnResizing: true,
 				dataSource: data,
@@ -772,6 +797,13 @@
 	                    allowSorting: false 
 	                },
 	                {
+	                    dataField: "VatPercent",
+	                    caption: "PPN(%)",
+	                    allowEditing:false,
+	                    format: { type: 'fixedPoint', precision: 2 },
+	                    allowSorting: false 
+	                },
+	                {
 	                    dataField: "HargaNet",
 	                    caption: "HargaNet",
 	                    allowEditing:AllowManipulation,
@@ -784,12 +816,17 @@
 	                    		HargaGross = rowData.QtyFaktur * rowData.Harga;
 	                    	}
 	                    	else{
-	                    		console.log("HargaGross = " + HargaGross)
+	                    		// console.log("HargaGross = " + HargaGross)
 	                    		HargaGross = rowData.QtyFaktur * rowData.Harga;
 
 	                    		var diskon = HargaGross * rowData.Discount / 100
-	                    		console.log("Diskon = " + diskon)
+	                    		// console.log("Diskon = " + diskon)
 	                    		HargaNet = HargaGross - diskon;
+	                    	}
+	                    	if (rowData.VatPercent > 0) {
+	                    		var NilaiTax = (100 + rowData.VatPercent) / 100;
+	                    		
+	                    		HargaNet = HargaNet * NilaiTax;
 	                    	}
 
 	                    	return HargaNet
@@ -829,7 +866,7 @@
 	        			}
 	        		}
 	        		if (blankCount == 1) {
-	        			var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"",KodeGudang:"", QtyOrder: 0, QtyFaktur:0, Satuan: "", Harga:0, Discount:0, HargaNet:0,LineStatus:"O" }
+	        			var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"",KodeGudang:"", QtyOrder: 0, QtyFaktur:0, Satuan: "", Harga:0, Discount:0,VatPercent:0, HargaNet:0,LineStatus:"O" }
 						dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
 						dataGridInstance.refresh();
 	        		}
@@ -848,7 +885,7 @@
         		}
 
         		if (blankCount == 1) {
-        			var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"",KodeGudang:"", QtyOrder: 0, QtyFaktur:0, Satuan: "", Harga:0, Discount:0, HargaNet:0,LineStatus:"O" }
+        			var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"",KodeGudang:"", QtyOrder: 0, QtyFaktur:0, Satuan: "", Harga:0, Discount:0,VatPercent:0, HargaNet:0,LineStatus:"O" }
 					dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
 					dataGridInstance.refresh();
         		}
@@ -867,7 +904,7 @@
         		}
 
         		if (blankCount == 1) {
-        			var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"",KodeGudang:"", QtyOrder: 0, QtyFaktur:0, Satuan: "", Harga:0, Discount:0, HargaNet:0,LineStatus:"O" }
+        			var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"",KodeGudang:"", QtyOrder: 0, QtyFaktur:0, Satuan: "", Harga:0, Discount:0,VatPercent:0, HargaNet:0,LineStatus:"O" }
 					dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
 					dataGridInstance.refresh();
         		}
@@ -889,7 +926,7 @@
 
 
                     e.editorElement.on("focusout", function () {
-                    	console.log(xItem)
+                    	// console.log(xItem)
 	                	var filteredItem = oItemMaster.filter(function (oData) {
                         	return oData.KodeItem.includes(xItem);
                         });
@@ -911,6 +948,7 @@
                         	dataGridInstance.cellValue(rowIndex, "QtyFaktur", 0);
 				            dataGridInstance.cellValue(rowIndex, "Harga", filteredItem[0]["HargaBeliTerakhir"]);
 				            dataGridInstance.cellValue(rowIndex, "Discount", 0);
+				            dataGridInstance.cellValue(rowIndex, "VatPercent", filteredItem[0]["VatPercent"]);
 				            dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
 				            dataGridInstance.cellValue(rowIndex, "Satuan", filteredItem[0]["Satuan"]);
 				            dataGridInstance.refresh();
@@ -989,6 +1027,7 @@
                         	dataGridInstance.cellValue(rowIndex, "QtyFaktur", 0);
 				            dataGridInstance.cellValue(rowIndex, "Harga", filteredItem[0]["HargaBeliTerakhir"]);
 				            dataGridInstance.cellValue(rowIndex, "Discount", 0);
+				            dataGridInstance.cellValue(rowIndex, "VatPercent", filteredItem[0]["VatPercent"]);
 				            dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
 				            dataGridInstance.cellValue(rowIndex, "Satuan", filteredItem[0]["Satuan"]);
 				            dataGridInstance.refresh();
@@ -1046,7 +1085,7 @@
 	        });
 
 	        var allRowsData  = dataGridInstance.option("dataSource");
-        	var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"",KodeGudang:"", QtyOrder: 0, QtyFaktur:0, Satuan: "", Harga:0, Discount:0, HargaNet:0,LineStatus:"O" }
+        	var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"",KodeGudang:"", QtyOrder: 0, QtyFaktur:0, Satuan: "", Harga:0, Discount:0, VatPercent:0, HargaNet:0,LineStatus:"O" }
         	dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
         	dataGridInstance.refresh();
 		}

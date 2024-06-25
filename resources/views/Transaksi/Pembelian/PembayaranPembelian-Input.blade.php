@@ -198,12 +198,12 @@
 	    		console.log(pembayaranDetail)
 	    		BindGridDetail(pembayaranDetail)
 
-	    		formatCurrency(jQuery('#TotalPembelian'), pembayaranDetail[0]['TotalPembelian']);
+	    		formatCurrency(jQuery('#TotalPembelian'), pembayaranDetail[0]['TotalHutang']);
       			formatCurrency(jQuery('#TotalPembayaran'), pembayaranDetail[0]['TotalPembayaran']);
 
+      			jQuery('#KodeSupplier').attr('disabled',true);
       			if (pembayaranHeader[0]['Status'] != 'O') {
       				jQuery('#TglTransaksi').attr('disabled',true);
-      				jQuery('#KodeSupplier').attr('disabled',true);
       				jQuery('#Status').attr('disabled',true);
       				jQuery('#KodeMetodePembayaran').attr('disabled',true);
       				jQuery('#NoReff').attr('disabled',true);
@@ -232,6 +232,9 @@
 	            },
 	            dataType: 'json',
 	            success: function(response) {
+	            	var dataGrid = jQuery("#gridContainerDetail").dxDataGrid("instance");
+                	dataGrid.option('dataSource', []);
+
 	                BindGridDetail(response.data);
 	            }
 	        })

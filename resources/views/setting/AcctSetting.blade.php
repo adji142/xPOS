@@ -171,6 +171,22 @@
                                         				</div>
 
                                         				<div class="col-md-9">
+                                        					<label >Goods In Transit</label>
+                                        					<fieldset class="form-group mb-3">
+                                        						<select class="js-example-basic-single js-states form-control bg-transparent" name="PjAcctGoodsInTransit" id="PjAcctGoodsInTransit">
+																	<option value="">Pilih Akun</option>
+																	@foreach($account as $ko)
+																		<option 
+				                                                            value="{{ $ko->KodeRekening }}"
+				                                                            {{ count($settingakun) > 0 ? $settingakun[0]['PjAcctGoodsInTransit'] == $ko->KodeRekening ? "selected" : '' :""}}>
+				                                                            {{ $ko->NamaRekening }}
+				                                                        </option>
+																	@endforeach
+																</select>
+                                        					</fieldset>
+                                        				</div>
+
+                                        				<div class="col-md-9">
                                         					<label >Penyesuaan Stock Masuk</label>
                                         					<fieldset class="form-group mb-3">
                                         						<select class="js-example-basic-single js-states form-control bg-transparent" name="InvAcctPenyesuaiaanStockMasuk" id="InvAcctPenyesuaiaanStockMasuk">

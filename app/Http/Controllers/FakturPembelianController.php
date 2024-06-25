@@ -88,7 +88,7 @@ class FakturPembelianController extends Controller
 			
 			$NoTransaksi = $request->input('NoTransaksi');
 
-			$sql = "fakturpembeliandetail.NoUrut, fakturpembeliandetail.KodeItem, itemmaster.NamaItem, fakturpembeliandetail.Qty, fakturpembeliandetail.Harga, fakturpembeliandetail.Discount, fakturpembeliandetail.HargaNet, fakturpembeliandetail.KodeGudang, fakturpembeliandetail.Satuan, COALESCE(ret.QtyRetur,0) QtyRetur ";
+			$sql = "fakturpembeliandetail.NoUrut, fakturpembeliandetail.KodeItem, itemmaster.NamaItem, fakturpembeliandetail.Qty, fakturpembeliandetail.Harga, fakturpembeliandetail.Discount, fakturpembeliandetail.HargaNet, fakturpembeliandetail.KodeGudang, fakturpembeliandetail.Satuan, COALESCE(ret.QtyRetur,0) QtyRetur,fakturpembeliandetail.VatPercent ";
 			$model = FakturPembelianDetail::selectRaw($sql)
 					->leftJoin('itemmaster', function ($value){
 						$value->on('fakturpembeliandetail.KodeItem','=','itemmaster.KodeItem')
@@ -266,6 +266,7 @@ class FakturPembelianController extends Controller
 				$modelDetail->Qty = $key['Qty'];
 				$modelDetail->Satuan = $key['Satuan'];
 				$modelDetail->Harga = $key['Harga'];
+				$modelDetail->VatPercent = $key['VatPercent'];
 				$modelDetail->Discount = $key['Discount'];
 
 				$modelDetail->BaseReff = $key['BaseReff'];
@@ -279,6 +280,10 @@ class FakturPembelianController extends Controller
 					$HargaGros = $key['Qty'] * $key['Harga'];
 					$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
 					$modelDetail->HargaNet = $HargaGros - $diskon;
+				}
+				if ($key['VatPercent'] > 0) {
+					$NilaiTax = (100 + $key['VatPercent']) / 100;
+					$modelDetail->HargaNet *= $NilaiTax;
 				}
 				$modelDetail->LineStatus = 'O';
 				$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
@@ -301,7 +306,7 @@ class FakturPembelianController extends Controller
 						'NoTransaksi' => "",
 						'KodeTransaksi' => "FPB",
 						'TglTransaksi' => $jsonData['TglTransaksi'],
-						'NoReff' => $jsonData['NoTransaksi'],
+						'NoReff' => $NoTransaksi,
 						'StatusTransaksi' => "O",
 						'RecordOwnerID' => Auth::user()->RecordOwnerID,
 					);
@@ -326,7 +331,7 @@ class FakturPembelianController extends Controller
 				'KodeTransaksi' => "FPB", 
 				'KodeRekening' => $getSetting,
 				'KodeRekeningBukuBesar' => "",
-				'DK' => 2, 
+				'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
 				'KodeMataUang' => "",
 				'Valas' => 0,
 				'NilaiTukar' => 0,
@@ -357,7 +362,7 @@ class FakturPembelianController extends Controller
 					'KodeTransaksi' => "FPB", 
 					'KodeRekening' => $getSetting,
 					'KodeRekeningBukuBesar' => "",
-					'DK' => 1, 
+					'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
 					'KodeMataUang' => "",
 					'Valas' => 0,
 					'NilaiTukar' => 0,
@@ -387,11 +392,11 @@ class FakturPembelianController extends Controller
 				'KodeTransaksi' => "FPB", 
 				'KodeRekening' => $getSetting,
 				'KodeRekeningBukuBesar' => "",
-				'DK' => 1, 
+				'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
 				'KodeMataUang' => "",
 				'Valas' => 0,
 				'NilaiTukar' => 0,
-				'Jumlah' => $jsonData['TotalPembelian'], 
+				'Jumlah' => $jsonData['TotalTransaksi'] - $jsonData['Potongan'], 
 				'Keterangan' => $jsonData['Keterangan'], 
 				'HeaderKas' => "",
 				'RecordOwnerID' =>  Auth::user()->RecordOwnerID
@@ -403,7 +408,7 @@ class FakturPembelianController extends Controller
 			// Save Journal
 			$autoPosting = new AutoPosting();
 
-			if ($autoPosting->Auto($arrHeader, $arrDetail) != "OK") {
+			if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
 				$data["message"] = "Gagal Simpan Jurnal";
 				$errorCount +=1;
 				goto jump;
@@ -465,6 +470,18 @@ class FakturPembelianController extends Controller
 	                               ]
 	                           );
 
+	                if (count($jsonData['Detail']) == 0) {
+		            	$data['message'] = "Data Detail Tidak boleh kosong";
+		            	$errorCount +=1;
+		            	goto jump;
+		            }
+
+		            // Delete Existing Data
+					$delete = DB::table('fakturpembeliandetail')
+		                ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
+		                ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+		                ->delete();
+
 	                foreach ($jsonData['Detail'] as $key) {
 		           		if ($key['Qty'] == 0) {
 							$data['message'] = "Quantity Harus lebih dari 0";
@@ -477,70 +494,42 @@ class FakturPembelianController extends Controller
 						}
 
 
-						$checkExists = FakturPembelianHeader::where('NoTransaksi','=',$jsonData['NoTransaksi'])
-	           							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-	           							->where('KodeItem','=', $key['KodeItem']);
-	           			if ($checkExists) {
-	           				$HargaNet= 0;
-	           				if ($key['Discount'] ==0) {
-								$HargaNet = $key['Qty'] * $key['Harga'];
-							}
-							else{
-								$HargaGros = $key->Qty * $key->Harga;
-								$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
-								$HargaNet = $HargaGros - $diskon;
-							}
-	           				$update = DB::table('fakturpembeliandetail')
-	                           ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
-	                           ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-	                           ->where('KodeItem','=', $key['KodeItem'])
-	                           ->update(
-									[
-										'NoUrut' => $key['NoUrut'],
-										'Qty' => $key['Qty'],
-										'Satuan' => $key['Satuan'],
-										'Harga' => $key['Harga'],
-										'Discount' => $key['Discount'],
-										'HargaNet' =>$HargaNet,
-										'KodeGudang' => $key['KodeGudang'],
-										'BaseReff' => $key['BaseReff'],
-										'BaseLine' => $key['BaseLine'],
-									]
-	                           );
-	           			}
-	           			else{
-	           				$modelDetail = new FakturPembelianDetail;
-			           		$modelDetail->NoTransaksi = $NoTransaksi;
-							$modelDetail->NoUrut = $key['NoUrut'];
-							$modelDetail->KodeItem = $key['KodeItem'];
-							$modelDetail->Qty = $key['Qty'];
-							$modelDetail->Satuan = $key['Satuan'];
-							$modelDetail->Harga = $key['Harga'];
-							$modelDetail->Discount = $key['Discount'];
+						$modelDetail = new FakturPembelianDetail;
+		           		$modelDetail->NoTransaksi = $jsonData['NoTransaksi'];
+						$modelDetail->NoUrut = $key['NoUrut'];
+						$modelDetail->KodeItem = $key['KodeItem'];
+						$modelDetail->Qty = $key['Qty'];
+						$modelDetail->Satuan = $key['Satuan'];
+						$modelDetail->Harga = $key['Harga'];
+						$modelDetail->VatPercent = $key['VatPercent'];
+						$modelDetail->Discount = $key['Discount'];
 
-							$modelDetail->BaseReff = $key['BaseReff'];
-							$modelDetail->BaseLine = $key['BaseLine'];
-							$modelDetail->KodeGudang = $key['KodeGudang'];
+						$modelDetail->BaseReff = $key['BaseReff'];
+						$modelDetail->BaseLine = $key['BaseLine'];
+						$modelDetail->KodeGudang = $key['KodeGudang'];
 
-							if ($key['Discount'] ==0) {
-								$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
-							}
-							else{
-								$HargaGros = $key['Qty'] * $key['Harga'];
-								$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
-								$modelDetail->HargaNet = $HargaGros - $diskon;
-							}
-							$modelDetail->LineStatus = 'O';
-							$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+						if ($key['Discount'] ==0) {
+							$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
+						}
+						else{
+							$HargaGros = $key['Qty'] * $key['Harga'];
+							$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
+							$modelDetail->HargaNet = $HargaGros - $diskon;
+						}
+						if ($key['VatPercent'] > 0) {
+							$NilaiTax = (100 + $key['VatPercent']) / 100;
+							$modelDetail->HargaNet *= $NilaiTax;
+						}
+						$modelDetail->LineStatus = 'O';
+						$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
-							$save = $modelDetail->save();
+						$save = $modelDetail->save();
 
-							if (!$save) {
-								$data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
-								$errorCount += 1;
-								goto jump;
-							}
-	           			}
+						if (!$save) {
+							$data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
+							$errorCount += 1;
+							goto jump;
+						}
 	           			skip:
 		           }
 	               
@@ -580,7 +569,7 @@ class FakturPembelianController extends Controller
 						'KodeTransaksi' => "FPB", 
 						'KodeRekening' => $getSetting,
 						'KodeRekeningBukuBesar' => "",
-						'DK' => 2, 
+						'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
 						'KodeMataUang' => "",
 						'Valas' => 0,
 						'NilaiTukar' => 0,
@@ -611,7 +600,7 @@ class FakturPembelianController extends Controller
 							'KodeTransaksi' => "FPB", 
 							'KodeRekening' => $getSetting,
 							'KodeRekeningBukuBesar' => "",
-							'DK' => 1, 
+							'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
 							'KodeMataUang' => "",
 							'Valas' => 0,
 							'NilaiTukar' => 0,
@@ -641,11 +630,11 @@ class FakturPembelianController extends Controller
 						'KodeTransaksi' => "FPB", 
 						'KodeRekening' => $getSetting,
 						'KodeRekeningBukuBesar' => "",
-						'DK' => 1, 
+						'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
 						'KodeMataUang' => "",
 						'Valas' => 0,
 						'NilaiTukar' => 0,
-						'Jumlah' => $jsonData['TotalPembelian'], 
+						'Jumlah' => $jsonData['TotalTransaksi'] - $jsonData['Potongan'], 
 						'Keterangan' => $jsonData['Keterangan'], 
 						'HeaderKas' => "",
 						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
@@ -657,7 +646,7 @@ class FakturPembelianController extends Controller
 					// Save Journal
 					$autoPosting = new AutoPosting();
 
-					if ($autoPosting->Auto($arrHeader, $arrDetail) != "OK") {
+					if ($autoPosting->Auto($arrHeader, $arrDetail, ($jsonData['Status']== "D") ? true : false) != "OK") {
 						$data["message"] = "Gagal Simpan Jurnal";
 						$errorCount +=1;
 						goto jump;

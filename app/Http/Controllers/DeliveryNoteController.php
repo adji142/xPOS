@@ -241,6 +241,10 @@ class DeliveryNoteController extends Controller
 					goto jump;
 				}
 
+				$oItemMaster = ItemMaster::where('KodeItem', $key['KodeItem'])
+								->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->first();
+
 				$modelDetail = new DeliveryNoteDetail;
 
 				$modelDetail->NoTransaksi = $NoTransaksi;
@@ -263,6 +267,7 @@ class DeliveryNoteController extends Controller
 					$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
 					$modelDetail->HargaNet = $HargaGros - $diskon;
 				}
+				$modelDetail->HargaPokokPenjualan = $oItemMaster->HargaPokokPenjualan;
 				$modelDetail->LineStatus = 'O';
 				$modelDetail->KodeGudang = $key['KodeGudang'];
 				$modelDetail->Keterangan = "";
@@ -278,8 +283,97 @@ class DeliveryNoteController extends Controller
 				skip:
 			}
 
+			// Auto Posting
+			// Generate Header :
 
+			$arrHeader = array(
+						'NoTransaksi' => "",
+						'KodeTransaksi' => "ODLN",
+						'TglTransaksi' => $jsonData['TglTransaksi'],
+						'NoReff' => $NoTransaksi,
+						'StatusTransaksi' => "O",
+						'RecordOwnerID' => Auth::user()->RecordOwnerID,
+					);
+			$arrDetail = array();
 
+			$TotalHargaPokok = 0;
+			foreach ($jsonData['Detail'] as $key) {
+				$oItemMaster = ItemMaster::where('KodeItem', $key['KodeItem'])
+								->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->first();
+				// Hutang
+				// GetAccount :
+				$Setting = NEW SettingAccount();
+				$getSetting = $Setting->GetSetting("InvAcctPersediaan");
+				$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('KodeRekening', $getSetting)->get();
+
+				if (count($validate) == 0) {
+					$data['message'] = "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+					$errorCount +=1;
+					goto jump;
+				}
+
+					$temp = array(
+						'KodeTransaksi' => "ODLN", 
+						'KodeRekening' => $getSetting,
+						'KodeRekeningBukuBesar' => "",
+						'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+						'KodeMataUang' => "",
+						'Valas' => 0,
+						'NilaiTukar' => 0,
+						'Jumlah' => $oItemMaster->HargaPokokPenjualan * $key['QtyKirim'], 
+						'Keterangan' => $jsonData['Keterangan'], 
+						'HeaderKas' => "",
+						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+					);
+
+					array_push($arrDetail, $temp);
+					$TotalHargaPokok += $oItemMaster->HargaPokokPenjualan * $key['QtyKirim'];
+				}
+				// End Hutang
+
+				// GIT
+				// GetAccount :
+				$Setting = NEW SettingAccount();
+				$getSetting = $Setting->GetSetting("PjAcctGoodsInTransit");
+				$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('KodeRekening', $getSetting)->get();
+
+				if (count($validate) == 0) {
+					$data['message'] = "Akun Rekening Akutansi Goods In Transit Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+					$errorCount +=1;
+					goto jump;
+				}
+
+				// Hutang
+
+				$temp = array(
+					'KodeTransaksi' => "ODLN", 
+					'KodeRekening' => $getSetting,
+					'KodeRekeningBukuBesar' => "",
+					'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+					'KodeMataUang' => "",
+					'Valas' => 0,
+					'NilaiTukar' => 0,
+					'Jumlah' => $TotalHargaPokok, 
+					'Keterangan' => $jsonData['Keterangan'], 
+					'HeaderKas' => "",
+					'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+				);
+
+				array_push($arrDetail, $temp);
+				// End GIT
+
+				// Save Journal
+				$autoPosting = new AutoPosting();
+
+				if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
+					$data["message"] = "Gagal Simpan Jurnal";
+					$errorCount +=1;
+					goto jump;
+				}
+				// End Save Jurnal
 
 			jump:
 	        if ($errorCount > 0) {
@@ -334,82 +428,60 @@ class DeliveryNoteController extends Controller
 									'UpdatedBy' => Auth::user()->name
                                	]
                            	);
-                foreach ($jsonData['Detail'] as $key) {
-                	if ($key['Qty'] == 0) {
-						$data['message'] = "Quantity Harus lebih dari 0";
-						$errorCount += 1;
-						goto jump;
-					}
+                if (count($jsonData['Detail']) > 0) {
+                	// Delete Existing Data
+		              $delete = DB::table('deliverynoteheader')
+		                        ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
+		                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+		                        ->delete();
 
-					if ($key['LineStatus'] == "C") {
-						goto skip;
-					}
-
-					$checkExists = FakturPenjualanDetail::where('NoTransaksi','=',$jsonData['NoTransaksi'])
-           							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-           							->where('KodeItem','=', $key['KodeItem'])
-           							->where('NoUrut','=', $key['NoUrut'])
-           							->get();
-           			if (count($checkExists) > 0) {
-           				$HargaNet= 0;
-           				if ($key['Discount'] ==0) {
-							$HargaNet = $key['Qty'] * $key['Harga'];
-						}
-						else{
-							$HargaGros = $key->Qty * $key->Harga;
-							$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
-							$HargaNet = $HargaGros - $diskon;
+		            foreach ($jsonData['Detail'] as $key) {
+		            	if ($key['QtyKirim'] == 0) {
+							goto skip;
 						}
 
-						$update = DB::table('deliverynotedetail')
-                           ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
-                           ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                           ->where('KodeItem','=', $key['KodeItem'])
-                           ->where('NoUrut','=', $key['NoUrut'])
-                           ->update(
-								[
-									'BaseReff' => $key['BaseReff'],
-									'BaseLine' => $key['BaseLine'],
-									'BaseType' => $key['BaseType'],
-									'NoUrut' => $key['NoUrut'],
-									'KodeItem' => $key['KodeItem'],
-									'Qty' => $key['Qty'],
-									'QtyKonversi' => $key['QtyKonversi'],
-									'Satuan' => $key['Satuan'],
-									'Harga' => $key['Harga'],
-									'Discount' => $key['Discount'],
-									'HargaNet' => $HargaNet,
-									'LineStatus' => $key['LineStatus'],
-									'KodeGudang' => $key['KodeGudang'],
-									'Keterangan' => $key['Keterangan'],
-								]
-                           );
-           			}
-           			else{
-           				$modelDetail = new DeliveryNoteDetail;
+						if ($key["KodeGudang"] == "") {
+							$data['Gudang Harus diisi'];
+							$errorCount +=1;
+							goto jump;
+						}
 
-						$modelDetail->NoTransaksi = $NoTransaksi;
+						if ($key['QtyOrder'] < $key['QtyKirim']) {
+							$data['Qty Kirim tidak boleh melebihi Qty Order'];
+							$errorCount +=1;
+							goto jump;
+						}
+
+						$oItemMaster = ItemMaster::where('KodeItem', $key['KodeItem'])
+										->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+										->first();
+
+						$modelDetail = new DeliveryNoteDetail;
+
+						$modelDetail->NoTransaksi = $jsonData['NoTransaksi'];
 						$modelDetail->BaseReff = $key['BaseReff'];
 						$modelDetail->BaseLine = $key['BaseLine'];
 						$modelDetail->BaseType = $key['BaseType'];
 						$modelDetail->NoUrut = $key['NoUrut'];
 						$modelDetail->KodeItem = $key['KodeItem'];
-						$modelDetail->Qty = $key['Qty'];
+						$modelDetail->Qty = $key['QtyKirim'];
 						$modelDetail->QtyKonversi = $key['QtyKonversi'];
+						$modelDetail->QtyRetur = 0;
 						$modelDetail->Satuan = $key['Satuan'];
 						$modelDetail->Harga = $key['Harga'];
 						$modelDetail->Discount = $key['Discount'];
 						if ($key['Discount'] ==0) {
-							$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
+							$modelDetail->HargaNet = $key['QtyKirim'] * $key['Harga'];
 						}
 						else{
-							$HargaGros = $key['Qty'] * $key['Harga'];
+							$HargaGros = $key['QtyKirim'] * $key['Harga'];
 							$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
 							$modelDetail->HargaNet = $HargaGros - $diskon;
 						}
+						$modelDetail->HargaPokokPenjualan = $oItemMaster->HargaPokokPenjualan;
 						$modelDetail->LineStatus = 'O';
 						$modelDetail->KodeGudang = $key['KodeGudang'];
-						$modelDetail->Keterangan = $key['Keterangan'];
+						$modelDetail->Keterangan = "";
 						$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
 						$save = $modelDetail->save();
@@ -419,16 +491,104 @@ class DeliveryNoteController extends Controller
 							$errorCount += 1;
 							goto jump;
 						}
-           			}
-           			skip:
+						skip:
+		            }
                 }
+                
+                $data['success'] = true;
+                
 
-                if ($update) {
-                	$data['success'] = true;
-	            }else{
-	            	$data['message'] = 'Edit Models Gagal';
-	            }
+                // Auto Posting
+				// Generate Header :
 
+				$arrHeader = array(
+							'NoTransaksi' => "",
+							'KodeTransaksi' => "ODLN",
+							'TglTransaksi' => $jsonData['TglTransaksi'],
+							'NoReff' => $jsonData['NoTransaksi'],
+							'StatusTransaksi' => "O",
+							'RecordOwnerID' => Auth::user()->RecordOwnerID,
+						);
+				$arrDetail = array();
+
+				$TotalHargaPokok = 0;
+				foreach ($jsonData['Detail'] as $key) {
+					$oItemMaster = ItemMaster::where('KodeItem', $key['KodeItem'])
+									->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->first();
+					// Hutang
+					// GetAccount :
+					$Setting = NEW SettingAccount();
+					$getSetting = $Setting->GetSetting("InvAcctPersediaan");
+					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('KodeRekening', $getSetting)->get();
+
+					if (count($validate) == 0) {
+						$data['message'] = "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+						$errorCount +=1;
+						goto jump;
+					}
+
+						$temp = array(
+							'KodeTransaksi' => "ODLN", 
+							'KodeRekening' => $getSetting,
+							'KodeRekeningBukuBesar' => "",
+							'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+							'KodeMataUang' => "",
+							'Valas' => 0,
+							'NilaiTukar' => 0,
+							'Jumlah' => $oItemMaster->HargaPokokPenjualan * $key['QtyKirim'], 
+							'Keterangan' => $jsonData['Keterangan'], 
+							'HeaderKas' => "",
+							'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+						);
+
+						array_push($arrDetail, $temp);
+						$TotalHargaPokok += $oItemMaster->HargaPokokPenjualan * $key['QtyKirim'];
+					}
+					// End Hutang
+
+					// GIT
+					// GetAccount :
+					$Setting = NEW SettingAccount();
+					$getSetting = $Setting->GetSetting("PjAcctGoodsInTransit");
+					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('KodeRekening', $getSetting)->get();
+
+					if (count($validate) == 0) {
+						$data['message'] = "Akun Rekening Akutansi Goods In Transit Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+						$errorCount +=1;
+						goto jump;
+					}
+
+					// Hutang
+
+					$temp = array(
+						'KodeTransaksi' => "ODLN", 
+						'KodeRekening' => $getSetting,
+						'KodeRekeningBukuBesar' => "",
+						'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+						'KodeMataUang' => "",
+						'Valas' => 0,
+						'NilaiTukar' => 0,
+						'Jumlah' => $TotalHargaPokok, 
+						'Keterangan' => $jsonData['Keterangan'], 
+						'HeaderKas' => "",
+						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+					);
+
+					array_push($arrDetail, $temp);
+					// End GIT
+
+					// Save Journal
+					$autoPosting = new AutoPosting();
+
+					if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
+						$data["message"] = "Gagal Simpan Jurnal";
+						$errorCount +=1;
+						goto jump;
+					}
+					// End Save Jurnal
            	}
            	else{
                $data['message'] = 'Models not found.';

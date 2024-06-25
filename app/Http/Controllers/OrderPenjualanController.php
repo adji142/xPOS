@@ -71,7 +71,7 @@ class OrderPenjualanController extends Controller
 	   		
    		$NoTransaksi = $request->input('NoTransaksi');
 
-   		$sql = "orderpenjualandetail.NoUrut, orderpenjualandetail.KodeItem, itemmaster.NamaItem, orderpenjualandetail.Qty,orderpenjualandetail.QtyKonversi, orderpenjualandetail.Harga, orderpenjualandetail.Discount, orderpenjualandetail.HargaNet, orderpenjualandetail.Satuan";
+   		$sql = "orderpenjualandetail.NoUrut, orderpenjualandetail.KodeItem, itemmaster.NamaItem, orderpenjualandetail.Qty,orderpenjualandetail.QtyKonversi, orderpenjualandetail.Harga, orderpenjualandetail.Discount, orderpenjualandetail.HargaNet, orderpenjualandetail.Satuan, orderpenjualandetail.VatPercent";
    		$model = OrderPenjualanDetail::selectRaw($sql)
     				->leftJoin('itemmaster', function ($value){
     					$value->on('orderpenjualandetail.KodeItem','=','itemmaster.KodeItem')
@@ -127,7 +127,7 @@ class OrderPenjualanController extends Controller
     }
 
 
-    public function storeJson(Request $request){
+  public function storeJson(Request $request){
 		$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
        Log::debug($request->all());
        DB::beginTransaction();
@@ -194,6 +194,7 @@ class OrderPenjualanController extends Controller
               $modelDetail->QtyKonversi = $key['QtyKonversi'];
       				$modelDetail->Satuan = $key['Satuan'];
       				$modelDetail->Harga = $key['Harga'];
+              $modelDetail->VatPercent = $key['VatPercent'];
       				$modelDetail->Discount = $key['Discount'];
 
 				if ($key['Discount'] ==0) {
@@ -204,6 +205,11 @@ class OrderPenjualanController extends Controller
 					$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
 					$modelDetail->HargaNet = $HargaGros - $diskon;
 				}
+
+        if ($key['VatPercent'] > 0) {
+          $NilaiTax = (100 + $key['VatPercent']) / 100;
+          $modelDetail->HargaNet *= $NilaiTax;
+        }
 				$modelDetail->LineStatus = 'O';
 				$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
@@ -250,107 +256,78 @@ class OrderPenjualanController extends Controller
                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                            ->update(
                                [
-                                    'TglTransaksi' => $jsonData['TglTransaksi'],
-									'TglJatuhTempo' => $jsonData['TglJatuhTempo'],
-									'NoReff' => $jsonData['NoReff'],
-									'KodePelanggan' => $jsonData['KodePelanggan'],
-									'KodeTermin' => $jsonData['KodeTermin'],
-									'Termin' => $jsonData['Termin'],
-									'TotalTransaksi' => $jsonData['TotalTransaksi'],
-									'Potongan' => $jsonData['Potongan'],
-									'Pajak' => $jsonData['Pajak'],
-									'TotalPenjualan' => $jsonData['TotalPenjualan'],
-									'TotalRetur' => $jsonData['TotalRetur'],
-									'TotalPembayaran' => $jsonData['TotalPembayaran'],
-									'Status' => $jsonData['Status'],
-									'Keterangan' => $jsonData['Keterangan'],
-									'UpdatedBy' => Auth::user()->name
+                                  'TglTransaksi' => $jsonData['TglTransaksi'],
+                									'TglJatuhTempo' => $jsonData['TglJatuhTempo'],
+                									'NoReff' => $jsonData['NoReff'],
+                									'KodePelanggan' => $jsonData['KodePelanggan'],
+                									'KodeTermin' => $jsonData['KodeTermin'],
+                									'Termin' => $jsonData['Termin'],
+                									'TotalTransaksi' => $jsonData['TotalTransaksi'],
+                									'Potongan' => $jsonData['Potongan'],
+                									'Pajak' => $jsonData['Pajak'],
+                									'TotalPenjualan' => $jsonData['TotalPenjualan'],
+                									'TotalRetur' => $jsonData['TotalRetur'],
+                									'TotalPembayaran' => $jsonData['TotalPembayaran'],
+                									'Status' => $jsonData['Status'],
+                									'Keterangan' => $jsonData['Keterangan'],
+                									'UpdatedBy' => Auth::user()->name
                                ]
                            );
+              if (count($jsonData['Detail']) == 0) {
+                $data['message'] = "Data Detail Tidak boleh kosong";
+                $errorCount +=1;
+                goto jump;
+              }
 
-                foreach ($jsonData['Detail'] as $key) {
-	           		if ($key['Qty'] == 0) {
-						$data['message'] = "Quantity Harus lebih dari 0";
-						$errorCount += 1;
-						goto jump;
-					}
+              // Delete Existing Data
+              $delete = DB::table('orderpenjualandetail')
+                        ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
+                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                        ->delete();
+              foreach ($jsonData['Detail'] as $key) {
+                if ($key['Qty'] == 0) {
+                  $data['message'] = "Quantity Harus lebih dari 0";
+                  $errorCount += 1;
+                  goto jump;
+                }
 
-					if ($key['LineStatus'] == "C") {
-						goto skip;
-					}
+                $modelDetail = new OrderPenjualanDetail;
+                $modelDetail->NoTransaksi =$jsonData['NoTransaksi'];
+                $modelDetail->NoUrut = $key['NoUrut'];
+                $modelDetail->KodeItem = $key['KodeItem'];
+                $modelDetail->Qty = $key['Qty'];
+                $modelDetail->QtyKonversi = $key['QtyKonversi'];
+                $modelDetail->Satuan = $key['Satuan'];
+                $modelDetail->Harga = $key['Harga'];
+                $modelDetail->VatPercent = $key['VatPercent'];
+                $modelDetail->Discount = $key['Discount'];
 
+                if ($key['Discount'] ==0) {
+                  $modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
+                }
+                else{
+                  $HargaGros = $key->Qty * $key->Harga;
+                  $diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
+                  $modelDetail->HargaNet = $HargaGros - $diskon;
+                }
 
-					$checkExists = OrderPenjualanDetail::where('NoTransaksi','=',$jsonData['NoTransaksi'])
-           							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-           							->where('KodeItem','=', $key['KodeItem']);
-           			if ($checkExists) {
-           				$HargaNet= 0;
-           				if ($key['Discount'] ==0) {
-							$HargaNet = $key['Qty'] * $key['Harga'];
-						}
-						else{
-							$HargaGros = $key->Qty * $key->Harga;
-							$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
-							$HargaNet = $HargaGros - $diskon;
-						}
-           				$update = DB::table('orderpenjualandetail')
-                           ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
-                           ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                           ->where('KodeItem','=', $key['KodeItem'])
-                           ->update(
-								[
-									'NoUrut' => $key['NoUrut'],
-									'Qty' => $key['Qty'],
-                  'QtyKonversi' => $key['QtyKonversi'],
-									'Satuan' => $key['Satuan'],
-									'Harga' => $key['Harga'],
-									'Discount' => $key['Discount'],
-									'HargaNet' =>$HargaNet
-								]
-                           );
-                        // if (!$update) {
-                        // 	$data['message'] = "Update Row Data Failed";
-                        // 	$errorCount +=1;
-                        // 	goto jump;
-                        // }
-           			}
-           			else{
-           				$modelDetail = new OrderPenjualanDetail;
-		           		$modelDetail->NoTransaksi = $NoTransaksi;
-						$modelDetail->NoUrut = $key['NoUrut'];
-						$modelDetail->KodeItem = $key['KodeItem'];
-						$modelDetail->Qty = $key['Qty'];
-            $modelDetail->QtyKonversi = $key['QtyKonversi'];
-						$modelDetail->Satuan = $key['Satuan'];
-						$modelDetail->Harga = $key['Harga'];
-						$modelDetail->Discount = $key['Discount'];
+                if ($key['VatPercent'] > 0) {
+                  $NilaiTax = (100 + $key['VatPercent']) / 100;
+                  $modelDetail->HargaNet *= $NilaiTax;
+                }
+                $modelDetail->LineStatus = 'O';
+                $modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
-						if ($key['Discount'] ==0) {
-							$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
-						}
-						else{
-							$HargaGros = $key->Qty * $key->Harga;
-							$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
-							$modelDetail->HargaNet = $HargaGros - $diskon;
-						}
-						$modelDetail->LineStatus = 'O';
-						$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+                $save = $modelDetail->save();
 
-						$save = $modelDetail->save();
+                if (!$save) {
+                  $data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
+                  $errorCount += 1;
+                  goto jump;
+                }
+              }
 
-						if (!$save) {
-							$data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
-							$errorCount += 1;
-							goto jump;
-						}
-           			}
-           			skip:
-	           }
-               if ($update) {
-                   $data['success'] = true;
-               }else{
-                   $data['message'] = 'Edit Models Gagal';
-               }
+              $data['success'] = true;
            } else{
                $data['message'] = 'Models not found.';
            }

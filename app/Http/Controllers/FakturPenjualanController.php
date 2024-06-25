@@ -19,6 +19,8 @@ use App\Models\Satuan;
 use App\Models\DocumentNumbering;
 use App\Models\Gudang;
 use App\Models\AutoPosting;
+use App\Models\SettingAccount;
+use App\Models\Rekening;
 use App\Models\Company;
 
 class FakturPenjualanController extends Controller
@@ -438,6 +440,7 @@ class FakturPenjualanController extends Controller
 				$modelDetail->QtyKonversi = $key['QtyKonversi'];
 				$modelDetail->Satuan = $key['Satuan'];
 				$modelDetail->Harga = $key['Harga'];
+				$modelDetail->VatPercent = $key['VatPercent'];
 				$modelDetail->Discount = $key['Discount'];
 
 				$modelDetail->BaseReff = $key['BaseReff'];
@@ -456,6 +459,11 @@ class FakturPenjualanController extends Controller
 					$HargaGros = $key['Qty'] * $key['Harga'];
 					$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
 					$modelDetail->HargaNet = $HargaGros - $diskon;
+				}
+
+				if ($key['VatPercent'] > 0) {
+					$NilaiTax = (100 + $key['VatPercent']) / 100;
+					$modelDetail->HargaNet *= $NilaiTax;
 				}
 				$modelDetail->LineStatus = 'O';
 				$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;

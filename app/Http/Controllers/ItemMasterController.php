@@ -19,6 +19,7 @@ use App\Models\SettingAccount;
 use App\Models\ItemRakitan;
 use App\Models\Diskon;
 use App\Models\ItemKonversi;
+use App\Models\Company;
 
 class ItemMasterController extends Controller
 {
@@ -190,8 +191,10 @@ class ItemMasterController extends Controller
                       ->where('KodeItem','=', $KodeItem)->get();
       $itemkonversi = ItemKonversi::where('RecordOwnerID','=', Auth::user()->RecordOwnerID)
                       ->where('KodeItem','=', $KodeItem)->get();
+
+      $oCompany = Company::where('KodePartner', Auth::user()->RecordOwnerID)->get();
         
-        return view("master.ItemMasterData.ItemMaster-Input",[
+        return view("master.ItemMasterData.ItemMaster-Input2",[
         	'itemmaster' => $itemmaster,
           'jenisitem' => $jenisitem,
           'merk' => $merk,
@@ -206,7 +209,8 @@ class ItemMasterController extends Controller
           'itembahanrakitan' => $itemmasterbahanrakitan,
           'bahanrakitan' => $bahanrakitan,
           'diskon' => $diskon,
-          'itemkonversi' => $itemkonversi
+          'itemkonversi' => $itemkonversi,
+          'oCompany' => $oCompany
         ]);
     }
 

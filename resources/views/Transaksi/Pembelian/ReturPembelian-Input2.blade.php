@@ -142,9 +142,24 @@
                             		<div class="col-md-5">
                             			<table>
                             				<tr>
-                            					<td>Total</td>
+                            					<td>Sub Total</td>
                             					<td>:</td>
                             					<td><input type="text" align="right" name="TotalTransaksi" id="TotalTransaksi" readonly="" class="form-control aligned-textbox" value="{{ count($returheader) > 0 ? $returheader[0]['TotalTransaksi'] : '0' }}"></td>
+                            				</tr>
+                            				<tr>
+                            					<td>Diskon</td>
+                            					<td>:</td>
+                            					<td><input type="text" align="right" name="Potongan" id="Potongan" readonly="" class="form-control aligned-textbox" value="{{ count($returheader) > 0 ? $returheader[0]['Potongan'] : '0' }}"></td>
+                            				</tr>
+                            				<tr>
+                            					<td>PPN</td>
+                            					<td>:</td>
+                            					<td><input type="text" align="right" name="Pajak" id="Pajak" readonly="" class="form-control aligned-textbox" value="{{ count($returheader) > 0 ? $returheader[0]['Pajak'] : '0' }}"></td>
+                            				</tr>
+                            				<tr>
+                            					<td>Total</td>
+                            					<td>:</td>
+                            					<td><input type="text" align="right" name="TotalPembelian" id="TotalPembelian" readonly="" class="form-control aligned-textbox" value="{{ count($returheader) > 0 ? $returheader[0]['TotalPembelian'] : '0' }}"></td>
                             				</tr>
                             			</table>
                             		</div>
@@ -228,6 +243,8 @@
 				formatCurrency(jQuery('#TotalTransaksi'), returHeader[0]["TotalTransaksi"]);
 	      		formatCurrency(jQuery('#Potongan'), returHeader[0]["Potongan"]);
 	      		formatCurrency(jQuery('#TotalPembelian'), returHeader[0]["TotalPembelian"]);
+	      		formatCurrency(jQuery('#Pajak'), returHeader[0]["Pajak"]);
+
 	      		StatusTransaksi = returHeader[0]["Status"];
 	      		var KodeSupplier = returHeader[0]["KodeSupplier"];
 	      		NoOrderPembelian = returDetail[0]["BaseReff"];
@@ -338,6 +355,7 @@
 						'Qty' : allRowsData[i]['Qty'],
 						'Satuan' : allRowsData[i]['Satuan'],
 						'Harga' : allRowsData[i]['Harga'],
+						'VatPercent' : allRowsData[i]['VatPercent'],
 						'HargaNet' : allRowsData[i]['HargaNet'],
 						'BaseReff' : NoOrderPembelian,
 						'BaseLine' : allRowsData[i]['BaseLine'],
@@ -355,6 +373,9 @@
 				'NoReff' : jQuery('#NoReff').val(),
 				'KodeSupplier' : jQuery('#KodeSupplier').val(),
 				'TotalTransaksi' : jQuery('#TotalTransaksi').attr("originalvalue"),
+				'Potongan' : jQuery('#Potongan').attr("originalvalue"),
+				'Pajak' : jQuery('#Pajak').attr('originalvalue'),
+				'TotalPembelian' : jQuery('#TotalPembelian').attr("originalvalue"),
 				'Status' : jQuery('#Status').val(),
 				'Keterangan' : jQuery('#Keterangan').val(),
 				'Detail' : oDetail
@@ -493,6 +514,7 @@
 	                		'Qty' : parseFloat(v.Qty),
 	                		'Satuan' : v.Satuan,
 	                		'Harga' : parseFloat(v.Harga),
+	                		'VatPercent' : parseFloat(v.VatPercent),
 	                		'LineStatus' : 'O'
 	                	}
 
@@ -518,7 +540,7 @@
 	            },
 	            dataType: 'json',
 	            success: function(response) {
-	                jQuery('#TglTransaksi').val(response.data[0]["TglTransaksi"]);
+	                // jQuery('#TglTransaksi').val(response.data[0]["TglTransaksi"]);
 	                jQuery('#NoReff').val(response.data[0]["NoReff"]);
 	                jQuery('#Keterangan').val(response.data[0]["Keterangan"]);
 	            }
@@ -529,7 +551,9 @@
       		var allRowsData  = dataGridInstance.getDataSource().items();
 
       		var TotalTransaksi = 0;
-
+      		var TotalPotongan = 0;
+      		var TotalPajak = 0;
+      		var TotalNet = 0;
       		console.log(allRowsData)
       		for (var i = 0; i < allRowsData.length; i++) {
       			// Things[i]
@@ -538,12 +562,27 @@
       				var Qty = (typeof(allRowsData[i]['Qty'])) === "undefined" ? 0 : allRowsData[i]['Qty'];
 	      			var Harga = (typeof(allRowsData[i]['Harga'])) == "undefined" ? 0 : allRowsData[i]['Harga'];
 	      			var Discount = (typeof(allRowsData[i]['Discount'])) == "undefined" ? 0 : allRowsData[i]['Discount'];
+	      			var PPN = (typeof(allRowsData[i]['VatPercent'])) == "undefined" ? 0 : allRowsData[i]['VatPercent'];
 
       				TotalTransaksi += Qty * Harga;
+
+      				if (Discount > 0) {
+	      				var diskon = TotalTransaksi * Discount / 100
+	      				TotalPotongan += parseFloat(diskon);
+	      			}
+	      			if (PPN > 0 && TotalTransaksi > 0) {
+	      				var Gross = (Qty * Harga) - TotalPotongan;
+	      				TotalPajak +=  (parseFloat(allRowsData[i]['VatPercent']) / 100) * Gross;
+	      				console.log(allRowsData[i]['VatPercent'] + " > " + Gross)
+	      			}
+
       			}
       		}
 
       		formatCurrency(jQuery('#TotalTransaksi'), TotalTransaksi);
+      		formatCurrency(jQuery('#Potongan'), TotalPotongan);
+      		formatCurrency(jQuery('#TotalPembelian'), TotalTransaksi - TotalPotongan + TotalPajak);
+      		formatCurrency(jQuery('#Pajak'), TotalPajak);
 		}
 
 		function CreateCombobox(data) {
@@ -643,14 +682,14 @@
 	                    dataField: "KodeItem",
 	                    caption: "Kode Item",
 					    allowSorting: false,
-					    allowEditing:AllowManipulation
+					    allowEditing:false
 	                },
 	                {
 	                    dataField: "NamaItem",
 	                    caption: "Nama Item",
 					    width: 250,
 					    allowSorting: false,
-					    allowEditing:AllowManipulation
+					    allowEditing:false
 	                },
 	                {
 	                    dataField: "KodeGudang",
@@ -690,6 +729,13 @@
 	                    allowSorting: false 
 	                },
 	                {
+	                    dataField: "VatPercent",
+	                    caption: "PPN(%)",
+	                    allowEditing:false,
+	                    format: { type: 'fixedPoint', precision: 2 },
+	                    allowSorting: false 
+	                },
+	                {
 	                    dataField: "HargaNet",
 	                    caption: "HargaNet",
 	                    allowEditing:false,
@@ -699,6 +745,14 @@
 	                    	var HargaGross = 0;
 
 	                    	HargaNet = rowData.Qty * rowData.Harga;
+	                    	HargaGross = rowData.Qty * rowData.Harga;
+
+	                    	if (rowData.VatPercent > 0) {
+	                    		var NilaiTax = (100 + rowData.VatPercent) / 100;
+	                    		console.log("Tax: "+NilaiTax);
+	                    		
+	                    		HargaNet = HargaNet * NilaiTax;
+	                    	}
 
 	                    	return HargaNet
 	                    },

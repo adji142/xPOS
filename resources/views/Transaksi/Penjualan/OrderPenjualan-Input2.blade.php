@@ -250,6 +250,8 @@
 				formatCurrency(jQuery('#TotalTransaksi'), orderHeader[0]["TotalTransaksi"]);
 	      		formatCurrency(jQuery('#Potongan'), orderHeader[0]["Potongan"]);
 	      		formatCurrency(jQuery('#TotalPenjualan'), orderHeader[0]["TotalPenjualan"]);
+	      		formatCurrency(jQuery('#Pajak'), orderHeader[0]["Pajak"]);
+
 	      		StatusTransaksi = orderHeader[0]["Status"];
 
 	      		// console.log(StatusTransaksi)
@@ -328,6 +330,7 @@
 						'QtyKonversi' : allRowsData[i]['QtyKonversi'],
 						'Satuan' : allRowsData[i]['Satuan'],
 						'Harga' : allRowsData[i]['Harga'],
+						'VatPercent' : allRowsData[i]['VatPercent'],
 						'Discount' : allRowsData[i]['Discount'],
 						'HargaNet' : allRowsData[i]['HargaNet'],
 						'LineStatus':allRowsData[i]['LineStatus'],
@@ -347,7 +350,7 @@
 				'Termin' : TotalTermin,
 				'TotalTransaksi' : jQuery('#TotalTransaksi').attr("originalvalue"),
 				'Potongan' : jQuery('#Potongan').attr("originalvalue"),
-				'Pajak' : 0,
+				'Pajak' : jQuery('#Pajak').attr("originalvalue"),
 				'TotalPenjualan' : jQuery('#TotalPenjualan').attr("originalvalue"),
 				'TotalRetur' : 0,
 				'TotalPembayaran' : 0,
@@ -453,9 +456,11 @@
             	dataGridDetailInstance.cellValue(_selectedRow, "Qty", 1);
             	dataGridDetailInstance.cellValue(_selectedRow, "QtyKonversi", selectedRows[0]["QtyKonversi"]);
 	            dataGridDetailInstance.cellValue(_selectedRow, "Harga", selectedRows[0]["HargaJual"]);
+	            dataGridDetailInstance.cellValue(_selectedRow, "VatPercent", selectedRows[0]["VatPercent"]);
 	            dataGridDetailInstance.cellValue(_selectedRow, "Discount", 0);
 	            dataGridDetailInstance.cellValue(_selectedRow, "HargaNet", 0);
 	            dataGridDetailInstance.cellValue(_selectedRow, "Satuan", selectedRows[0]["Satuan"]);
+	            dataGridDetailInstance.editRow(_selectedRow);
 	            dataGridDetailInstance.refresh();
 	            dataGridDetailInstance.saveEditData();
 
@@ -471,6 +476,10 @@
 			var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
       		var allRowsData  = dataGridInstance.getDataSource().items();
 
+      		// console.log(allRowsData);
+
+      		
+      		
       		var TotalTransaksi = 0;
       		var TotalPotongan = 0;
       		var TotalPajak = 0;
@@ -484,12 +493,18 @@
 	      				var diskon = TotalTransaksi * allRowsData[i]['Discount'] / 100
 	      				TotalPotongan += parseFloat(diskon);
 	      			}
+
+	      			if (parseFloat(allRowsData[i]['VatPercent']) > 0) {
+	      				var Gross = TotalTransaksi - TotalPotongan;
+	      				TotalPajak +=  (parseFloat(allRowsData[i]['VatPercent']) / 100) * Gross;
+	      			}
       			}
       		}
 
       		formatCurrency(jQuery('#TotalTransaksi'), TotalTransaksi);
       		formatCurrency(jQuery('#Potongan'), TotalPotongan);
-      		formatCurrency(jQuery('#TotalPenjualan'), TotalTransaksi - TotalPotongan);
+      		formatCurrency(jQuery('#TotalPenjualan'), TotalTransaksi - TotalPotongan + TotalPajak);
+      		formatCurrency(jQuery('#Pajak'), TotalPajak);
 		}
 
 		function isRowEditable(rowData) {
@@ -598,6 +613,13 @@
 	                    allowSorting: false 
 	                },
 	                {
+	                    dataField: "VatPercent",
+	                    caption: "PPN(%)",
+	                    allowEditing:false,
+	                    format: { type: 'fixedPoint', precision: 2 },
+	                    allowSorting: false 
+	                },
+	                {
 	                    dataField: "HargaNet",
 	                    caption: "HargaNet",
 	                    allowEditing:AllowManipulation,
@@ -616,6 +638,10 @@
 	                    		var diskon = HargaGross * rowData.Discount / 100
 	                    		// console.log("Diskon = " + diskon)
 	                    		HargaNet = HargaGross - diskon;
+	                    	}
+	                    	if (rowData.VatPercent > 0) {
+	                    		var NilaiTax = (100 + rowData.VatPercent) / 100;
+	                    		HargaNet = HargaNet * NilaiTax;
 	                    	}
 
 	                    	return HargaNet
@@ -722,6 +748,7 @@
 				            dataGridInstance.cellValue(rowIndex, "Harga", filteredItem[0]["HargaBeliTerakhir"]);
 				            dataGridInstance.cellValue(rowIndex, "Discount", 0);
 				            dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
+				            dataGridInstance.cellValue(rowIndex, "VatPercent", filteredItem[0]["VatPercent"]);
 				            dataGridInstance.cellValue(rowIndex, "Satuan", filteredItem[0]["Satuan"]);
 				            dataGridInstance.refresh();
 				            dataGridInstance.saveEditData();
@@ -752,6 +779,13 @@
 				                {
 				                    dataField: "Stock",
 				                    caption: "Stock",
+				                    allowSorting: true,
+				                    allowEditing : false,
+				                    format: { type: 'fixedPoint', precision: 2 },
+				                },
+				                {
+				                    dataField: "VatPercent",
+				                    caption: "VatPercent",
 				                    allowSorting: true,
 				                    allowEditing : false,
 				                    format: { type: 'fixedPoint', precision: 2 },
