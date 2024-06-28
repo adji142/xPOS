@@ -982,7 +982,9 @@ License: You must have a valid license purchased only from themeforest(the above
 				            			'Harga' 	 	: response.data[0]['HargaJual'],
 				            			'DiskonPersen' 	: ((oDiskon.DiskonType) == 'P' ? oDiskon.Diskon : 0) + Diskoncust,
 				            			'DiskonRp' 	 	: (oDiskon.DiskonType) == 'N' ? oDiskon.Diskon : 0,
-				            			'Total' 	 	: 0
+				            			'Total' 	 	: 0,
+										'VatPercent'	: response.data[0]['VatPercent'],
+										'HargaPokokPenjualan'	: response.data[0]['HargaPokokPenjualan'],
 				            		}
 
 				            		dataSource.store().insert(item).then(function() {
@@ -1786,6 +1788,20 @@ License: You must have a valid license purchased only from themeforest(the above
 				    allowEditing:true,
 				    format: { type: 'fixedPoint', precision: 2 },
                 },
+				{
+                    dataField: "VatPercent",
+                    caption: "PPN(%)",
+				    allowSorting: false,
+				    allowEditing:true,
+				    format: { type: 'fixedPoint', precision: 2 },
+                },
+				{
+                    dataField: "HargaPokokPenjualan",
+                    caption: "HPP",
+				    allowSorting: false,
+				    allowEditing:true,
+				    format: { type: 'fixedPoint', precision: 2 },
+                },
                 {
                     dataField: "Total",
                     caption: "Total",
@@ -1939,6 +1955,8 @@ License: You must have a valid license purchased only from themeforest(the above
 					'BaseLine' : -1,
 					'KodeGudang' : _Company[0]['GudangPoS'],
 					'LineStatus': Status,
+					'VatPercent' : allRowsData[i]['VatPercent'],
+					'HargaPokokPenjualan' : allRowsData[i]['HargaPokokPenjualan'],
   				}
   				
   				oDetail.push(oItem)
@@ -2087,6 +2105,11 @@ License: You must have a valid license purchased only from themeforest(the above
       			else if (data[i]['DiskonRp'] > 0) {
       				_tempTotalDiskon += data[i]['DiskonRp'];
       			}
+
+				if (parseFloat(data[i]['VatPercent']) > 0) {
+					var Gross = _tempSubTotal - _tempTotalDiskon;
+					_tempTotalTax +=  (parseFloat(data[i]['VatPercent']) / 100) * Gross;
+				}
       		}
 	    });
 
@@ -2101,7 +2124,8 @@ License: You must have a valid license purchased only from themeforest(the above
 	    formatCurrency($('#_SubTotal'), _tempSubTotal);
 	    formatCurrency($('#_TotalDiskon'), _tempTotalDiskon);
 	    formatCurrency($('#_TotalServices'), _tempTotalServices);
-	    formatCurrency($('#_GrandTotal'), _tempSubTotal + _tempTotalServices - _tempTotalDiskon);
+	    formatCurrency($('#_GrandTotal'), _tempSubTotal + _tempTotalServices - _tempTotalDiskon + _tempTotalTax);
+		formatCurrency($('#_TotalTax'), _tempTotalTax);
 
   		// $('#_TotalItem').text(_tempTotalItem);
   		// $('#_SubTotal').text(_tempSubTotal);

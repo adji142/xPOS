@@ -227,7 +227,7 @@
 	            data: {
 	                'TglAwal' : '2000-01-01',
 	                'TglAkhir' : jQuery('#TglTransaksi').val(),
-	                'KodeVendor' :jQuery('#KodePelanggan').val(),
+	                'KodePelanggan' :jQuery('#KodePelanggan').val(),
 	                'Status' : (jQuery('#formtype').val()) == "add" ? 'O' : ''
 	            },
 	            dataType: 'json',

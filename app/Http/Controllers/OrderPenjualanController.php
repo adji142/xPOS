@@ -71,15 +71,34 @@ class OrderPenjualanController extends Controller
 	   		
    		$NoTransaksi = $request->input('NoTransaksi');
 
-   		$sql = "orderpenjualandetail.NoUrut, orderpenjualandetail.KodeItem, itemmaster.NamaItem, orderpenjualandetail.Qty,orderpenjualandetail.QtyKonversi, orderpenjualandetail.Harga, orderpenjualandetail.Discount, orderpenjualandetail.HargaNet, orderpenjualandetail.Satuan, orderpenjualandetail.VatPercent";
+   		$sql = "orderpenjualandetail.NoUrut, orderpenjualandetail.KodeItem, itemmaster.NamaItem, 
+		orderpenjualandetail.Qty,orderpenjualandetail.QtyKonversi, orderpenjualandetail.Harga, 
+		orderpenjualandetail.Discount, orderpenjualandetail.HargaNet, orderpenjualandetail.Satuan, 
+		orderpenjualandetail.VatPercent, itemmaster.HargaPokokPenjualan,
+        orderpenjualandetail.Qty - SUM(COALESCE(faktur.Qty,0)) OutStanding";
    		$model = OrderPenjualanDetail::selectRaw($sql)
     				->leftJoin('itemmaster', function ($value){
     					$value->on('orderpenjualandetail.KodeItem','=','itemmaster.KodeItem')
     					->on('orderpenjualandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
     				})
+            ->leftJoinSub(
+                DB::table('deliverynotedetail')
+                  ->select('deliverynotedetail.NoTransaksi', 'deliverynotedetail.Basereff','deliverynotedetail.RecordOwnerID','deliverynotedetail.KodeItem','deliverynotedetail.BaseLine','deliverynoteheader.Status', 'deliverynotedetail.Qty')
+                  ->leftJoin('deliverynoteheader', function ($value){
+                    $value->on('deliverynoteheader.NoTransaksi','=','deliverynotedetail.NoTransaksi')
+                    ->on('deliverynoteheader.RecordOwnerID','=','deliverynotedetail.RecordOwnerID');
+                  })
+                  ->where('deliverynoteheader.Status','<>', 'D'),
+                  'faktur',
+                function($value){
+                  $value->on('faktur.Basereff','orderpenjualandetail.NoTransaksi')
+                  ->on('faktur.RecordOwnerID','=','orderpenjualandetail.RecordOwnerID')
+                  ->on('faktur.KodeItem','=','orderpenjualandetail.KodeItem')
+                  ->on('faktur.BaseLine','=','orderpenjualandetail.NoUrut');
+              })
     				->where('orderpenjualandetail.NoTransaksi',$NoTransaksi)
-    				->where('orderpenjualandetail.RecordOwnerID',Auth::user()->RecordOwnerID);
-   
+    				->where('orderpenjualandetail.RecordOwnerID',Auth::user()->RecordOwnerID)
+            ->groupBy("orderpenjualandetail.NoUrut", "orderpenjualandetail.KodeItem", "itemmaster.NamaItem", "orderpenjualandetail.Qty",'orderpenjualandetail.QtyKonversi', "orderpenjualandetail.Harga", "orderpenjualandetail.Discount", "orderpenjualandetail.HargaNet", 'orderpenjualandetail.Satuan', "orderpenjualandetail.VatPercent","orderpenjualandetail.Qty", "itemmaster.HargaPokokPenjualan");
         $data['data']= $model->get();
         return response()->json($data);
     }

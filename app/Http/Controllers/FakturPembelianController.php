@@ -141,7 +141,8 @@ class FakturPembelianController extends Controller
 						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();    
 		$termin = Termin::where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 		$item = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-					->where('Active','Y')->get();
+					->where('Active','Y')
+					->whereIn('TypeItem',[1,3,4])->get();
 		$orderheader = OrderPembelianHeader::where('NoTransaksi', $NoTransaksi)
 						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 		$orderdetail = OrderPembelianDetail::selectRaw("orderpembeliandetail.*, itemmaster.NamaItem")

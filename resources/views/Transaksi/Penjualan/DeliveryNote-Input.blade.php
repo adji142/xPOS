@@ -370,6 +370,7 @@
                     var oItem = {
                         'NoUrut' : allRowsData[i]['NoUrut'],
                         'KodeItem' : allRowsData[i]['KodeItem'],
+                        'NamaItem' : allRowsData[i]['NamaItem'],
                         'QtyOrder' : allRowsData[i]['QtyOrder'],
                         'QtyKirim' : allRowsData[i]['QtyKirim'] * allRowsData[i]['QtyKonversi'],
                         'QtyKonversi' : allRowsData[i]['QtyKonversi'],
@@ -382,6 +383,8 @@
                         'BaseType' : (NoOrderPembelian) != "" ? "ORDR" : "",
                         'KodeGudang' : allRowsData[i]['KodeGudang'],
                         'LineStatus':allRowsData[i]['LineStatus'],
+                        'VatPercent':allRowsData[i]['VatPercent'],
+                        'HargaPokokPenjualan':allRowsData[i]['HargaPokokPenjualan'],
                     }
                     
                     oDetail.push(oItem)
@@ -530,6 +533,7 @@
             dataGridDetailInstance.cellValue(_selectedRow, "Discount", 0);
             dataGridDetailInstance.cellValue(_selectedRow, "HargaNet", 0);
             dataGridDetailInstance.cellValue(_selectedRow, "Satuan", selectedRows[0]["Satuan"]);
+            dataGridDetailInstance.cellValue(_selectedRow, "VatPercent", selectedRows[0]["VatPercent"]);
             dataGridDetailInstance.refresh();
             dataGridDetailInstance.saveEditData();
             CalculateTotal();
@@ -538,6 +542,7 @@
 
     function SaveFaktur(oData, oBaseReff) {
         var xNewObject = [];
+        var TotalPajak = 0;
         for (var i = 0; i < oData.Detail.length; i++) {
             var oItem = {
                 'NoUrut' :i,
@@ -547,17 +552,19 @@
                 'Satuan' : oData.Detail[i]['Satuan'],
                 'Harga' : oData.Detail[i]['Harga'],
                 'Discount' : oData.Detail[i]['Discount'],
+                'VatPercent' : oData.Detail[i]['VatPercent'],
                 'HargaNet' : oData.Detail[i]['HargaNet'],
                 'BaseReff' : oBaseReff,
                 'BaseLine' : oData.Detail[i]['NoUrut'],
                 'KodeGudang' : oData.Detail[i]['KodeGudang'],
                 'LineStatus':oData.Detail[i]['LineStatus'],
+                'HargaPokokPenjualan' : parseFloat(oData.Detail[i]['HargaPokokPenjualan']),
             }
             
             xNewObject.push(oItem)
         }
-
-
+        
+        
         var fData = {
             'NoTransaksi' : '',
             'TglTransaksi' : oData['TglTransaksi'],
@@ -633,24 +640,28 @@
                     // BindGridOrder(response.data)
                     var index = 1;
                     $.each(response.data,function (k,v) {
-                        var temp = {
-                            'NoUrut' : index,
-                            'BaseLine' : v.NoUrut,
-                            'KodeItem' : v.KodeItem,
-                            'NamaItem' : v.NamaItem,
-                            'KodeGudang' : "",
-                            'QtyOrder'  : parseFloat(v.Qty),
-                            'QtyKirim' : 0,
-                            'QtyKonversi' : parseFloat(v.QtyKonversi),
-                            'Satuan' : v.Satuan,
-                            'Harga' : parseFloat(v.Harga),
-                            'Discount' : parseFloat(v.Discount),
-                            'LineStatus' : 'O'
+                        if (v.OutStanding > 0) {
+                            var temp = {
+                                'NoUrut' : index,
+                                'BaseLine' : v.NoUrut,
+                                'KodeItem' : v.KodeItem,
+                                'NamaItem' : v.NamaItem,
+                                'KodeGudang' : "",
+                                'QtyOrder'  : parseFloat(v.OutStanding),
+                                'QtyKirim' : 0,
+                                'QtyKonversi' : parseFloat(v.QtyKonversi),
+                                'Satuan' : v.Satuan,
+                                'Harga' : parseFloat(v.Harga),
+                                'VatPercent' : parseFloat(v.VatPercent),
+                                'HargaPokokPenjualan' : parseFloat(v.HargaPokokPenjualan),
+                                'Discount' : parseFloat(v.Discount),
+                                'LineStatus' : 'O'
+                            }
+
+                            oData.push(temp)
+
+                            index +=1;
                         }
-
-                        oData.push(temp)
-
-                        index +=1;
                     });
                     console.log(oData)
                     BindGridDetail(oData)
@@ -886,6 +897,20 @@
                     allowSorting: false 
                 },
                 {
+                    dataField: "VatPercent",
+                    caption: "PPN (%)",
+                    allowEditing:false,
+                    format: { type: 'fixedPoint', precision: 2 },
+                    allowSorting: false 
+                },
+                {
+                    dataField: "HargaPokokPenjualan",
+                    caption: "HPP",
+                    allowEditing:false,
+                    format: { type: 'fixedPoint', precision: 2 },
+                    allowSorting: false 
+                },
+                {
                     dataField: "HargaNet",
                     caption: "HargaNet",
                     allowEditing:false,
@@ -971,11 +996,17 @@
 
             dataGridInstance.on('editorPreparing',function (e) {
                 if (e.parentType === "dataRow" && e.dataField == "KodeItem"){
-
                     var dataField = e.dataField;
                     var xItem = "";
                     var rowIndex = dataGridInstance.getRowIndexByKey(e.row.key);
                     _selectedRow = rowIndex;
+                    if (NoOrderPembelian != "" && xItem == "") {
+                        e.editorOptions.disabled = true;
+                    }
+                    else{
+                        e.editorOptions.disabled = false;
+                    }
+                    
                     e.editorOptions.onValueChanged = function(args) {
                         xItem = args.value;
                         // Optionally, perform actions when value changes
@@ -1006,6 +1037,7 @@
                             dataGridInstance.cellValue(rowIndex, "Discount", 0);
                             dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
                             dataGridInstance.cellValue(rowIndex, "Satuan", filteredItem[0]["Satuan"]);
+                            dataGridInstance.cellValue(_selectedRow, "VatPercent", selectedRows[0]["VatPercent"]);
                             dataGridInstance.refresh();
                             dataGridInstance.saveEditData();
                         }
@@ -1055,6 +1087,13 @@
                     var xItem = "";
                     var rowIndex = dataGridInstance.getRowIndexByKey(e.row.key);
                     _selectedRow = rowIndex;
+
+                    if (NoOrderPembelian != "" && xItem == "") {
+                        e.editorOptions.disabled = true;
+                    }
+                    else{
+                        e.editorOptions.disabled = false;
+                    }
                     e.editorOptions.onValueChanged = function(args) {
                         xItem = args.value;
                         // Optionally, perform actions when value changes
@@ -1083,6 +1122,7 @@
                             dataGridInstance.cellValue(rowIndex, "Discount", 0);
                             dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
                             dataGridInstance.cellValue(rowIndex, "Satuan", filteredItem[0]["Satuan"]);
+                            dataGridInstance.cellValue(_selectedRow, "VatPercent", selectedRows[0]["VatPercent"]);
                             dataGridInstance.refresh();
                             dataGridInstance.saveEditData();
                         }

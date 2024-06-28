@@ -14,6 +14,11 @@ use App\Models\PembayaranPenjualanHeader;
 use App\Models\Pelanggan;
 use App\Models\MetodePembayaran;
 
+use App\Models\Company;
+use App\Models\AutoPosting;
+use App\Models\SettingAccount;
+use App\Models\Rekening;
+
 class PembayaranPenjualanController extends Controller
 {
     public function View(Request $request){
@@ -115,7 +120,7 @@ class PembayaranPenjualanController extends Controller
 			$model = new PembayaranPenjualanHeader;
 	           	
            	$numberingData = new DocumentNumbering();
-           	$NoTransaksi = $numberingData->GetNewDoc("OUTPAY","pembayaranpenjualanheader","NoTransaksi");
+           	$NoTransaksi = $numberingData->GetNewDoc("INPAY","pembayaranpenjualanheader","NoTransaksi");
 
            	$model->Periode = $Year.$Month;
 			$model->NoTransaksi = $NoTransaksi;
@@ -152,7 +157,7 @@ class PembayaranPenjualanController extends Controller
 				}
 
 				if ($key['TotalPembayaran'] > $key['TotalPiutang']) {
-					$data['message'] = "Nomor Faktur "+ $key['NoTransaksi'] +" Total Pembayaran Melebihi Nilai Hutang";
+					$data['message'] = "Nomor Faktur "+ $key['NoTransaksi'] +" Total Pembayaran Melebihi Nilai Piutang";
 	           		$errorCount += 1;
 	           		goto jump;
 				}
@@ -176,6 +181,91 @@ class PembayaranPenjualanController extends Controller
 				$NoUrut +=1;
 				skip:
 			}
+
+			// Auto Posting
+			$arrHeader = array(
+				'NoTransaksi' => "",
+				'KodeTransaksi' => "INPAY",
+				'TglTransaksi' => $jsonData['TglTransaksi'],
+				'NoReff' => $NoTransaksi,
+				'StatusTransaksi' => "O",
+				'RecordOwnerID' => Auth::user()->RecordOwnerID,
+			);
+			$arrDetail = array();
+
+			// Pembayaran
+			$TotalLawanPembayaran = 0;
+			foreach ($jsonData['Detail'] as $key) {
+				// Get Pembayaran Account
+				$metode = MetodePembayaran::selectRaw("COALESCE(metodepembayaran.AkunPembayaran, '') AkunPembayaran")
+							->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+							->where('id', $key['KodeMetodePembayaran'])->first();
+
+				if ($metode->AkunPembayaran == "" && $oCompany->isPostingAkutansi == 1) {
+					$data['message'] = "Akun Rekening Akutansi Pembayaran Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Metode Pembayaran";
+					$errorCount += 1;
+					goto jump;
+				}
+
+				$temp = array(
+					'KodeTransaksi' => "INPAY", 
+					'KodeRekening' => $metode->AkunPembayaran,
+					'KodeRekeningBukuBesar' => "",
+					'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+					'KodeMataUang' => "",
+					'Valas' => 0,
+					'NilaiTukar' => 0,
+					'Jumlah' => $key['TotalPembayaran'], 
+					'Keterangan' => $key['Keterangan'], 
+					'HeaderKas' => "",
+					'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+				);
+
+				array_push($arrDetail, $temp);
+				$TotalLawanPembayaran +=  $key['TotalPembayaran'];
+			}
+			// End Pembayaran
+
+			// Piutang
+			$Setting = new SettingAccount();
+			$getSetting = $Setting->GetSetting("PjAcctPiutang");
+			$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+							->where('KodeRekening', $getSetting)->get();
+
+			if (count($validate) == 0) {
+				$data['message'] = "Akun Rekening Akutansi Piutang Penjualan Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+				$errorCount +=1;
+				goto jump;
+			}
+
+			$temp = array(
+				'KodeTransaksi' => "INPAY", 
+				'KodeRekening' => $getSetting,
+				'KodeRekeningBukuBesar' => "",
+				'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+				'KodeMataUang' => "",
+				'Valas' => 0,
+				'NilaiTukar' => 0,
+				'Jumlah' => $TotalLawanPembayaran, 
+				'Keterangan' => $jsonData['Keterangan'], 
+				'HeaderKas' => "",
+				'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+			);
+
+			array_push($arrDetail, $temp);
+			// End Piutang
+
+			// Save Journal
+			$autoPosting = new AutoPosting();
+
+			if ($autoPosting->Auto($arrHeader, $arrDetail, ($jsonData['Status']== "D") ? true : false) != "OK") {
+				$data["message"] = "Gagal Simpan Jurnal";
+				$errorCount +=1;
+				goto jump;
+			}
+			// End Save Jurnal
+			// Auto Posting
+
 
 			jump:
 	        if ($errorCount > 0) {
@@ -275,6 +365,90 @@ class PembayaranPenjualanController extends Controller
            			}
            			skip:
                 }
+
+                // Auto Posting
+				$arrHeader = array(
+					'NoTransaksi' => "",
+					'KodeTransaksi' => "INPAY",
+					'TglTransaksi' => $jsonData['TglTransaksi'],
+					'NoReff' => $jsonData['NoTransaksi'],
+					'StatusTransaksi' => "O",
+					'RecordOwnerID' => Auth::user()->RecordOwnerID,
+				);
+				$arrDetail = array();
+
+				// Pembayaran
+				$TotalLawanPembayaran = 0;
+				foreach ($jsonData['Detail'] as $key) {
+					// Get Pembayaran Account
+					$metode = MetodePembayaran::selectRaw("COALESCE(metodepembayaran.AkunPembayaran, '') AkunPembayaran")
+								->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('id', $key['KodeMetodePembayaran'])->first();
+
+					if ($metode->AkunPembayaran == "" && $oCompany->isPostingAkutansi == 1) {
+						$data['message'] = "Akun Rekening Akutansi Pembayaran Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Metode Pembayaran";
+						$errorCount += 1;
+						goto jump;
+					}
+
+					$temp = array(
+						'KodeTransaksi' => "INPAY", 
+						'KodeRekening' => $metode->AkunPembayaran,
+						'KodeRekeningBukuBesar' => "",
+						'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+						'KodeMataUang' => "",
+						'Valas' => 0,
+						'NilaiTukar' => 0,
+						'Jumlah' => $key['TotalPembayaran'], 
+						'Keterangan' => $key['Keterangan'], 
+						'HeaderKas' => "",
+						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+					);
+
+					array_push($arrDetail, $temp);
+					$TotalLawanPembayaran +=  $key['TotalPembayaran'];
+				}
+				// End Pembayaran
+
+				// Piutang
+				$Setting = new SettingAccount();
+				$getSetting = $Setting->GetSetting("PjAcctPiutang");
+				$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('KodeRekening', $getSetting)->get();
+
+				if (count($validate) == 0) {
+					$data['message'] = "Akun Rekening Akutansi Piutang Penjualan Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+					$errorCount +=1;
+					goto jump;
+				}
+
+				$temp = array(
+					'KodeTransaksi' => "INPAY", 
+					'KodeRekening' => $getSetting,
+					'KodeRekeningBukuBesar' => "",
+					'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+					'KodeMataUang' => "",
+					'Valas' => 0,
+					'NilaiTukar' => 0,
+					'Jumlah' => $TotalLawanPembayaran, 
+					'Keterangan' => $jsonData['Keterangan'], 
+					'HeaderKas' => "",
+					'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+				);
+
+				array_push($arrDetail, $temp);
+				// End Piutang
+
+				// Save Journal
+				$autoPosting = new AutoPosting();
+
+				if ($autoPosting->Auto($arrHeader, $arrDetail, ($jsonData['Status']== "D") ? true : false) != "OK") {
+					$data["message"] = "Gagal Simpan Jurnal";
+					$errorCount +=1;
+					goto jump;
+				}
+				// End Save Jurnal
+				// Auto Posting
 
                 // if (!$update) {
                 // 	$data['message'] = 'Edit Models Gagal';

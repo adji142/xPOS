@@ -122,6 +122,7 @@
 												<option value="2" {{ count($itemmaster) > 0 && $itemmaster[0]['TypeItem'] == '2' ? 'selected' : '' }}>Non Inventory</option>
 												<option value="3" {{ count($itemmaster) > 0 && $itemmaster[0]['TypeItem'] == '3' ? 'selected' : '' }}>Rakitan</option>
 												<option value="4" {{ count($itemmaster) > 0 && $itemmaster[0]['TypeItem'] == '4' ? 'selected' : '' }}>Jasa</option>
+												<option value="5" {{ count($itemmaster) > 0 && $itemmaster[0]['TypeItem'] == '5' ? 'selected' : '' }}>Konsinyasi</option>
 												
 											</select>
                             			</fieldset>

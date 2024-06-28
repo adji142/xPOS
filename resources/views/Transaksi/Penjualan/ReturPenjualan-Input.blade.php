@@ -209,6 +209,8 @@
 	      		StatusTransaksi = returHeader[0]["Status"];
 	      		var KodePelanggan = returHeader[0]["KodePelanggan"];
 	      		NoOrderPembelian = returDetail[0]["BaseReff"];
+				jQuery('#KodePelanggan').val(KodePelanggan).trigger('change');
+				jQuery('#BaseType').val(returDetail[0]["BaseType"]).trigger('change');
 
 	      		// console.log(StatusTransaksi)
 	      		if (StatusTransaksi != "O") {
@@ -221,14 +223,12 @@
 	      		}
 	      		BindGridDetail(<?php echo json_encode($returdetail) ?>);
 	      		// CreateCombobox([])
-	      		jQuery('#KodePelanggan').val(KodePelanggan).trigger('change');
 	      		var combo = jQuery("#gridBox").dxDropDownBox("instance");
-	      		// combo.option("dataSource", filteredOrderDetail);
+	      		// combo.option("dataSource", NoOrderPembelian);
 	      		combo.option("valueExpr", "NoTransaksi");
 	      		combo.option("value", NoOrderPembelian);
-	      		if(StatusTransaksi != "O"){
-	      			combo.option("disabled", true);
-	      		}
+				console.log(NoOrderPembelian)
+				combo.option("disabled", true);
 	      		// valueExpr: "NoTransaksi",
 			}
 			else{
@@ -299,6 +299,8 @@
 						'BaseType' : jQuery('#BaseType').val(),
 						'KodeGudang' : allRowsData[i]['KodeGudang'],
 						'LineStatus':allRowsData[i]['LineStatus'],
+						'VatPercent':allRowsData[i]['VatPercent'],
+						'HargaPokokPenjualan':allRowsData[i]['HargaPokokPenjualan'],
       				}
       				
       				oDetail.push(oItem)
@@ -418,7 +420,7 @@
 		                'TglAwal' : '1999-01-01',
 		                'TglAkhir' : GetDate,
 		                'KodePelanggan' :jQuery('#KodePelanggan').val(),
-		                'Status' : 'O'
+		                'Status' :  (returHeader.length > 0) ? '' : 'O'
 		            },
 		            dataType: 'json',
 		            success: function(response) {
@@ -441,7 +443,7 @@
 		                'TglAwal' : '1999-01-01',
 		                'TglAkhir' : GetDate,
 		                'KodePelanggan' :jQuery('#KodePelanggan').val(),
-		                'Status' : 'O'
+		                'Status' : (returHeader.length > 0) ? '' : 'O'
 		            },
 		            dataType: 'json',
 		            success: function(response) {
@@ -486,6 +488,8 @@
 			                		'Qty' : parseFloat(v.Qty),
 			                		'Satuan' : v.Satuan,
 			                		'Harga' : parseFloat(v.Harga),
+			                		'VatPercent' : parseFloat(v.VatPercent),
+			                		'HargaPokokPenjualan' : parseFloat(v.HargaPokokPenjualan),
 			                		'LineStatus' : 'O'
 			                	}
 
@@ -523,6 +527,8 @@
 			                		'Qty' : parseFloat(v.Qty),
 			                		'Satuan' : v.Satuan,
 			                		'Harga' : parseFloat(v.Harga),
+			                		'VatPercent' : parseFloat(v.VatPercent),
+			                		'HargaPokokPenjualan' : parseFloat(v.HargaPokokPenjualan),
 			                		'LineStatus' : 'O'
 			                	}
 
@@ -716,6 +722,20 @@
 	                {
 	                    dataField: "Harga",
 	                    caption: "Harga",
+	                    allowEditing:false,
+	                    format: { type: 'fixedPoint', precision: 2 },
+	                    allowSorting: false 
+	                },
+	                {
+	                    dataField: "VatPercent",
+	                    caption: "PPN (%)",
+	                    allowEditing:false,
+	                    format: { type: 'fixedPoint', precision: 2 },
+	                    allowSorting: false 
+	                },
+	                {
+	                    dataField: "HargaPokokPenjualan",
+	                    caption: "HPP",
 	                    allowEditing:false,
 	                    format: { type: 'fixedPoint', precision: 2 },
 	                    allowSorting: false 

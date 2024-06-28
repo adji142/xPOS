@@ -20,6 +20,8 @@ use App\Models\DocumentNumbering;
 use App\Models\Gudang;
 use App\Models\AutoPosting;
 use App\Models\Company;
+use App\Models\SettingAccount;
+use App\Models\Rekening;
 
 class DeliveryNoteController extends Controller
 {
@@ -89,7 +91,7 @@ class DeliveryNoteController extends Controller
 			
 			$NoTransaksi = $request->input('NoTransaksi');
 
-			$sql = "deliverynotedetail.NoUrut, deliverynotedetail.KodeItem, itemmaster.NamaItem, deliverynotedetail.Qty, deliverynotedetail.Harga, deliverynotedetail.Discount, deliverynotedetail.HargaNet, deliverynotedetail.KodeGudang, deliverynotedetail.Satuan, COALESCE(ret.QtyRetur,0) QtyRetur, deliverynotedetail.QtyKonversi";
+			$sql = "deliverynotedetail.NoUrut, deliverynotedetail.KodeItem, itemmaster.NamaItem, deliverynotedetail.Qty, deliverynotedetail.Harga, deliverynotedetail.Discount, deliverynotedetail.HargaNet, deliverynotedetail.KodeGudang, deliverynotedetail.Satuan, COALESCE(ret.QtyRetur,0) QtyRetur, deliverynotedetail.QtyKonversi, itemmaster.VatPercent, deliverynotedetail.HargaPokokPenjualan ";
 			$model = DeliveryNoteDetail::selectRaw($sql)
 					->leftJoin('itemmaster', function ($value){
 						$value->on('deliverynotedetail.KodeItem','=','itemmaster.KodeItem')
@@ -187,6 +189,7 @@ class DeliveryNoteController extends Controller
 		$errorCount = 0;
 		$jsonData = $request->json()->all();
 
+		$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
 		try {
 			if ($jsonData['KodePelanggan'] == "") {
 				$data['message'] = "Pelanggan Tidak boleh kosong";
@@ -216,7 +219,7 @@ class DeliveryNoteController extends Controller
 			$model->TotalPembelian = $jsonData['TotalPembelian'];
 			$model->Status = $jsonData['Status'];
 			$model->DeliveryStatus = $jsonData['DeliveryStatus'];
-			$model->KeteranganPengiriman = $jsonData['KeteranganPengiriman'];
+			$model->KeteranganPengiriman = "Dokumen Pengiriman dibuat";
 			$model->Keterangan = $jsonData['Keterangan'];
 			$model->RecordOwnerID = Auth::user()->RecordOwnerID;
 			$model->CreatedBy = Auth::user()->name;
@@ -238,6 +241,26 @@ class DeliveryNoteController extends Controller
 				if ($key['QtyOrder'] < $key['QtyKirim']) {
 					$data['Qty Kirim tidak boleh melebihi Qty Order'];
 					$errorCount +=1;
+					goto jump;
+				}
+
+				if ($oCompany) {
+					if ($oCompany->AllowNegativeInventory == NULL || $oCompany->AllowNegativeInventory == 'N') {
+						$oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
+									->where('KodeItem',$key['KodeItem'])
+									->where('Stock','>',0)
+									->get();
+
+						if (count($oItem) == 0) {
+							$data['message'] = "Stock Item ".$key['NamaItem'].' Tidak Cukup';
+							$errorCount += 1;
+							goto jump;		
+						}
+					}
+				}
+				else{
+					$data['message'] = "Partner Tidak ditemukan";
+					$errorCount += 1;
 					goto jump;
 				}
 
@@ -402,6 +425,7 @@ class DeliveryNoteController extends Controller
 
        $errorCount = 0;
        $jsonData = $request->json()->all();
+       $oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
 
        try {
        		$model = DeliveryNoteHeader::where('NoTransaksi','=',$jsonData['NoTransaksi'])
@@ -422,15 +446,13 @@ class DeliveryNoteController extends Controller
 									'Status' => $jsonData['Status'],
 									'DeliveryStatus' => $jsonData['DeliveryStatus'],
 									'Keterangan' => $jsonData['Keterangan'],
-									'CreatedBy' => $jsonData['CreatedBy'],
-									'UpdatedBy' => $jsonData['UpdatedBy'],
 									'RecordOwnerID' => Auth::user()->RecordOwnerID,
 									'UpdatedBy' => Auth::user()->name
                                	]
                            	);
                 if (count($jsonData['Detail']) > 0) {
                 	// Delete Existing Data
-		              $delete = DB::table('deliverynoteheader')
+		            $delete = DB::table('deliverynotedetail')
 		                        ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
 		                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
 		                        ->delete();
@@ -452,9 +474,29 @@ class DeliveryNoteController extends Controller
 							goto jump;
 						}
 
+						if ($oCompany) {
+							if ($oCompany->AllowNegativeInventory == NULL || $oCompany->AllowNegativeInventory == 'N') {
+								$oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
+											->where('KodeItem',$key['KodeItem'])
+											->where('Stock','>',0)
+											->get();
+
+								if (count($oItem) == 0) {
+									$data['message'] = "Stock Item ".$key['NamaItem'].' Tidak Cukup';
+									$errorCount += 1;
+									goto jump;		
+								}
+							}
+						}
+						else{
+							$data['message'] = "Partner Tidak ditemukan";
+							$errorCount += 1;
+							goto jump;
+						}
+
 						$oItemMaster = ItemMaster::where('KodeItem', $key['KodeItem'])
-										->where('RecordOwnerID', Auth::user()->RecordOwnerID)
-										->first();
+								->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->first();
 
 						$modelDetail = new DeliveryNoteDetail;
 
@@ -478,6 +520,7 @@ class DeliveryNoteController extends Controller
 							$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
 							$modelDetail->HargaNet = $HargaGros - $diskon;
 						}
+
 						$modelDetail->HargaPokokPenjualan = $oItemMaster->HargaPokokPenjualan;
 						$modelDetail->LineStatus = 'O';
 						$modelDetail->KodeGudang = $key['KodeGudang'];
@@ -516,7 +559,7 @@ class DeliveryNoteController extends Controller
 					$oItemMaster = ItemMaster::where('KodeItem', $key['KodeItem'])
 									->where('RecordOwnerID', Auth::user()->RecordOwnerID)
 									->first();
-					// Hutang
+					// Persediaan
 					// GetAccount :
 					$Setting = NEW SettingAccount();
 					$getSetting = $Setting->GetSetting("InvAcctPersediaan");
@@ -546,7 +589,7 @@ class DeliveryNoteController extends Controller
 						array_push($arrDetail, $temp);
 						$TotalHargaPokok += $oItemMaster->HargaPokokPenjualan * $key['QtyKirim'];
 					}
-					// End Hutang
+					// End Persediaan
 
 					// GIT
 					// GetAccount :

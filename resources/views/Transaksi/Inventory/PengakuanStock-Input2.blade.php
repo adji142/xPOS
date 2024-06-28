@@ -239,6 +239,7 @@
 						'Satuan' : allRowsData[i]['Satuan'],
 						'Harga' : allRowsData[i]['Harga'],
 						'KodeGudang' : allRowsData[i]['KodeGudang'],
+						'KodeRekening' : allRowsData[i]['KodeRekening'],
       				}
       				
       				oDetail.push(oItem)
@@ -352,6 +353,7 @@
 		    	dataGridDetailInstance.cellValue(_selectedRow, "Qty", 1);
 		        dataGridDetailInstance.cellValue(_selectedRow, "Harga", selectedRows[0]["HargaPokokPenjualan"]);
 		        dataGridDetailInstance.cellValue(_selectedRow, "Satuan", selectedRows[0]["Satuan"]);
+		        dataGridDetailInstance.cellValue(_selectedRow, "KodeRekening", <?php echo $rekeningDefault ?>);
 		        dataGridDetailInstance.refresh();
 		        dataGridDetailInstance.saveEditData();
 				CalculateTotal();
@@ -417,7 +419,7 @@
 	                {
 	                    dataField: "NoUrut",
 	                    caption: "NoUrut",
-	                    allowEditing:AllowManipulation,
+	                    allowEditing:false,
 	                    allowSorting: false 
 	                },
 	                {
@@ -471,6 +473,18 @@
 	                    allowSorting: false 
 	                },
 	                {
+	                    dataField: "KodeRekening",
+	                    caption: "Rekening Akutansi",
+	                    // allowEditing:false,
+	                    lookup: {
+						    dataSource: <?php echo $rekening ?>,
+						    valueExpr: 'KodeRekening',
+						    displayExpr: 'NamaRekening',
+					    },
+					    allowSorting: false ,
+					    allowEditing:AllowManipulation
+	                },
+	                {
 	                    dataField: "TotalTransaksi",
 	                    caption: "Total",
 	                    allowEditing:false,
@@ -493,7 +507,7 @@
 		        	var rowData = dataGridInstance.option("dataSource");
 		            var columnIndex = e.columnIndex;
 		            // console.log(e)
-		        	if (columnIndex >= 1 && columnIndex <= 5) {
+		        	if (columnIndex >= 1 && columnIndex <= 9) {
 		                dataGridInstance.editRow(e.rowIndex)	
 		            }
 		            dataGridInstance.option("focusedColumnIndex", columnIndex);
@@ -570,6 +584,7 @@
 				            dataGridInstance.cellValue(rowIndex, "Discount", 0);
 				            dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
 				            dataGridInstance.cellValue(rowIndex, "Satuan", filteredItem[0]["Satuan"]);
+				            dataGridInstance.cellValue(_selectedRow, "KodeRekening", <?php echo $rekeningDefault ?>);
 				            dataGridInstance.refresh();
 				            dataGridInstance.saveEditData();
                         }
@@ -647,6 +662,7 @@
 				            dataGridInstance.cellValue(rowIndex, "Discount", 0);
 				            dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
 				            dataGridInstance.cellValue(rowIndex, "Satuan", filteredItem[0]["Satuan"]);
+				            dataGridInstance.cellValue(_selectedRow, "KodeRekening", <?php echo $rekeningDefault ?>);
 				            dataGridInstance.refresh();
 				            dataGridInstance.saveEditData();
                         }

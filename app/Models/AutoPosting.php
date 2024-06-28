@@ -21,7 +21,8 @@ class AutoPosting extends Model
 
     public function Auto($Header, $Detail, $isCancelation)
     {
-    	// var_dump($Header['NoReff']);
+    	// var_dump(json_encode($Header));
+    	// var_dump(json_encode($Detail));
 
     	$nError = 0;
     	$sError = "";
@@ -38,9 +39,10 @@ class AutoPosting extends Model
 
 		    $checkExists = JournalHeader::where('RecordOwnerID',Auth::user()->RecordOwnerID)
 		    				->where('NoReff', $Header['NoReff'])
+		    				->where('KodeTransaksi', $Header['KodeTransaksi'])
 		    				->get();
 
-		    // var_dump(count($checkExists));
+		    // var_dump(json_encode($Detail));
 
 		    if (count($checkExists) > 0) {
 		    	if ($isCancelation) {
