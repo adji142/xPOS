@@ -177,7 +177,7 @@
             columns: [
                 {
                     dataField: "NoTransaksi",
-                    caption: "Nomor Retur",
+                    caption: "Nomor",
                     allowEditing:false
                 },
                 {

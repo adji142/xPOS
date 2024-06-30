@@ -997,6 +997,7 @@
 			'AcctPenjualanJasa' : jQuery('#AcctPenjualanJasa').val(),
 			'AcctPersediaan' : jQuery('#AcctPersediaan').val(),
 			'Gambar' : jQuery('#image_base64').val(),
+			'VatPercent' :jQuery('#VatPercent').val(),
 			'BahanRakitan' : oItemBahan,
 			'DiskonSetting' : oDiskon,
 			'ItemKonversi' : oKonversi

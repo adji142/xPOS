@@ -245,7 +245,12 @@ class ItemMasterController extends Controller
           $model->HargaBeliTerakhir = $jsonData['HargaBeliTerakhir'];
           $model->Stock = $jsonData['Stock'];
           $model->StockMinimum = $jsonData['StockMinimum'];
-          $model->isKonsinyasi = 0;
+          if($jsonData['TypeItem'] == "5"){
+            $model->isKonsinyasi = "Y";
+          }
+          else{
+            $model->isKonsinyasi = "N";
+          }
           $model->Active = 'Y';
           $model->AcctHPP = empty($jsonData['AcctHPP']) ? "" : $jsonData['AcctHPP'];
           $model->AcctPenjualan = empty($jsonData['AcctPenjualan']) ? "" : $jsonData['AcctPenjualan'];
@@ -406,8 +411,9 @@ class ItemMasterController extends Controller
                         'HargaBeliTerakhir' => $jsonData['HargaBeliTerakhir'],
                         'Stock' => $jsonData['Stock'],
                         'StockMinimum' => $jsonData['StockMinimum'],
-                        'isKonsinyasi' => 0,
-                        'Active' => 1,
+                        'isKonsinyasi' => ($jsonData['TypeItem'] == "5") ? "Y" : "N",
+                        'Active' => $jsonData['Active'],
+                        'VatPercent' => $jsonData['VatPercent'],
                         'AcctHPP' => empty($jsonData['AcctHPP']) ? "" :$jsonData['AcctHPP'],
                         'AcctPenjualan' => empty($jsonData['AcctPenjualan']) ? "" : $jsonData['AcctPenjualan'],
                         'AcctPenjualanJasa' => empty($jsonData['AcctPenjualanJasa']) ? "" : $jsonData['AcctPenjualanJasa'],

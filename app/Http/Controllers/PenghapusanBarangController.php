@@ -14,6 +14,10 @@ use App\Models\Gudang;
 use App\Models\DocumentNumbering;
 use App\Models\PenghapusanBarangHeader;
 use App\Models\PenghapusanBarangDetail;
+use App\Models\AutoPosting;
+use App\Models\Company;
+use App\Models\SettingAccount;
+use App\Models\Rekening;
 
 class PenghapusanBarangController extends Controller
 {
@@ -74,13 +78,23 @@ class PenghapusanBarangController extends Controller
 						->where('Active','Y')->get();
 		$satuan = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 		$gudang = Gudang::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+		
+		$rekening = Rekening::selectRaw('KodeRekening, NamaRekening')
+						->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+						->where('Jenis','=',2)
+						->get();
+
+		$Setting = new SettingAccount();
+		$rekeningDefault = $Setting->GetSetting("InvAcctPenyesuaiaanStockKeluar");
 
     	return view("Transaksi.Inventory.PenghapusanStock-Input2",[
 	        'item' => $item,
 	        'penghapusanheader' => $penghapusanheader,
 	        'penghapusandetail' => $penghapusandetail,
 	        'satuan' => $satuan,
-	        'gudang' => $gudang
+	        'gudang' => $gudang,
+			'rekening' => $rekening,
+			'rekeningDefault' => $rekeningDefault
 	    ]);
     }
 
@@ -92,6 +106,8 @@ class PenghapusanBarangController extends Controller
 
 	    $errorCount = 0;
 	    $jsonData = $request->json()->all();
+
+		$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
 
 	    try {
 	    	$currentDate = Carbon::now();
@@ -136,6 +152,26 @@ class PenghapusanBarangController extends Controller
 					goto jump;
 				}
 
+				if ($oCompany) {
+					if ($oCompany->AllowNegativeInventory == NULL || $oCompany->AllowNegativeInventory == 'N') {
+						$oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
+									->where('KodeItem',$key['KodeItem'])
+									->where('Stock','>',0)
+									->get();
+
+						if (count($oItem) == 0) {
+							$data['message'] = "Stock Item ".$key['NamaItem'].' Tidak Cukup';
+							$errorCount += 1;
+							goto jump;		
+						}
+					}
+				}
+				else{
+					$data['message'] = "Partner Tidak ditemukan";
+					$errorCount += 1;
+					goto jump;
+				}
+
 				$modelDetail = new PenghapusanBarangDetail;
 				$modelDetail->NoTransaksi = $NoTransaksi;
 				$modelDetail->NoUrut = $NoUrut;
@@ -157,6 +193,76 @@ class PenghapusanBarangController extends Controller
 
 				$NoUrut +=1;
            	}
+
+			// Auto Posting
+			$arrHeader = array(
+				'NoTransaksi' => "",
+				'KodeTransaksi' => "GI",
+				'TglTransaksi' => $jsonData['TglTransaksi'],
+				'NoReff' => $NoTransaksi,
+				'StatusTransaksi' => "O",
+				'RecordOwnerID' => Auth::user()->RecordOwnerID,
+			);
+			$arrDetail = array();
+
+			$TotalRow = 0;
+			foreach ($jsonData['Detail'] as $key) {
+				$temp = array(
+					'KodeTransaksi' => "GI", 
+					'KodeRekening' => $key['KodeRekening'],
+					'KodeRekeningBukuBesar' => "",
+					'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+					'KodeMataUang' => "",
+					'Valas' => 0,
+					'NilaiTukar' => 0,
+					'Jumlah' => $key['Qty'] * $key['Harga'],
+					'Keterangan' => $jsonData['Keterangan'], 
+					'HeaderKas' => "",
+					'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+				);
+
+				array_push($arrDetail, $temp);
+				$TotalRow += $key['Qty'] * $key['Harga'];
+			}
+
+			// GetAccount :
+			$Setting = NEW SettingAccount();
+			$getSetting = $Setting->GetSetting("InvAcctPersediaan");
+			$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+							->where('KodeRekening', $getSetting)->get();
+
+			if (count($validate) == 0) {
+				$data['message'] = "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+				$errorCount +=1;
+				goto jump;
+			}
+
+			$temp = array(
+				'KodeTransaksi' => "GI", 
+				'KodeRekening' => $getSetting,
+				'KodeRekeningBukuBesar' => "",
+				'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+				'KodeMataUang' => "",
+				'Valas' => 0,
+				'NilaiTukar' => 0,
+				'Jumlah' => $TotalRow, 
+				'Keterangan' => $jsonData['Keterangan'], 
+				'HeaderKas' => "",
+				'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+			);
+
+			array_push($arrDetail, $temp);
+
+
+			// Save Journal
+			$autoPosting = new AutoPosting();
+
+			if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
+				$data["message"] = "Gagal Simpan Jurnal";
+				$errorCount +=1;
+				goto jump;
+			}
+			// End Save Jurnal
 
            	jump:
 	        if ($errorCount > 0) {
@@ -181,6 +287,7 @@ class PenghapusanBarangController extends Controller
 
 		$errorCount = 0;
 		$jsonData = $request->json()->all();
+		$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
 
 		try {
 			$model = PenghapusanBarangHeader::where('NoTransaksi','=',$jsonData['NoTransaksi'])
@@ -218,6 +325,26 @@ class PenghapusanBarangController extends Controller
 							goto skip;
 						}
 
+						if ($oCompany) {
+							if ($oCompany->AllowNegativeInventory == NULL || $oCompany->AllowNegativeInventory == 'N') {
+								$oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
+											->where('KodeItem',$key['KodeItem'])
+											->where('Stock','>',0)
+											->get();
+		
+								if (count($oItem) == 0) {
+									$data['message'] = "Stock Item ".$key['NamaItem'].' Tidak Cukup';
+									$errorCount += 1;
+									goto jump;		
+								}
+							}
+						}
+						else{
+							$data['message'] = "Partner Tidak ditemukan";
+							$errorCount += 1;
+							goto jump;
+						}
+
 						$modelDetail = new PenghapusanBarangDetail;
 						$modelDetail->NoTransaksi = $jsonData['NoTransaksi'];
 						$modelDetail->NoUrut = $NoUrut;
@@ -239,6 +366,76 @@ class PenghapusanBarangController extends Controller
 						$NoUrut +=1;
 						skip:
 		           	}
+
+					// Auto Posting
+					$arrHeader = array(
+						'NoTransaksi' => "",
+						'KodeTransaksi' => "GI",
+						'TglTransaksi' => $jsonData['TglTransaksi'],
+						'NoReff' => $jsonData['NoTransaksi'],
+						'StatusTransaksi' => "O",
+						'RecordOwnerID' => Auth::user()->RecordOwnerID,
+					);
+					$arrDetail = array();
+
+					$TotalRow = 0;
+					foreach ($jsonData['Detail'] as $key) {
+						$temp = array(
+							'KodeTransaksi' => "GI", 
+							'KodeRekening' => $key['KodeRekening'],
+							'KodeRekeningBukuBesar' => "",
+							'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+							'KodeMataUang' => "",
+							'Valas' => 0,
+							'NilaiTukar' => 0,
+							'Jumlah' => $key['Qty'] * $key['Harga'],
+							'Keterangan' => $jsonData['Keterangan'], 
+							'HeaderKas' => "",
+							'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+						);
+
+						array_push($arrDetail, $temp);
+						$TotalRow += $key['Qty'] * $key['Harga'];
+					}
+
+					// GetAccount :
+					$Setting = NEW SettingAccount();
+					$getSetting = $Setting->GetSetting("InvAcctPersediaan");
+					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('KodeRekening', $getSetting)->get();
+
+					if (count($validate) == 0) {
+						$data['message'] = "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+						$errorCount +=1;
+						goto jump;
+					}
+
+					$temp = array(
+						'KodeTransaksi' => "GI", 
+						'KodeRekening' => $getSetting,
+						'KodeRekeningBukuBesar' => "",
+						'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+						'KodeMataUang' => "",
+						'Valas' => 0,
+						'NilaiTukar' => 0,
+						'Jumlah' => $TotalRow, 
+						'Keterangan' => $jsonData['Keterangan'], 
+						'HeaderKas' => "",
+						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+					);
+
+					array_push($arrDetail, $temp);
+
+
+					// Save Journal
+					$autoPosting = new AutoPosting();
+
+					if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
+						$data["message"] = "Gagal Simpan Jurnal";
+						$errorCount +=1;
+						goto jump;
+					}
+					// End Save Jurnal
 	            }
 	        }
 	        jump:

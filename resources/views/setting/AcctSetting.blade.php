@@ -408,6 +408,22 @@
 
                                         		<div class="tab-pane" id="konsinyasi" role="tabpanel" aria-labelledby="konsinyasi-tab">
                                         			<div class="form-group row">
+														<div class="col-md-9">
+                                        					<label >Penerimaan Barang Konsinyasi</label>
+                                        					<fieldset class="form-group mb-3">
+                                        						<select class="js-example-basic-single js-states form-control bg-transparent" name="KnAcctPenerimaanKonsinyasi" id="KnAcctPenerimaanKonsinyasi">
+																	<option value="">Pilih Akun</option>
+																	@foreach($account as $ko)
+																		<option 
+				                                                            value="{{ $ko->KodeRekening }}"
+				                                                            {{ count($settingakun) > 0 ? $settingakun[0]['KnAcctPenerimaanKonsinyasi'] == $ko->KodeRekening ? "selected" : '' :""}}>
+				                                                            {{ $ko->NamaRekening }}
+				                                                        </option>
+																	@endforeach
+																</select>
+                                        					</fieldset>
+                                        				</div>
+
                                         				<div class="col-md-9">
                                         					<label >Hutang Konsinyasi</label>
                                         					<fieldset class="form-group mb-3">

@@ -16,11 +16,14 @@ use App\Models\ItemMaster;
 use App\Models\Satuan;
 use App\Models\DocumentNumbering;
 use App\Models\Gudang;
-use App\Models\AutoPosting;
 use App\Models\ReturKonsinyasiHeader;
 use App\Models\ReturKonsinyasiDetail;
 use App\Models\PembayaranKonsinyasiHeader;
 use App\Models\PembayaranKonsinyasiDetail;
+
+use App\Models\AutoPosting;
+use App\Models\SettingAccount;
+use App\Models\Rekening;
 
 class ReturKonsinyasiController extends Controller
 {
@@ -209,6 +212,8 @@ class ReturKonsinyasiController extends Controller
 				$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
 				$modelDetail->LineStatus = $key['LineStatus'];
 				$modelDetail->KodeGudang = $key['KodeGudang'];
+				$modelDetail->VatPercent = $key['VatPercent'];
+				$modelDetail->HargaPokokPenjualan = $key['HargaPokokPenjualan'];
 				$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
 				$save = $modelDetail->save();
@@ -222,6 +227,89 @@ class ReturKonsinyasiController extends Controller
 				$NoUrut +=1;
 				skip:
 			}
+
+			// Auto Journal
+
+			// Generate Header :
+			$arrHeader = array(
+				'NoTransaksi' => "",
+				'KodeTransaksi' => "RTC",
+				'TglTransaksi' => $jsonData['TglTransaksi'],
+				'NoReff' => $NoTransaksi,
+				'StatusTransaksi' => "O",
+				'RecordOwnerID' => Auth::user()->RecordOwnerID,
+			);
+			$arrDetail = array();
+
+			// GetAccount :
+			$Setting = NEW SettingAccount();
+			$getSetting = $Setting->GetSetting("KnAcctPenerimaanKonsinyasi");
+			$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+							->where('KodeRekening', $getSetting)->get();
+
+			if (count($validate) == 0) {
+				$data['message'] = "Akun Rekening Akutansi Penerimaan Konsinyasi Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+				$errorCount +=1;
+				goto jump;
+			}
+
+			// Hutang
+
+			$temp = array(
+				'KodeTransaksi' => "RTC", 
+				'KodeRekening' => $getSetting,
+				'KodeRekeningBukuBesar' => "",
+				'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+				'KodeMataUang' => "",
+				'Valas' => 0,
+				'NilaiTukar' => 0,
+				'Jumlah' => $jsonData['TotalTransaksi'], 
+				'Keterangan' => $jsonData['Keterangan'], 
+				'HeaderKas' => "",
+				'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+			);
+
+			array_push($arrDetail, $temp);
+			// End Hutang
+
+			// Inventory
+			// GetAccount :
+			$Setting = NEW SettingAccount();
+			$getSetting = $Setting->GetSetting("InvAcctPersediaan");
+			$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+							->where('KodeRekening', $getSetting)->get();
+
+			if (count($validate) == 0) {
+				$data['message'] = "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+				$errorCount +=1;
+				goto jump;
+			}
+			$temp = array(
+				'KodeTransaksi' => "RTC", 
+				'KodeRekening' => $getSetting,
+				'KodeRekeningBukuBesar' => "",
+				'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+				'KodeMataUang' => "",
+				'Valas' => 0,
+				'NilaiTukar' => 0,
+				'Jumlah' => $jsonData['TotalTransaksi'], 
+				'Keterangan' => $jsonData['Keterangan'], 
+				'HeaderKas' => "",
+				'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+			);
+
+			array_push($arrDetail, $temp);
+			// End Inventory
+
+			// Save Journal
+			$autoPosting = new AutoPosting();
+
+			if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
+				$data["message"] = "Gagal Simpan Jurnal";
+				$errorCount +=1;
+				goto jump;
+			}
+			// End Save Jurnal
 
 			jump:
 	        if ($errorCount > 0) {
@@ -297,6 +385,9 @@ class ReturKonsinyasiController extends Controller
 						$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
 						$modelDetail->LineStatus = $key['LineStatus'];
 						$modelDetail->KodeGudang = $key['KodeGudang'];
+						$modelDetail->VatPercent = $key['VatPercent'];
+						$modelDetail->HargaPokokPenjualan = $key['HargaPokokPenjualan'];
+
 						$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
 						$save = $modelDetail->save();
@@ -310,7 +401,91 @@ class ReturKonsinyasiController extends Controller
 						$NoUrut +=1;
 
 						skip:
-		            }	
+		            }
+
+					// Auto Journal
+
+					// Generate Header :
+					$arrHeader = array(
+						'NoTransaksi' => "",
+						'KodeTransaksi' => "RTC",
+						'TglTransaksi' => $jsonData['TglTransaksi'],
+						'NoReff' => $jsonData['NoTransaksi'],
+						'StatusTransaksi' => "O",
+						'RecordOwnerID' => Auth::user()->RecordOwnerID,
+					);
+					$arrDetail = array();
+
+					// GetAccount :
+					$Setting = NEW SettingAccount();
+					$getSetting = $Setting->GetSetting("KnAcctPenerimaanKonsinyasi");
+					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('KodeRekening', $getSetting)->get();
+
+					if (count($validate) == 0) {
+						$data['message'] = "Akun Rekening Akutansi Penerimaan Konsinyasi Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+						$errorCount +=1;
+						goto jump;
+					}
+
+					// Hutang
+
+					$temp = array(
+						'KodeTransaksi' => "RTC", 
+						'KodeRekening' => $getSetting,
+						'KodeRekeningBukuBesar' => "",
+						'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+						'KodeMataUang' => "",
+						'Valas' => 0,
+						'NilaiTukar' => 0,
+						'Jumlah' => $jsonData['TotalTransaksi'], 
+						'Keterangan' => $jsonData['Keterangan'], 
+						'HeaderKas' => "",
+						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+					);
+
+					array_push($arrDetail, $temp);
+					// End Hutang
+
+					// Inventory
+					// GetAccount :
+					$Setting = NEW SettingAccount();
+					$getSetting = $Setting->GetSetting("InvAcctPersediaan");
+					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('KodeRekening', $getSetting)->get();
+
+					if (count($validate) == 0) {
+						$data['message'] = "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+						$errorCount +=1;
+						goto jump;
+					}
+					$temp = array(
+						'KodeTransaksi' => "RTC", 
+						'KodeRekening' => $getSetting,
+						'KodeRekeningBukuBesar' => "",
+						'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+						'KodeMataUang' => "",
+						'Valas' => 0,
+						'NilaiTukar' => 0,
+						'Jumlah' => $jsonData['TotalTransaksi'], 
+						'Keterangan' => $jsonData['Keterangan'], 
+						'HeaderKas' => "",
+						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+					);
+
+					array_push($arrDetail, $temp);
+					// End Inventory
+
+					// Save Journal
+					$autoPosting = new AutoPosting();
+
+					if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
+						$data["message"] = "Gagal Simpan Jurnal";
+						$errorCount +=1;
+						goto jump;
+					}
+					// End Save Jurnal
+
 	            }
 	        }
 	        jump:

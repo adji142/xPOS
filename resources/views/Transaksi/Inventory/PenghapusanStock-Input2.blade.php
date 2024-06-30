@@ -20,7 +20,7 @@
 				<li class="breadcrumb-item active" aria-current="page">
 					<a href="{{route('gr')}}">Daftar Penghapusan Stock Barang</a>
 				</li>
-				<li class="breadcrumb-item active" aria-current="page">Pengakuan Stock Barang</li>
+				<li class="breadcrumb-item active" aria-current="page">Penghapusan Stock Barang</li>
 			</ol>
 		</nav>
 	</div>
@@ -40,10 +40,10 @@
 									<h3 class="card-label mb-0 font-weight-bold text-body">
 										@if (count($penghapusanheader) > 0)
 											<input type="hidden" name="formtype" id="formtype" value="edit">
-                                    		Edit Pengakuan Stock Barang
+                                    		Edit Penghapusan Stock Barang
 	                                	@else
 	                                		<input type="hidden" name="formtype" id="formtype" value="add">
-	                                    	Tambah Pengakuan Stock Barang
+	                                    	Tambah Penghapusan Stock Barang
 	                                	@endif
 									</h3>
 								</div>
@@ -234,10 +234,12 @@
 
       				var oItem = {
 						'KodeItem' : allRowsData[i]['KodeItem'],
+						'NamaItem' : allRowsData[i]['NamaItem'],
 						'Qty' : allRowsData[i]['Qty'],
 						'Satuan' : allRowsData[i]['Satuan'],
 						'Harga' : allRowsData[i]['Harga'],
 						'KodeGudang' : allRowsData[i]['KodeGudang'],
+						'KodeRekening' : allRowsData[i]['KodeRekening'],
       				}
       				
       				oDetail.push(oItem)
@@ -351,6 +353,7 @@
 		    	dataGridDetailInstance.cellValue(_selectedRow, "Qty", 1);
 		        dataGridDetailInstance.cellValue(_selectedRow, "Harga", selectedRows[0]["HargaPokokPenjualan"]);
 		        dataGridDetailInstance.cellValue(_selectedRow, "Satuan", selectedRows[0]["Satuan"]);
+				dataGridDetailInstance.cellValue(_selectedRow, "KodeRekening", <?php echo $rekeningDefault ?>);
 		        dataGridDetailInstance.refresh();
 		        dataGridDetailInstance.saveEditData();
 				CalculateTotal();
@@ -469,6 +472,18 @@
 	                    format: { type: 'fixedPoint', precision: 2 },
 	                    allowSorting: false 
 	                },
+					{
+	                    dataField: "KodeRekening",
+	                    caption: "Rekening Akutansi",
+	                    // allowEditing:false,
+	                    lookup: {
+						    dataSource: <?php echo $rekening ?>,
+						    valueExpr: 'KodeRekening',
+						    displayExpr: 'NamaRekening',
+					    },
+					    allowSorting: false ,
+					    allowEditing:AllowManipulation
+	                },
 	                {
 	                    dataField: "TotalTransaksi",
 	                    caption: "Total",
@@ -492,7 +507,7 @@
 		        	var rowData = dataGridInstance.option("dataSource");
 		            var columnIndex = e.columnIndex;
 		            // console.log(e)
-		        	if (columnIndex >= 1 && columnIndex <= 5) {
+		        	if (columnIndex >= 1 && columnIndex <= 8) {
 		                dataGridInstance.editRow(e.rowIndex)	
 		            }
 		            dataGridInstance.option("focusedColumnIndex", columnIndex);
@@ -569,6 +584,7 @@
 				            dataGridInstance.cellValue(rowIndex, "Discount", 0);
 				            dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
 				            dataGridInstance.cellValue(rowIndex, "Satuan", filteredItem[0]["Satuan"]);
+							dataGridInstance.cellValue(_selectedRow, "KodeRekening", <?php echo $rekeningDefault ?>);
 				            dataGridInstance.refresh();
 				            dataGridInstance.saveEditData();
                         }
@@ -646,6 +662,7 @@
 				            dataGridInstance.cellValue(rowIndex, "Discount", 0);
 				            dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
 				            dataGridInstance.cellValue(rowIndex, "Satuan", filteredItem[0]["Satuan"]);
+							dataGridInstance.cellValue(_selectedRow, "KodeRekening", <?php echo $rekeningDefault ?>);
 				            dataGridInstance.refresh();
 				            dataGridInstance.saveEditData();
                         }
