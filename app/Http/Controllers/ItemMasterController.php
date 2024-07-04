@@ -34,7 +34,7 @@ class ItemMasterController extends Controller
 
         $oItem = new ItemMaster();
         $itemmaster = $oItem->GetItemData(Auth::user()->RecordOwnerID,$KodeJenis, $Merk, $TipeItem,$TipeItemIN, $Active, '', 0);
-        var_dump($itemmaster->get());
+        // var_dump($itemmaster->get());
 
        	// JenisItem
        	$jenisitem = JenisItem::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
