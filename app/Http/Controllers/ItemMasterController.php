@@ -25,7 +25,6 @@ class ItemMasterController extends Controller
 {
     public function View(Request $request)
     {
-    	$field = ['KodeJenis','NamaJenis'];
         $keyword = $request->input('keyword');
         $KodeJenis = $request->input('KodeJenis');
         $Merk = $request->input('Merk');
@@ -41,15 +40,15 @@ class ItemMasterController extends Controller
        	$jenisitem = JenisItem::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
        	$merk = Merk::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
-        return view("master.ItemMasterData.ItemMaster",[
-            'itemmaster' => $itemmaster->get(),
-            'jenisitem' => $jenisitem,
-            'merk' => $merk,
-            'oldKodeJenis' => $KodeJenis,
-            'oldMerk' => $Merk,
-            'odlTipeItem' => $TipeItem,
-            'oldActive' => $Active
-        ]);
+        // return view("master.ItemMasterData.ItemMaster",[
+        //     'itemmaster' => $itemmaster->get(),
+        //     'jenisitem' => $jenisitem,
+        //     'merk' => $merk,
+        //     'oldKodeJenis' => $KodeJenis,
+        //     'oldMerk' => $Merk,
+        //     'odlTipeItem' => $TipeItem,
+        //     'oldActive' => $Active
+        // ]);
     }
 
     public function ViewJson(Request $request)

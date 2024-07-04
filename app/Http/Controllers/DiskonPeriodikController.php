@@ -46,7 +46,7 @@ class DiskonPeriodikController extends Controller
     {
     	$diskonperiodik = DiskonPeriodik::where('id','=',$id)->get();
         
-        return view("setting.diskonperiodik-Input",[
+        return view("setting.diskonperiodik-input",[
             'diskonperiodik' => $diskonperiodik
         ]);
     }
