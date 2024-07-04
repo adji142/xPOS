@@ -1651,6 +1651,51 @@ class FakturPenjualanController extends Controller
    }
 
    function CetakFaktur($NoTransaksi = null) {
-	return view("Transaksi.Penjualan.slip.slip3");
+	$sql = "DISTINCT fakturpenjualanheader.NoTransaksi, DATE_FORMAT(fakturpenjualanheader.TglTransaksi, '%d-%m-%Y %H:%i') TglTransaksi,
+			fakturpenjualanheader.TglJatuhTempo, fakturpenjualanheader.NoReff, 
+			fakturpenjualanheader.KodePelanggan, pelanggan.NamaPelanggan, fakturpenjualanheader.Termin, 
+			terminpembayaran.NamaTermin, fakturpenjualanheader.TotalPembelian, fakturpenjualanheader.Pajak,
+			fakturpenjualanheader.TotalPembayaran, fakturpenjualanheader.TotalPembelian - COALESCE(fakturpenjualanheader.TotalPembayaran,0) - fakturpenjualanheader.TotalRetur TotalHutang, 
+			fakturpenjualanheader.TotalRetur,fakturpenjualandetail.NoUrut, fakturpenjualandetail.KodeItem,
+			itemmaster.NamaItem,fakturpenjualandetail.Qty, fakturpenjualandetail.Harga, fakturpenjualandetail.Discount,
+			fakturpenjualandetail.HargaNet, fakturpenjualandetail.VatPercent,  COALESCE(pelanggan.Alamat,'') Alamat, 
+			coalesce(pelanggan.NoTlp1) NoTlpPelanggan,COALESCE(pelanggan.Email,'') Email,
+	   		CASE WHEN fakturpenjualanheader.Status = 'O' THEN 'OPEN' ELSE 
+   				CASE WHEN fakturpenjualanheader.Status = 'T' THEN 'DRAFT' ELSE 
+   					CASE WHEN fakturpenjualanheader.Status = 'D' THEN 'CANCEL' ELSE
+   						CASE WHEN  fakturpenjualanheader.TotalPembelian - COALESCE(fakturpenjualanheader.TotalPembayaran,0) - fakturpenjualanheader.TotalRetur <= 0 && fakturpenjualanheader.TotalRetur = 0 THEN 'LUNAS' ELSE
+   							CASE WHEN  fakturpenjualanheader.TotalPembelian - COALESCE(fakturpenjualanheader.TotalPembayaran,0) - fakturpenjualanheader.TotalRetur > 0 THEN 'BELUM LUNAS' ELSE 
+   								CASE WHEN fakturpenjualanheader.Status = 'C' THEN 'CLOSE' ELSE '' END
+   							END
+   						END
+   					END
+   				END
+   			END AS StatusDocument, fakturpenjualanheader.Transaksi, company.NamaPartner, company.AlamatTagihan,
+			company.NoTlp, company.NoHP, company.icon,fakturpenjualanheader.TotalTransaksi, 
+			fakturpenjualanheader.Potongan, company.NPWP, '' CompanyEmail ";
+	   	$model = FakturPenjualanHeader::selectRaw($sql)
+    				->leftJoin('terminpembayaran', function ($value){
+    					$value->on('fakturpenjualanheader.KodeTermin','=','terminpembayaran.id')
+    					->on('terminpembayaran.RecordOwnerID','=','fakturpenjualanheader.RecordOwnerID');
+    				})
+    				->leftJoin('pelanggan', function ($value){
+    					$value->on('fakturpenjualanheader.KodePelanggan','=','pelanggan.KodePelanggan')
+    					->on('pelanggan.RecordOwnerID','=','fakturpenjualanheader.RecordOwnerID');
+    				})
+    				->leftJoin('fakturpenjualandetail', function ($value){
+    					$value->on('fakturpenjualandetail.NoTransaksi','=','fakturpenjualanheader.NoTransaksi')
+    					->on('fakturpenjualandetail.RecordOwnerID','=','fakturpenjualanheader.RecordOwnerID');
+    				})
+					->leftJoin('itemmaster', function ($value){
+    					$value->on('fakturpenjualandetail.KodeItem','=','itemmaster.KodeItem')
+    					->on('fakturpenjualandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+    				})
+					->leftJoin('company', 'company.KodePartner', 'fakturpenjualanheader.RecordOwnerID')
+    				->where('fakturpenjualanheader.RecordOwnerID',Auth::user()->RecordOwnerID)
+					->where('fakturpenjualanheader.NoTransaksi',$NoTransaksi)->get();
+	$oCompany = Company::where('KodePartner', Auth::user()->RecordOwnerID)->first();
+	return view("Transaksi.Penjualan.slip.".$oCompany['DefaultSlip'],[
+		'faktur'=> $model
+	]);
    }
 }

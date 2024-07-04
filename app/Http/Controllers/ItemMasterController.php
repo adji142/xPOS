@@ -33,34 +33,6 @@ class ItemMasterController extends Controller
         $TipeItemIN = $request->input('TipeItemIN');
         $Active = $request->input('Active');
 
-        // $sql = "itemmaster.KodeItem, itemmaster.NamaItem, itemmaster.Barcode,itemmaster.HargaJual,itemmaster.HargaPokokPenjualan,itemmaster.HargaBeliTerakhir,itemmaster.Stock, itemmaster.StockMinimum, merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, itemmaster.Rak ";
-        // $itemmaster = ItemMaster::selectRaw($sql)
-        // 				->leftJoin('jenisitem', 'jenisitem.KodeJenis','=','itemmaster.KodeJenisItem')
-        // 				->leftJoin('merk','merk.KodeMerk','=','itemmaster.KodeMerk')
-        // 				->leftJoin('gudang', 'gudang.KodeGudang','=','itemmaster.KodeGudang')
-        // 				->leftJoin('supplier','supplier.KodeSupplier','=','itemmaster.KodeSupplier')
-        // 				->leftJoin('satuan', 'satuan.KodeSatuan','=','itemmaster.Satuan')
-        // 				->where('itemmaster.RecordOwnerID','=',Auth::user()->RecordOwnerID);
-       	// if ($KodeJenis != "") {
-       	// 	$itemmaster->where('itemmaster.KodeJenisItem','=', $KodeJenis);
-       	// }
-
-       	// if ($Merk != "") {
-       	// 	$itemmaster->where('itemmaster.KodeMerk','=', $Merk);
-       	// }
-
-       	// if ($TipeItem != "") {
-       	// 	$itemmaster->where('itemmaster.TypeItem','=', $TipeItem);
-       	// }
-
-        // if ($TipeItemIN != "") {
-        //   $itemmaster->whereIn('itemmaster.TypeItem',explode(',', $TipeItemIN));
-        // }
-
-       	// if ($Active != "") {
-       	// 	$itemmaster->where('itemmaster.Active','=', $Active);
-       	// }
-
         $oItem = new ItemMaster();
         $itemmaster = $oItem->GetItemData(Auth::user()->RecordOwnerID,$KodeJenis, $Merk, $TipeItem,$TipeItemIN, $Active, '', 0);
 
@@ -69,11 +41,6 @@ class ItemMasterController extends Controller
        	$jenisitem = JenisItem::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
        	$merk = Merk::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
-
-
-        $title = 'Delete Grup Pelanggan !';
-        $text = "Are you sure you want to delete ?";
-        confirmDelete($title, $text);
         return view("master.ItemMasterData.ItemMaster",[
             'itemmaster' => $itemmaster->get(),
             'jenisitem' => $jenisitem,
