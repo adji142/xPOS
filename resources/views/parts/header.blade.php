@@ -89,7 +89,7 @@
 						<div id="accordion">
 							<ul class="nav flex-column">
 								<li class="nav-item active">
-									<a href="index.html" class="nav-link">
+									<a href="{{ route('dashboard') }}" class="nav-link">
 										<span class="svg-icon nav-icon">
 											<svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
 												viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -368,8 +368,8 @@
 	<!-- End DevExpress -->
 	<script src="{{asset('js/slick.min.js')}}"></script>
 	<script src="{{asset('api/jqueryvalidate/jquery.validate.min.js')}}"></script>
-	<!-- <script src="{{asset('api/apexcharts/apexcharts.js')}}"></script>
-	<script src="{{asset('api/apexcharts/scriptcharts.js')}}"></script>  -->
+	<script src="{{asset('api/apexcharts/apexcharts.js')}}"></script>
+	{{-- <script src="{{asset('api/apexcharts/scriptcharts.js')}}"></script> --}}
 	<script src="{{asset('api/pace/pace.js')}}"></script>
 	<script src="{{asset('api/mcustomscrollbar/jquery.mCustomScrollbar.concat.min.js')}}"></script>
 	<script src="{{asset('api/quill/quill.min.js')}}"></script>

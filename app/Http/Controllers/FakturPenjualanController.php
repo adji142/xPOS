@@ -1649,4 +1649,8 @@ class FakturPenjualanController extends Controller
 
    		return response()->json($data);
    }
+
+   function CetakFaktur($NoTransaksi = null) {
+	return view("Transaksi.Penjualan.slip.slip3");
+   }
 }

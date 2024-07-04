@@ -1,7 +1,31 @@
 @extends('parts.header')
 	
 @section('content')
-
+<style type="text/css">
+	.xContainer{
+	  display: flex;
+	  flex-wrap: wrap;
+	  justify-content: center;
+	  align-items: center;
+	  vertical-align: middle;
+	}
+	.image_result{
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	  border: 1px solid black;
+	  /*flex-grow: 1;*/
+	  vertical-align: middle;
+	  align-content: center;
+	  flex-basis: 200;
+	  width: 150px;
+	  height: 200px;
+	}
+	.image_result img {
+	  max-width: 100%; /* Fit the image to the container width */
+	  height: 100%; /* Maintain the aspect ratio */
+	}
+  </style>
 <!--begin::Subheader-->
 <div class="subheader py-2 py-lg-6 subheader-solid">
 	<div class="container-fluid">
@@ -65,6 +89,25 @@
 											<div class="tab-content" id="v-pills-tabContent1">
 												<div class="tab-pane fade show active" id="general" role="tabpanel" >
 													<div class="form-group row">
+
+														<div class="col-md-12"> 
+															<fieldset class="form-group mb-3">
+																<textarea id = "image_base64" name = "image_base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['icon'] : '' }} </textarea>
+																
+																<input type="file" id="Attachment" name="Attachment" accept=".jpg" class="btn btn-warning" style="display: none;"/>
+																<div class="xContainer">
+																	<div id="image_result" class="image_result">
+																		@if (count($company) > 0)
+																			<img src=" {{$company[0]['icon']}} ">
+																		@else
+																			<img src="https://www.generationsforpeace.org/wp-content/uploads/2018/03/empty.jpg">
+																		@endif
+																	</div>
+																</div>
+															</fieldset>
+															
+														</div>
+
 														<div class="col-md-3">
 					                            			<label  class="text-body">Kode Perusahaan</label>
 					                            			<fieldset class="form-group mb-3">
@@ -264,6 +307,25 @@
 					                            				<textarea class="form-control" id="FooterNota" name="FooterNota" rows="3" placeholder="Masukan Alamat">{{ count($company) > 0 ? $company[0]['FooterNota'] : '' }}</textarea>
 					                            			</fieldset>
 					                            		</div>
+
+														<div class="col-md-4">
+					                            			<label  class="text-body">Format Faktur</label>
+					                            			<fieldset class="form-group mb-3">
+					                            				<select name="DefaultSlip" id="DefaultSlip" class="js-example-basic-single js-states form-control bg-transparent">
+					                            					<option value="slip1" {{ count($company) > 0 ? $company[0]['DefaultSlip'] == "slip1"? "selected" : '' :""}} >Slip 1</option>
+					                            					<option value="slip2" {{ count($company) > 0 ? $company[0]['DefaultSlip'] == "slip2"? "selected" : '' :""}} >Slip 2</option>
+					                            					<option value="slip3" {{ count($company) > 0 ? $company[0]['DefaultSlip'] == "slip3"? "selected" : '' :""}} >Slip 3</option>
+					                            				</select>
+					                            			</fieldset>
+					                            		</div>
+
+														<div class="col-md-8">
+															<label  class="text-body">Preview</label>
+															<fieldset class="form-group mb-3">
+																<img src="#" id="PreviewImageSlip" width="100%">
+															</fieldset>
+														</div>
+
 													</div>
 												</div>
 											</div>
@@ -294,9 +356,13 @@
 
 @push('scripts')
 <script type="text/javascript">
+var _URL = window.URL || window.webkitURL;
+var _URLePub = window.URL || window.webkitURL;
 	$(function () {
 		jQuery(document).ready(function () {
+			var slip = "{{ count($company) > 0 ? $company[0]['DefaultSlip'] : 'slip1' }}"
 			jQuery('#LevelHarga').select2();
+			jQuery('#DefaultSlip').val(slip).trigger('change');
 		});
 		jQuery('#btTestPrint').click(function () {
 			// alert('asd')
@@ -320,7 +386,60 @@
 
 		jQuery('#testPrintUSB').click(function () {
 			window.print();
-		})
+		});
+
+		jQuery('#DefaultSlip').change(function () {
+			var BaseURL = "{{ asset('') }}";
+			var url = BaseURL+"images/slip/"+jQuery('#DefaultSlip').val()+".png";
+			console.log();
+			// var URL = "{{ asset("+FileName+")}}";
+			jQuery("#PreviewImageSlip").attr("src", url);
+		});
+
+
+		jQuery('#image_result').click(function(){
+			$('#Attachment').click();
+		});
+
+		$("#Attachment").change(function(){
+		var file = $(this)[0].files[0];
+		img = new Image();
+		img.src = _URL.createObjectURL(file);
+		var imgwidth = 0;
+		var imgheight = 0;
+		img.onload = function () {
+			imgwidth = this.width;
+			imgheight = this.height;
+			$('#width').val(imgwidth);
+			$('#height').val(imgheight);
+		}
+		readURL(this);
+		encodeImagetoBase64(this);
+		// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		function readURL(input) {
+		if (input.files && input.files[0]) {
+			var reader = new FileReader();
+			
+			reader.onload = function (e) {
+			// console.log(e.target.result);
+			$('#image_result').html("<img src ='"+e.target.result+"'> ");
+			}
+			reader.readAsDataURL(input.files[0]);
+		}
+		}
+		function encodeImagetoBase64(element) {
+		$('#image_base64').val('');
+			var file = element.files[0];
+			var reader = new FileReader();
+			reader.onloadend = function() {
+			// $(".link").attr("href",reader.result);
+			// $(".link").text(reader.result);
+			$('#image_base64').val(reader.result);
+			}
+			reader.readAsDataURL(file);
+		}
 	})
 </script>
 @endpush

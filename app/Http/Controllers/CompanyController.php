@@ -93,7 +93,7 @@ class CompanyController extends Controller
 									'NIKPIC' => empty($request->input('NIKPIC')) ? "" : $request->input('NIKPIC'),
 									'NamaPIC' => empty($request->input('NamaPIC')) ? "" : $request->input('NamaPIC'),
 									'tempStore' => empty($request->input('tempStore')) ? "" : $request->input('tempStore'),
-									'icon' => empty($request->input('icon')) ? "" : $request->input('icon'),
+									'icon' => empty($request->input('image_base64')) ? "" : $request->input('image_base64'),
 									'NPWP' => empty($request->input('NPWP')) ? "" : $request->input('NPWP'),
 									'TglPKP' => empty($request->input('TglPKP')) ? "1999-01-01" : $request->input('TglPKP'),
 									'PPN' => empty($request->input('PPN')) ? 0 : $request->input('PPN'),
@@ -106,6 +106,7 @@ class CompanyController extends Controller
                                     'GudangPoS' => empty($request->input('GudangPoS')) ? "" : $request->input('GudangPoS'),
                                     'TerminBayarPoS' => empty($request->input('TerminBayarPoS')) ? "" : $request->input('TerminBayarPoS'),
                                     'AllowNegativeInventory' => empty($request->input('AllowNegativeInventory')) ? "" : $request->input('AllowNegativeInventory'),
+                                    'DefaultSlip' => empty($request->input('DefaultSlip')) ? "" : $request->input('DefaultSlip'),
                 				]
                 			);
 

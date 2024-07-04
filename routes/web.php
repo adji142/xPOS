@@ -41,6 +41,9 @@ use App\Http\Controllers\ReturPenjualanController;
 use App\Http\Controllers\DeliveryNoteController;
 use App\Http\Controllers\PembayaranPenjualanController;
 use App\Http\Controllers\BiayaController;
+use App\Http\Controllers\JournalController;
+use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\DiskonPeriodikController;
 
 /*
 |--------------------------------------------------------------------------
@@ -256,7 +259,7 @@ Route::post('/itemmaster/find', [ItemMasterController::class, 'Find'])->name('it
 Route::get('/itemmaster/form/{id}', [ItemMasterController::class,'Form'])->name('itemmaster-form')->middleware('auth');
 Route::post('/itemmaster/edit', [ItemMasterController::class, 'edit'])->name('itemmaster-edit')->middleware('auth');
 Route::post('/itemmaster/store', [ItemMasterController::class, 'store'])->name('itemmaster-store')->middleware('auth');
-Route::post('/itemmaster/edit', [ItemMasterController::class, 'edit'])->name('itemmaster-edit')->middleware('auth');
+Route::post('/itemmaster/readstockperwhs', [ItemMasterController::class, 'GetStockPerWhs'])->name('itemmaster-readstockperwhs')->middleware('auth');
 /*
 |--------------------------------------------------------------------------
 | Setting
@@ -479,6 +482,7 @@ Route::get('/fpenjualan/pos', [PoSController::class, 'View'])->name('fpenjualan-
 Route::post('/fpenjualan/getDiskon', [PoSController::class, 'GetDiscount'])->name('fpenjualan-getDiskon')->middleware('auth');
 Route::post('/fpenjualan/retailPos', [FakturPenjualanController::class, 'storePoS'])->name('fpenjualan-retailPos')->middleware('auth');
 Route::post('/fpenjualan/editStatus', [FakturPenjualanController::class, 'EditTransactionStatus'])->name('fpenjualan-editStatus')->middleware('auth');
+Route::get('/fpenjualan/print/{id}', [FakturPenjualanController::class, 'CetakFaktur'])->name('fpenjualan-print')->middleware('auth');
 
 
 /*
@@ -547,3 +551,44 @@ Route::post('/biaya/storeJson', [BiayaController::class, 'storeJson'])->name('bi
 Route::post('/biaya/editJson', [BiayaController::class, 'editJson'])->name('biaya-editJson')->middleware('auth');
 Route::post('/biaya/readheader', [BiayaController::class, 'ViewHeader'])->name('biaya-readheader')->middleware('auth');
 Route::post('/biaya/readdetail', [BiayaController::class, 'ViewDetail'])->name('biaya-readdetail')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Jurnal entry
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/journal', [JournalController::class,'View'])->name('journal')->middleware('auth');
+Route::get('/journal/form/{id}', [JournalController::class,'Form'])->name('journal-form')->middleware('auth');
+Route::post('/journal/storeJson', [JournalController::class, 'storeJson'])->name('journal-storeJson')->middleware('auth');
+Route::post('/journal/editJson', [JournalController::class, 'editJson'])->name('journal-editJson')->middleware('auth');
+Route::post('/journal/readheader', [JournalController::class, 'ViewHeader'])->name('journal-readheader')->middleware('auth');
+Route::post('/journal/readdetail', [JournalController::class, 'ViewDetail'])->name('journal-readdetail')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| StockOpname
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/stockopname', [StockOpnameController::class,'View'])->name('stockopname')->middleware('auth');
+Route::get('/stockopname/form/{id}', [StockOpnameController::class,'Form'])->name('stockopname-form')->middleware('auth');
+Route::post('/stockopname/storeJson', [StockOpnameController::class, 'storeJson'])->name('stockopname-storeJson')->middleware('auth');
+Route::post('/stockopname/editJson', [StockOpnameController::class, 'editJson'])->name('stockopname-editJson')->middleware('auth');
+Route::post('/stockopname/readheader', [StockOpnameController::class, 'ViewHeader'])->name('stockopname-readheader')->middleware('auth');
+Route::post('/stockopname/readdetail', [StockOpnameController::class, 'ViewDetail'])->name('stockopname-readdetail')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Diskon Periodik
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/diskonperiodik', [DiskonPeriodikController::class,'View'])->name('diskonperiodik')->middleware('auth');
+Route::get('/diskonperiodik/form/{id}', [DiskonPeriodikController::class,'Form'])->name('diskonperiodik-form')->middleware('auth');
+Route::post('/diskonperiodik/store', [DiskonPeriodikController::class, 'store'])->name('diskonperiodik-store')->middleware('auth');
+Route::post('/diskonperiodik/edit', [DiskonPeriodikController::class, 'edit'])->name('diskonperiodik-edit')->middleware('auth');
+Route::delete('/diskonperiodik/delete/{id}', [DiskonPeriodikController::class, 'deletedata'])->name('diskonperiodik-delete')->middleware('auth');
+Route::get('/diskonperiodik/export', [DiskonPeriodikController::class,'Export'])->name('diskonperiodik-export')->middleware('auth');

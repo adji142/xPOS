@@ -135,6 +135,77 @@ class ItemMasterController extends Controller
       return response()->json($data);
     }
 
+    function GetStockPerWhs(Request $request) {
+      $data = array('success'=>false, 'message'=>'', 'data'=>array());
+      $KodeJenis = $request->input('KodeJenis');
+      $Merk = $request->input('Merk');
+      $TipeItem = $request->input('TipeItem');
+      $Active = $request->input('Active');
+      $Scan = $request->input('Scan');
+      $TipeItemIN = $request->input('TipeItemIN');
+      $KodeGudang = $request->input('KodeGudang');
+
+      $sql = "itemmaster.KodeItem, itemmaster.NamaItem, itemmaster.Barcode,itemmaster.HargaJual,
+      itemmaster.HargaPokokPenjualan,itemmaster.HargaBeliTerakhir,COALESCE(itemwarehouses.Qty,0) Stock, itemmaster.StockMinimum, 
+      merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, 
+      CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, 
+      itemmaster.Rak, 1 As QtyKonversi, itemmaster.Satuan, itemmaster.VatPercent ";
+        $itemmaster = ItemMaster::selectRaw($sql)
+                ->leftJoin('jenisitem', function ($value){
+                  $value->on('jenisitem.KodeJenis','=','itemmaster.KodeJenisItem')
+                  ->on('jenisitem.RecordOwnerID','=','itemmaster.RecordOwnerID');
+                })
+                ->leftJoin('merk', function ($value){
+                  $value->on('merk.KodeMerk','=','itemmaster.KodeMerk')
+                  ->on('merk.RecordOwnerID','=','itemmaster.RecordOwnerID');
+                })
+                ->leftJoin('gudang', function ($value){
+                  $value->on('gudang.KodeGudang','=','itemmaster.KodeGudang')
+                  ->on('gudang.RecordOwnerID','=','itemmaster.RecordOwnerID');
+                })
+                ->leftJoin('supplier', function ($value){
+                  $value->on('supplier.KodeSupplier','=','itemmaster.KodeSupplier')
+                  ->on('supplier.RecordOwnerID','=','itemmaster.RecordOwnerID');
+                })
+                ->leftJoin('satuan', function ($value){
+                  $value->on('satuan.KodeSatuan','=','itemmaster.Satuan')
+                  ->on('satuan.RecordOwnerID','=','itemmaster.RecordOwnerID');
+                })
+                ->leftJoin('itemwarehouses', function ($value) use($KodeGudang) {
+                  $value->on('itemwarehouses.KodeItem','=','itemmaster.KodeItem')
+                  ->on('itemwarehouses.RecordOwnerID','=','itemmaster.RecordOwnerID')
+                  ->on('itemwarehouses.KodeGudang','=', DB::raw("'".$KodeGudang."'"));
+                })
+        				->where('itemmaster.RecordOwnerID','=',Auth::user()->RecordOwnerID);
+       	if ($KodeJenis != "") {
+       		$itemmaster->where('itemmaster.KodeJenisItem','=', $KodeJenis);
+       	}
+
+       	if ($Merk != "") {
+       		$itemmaster->where('itemmaster.KodeMerk','=', $Merk);
+       	}
+
+       	if ($TipeItem != "") {
+       		$itemmaster->where('itemmaster.TypeItem','=', $TipeItem);
+       	}
+
+        if ($TipeItemIN != "") {
+          $itemmaster->whereIn('itemmaster.TypeItem',explode(',', $TipeItemIN));
+        }
+
+       	if ($Active != "") {
+       		$itemmaster->where('itemmaster.Active','=', $Active);
+       	}
+
+       	if ($Scan != "") {
+       		$itemmaster->where(DB::raw("CONCAT(itemmaster.KodeItem,' ', itemmaster.NamaItem, ' ', itemmaster.Barcode,' ', COALESCE(merk.NamaMerk,''))"),'LIKE','%' . $Scan . '%');
+       	}
+
+         $data['data'] = $itemmaster->get();
+
+         return response()->json($data);
+    }
+
     public function Find(Request $request)
     {
       $data = array('success'=>false, 'message'=>'', 'data'=>array());

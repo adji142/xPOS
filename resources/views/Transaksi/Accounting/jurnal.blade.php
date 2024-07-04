@@ -1,19 +1,12 @@
 @extends('parts.header')
 	
 @section('content')
-<style type="text/css">
-    .disabled-link {
-        pointer-events: none; /* Disables click events */
-        color: gray; /* Changes the color to indicate the link is disabled */
-        text-decoration: none; /* Optional: Remove underline */
-        cursor: default; /* Changes the cursor to indicate it's not clickable */
-    }
-</style>
+
 <div class="subheader py-2 py-lg-6 subheader-solid">
 	<div class="container-fluid">
 		<nav aria-label="breadcrumb">
 			<ol class="breadcrumb bg-white mb-0 px-0 py-2">
-				<li class="breadcrumb-item active" aria-current="page">Faktur Penjualan</li>
+				<li class="breadcrumb-item active" aria-current="page">Journal</li>
 			</ol>
 		</nav>
 	</div>
@@ -28,11 +21,11 @@
 						<div class="card card-custom gutter-b bg-transparent shadow-none border-0" >
 							<div class="card-header align-items-center  border-bottom-dark px-0">
 								<div class="card-title mb-0">
-									<h3 class="card-label mb-0 font-weight-bold text-body">Faktur Penjualan 
+									<h3 class="card-label mb-0 font-weight-bold text-body">Journal 
 									</h3>
 								</div>
 							    <div class="icons d-flex">
-									<a href="{{ url('fpenjualan/form/-') }}" class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1">Tambah Data</a>
+									<a href="{{ url('journal/form/-') }}" class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1">Tambah Data</a>
 								
 								</div>
 							</div>
@@ -59,22 +52,21 @@
 										<label  class="text-body">Tanggal Akhir</label>
 										<input type="date" name="TglAkhir" id="TglAkhir" class="form-control">
 									</div>
-									<div class="col-md-3">
-										<!-- <?php echo json_encode($pelanggan); ?> -->
-										<label  class="text-body">Pelanggan</label>
-										<select name="KodePelanggan" id="KodePelanggan" class="js-example-basic-single js-states form-control bg-transparent" >
-											<option value="">Pilih Pelanggan</option>
-											@foreach($pelanggan as $ko)
-												<option value="{{ $ko->KodePelanggan }}" >
-		                                            {{ $ko->NamaPelanggan }}
-		                                        </option>
-											@endforeach
-											
-										</select>
+                                    <div class="col-md-3">
+										<label  class="text-body">Transaksi</label>
+										<select name="docType" id="docType" class="js-example-basic-single js-states form-control bg-transparent" >
+                                            <option value="">Pilih Transaksi</option>
+                                            @foreach($doctype as $ko)
+                                                <option value="{{ $ko->KodeDokumen }}">
+                                                    {{ $ko->NamaDokumen }}
+                                                </option>
+                                            @endforeach
+                                            
+                                        </select>
 									</div>
 									<div class="col-md-3">
 										<br>
-										<button class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1">Cari Data</button>
+										<button id="btSearch" class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1">Cari Data</button>
 									</div>
 								</div>
 							</div>
@@ -126,18 +118,22 @@
 		bindGridDetail([]);
 	});
 
+    jQuery('#btSearch').click(function(){
+        GetHeader();
+    });
+
     function GetHeader() {
         $.ajax({
             async:false,
             type: 'post',
-            url: "{{route('fpenjualan-readheader')}}",
+            url: "{{route('journal-readheader')}}",
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
             },
             data: {
                 'TglAwal' : jQuery('#TglAwal').val(),
                 'TglAkhir' : jQuery('#TglAkhir').val(),
-                'KodePelanggan' :jQuery('#KodePelanggan').val()
+                'docType' : jQuery('#docType').val()
             },
             dataType: 'json',
             success: function(response) {
@@ -150,7 +146,7 @@
         $.ajax({
             async:false,
             type: 'post',
-            url: "{{route('fpenjualan-readdetail')}}",
+            url: "{{route('journal-readdetail')}}",
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
             },
@@ -176,7 +172,7 @@
             showBorders: true,
             paging: {
                 enabled: true,
-                pageSize: 30
+                pageSize: 10
             },
             editing: {
                 mode: "row",
@@ -202,77 +198,38 @@
                     allowEditing:false
                 },
                 {
-                    dataField: "Transaksi",
-                    caption: "TRX",
-                    allowEditing:false,
-                },
-                {
-                    dataField: "StatusDocument",
-                    caption: "Status",
-                    allowEditing:false
-                },
-                {
                     dataField: "TglTransaksi",
-                    caption: "Tanggal",
+                    caption: "Tanggal Transaksi",
                     allowEditing:false
                 },
                 {
-                    dataField: "TglJatuhTempo",
-                    caption: "Jatuh Tempo",
+                    dataField: "NamaDokumen",
+                    caption: "Dokumen",
                     allowEditing:false
                 },
                 {
-                    dataField: "NamaPelanggan",
-                    caption: "Pelanggan",
+                    dataField: "KodeTransaksi",
+                    caption: "Transaksi",
                     allowEditing:false
                 },
                 {
-                    dataField: "NamaTermin",
-                    caption: "Termin",
+                    dataField: "NoReff",
+                    caption: "Dokumen Refrensi",
                     allowEditing:false
-                },
-                {
-                    dataField: "TotalPembelian",
-                    caption: "Total",
-                    allowEditing:false,
-                    format: { type: 'fixedPoint', precision: 2 }
-                },
-                {
-                    dataField: "TotalPembayaran",
-                    caption: "diBayar",
-                    allowEditing:false,
-                    format: { type: 'fixedPoint', precision: 2 }
-                },
-                {
-                    dataField: "TotalRetur",
-                    caption: "Retur",
-                    allowEditing:false,
-                    format: { type: 'fixedPoint', precision: 2 }
-                },
-                {
-                    dataField: "TotalHutang",
-                    caption: "Piutang",
-                    allowEditing:false,
-                    format: { type: 'fixedPoint', precision: 2 }
                 },
                 {
                     caption: "Action",
                     fixed: true,
                     cellTemplate: function(cellElement, cellInfo) {
-                        var link = "fpenjualan/form/"+cellInfo.data.NoTransaksi;
-                        var linkPrint = "fpenjualan/print/"+cellInfo.data.NoTransaksi;
-
+                        var link = "journal/form/"+cellInfo.data.NoTransaksi;
                         var LinkAccess = "";
-                        if (cellInfo.data.Transaksi == 'POS') {
-                            LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1 disabled-link' id = 'btEdit' disabled>Edit</a>";
-                            LinkAccess += "<a href = '#' class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btprint'>Cetak</a>";
-                        }else{
-                            LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit'>Edit</a>";
-                            LinkAccess += "<a href = "+linkPrint+" class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btprint' target='_blank'>Cetak</a>";
-                        }
-                        
 
-                        // LinkAccess += "<a href = '#' class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btBayar' >Bayar</a>";
+                        if(cellInfo.data.KodeTransaksi == "JE"){
+                            LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit' >Edit</a>";
+                        }
+                        else{
+                            LinkAccess = "<button disabled class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit' >Edit</button>";
+                        }
 
                         cellElement.append(LinkAccess);
                     }
@@ -301,7 +258,7 @@
             showBorders: true,
             paging: {
                 enabled: true,
-                pageSize: 30
+                pageSize: 10
             },
             editing: {
                 mode: "row",
@@ -313,56 +270,34 @@
                 {
                     dataField: "NoUrut",
                     caption: "#",
-                    allowEditing:false,
-                    visible: false
-                },
-                {
-                    caption: "#",
-                    allowEditing:false,
-                    cellTemplate: function(container, options) {
-                        var index = options.rowIndex + 1; // Menghitung nomor urut (dimulai dari 1)
-                        $("<div>").text(index).appendTo(container);
-                    }
-                },
-                {
-                    dataField: "KodeItem",
-                    caption: "Item",
                     allowEditing:false
                 },
                 {
-                    dataField: "NamaItem",
-                    caption: "Nama Item",
+                    dataField: "KodeRekening",
+                    caption: "Kode",
                     allowEditing:false
                 },
                 {
-                    dataField: "Qty",
-                    caption: "Qty",
+                    dataField: "NamaRekening",
+                    caption: "Nama Rekening",
+                    allowEditing:false
+                },
+                {
+                    dataField: "Debit",
+                    caption: "Debit",
                     allowEditing:false,
                     format: { type: 'fixedPoint', precision: 2 }
                 },
                 {
-                    dataField: "QtyRetur",
-                    caption: "Retur",
+                    dataField: "Kredit",
+                    caption: "Kredit",
                     allowEditing:false,
                     format: { type: 'fixedPoint', precision: 2 }
                 },
                 {
-                    dataField: "Harga",
-                    caption: "Harga",
-                    allowEditing:false,
-                    format: { type: 'fixedPoint', precision: 2 }
-                },
-                {
-                    dataField: "Discount",
-                    caption: "Discount",
-                    allowEditing:false,
-                    format: { type: 'fixedPoint', precision: 2 }
-                },
-                {
-                    dataField: "HargaNet",
-                    caption: "Harga Net",
-                    allowEditing:false,
-                    format: { type: 'fixedPoint', precision: 2 }
+                    dataField: "Keterangan",
+                    caption: "Keterangan",
+                    allowEditing:false
                 },
             ]
 		});

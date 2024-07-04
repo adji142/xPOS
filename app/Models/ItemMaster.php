@@ -15,7 +15,11 @@ class ItemMaster extends Model
 
     public function GetItemData($RecordOwnerID,$KodeJenis, $Merk, $TipeItem,$TipeItemIN, $Active, $Scan, $ShowKonversi)
     {
-    	$sql = "itemmaster.KodeItem, itemmaster.NamaItem, itemmaster.Barcode,itemmaster.HargaJual,itemmaster.HargaPokokPenjualan,itemmaster.HargaBeliTerakhir,itemmaster.Stock, itemmaster.StockMinimum, merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, itemmaster.Rak, 1 As QtyKonversi, itemmaster.Satuan, itemmaster.VatPercent ";
+    	$sql = "itemmaster.KodeItem, itemmaster.NamaItem, itemmaster.Barcode,itemmaster.HargaJual,
+      itemmaster.HargaPokokPenjualan,itemmaster.HargaBeliTerakhir,itemmaster.Stock, itemmaster.StockMinimum, 
+      merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, 
+      CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, 
+      itemmaster.Rak, 1 As QtyKonversi, itemmaster.Satuan, itemmaster.VatPercent ";
         $itemmaster = ItemMaster::selectRaw($sql)
                 ->leftJoin('jenisitem', function ($value){
                   $value->on('jenisitem.KodeJenis','=','itemmaster.KodeJenisItem')
