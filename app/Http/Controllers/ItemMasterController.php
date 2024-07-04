@@ -34,21 +34,21 @@ class ItemMasterController extends Controller
 
         $oItem = new ItemMaster();
         $itemmaster = $oItem->GetItemData(Auth::user()->RecordOwnerID,$KodeJenis, $Merk, $TipeItem,$TipeItemIN, $Active, '', 0);
-
+        var_dump($itemmaster);
 
        	// JenisItem
        	$jenisitem = JenisItem::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
        	$merk = Merk::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
-        // return view("master.ItemMasterData.ItemMaster",[
-        //     'itemmaster' => $itemmaster->get(),
-        //     'jenisitem' => $jenisitem,
-        //     'merk' => $merk,
-        //     'oldKodeJenis' => $KodeJenis,
-        //     'oldMerk' => $Merk,
-        //     'odlTipeItem' => $TipeItem,
-        //     'oldActive' => $Active
-        // ]);
+        return view("master.ItemMasterData.ItemMaster",[
+            'itemmaster' => $itemmaster->get(),
+            'jenisitem' => $jenisitem,
+            'merk' => $merk,
+            'oldKodeJenis' => $KodeJenis,
+            'oldMerk' => $Merk,
+            'odlTipeItem' => $TipeItem,
+            'oldActive' => $Active
+        ]);
     }
 
     public function ViewJson(Request $request)
