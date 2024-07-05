@@ -26,7 +26,8 @@ License: You must have a valid license purchased only from themeforest(the above
 	<link href="{{ asset('api/pace/pace-theme-flat-top.css')}}" rel="stylesheet" type="text/css" />
 	<link href="{{ asset('api/mcustomscrollbar/jquery.mCustomScrollbar.css')}}" rel="stylesheet" type="text/css" />
 	
-	<link href="http://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css" />
+	{{-- <link href="http://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css" /> --}}
+	<link href="{{asset('api/datatable/jquery.dataTables.min.css')}}" rel="stylesheet" type="text/css" />
 	<link href="https://unpkg.com/multiple-select@1.5.2/dist/multiple-select.min.css" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 	<link href="{{asset('api/select2/select2.min.css')}}" rel="stylesheet" />
@@ -1004,13 +1005,17 @@ License: You must have a valid license purchased only from themeforest(the above
 			                    }).then((result) => {
 								  // location.reload();
 								  $('#_Barcode').val("")
-								  // $('#_Barcode').focus()
+								  $('#_Barcode').focus()
 								});	
 		            		}
 
 		            	}
 		            }
 		        });
+
+				$('#_Barcode').val("")
+				$('#_Barcode').focus()
+				CalculateTotal();
 	        }
 		});
 

@@ -124,10 +124,31 @@
 
 @push('scripts')
 <script type="text/javascript">
+	var KodeItem = "";
 	jQuery(function () {
 		jQuery(document).ready(function() {
 			var oItem = <?php echo $itemmaster ?>;
 			BindGrid(oItem);
+		});
+
+		jQuery('#btKartuStock').click(function () {
+			var now = new Date();
+			var day = ("0" + now.getDate()).slice(-2);
+			var month = ("0" + (now.getMonth() + 1)).slice(-2);
+			var firstDay = now.getFullYear()+"-"+month+"-01";
+			var NowDay = now.getFullYear()+"-"+month+"-"+day;
+
+			if(KodeItem != ""){
+				var link = "report/kartustock/"+firstDay+"/"+NowDay+"/"+KodeItem;
+				var LinkAccess = "";
+			}
+			else{
+				Swal.fire({
+					icon: "error",
+					title: "Opps...",
+					text: "Silahkan Pilih item terlebih dahulu",
+				})
+			}
 		});
 
 		function BindGrid(data) {
@@ -240,6 +261,12 @@
 
 	                location.replace(baseUrl + '/itemmaster/form/'+e.data.KodeItem);
 	            },
+				onRowClick: function(e) {
+					const rowElement = e.component.getRowElement(e.rowIndex);
+					rowElement.addClass('row-highlight');
+
+					KodeItem = e.data.KodeItem;
+				}
 			})
 		}
 	})

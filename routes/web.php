@@ -44,6 +44,7 @@ use App\Http\Controllers\BiayaController;
 use App\Http\Controllers\JournalController;
 use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\DiskonPeriodikController;
+use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -592,3 +593,13 @@ Route::post('/diskonperiodik/store', [DiskonPeriodikController::class, 'store'])
 Route::post('/diskonperiodik/edit', [DiskonPeriodikController::class, 'edit'])->name('diskonperiodik-edit')->middleware('auth');
 Route::delete('/diskonperiodik/delete/{id}', [DiskonPeriodikController::class, 'deletedata'])->name('diskonperiodik-delete')->middleware('auth');
 Route::get('/diskonperiodik/export', [DiskonPeriodikController::class,'Export'])->name('diskonperiodik-export')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Report
+|--------------------------------------------------------------------------
+|
+*/
+
+Route::get('/report/kartustock', [ReportController::class, 'KartuStock'])->name('report-kartustock')->middleware('auth');
