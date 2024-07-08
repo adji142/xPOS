@@ -484,6 +484,7 @@ Route::post('/fpenjualan/getDiskon', [PoSController::class, 'GetDiscount'])->nam
 Route::post('/fpenjualan/retailPos', [FakturPenjualanController::class, 'storePoS'])->name('fpenjualan-retailPos')->middleware('auth');
 Route::post('/fpenjualan/editStatus', [FakturPenjualanController::class, 'EditTransactionStatus'])->name('fpenjualan-editStatus')->middleware('auth');
 Route::get('/fpenjualan/print/{id}', [FakturPenjualanController::class, 'CetakFaktur'])->name('fpenjualan-print')->middleware('auth');
+Route::get('/fpenjualan/printthermal/{id}', [FakturPenjualanController::class, 'PrintThermalReciept'])->name('fpenjualan-printthermal')->middleware('auth');
 
 
 /*
@@ -509,6 +510,7 @@ Route::post('/returpenjualan/readdetail', [ReturPenjualanController::class, 'Vie
 Route::get('/bluetooth/scan', [BluetoothController::class, 'scan'])->name('bluetooth-scan')->middleware('auth');
 Route::get('/bluetooth/connect/{id}', [BluetoothController::class, 'connect'])->name('bluetooth-connect')->middleware('auth');
 Route::post('/print/test', [PrinterController::class, 'PrintRecieptTest'])->name('print-test')->middleware('auth');
+Route::get('/print/testusb48', [PrinterController::class, 'PrintRecieptUSB'])->name('print-testusb48')->middleware('auth');
 Route::post('/print/retail', [PrinterController::class, 'PrintRecieptRetail'])->name('print-retail')->middleware('auth');
 
 
@@ -603,3 +605,6 @@ Route::get('/diskonperiodik/export', [DiskonPeriodikController::class,'Export'])
 */
 
 Route::get('/report/kartustock', [ReportController::class, 'KartuStock'])->name('report-kartustock')->middleware('auth');
+Route::post('/report/getpapersize', [ReportController::class, 'GetKertas'])->name('report-getpapersize')->middleware('auth');
+Route::get('/report/generatebarcode', [ReportController::class, 'GenerateBarcode'])->name('report-generatebarcode')->middleware('auth');
+Route::get('/report/generatetemplate', [ReportController::class, 'GenerateBarcodeTemplate'])->name('report-generatetemplate')->middleware('auth');

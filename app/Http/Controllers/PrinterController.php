@@ -164,6 +164,9 @@ jump:
     	return response()->json($data);
     }
 
+    public function PrintRecieptUSB(Request $request){
+        return view("setting.test48usb");
+    }
     public function PrintRecieptTest(Request $request)
     {
     	$data = array('success' => false, 'message' => '', 'data' => array(), 'token' => "");

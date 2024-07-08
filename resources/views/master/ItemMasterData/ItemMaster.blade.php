@@ -81,26 +81,14 @@
 												
 											</select>
 										</div>
-										<div class="col-md-3">
+										<div class="col-md-12">
 											<!-- <label  class="text-body">Status User</label> -->
 											<br>
 											<button type="submit" class="btn btn-danger text-white font-weight-bold me-1 mb-1">Cari Data</button>
+											<a href="{{ route('report-generatebarcode') }}" class="btn btn-success text-white font-weight-bold me-1 mb-1">Cetak Barcode</a>
 										</div>
 									</div>
 								</form>
-							</div>
-						</div>
-					</div>
-
-					<div class="col-12  px-4">
-						<div class="card card-custom gutter-b bg-white border-0" >
-							<div class="card-body" >
-								<div class="row">
-									<div class="col-md-12">
-										<button id="btKartuStock" type="button" class="btn btn-warning text-white font-weight-bold me-1 mb-1">Kartu Stock</button>
-										<button id="btCetakBarcode" type="button" class="btn btn-success text-white font-weight-bold me-1 mb-1">Cetak Barcode</button>
-									</div>
-								</div>
 							</div>
 						</div>
 					</div>

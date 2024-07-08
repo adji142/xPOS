@@ -385,7 +385,10 @@ var _URLePub = window.URL || window.webkitURL;
 		});
 
 		jQuery('#testPrintUSB').click(function () {
-			window.print();
+			// window.print();
+			let url = new URL("{{ route('print-testusb48') }}");
+            // url.searchParams.append('Orientasi', jQuery('#Orientasi').val());
+			var currentUrl  = window.location.href = url.toString();
 		});
 
 		jQuery('#DefaultSlip').change(function () {

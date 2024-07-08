@@ -16,6 +16,7 @@ use App\Models\MetodePembayaran;
 use App\Models\Sales;
 use App\Models\GrupPelanggan;
 use App\Models\Provinsi;
+use App\Models\Printer;
 
 require_once(app_path('Libraries/phpserial/src/PhpSerial.php'));
 class PoSController extends Controller
@@ -40,6 +41,9 @@ class PoSController extends Controller
         $gruppelanggan = GrupPelanggan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
         $provinsi = Provinsi::all();
 
+        $printer = Printer::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                    ->where('DeviceAddress','=', $company[0]['NamaPosPrinter'])->first();
+
     	return view("Transaksi.Penjualan.PoS.NormalPoS",[
             'pelanggan' => $pelanggan,
             'company' => $company,
@@ -47,7 +51,8 @@ class PoSController extends Controller
             'metodepembayaran' => $metodepembayaran,
             'sales' => $sales,
             'gruppelanggan' => $gruppelanggan,
-            'provinsi' => $provinsi
+            'provinsi' => $provinsi,
+            'printer' => $printer
         ]);
     }
 

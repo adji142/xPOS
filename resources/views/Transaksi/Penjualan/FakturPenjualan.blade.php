@@ -259,15 +259,15 @@
                     caption: "Action",
                     fixed: true,
                     cellTemplate: function(cellElement, cellInfo) {
-                        var link = "fpenjualan/form/"+cellInfo.data.NoTransaksi;
+                        var link = "fpenjualan/printthermal/"+cellInfo.data.NoTransaksi;
                         var linkPrint = "fpenjualan/print/"+cellInfo.data.NoTransaksi;
 
                         var LinkAccess = "";
                         if (cellInfo.data.Transaksi == 'POS') {
-                            LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1 disabled-link' id = 'btEdit' disabled>Edit</a>";
-                            LinkAccess += "<a href = '#' class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btprint'>Cetak</a>";
+                            // LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1 disabled-link' id = 'btEdit' disabled>Edit</a>";
+                            LinkAccess += "<a href = "+link+" class='btn btn-outline-danger font-weight-bold me-1 mb-1' target='_blank'>Cetak</a>";
                         }else{
-                            LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit'>Edit</a>";
+                            // LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit'>Edit</a>";
                             LinkAccess += "<a href = "+linkPrint+" class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btprint' target='_blank'>Cetak</a>";
                         }
                         

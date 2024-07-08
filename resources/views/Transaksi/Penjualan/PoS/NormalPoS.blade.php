@@ -847,6 +847,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	var _Tanggal = '';
 	var _Jam = '';
 	var _Company = [];
+	var _Printer = [];
 	var _Pelanggan = [];
 	var _KodeMetodePembayaran = -1;
 
@@ -904,7 +905,11 @@ License: You must have a valid license purchased only from themeforest(the above
 
 	    	_Company = <?php echo $company ?>;
 	    	_Pelanggan = <?php echo $pelanggan ?>;
-	    	console.log(_Pelanggan);
+			_Printer = <?php echo $printer ?>;
+
+			let url = new URL("{{ url('') }}");
+			
+	    	console.log("{{ url('') }}");
 	    	LoadDraftOrderList();
 	    	bindGridLookupCustomer(_Pelanggan);
 
@@ -1445,33 +1450,73 @@ License: You must have a valid license purchased only from themeforest(the above
 	}
 
 	function PrintStruk(NoTransaksi) {
-		$.ajax({
-			async:false,
-			url: "{{route('print-retail')}}",
-			type: 'POST',
-			headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
-            },
-            data: {'NoTransaksi':NoTransaksi},
-            success: function(response) {
-            	if (response.success == true) {
-            		Swal.fire({
-                      icon: "success",
-                      title: "Sukses",
-                      text: "Data Penjualan Berhasil Disimpan",
-                    }).then((result) => {
-					  location.reload();
-					});
-            	}
-            	else{
-            		Swal.fire({
-                      icon: "error",
-                      title: "Opps...",
-                      text: response.message,
-                    });
-            	}
-            }
-		});
+
+		if(_Company[0]["NamaPosPrinter"] == ""){
+			Swal.fire({
+				icon: "error",
+				title: "Opps...",
+				text: "Printer Belum ditentukan, Silahkan melakukan setting di menu Master -> Pengaturan Toko -> Perusahaan",
+			}).then((result) => {
+				return;
+			});
+		}
+
+		if(_Company[0]["LebarKertas"] == ""){
+			Swal.fire({
+				icon: "error",
+				title: "Opps...",
+				text: "Lebar Kertas Belum ditentukan, Silahkan melakukan setting di menu Master -> Pengaturan Toko -> Perusahaan",
+			}).then((result) => {
+				return;
+			});
+		}
+
+		if(_Printer["PrinterInterface"] == "Bluetooth"){
+			$.ajax({
+				async:false,
+				url: "{{route('print-retail')}}",
+				type: 'POST',
+				headers: {
+					'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+				},
+				data: {'NoTransaksi':NoTransaksi},
+				success: function(response) {
+					if (response.success == true) {
+						Swal.fire({
+						icon: "success",
+						title: "Sukses",
+						text: "Data Penjualan Berhasil Disimpan",
+						}).then((result) => {
+							location.reload();
+						});
+					}
+					else{
+						Swal.fire({
+							icon: "error",
+							title: "Opps...",
+							text: response.message,
+						});
+					}
+				}
+			});
+		}
+		else if(_Printer["PrinterInterface"] == "USB"){
+			// var link = "fpenjualan/printthermal/"+cellInfo.data.NoTransaksi;
+			let url = "{{ url('') }}";
+            // url.searchParams.append('NoTransaksi', NoTransaksi);
+			url += "/fpenjualan/printthermal/"+NoTransaksi;
+			console.log(url);
+			// // window.location.href = url.toString();
+			window.open(url, "_blank");
+			location.reload();
+		}
+		else{
+			Swal.fire({
+				icon: "error",
+				title: "Opps...",
+				text: "Interface belum tersedia",
+			});
+		}
 	}
 
 	function GetItemInfo(KodeItem) {
