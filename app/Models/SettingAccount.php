@@ -27,21 +27,24 @@ class SettingAccount extends Model
     	return $AccountCode;
     }
 
-    public function GetInventoryAccount($KodeItem, $RecordOwnerID)
+    public function GetInventoryAccount($KodeItem)
     {
       $KodeAkun = "";
 
-      $itemmaster = ItemMaster::where('KodeItem',$KodeItem)
-                      ->where('RecordOwnerID', $RecordOwnerID)
+      $itemmaster = ItemMaster::selectRaw("COALESCE(AcctPersediaan, '') AcctPersediaan"
+                      )->where('KodeItem',$KodeItem)
+                      ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
                       ->first();
-      $oCompany = SettingAccount::where('RecordOwnerID', $RecordOwnerID)->first();
+      
+      $oCompany = SettingAccount::selectRaw("COALESCE(InvAcctPersediaan,'') InvAcctPersediaan")
+                  ->where('RecordOwnerID', Auth::user()->RecordOwnerID)->first();
 
       if ($itemmaster->AcctPersediaan != "") {
         $KodeAkun = $itemmaster->AcctPersediaan;
         goto jump;
       }
 
-      if ($oCompany->InvAcctPersediaan) {
+      if ($oCompany->InvAcctPersediaan != "") {
         $KodeAkun = $oCompany->InvAcctPersediaan;
         goto jump; 
       }

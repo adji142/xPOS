@@ -934,7 +934,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		                'TipeItem' 	: '',
 		                'Active' 	: 'Y',
 		                'Scan'		: jQuery('#_Barcode').val(),
-		                'TipeItemIN' : '1,3'
+		                'TipeItemIN' : '1,3,5'
 		            },
 		            dataType: 'json',
 		            success: function(response) {
@@ -1535,7 +1535,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			    'TipeItem' 	: '',
 				'Active' 	: 'Y',
 				'Scan'		: KodeItem,
-				'TipeItemIN' : '1,3'
+				'TipeItemIN' : '1,3,5'
             },
             dataType: 'json',
             success: function(response) {
@@ -2145,18 +2145,22 @@ License: You must have a valid license purchased only from themeforest(the above
 	        for (var i = 0; i < data.length; i++) {
 	        	console.log(data[i]['Diskon'])
 	        	var _Total = data[i]['Qty'] * data[i]['Harga'];
+				var _diskonPerRow = 0;
       			_tempSubTotal += _Total;
       			if (data[i]['DiskonPersen'] > 0) {
       				_tempTotalDiskon += data[i]['Qty'] * data[i]['Harga'] * (data[i]['DiskonPersen'] / 100);
+					_diskonPerRow = data[i]['Qty'] * data[i]['Harga'] * (data[i]['DiskonPersen'] / 100);
       				// console.log(_TotalDiskon)
       			}
       			else if (data[i]['DiskonRp'] > 0) {
       				_tempTotalDiskon += data[i]['DiskonRp'];
+					_diskonPerRow = data[i]['DiskonRp'];
       			}
 
 				if (parseFloat(data[i]['VatPercent']) > 0) {
-					var Gross = _tempSubTotal - _tempTotalDiskon;
-					_tempTotalTax +=  (parseFloat(data[i]['VatPercent']) / 100) * Gross;
+					var Gross = _Total - _diskonPerRow;
+					var tax = (parseFloat(data[i]['VatPercent']) / 100) * Gross;
+					_tempTotalTax +=  tax;
 				}
       		}
 	    });
@@ -2167,6 +2171,8 @@ License: You must have a valid license purchased only from themeforest(the above
 	    }
 
 	    // Diskon Grup Customer
+
+		// console.log(_tempTotalTax)
 
 	    formatCurrency($('#_TotalItem'), _tempTotalItem);
 	    formatCurrency($('#_SubTotal'), _tempSubTotal);

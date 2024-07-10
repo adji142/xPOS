@@ -11,6 +11,7 @@ use Log;
 use App\Models\ItemMaster;
 use App\Models\JenisItem;
 use App\Models\Kertas;
+use App\Models\Pelanggan;
 
 class ReportController extends Controller
 {
@@ -89,6 +90,52 @@ class ReportController extends Controller
             'Gap' => $Gap,
             'itemmaster' => $itemmaster,
             'detailkertas' => $detailkertas
+		]);
+    }
+
+    function RptPenjualan(Request $request) {
+        $TglAwal = $request->input('TglAwal');
+        $TglAkhir = $request->input('TglAkhir');
+        $Pelanggan = $request->input('Pelanggan');
+        $StatusTransaksi = $request->input('StatusTransaksi');
+        $TipeLaporan = $request->input('TipeLaporan');
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+
+        $penjualan = DB::select('CALL rsp_Penjualan(?, ?, ?, ?,?)', [$TglAwal, $TglAkhir, (empty($Pelanggan) ? "" : $Pelanggan), $RecordOwnerID, (empty($StatusTransaksi) ? "" : $StatusTransaksi)]);
+        $opelanggan = Pelanggan::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                        ->where('Status', 1)
+                        ->get();
+        
+        return view("report.penjualan.penjualan",[
+			'penjualan' => $penjualan,
+            'pelanggan' => $opelanggan,
+            'oldTglAwal' => $TglAwal,
+            'oldTglAkhir' => $TglAkhir,
+            'oldPelanggan' => $Pelanggan,
+            'oldStatus' => $StatusTransaksi,
+            'oldTipeLaporan' => $TipeLaporan
+		]);
+    }
+
+    function RptReturPenjualan(Request $request) {
+        $TglAwal = $request->input('TglAwal');
+        $TglAkhir = $request->input('TglAkhir');
+        $Pelanggan = $request->input('Pelanggan');
+        $TipeLaporan = $request->input('TipeLaporan');
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+
+        $penjualan = DB::select('CALL rps_ReturPenjualan(?, ?, ?, ?)', [$TglAwal, $TglAkhir, (empty($Pelanggan) ? "" : $Pelanggan), $RecordOwnerID]);
+        $opelanggan = Pelanggan::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                        ->where('Status', 1)
+                        ->get();
+        
+        return view("report.penjualan.returpenjualan",[
+			'penjualan' => $penjualan,
+            'pelanggan' => $opelanggan,
+            'oldTglAwal' => $TglAwal,
+            'oldTglAkhir' => $TglAkhir,
+            'oldPelanggan' => $Pelanggan,
+            'oldTipeLaporan' => $TipeLaporan
 		]);
     }
 }

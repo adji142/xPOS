@@ -46,9 +46,9 @@ class HargaJualController extends Controller
         DB::beginTransaction();
 
         $errorCount = 0;
-
+        unset($jsonData["client_os"]);
         try {
-
+            // var_dump($jsonData);
             for ($i=0; $i < count($jsonData) ; $i++) { 
                 $model = new HargaJual;
                 $model->KodeItem = $jsonData[$i]['KodeItem'];
@@ -56,13 +56,15 @@ class HargaJualController extends Controller
                 $model->TipeMarkUp = -1;
                 $model->RecordOwnerID = Auth::user()->RecordOwnerID;
                 $save = $model->save();
-
+                
                 if (!$save) {
                     $data['message'] = "Gagal Simpan Data Harga Jual";
                     $errorCount +=1;
                     goto jump;
                 }
             }
+
+            // echo $errorCount;
 
             jump:
             if ($errorCount > 0) {
@@ -74,6 +76,7 @@ class HargaJualController extends Controller
                 $data['success'] = true;
             }
         } catch (\Exception $e) {
+            // var_dump($e);
             Log::debug($e->getMessage());
             $data['success'] = false;
             $data['message'] = "Gagal Simpan Data ". $e->getMessage();

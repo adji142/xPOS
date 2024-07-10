@@ -329,7 +329,7 @@
 					                            				<select name="AcctHPP" id="AcctHPP" class="js-example-basic-single js-states form-control bg-transparent">
 																	<option value="">Pilih Akun</option>
 																	@foreach($rekeninghpp as $ko)
-																		<option value="{{ $ko->KodeRekening }}" {{ $ko->KodeRekening == count($itemmaster) > 0 ? $itemmaster[0]['AcctHPP'] : '' ? 'selected' : '' }}>
+																		<option value="{{ $ko->KodeRekening }}" {{ $ko->KodeRekening == (count($itemmaster) > 0 ? $itemmaster[0]['AcctHPP'] : '') ? 'selected' : '' }}>
 								                                            {{ $ko->NamaRekening }}
 								                                        </option>
 																	@endforeach
@@ -609,17 +609,28 @@
 		};
 		oJenisDiskon.push(otempItem);
 
-		var dataSetting = <?php echo $settingaccount; ?>	
+		var dataSetting = <?php echo $settingaccount; ?>
 		// console.log(dataSetting);
-		jQuery('#AcctHPP').val(dataSetting[0]['InvAcctHargaPokokPenjualan']).trigger('change');
-		jQuery('#AcctPenjualan').val(dataSetting[0]['InvAcctPendapatanJual']).trigger('change');
-		jQuery('#AcctPenjualanJasa').val(dataSetting[0]['InvAcctPendapatanJasa']).trigger('change');
-		jQuery('#AcctPersediaan').val(dataSetting[0]['InvAcctPersediaan']).trigger('change');
 
+		var ItemMasterDataEdited = <?php echo $itemmaster ?>;
 		var bahanrakitan = <?php echo $bahanrakitan ?>;
 		var diskon = <?php echo $diskon ?>;
 		var itemkonversi = <?php echo $itemkonversi ?>;
 		oItemMaster = <?php echo $itembahanrakitan ?>;
+
+		console.log(ItemMasterDataEdited)
+		if(ItemMasterDataEdited[0]['AcctHPP'] == ""){
+			jQuery('#AcctHPP').val(dataSetting[0]['InvAcctHargaPokokPenjualan']).trigger('change');
+		}
+		if(ItemMasterDataEdited[0]['AcctPenjualan'] == ""){
+			jQuery('#AcctPenjualan').val(dataSetting[0]['InvAcctPendapatanJual']).trigger('change');
+		}
+		if(ItemMasterDataEdited[0]['AcctPenjualanJasa'] == ""){
+			jQuery('#AcctPenjualanJasa').val(dataSetting[0]['InvAcctPendapatanJasa']).trigger('change');
+		}
+		if(ItemMasterDataEdited[0]['AcctPersediaan'] == ""){
+			jQuery('#AcctPersediaan').val(dataSetting[0]['InvAcctPersediaan']).trigger('change');
+		}
 
 		if (bahanrakitan.length > 0) {
 			bindGrid(bahanrakitan)

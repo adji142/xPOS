@@ -355,6 +355,7 @@ class FakturPenjualanController extends Controller
 				$JurnalPotongan = 0;
 				$JurnalPajak = 0;
 				$JurnalTotalPembelian =0;
+				$JurnalKonsinyasi = 0;
 	
 				foreach ($jsonData['Detail'] as $key) {
 	
@@ -443,14 +444,14 @@ class FakturPenjualanController extends Controller
 	
 				// Penjualan
 	
-				$getPenjualanvalue = FakturPenjualanDetail::selectRaw("itemmaster.TypeItem, SUM(fakturpenjualandetail.HargaNet) TotalPenjualan, SUM(fakturpenjualandetail.HargaPokokPenjualan * fakturpenjualandetail.Qty) TotalHPP")
+				$getPenjualanvalue = FakturPenjualanDetail::selectRaw("itemmaster.KodeItem,itemmaster.TypeItem, SUM(fakturpenjualandetail.HargaNet) TotalPenjualan, SUM(fakturpenjualandetail.HargaPokokPenjualan * fakturpenjualandetail.Qty) TotalHPP")
 						->leftJoin('itemmaster', function ($value){
 							$value->on('fakturpenjualandetail.KodeItem','=','itemmaster.KodeItem')
 							->on('fakturpenjualandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
 						})
 						->where('fakturpenjualandetail.NoTransaksi', $NoTransaksi)
 						->where('fakturpenjualandetail.RecordOwnerID', Auth::user()->RecordOwnerID)
-						->groupBy('itemmaster.TypeItem')
+						->groupBy('itemmaster.TypeItem','itemmaster.KodeItem')
 						->get();
 				// var_dump($getPenjualanvalue);
 	
@@ -510,6 +511,90 @@ class FakturPenjualanController extends Controller
 	
 						array_push($arrDetail, $temp);
 					}
+					else if ($key['TypeItem'] == 5) {
+						// Penjualan
+						$getSetting = $Setting->GetSetting("InvAcctPendapatanJual");
+						$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+										->where('KodeRekening', $getSetting)->get();
+	
+						if (count($validate) == 0) {
+							$data['message'] = "Akun Rekening Akutansi Penjualan Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+							$errorCount +=1;
+							goto jump;
+						}
+	
+						$temp = array(
+							'KodeTransaksi' => "OINV", 
+							'KodeRekening' => $getSetting,
+							'KodeRekeningBukuBesar' => "",
+							'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+							'KodeMataUang' => "",
+							'Valas' => 0,
+							'NilaiTukar' => 0,
+							'Jumlah' => $key['TotalPenjualan'], 
+							'Keterangan' => $jsonData['Keterangan'], 
+							'HeaderKas' => "",
+							'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+						);
+	
+						array_push($arrDetail, $temp);
+						// Penjualan
+						// Hutang Dagang Belum diakui
+						$getSetting = $Setting->GetSetting("KnAcctPenerimaanKonsinyasi");
+						$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+										->where('KodeRekening', $getSetting)->get();
+
+						if (count($validate) == 0) {
+							$data['message'] = "Akun Rekening Akutansi Konsnyasi Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+							$errorCount +=1;
+							goto jump;
+						}
+	
+						$temp = array(
+							'KodeTransaksi' => "OINV", 
+							'KodeRekening' => $getSetting,
+							'KodeRekeningBukuBesar' => "",
+							'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+							'KodeMataUang' => "",
+							'Valas' => 0,
+							'NilaiTukar' => 0,
+							'Jumlah' => $key['TotalHPP'], 
+							'Keterangan' => "Hutang Konsinyasi", 
+							'HeaderKas' => "",
+							'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+						);
+	
+						array_push($arrDetail, $temp);
+						// Hutang Dagang Belum diakui
+
+						// Hutang
+						$getSetting = $Setting->GetSetting("KnAcctHutangKonsinyasi");
+						$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+										->where('KodeRekening', $getSetting)->get();
+
+						if (count($validate) == 0) {
+							$data['message'] = "Akun Rekening Akutansi Hutang Konsnyasi Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+							$errorCount +=1;
+							goto jump;
+						}
+	
+						$temp = array(
+							'KodeTransaksi' => "OINV", 
+							'KodeRekening' => $getSetting,
+							'KodeRekeningBukuBesar' => "",
+							'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+							'KodeMataUang' => "",
+							'Valas' => 0,
+							'NilaiTukar' => 0,
+							'Jumlah' => $key['TotalHPP'], 
+							'Keterangan' => "Hutang Konsinyasi", 
+							'HeaderKas' => "",
+							'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+						);
+	
+						array_push($arrDetail, $temp);
+						// Hutang
+					}
 					else{
 						$data['message'] = "Akun Rekening Akutansi Tidak Valid ";
 						$errorCount +=1;
@@ -519,7 +604,9 @@ class FakturPenjualanController extends Controller
 					// GIT
 					// GetAccount :
 					$Setting = NEW SettingAccount();
-					$getSetting = $Setting->GetSetting("InvAcctPersediaan");
+					// $getSetting = $Setting->GetSetting("InvAcctPersediaan");
+					$getSetting = $Setting->GetInventoryAccount($key["KodeItem"]);
+					
 					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
 									->where('KodeRekening', $getSetting)->get();
 
@@ -640,6 +727,31 @@ class FakturPenjualanController extends Controller
 	
 				array_push($arrDetail, $temp);
 				// End Pembayran
+
+				// Kembalian
+				$JurnalKembalian = $jsonData['TotalPembayaran'] - $JurnalTotalPembelian;
+				if($oKembalian > 0){
+					$temp = array(
+						'KodeTransaksi' => "OINV", 
+						'KodeRekening' => $metode->AkunPembayaran,
+						'KodeRekeningBukuBesar' => "",
+						'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+						'KodeMataUang' => "",
+						'Valas' => 0,
+						'NilaiTukar' => 0,
+						'Jumlah' => $JurnalKembalian, 
+						'Keterangan' => "Kembalian Pembayaran", 
+						'HeaderKas' => "",
+						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+					);
+		
+					array_push($arrDetail, $temp);
+				}
+				// End Kembalian
+
+				// Konsinyasi
+
+				// End Konsinyasi
 				// Save Journal
 				$autoPosting = new AutoPosting();
 	
@@ -966,14 +1078,14 @@ class FakturPenjualanController extends Controller
     		// var_dump($BaseReff);
 
     		if ($BaseReff == "") {
-    			$getPenjualanvalue = FakturPenjualanDetail::selectRaw("itemmaster.TypeItem, SUM(fakturpenjualandetail.HargaNet) TotalPenjualan, SUM(fakturpenjualandetail.HargaPokokPenjualan * fakturpenjualandetail.Qty) TotalHPP")
+    			$getPenjualanvalue = FakturPenjualanDetail::selectRaw("itemmaster.KodeItem,itemmaster.TypeItem, SUM(fakturpenjualandetail.HargaNet) TotalPenjualan, SUM(fakturpenjualandetail.HargaPokokPenjualan * fakturpenjualandetail.Qty) TotalHPP")
     				->leftJoin('itemmaster', function ($value){
     					$value->on('fakturpenjualandetail.KodeItem','=','itemmaster.KodeItem')
     					->on('fakturpenjualandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
     				})
     				->where('fakturpenjualandetail.NoTransaksi', $jsonData['NoTransaksi'])
     				->where('fakturpenjualandetail.RecordOwnerID', Auth::user()->RecordOwnerID)
-    				->groupBy('itemmaster.TypeItem')
+    				->groupBy('itemmaster.TypeItem','itemmaster.KodeItem')
     				->get();
     		}
 			foreach ($getPenjualanvalue as $key) {
@@ -1074,7 +1186,8 @@ class FakturPenjualanController extends Controller
 					// GIT
 					// GetAccount :
 					$Setting = NEW SettingAccount();
-					$getSetting = $Setting->GetSetting("InvAcctPersediaan");
+					// $getSetting = $Setting->GetSetting("InvAcctPersediaan");
+					$getSetting = $Setting->GetInventoryAccount($key["KodeItem"]);
 					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
 									->where('KodeRekening', $getSetting)->get();
 
@@ -1417,14 +1530,14 @@ class FakturPenjualanController extends Controller
 	        		// var_dump($getPenjualanvalue);
 
 	        		if ($BaseReff == "") {
-	        			$getPenjualanvalue = FakturPenjualanDetail::selectRaw("itemmaster.TypeItem, SUM((fakturpenjualandetail.Qty * fakturpenjualandetail.Harga) - fakturpenjualandetail.Discount) TotalPenjualan, SUM(fakturpenjualandetail.HargaPokokPenjualan * fakturpenjualandetail.Qty) TotalHPP")
+	        			$getPenjualanvalue = FakturPenjualanDetail::selectRaw("itemmaster.KodeItem,itemmaster.TypeItem, SUM((fakturpenjualandetail.Qty * fakturpenjualandetail.Harga) - fakturpenjualandetail.Discount) TotalPenjualan, SUM(fakturpenjualandetail.HargaPokokPenjualan * fakturpenjualandetail.Qty) TotalHPP")
 	        				->leftJoin('itemmaster', function ($value){
 	        					$value->on('fakturpenjualandetail.KodeItem','=','itemmaster.KodeItem')
 	        					->on('fakturpenjualandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
 	        				})
 	        				->where('fakturpenjualandetail.NoTransaksi', $jsonData['NoTransaksi'])
 	        				->where('fakturpenjualandetail.RecordOwnerID', Auth::user()->RecordOwnerID)
-	        				->groupBy('itemmaster.TypeItem')
+	        				->groupBy('itemmaster.TypeItem','itemmaster.KodeItem')
 	        				->get();
 	        		}
 					foreach ($getPenjualanvalue as $key) {
@@ -1525,7 +1638,8 @@ class FakturPenjualanController extends Controller
 							// GIT
 							// GetAccount :
 							$Setting = NEW SettingAccount();
-							$getSetting = $Setting->GetSetting("InvAcctPersediaan");
+							// $getSetting = $Setting->GetSetting("InvAcctPersediaan");
+							$getSetting = $Setting->GetInventoryAccount($key["KodeItem"]);
 							$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
 											->where('KodeRekening', $getSetting)->get();
 

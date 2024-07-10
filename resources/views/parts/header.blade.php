@@ -365,6 +365,12 @@
 	<script type="text/javascript" src="https://cdn3.devexpress.com/jslib/23.2.5/js/dx.all.js"></script> -->
 	<link href="{{ asset('devexpress/dx.light.css')}}" rel="stylesheet" type="text/css" />
 	<script src="{{asset('devexpress/dx.all.js')}}"></script>
+	<script src="{{asset('devexpress/jspdf.umd.min.js')}}"></script>
+	<script src="{{asset('devexpress/jspdf.plugin.autotable.min.js')}}"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.4.0/polyfill.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.1.1/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.2/FileSaver.min.js"></script>
+
 	<!-- End DevExpress -->
 	<script src="{{asset('js/slick.min.js')}}"></script>
 	<script src="{{asset('api/jqueryvalidate/jquery.validate.min.js')}}"></script>

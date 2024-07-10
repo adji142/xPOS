@@ -193,6 +193,29 @@
 	</div>
 	
 </div>
+
+<div class="modal fade text-left w-100" id="modallookupItem" tabindex="-1" role="dialog" aria-labelledby="myModalLabel16" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" role="document">
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <h4 class="modal-title" id="myModalLabel16">Daftar Item Master</h4>
+		  <button type="button" class="close rounded-pill btn btn-sm btn-icon btn-primary m-0" data-bs-dismiss="modal" aria-label="Close">
+			<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+			<path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+			</svg>	
+			</button>
+		</div>
+		<div class="modal-body">
+		  <div id="gridLookupitem"></div>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-primary ms-1" id="btSelectItem" data-bs-dismiss="modal">
+				<span class="">Pilih Item</span>
+			</button>
+			</div> 		
+	  </div>
+	</div>
+</div>
 @endsection
 
 @push('scripts')
@@ -691,11 +714,25 @@
 		        	// console.log(dataGridInstance.option("dataSource"))
 		            var rowData = dataGridInstance.option("dataSource");
 		            var columnIndex = e.columnIndex;
-		            console.log(e)
+		            // console.log(e)
 		        	if (columnIndex >= 1 && columnIndex <= 5) {
 		                dataGridInstance.editRow(e.rowIndex)	
 		            }
-		            dataGridInstance.option("focusedColumnIndex", columnIndex);	
+		            dataGridInstance.option("focusedColumnIndex", columnIndex);
+
+		            var allRowsData  = dataGridInstance.option("dataSource");
+		            var blankCount = 0;
+
+	        		for (var i = 0; i < allRowsData.length; i++) {
+	        			if (allRowsData[i]["KodeItem"] == "") {
+	        				blankCount += 1;
+	        			}
+	        		}
+	        		if (blankCount == 1) {
+	        			var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"", Qty: 0, Satuan: "", Harga:0, Discount:0,VatPercent:0, HargaNet:0,LineStatus:"O" }
+						dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
+						dataGridInstance.refresh();
+	        		}
 		        },
 			}).dxDataGrid('instance');
 
@@ -710,26 +747,7 @@
         		}
 
         		if (blankCount == 1) {
-        			var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"",KodeGudang:"", QtyOrder: 0, Qty:0, Satuan: "", Harga:0, Discount:0,VatPercent:0, HargaNet:0,LineStatus:"O" }
-					dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
-					dataGridInstance.refresh();
-        		}
-
-        		CalculateTotal();
-        	});
-
-        	dataGridInstance.on('rowUpdated', function(e) {
-        		var allRowsData  = dataGridInstance.option("dataSource");
-        		var blankCount = 0;
-
-        		for (var i = 0; i < allRowsData.length; i++) {
-        			if (allRowsData[i]["KodeItem"] == "") {
-        				blankCount += 1;
-        			}
-        		}
-
-        		if (blankCount == 1) {
-        			var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"",KodeGudang:"", QtyOrder: 0, Qty:0, Satuan: "", Harga:0, Discount:0,VatPercent:0, HargaNet:0,LineStatus:"O" }
+        			var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"", Qty: 0, Satuan: "", Harga:0, Discount:0,VatPercent:0, HargaNet:0,LineStatus:"O" }
 					dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
 					dataGridInstance.refresh();
         		}
@@ -751,7 +769,7 @@
 
 
                     e.editorElement.on("focusout", function () {
-                    	// console.log(xItem)
+                    	console.log(xItem)
 	                	var filteredItem = oItemMaster.filter(function (oData) {
                         	return oData.KodeItem.includes(xItem);
                         });
@@ -767,13 +785,12 @@
 							});
                         }
                         else if (filteredItem.length == 1) {
-                        	dataGridInstance.cellValue(rowIndex, "KodeItem", filteredItem[0]["KodeItem"]);
+                        	dataGridInstance.cellValue(rowIndex, "KodeItem", xItem);
                         	dataGridInstance.cellValue(rowIndex, "NamaItem", filteredItem[0]["NamaItem"]);
                         	dataGridInstance.cellValue(rowIndex, "Qty", 1);
 				            dataGridInstance.cellValue(rowIndex, "Harga", filteredItem[0]["HargaBeliTerakhir"]);
 				            dataGridInstance.cellValue(rowIndex, "Discount", 0);
 				            dataGridInstance.cellValue(rowIndex, "VatPercent", filteredItem[0]["VatPercent"]);
-							dataGridInstance.cellValue(rowIndex, "HargaPokokPenjualan", filteredItem[0]["HargaPokokPenjualan"]);
 				            dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
 				            dataGridInstance.cellValue(rowIndex, "Satuan", filteredItem[0]["Satuan"]);
 				            dataGridInstance.refresh();
@@ -846,13 +863,12 @@
 							});
                         }
                         else if (filteredItem.length == 1) {
-                        	dataGridInstance.cellValue(rowIndex, "KodeItem", filteredItem[0]["KodeItem"]);
+                        	dataGridInstance.cellValue(rowIndex, "KodeItem", xItem);
                         	dataGridInstance.cellValue(rowIndex, "NamaItem", filteredItem[0]["NamaItem"]);
                         	dataGridInstance.cellValue(rowIndex, "Qty", 1);
 				            dataGridInstance.cellValue(rowIndex, "Harga", filteredItem[0]["HargaBeliTerakhir"]);
 				            dataGridInstance.cellValue(rowIndex, "Discount", 0);
 				            dataGridInstance.cellValue(rowIndex, "VatPercent", filteredItem[0]["VatPercent"]);
-							dataGridInstance.cellValue(rowIndex, "HargaPokokPenjualan", filteredItem[0]["HargaPokokPenjualan"]);
 				            dataGridInstance.cellValue(rowIndex, "HargaNet", 0);
 				            dataGridInstance.cellValue(rowIndex, "Satuan", filteredItem[0]["Satuan"]);
 				            dataGridInstance.refresh();
@@ -899,18 +915,12 @@
                         }
                     });
 	        	}
-	        	else if (e.parentType === "dataRow" && e.dataField == "KodeGudang"){
-	        		e.editorElement.on("focusout", function () {
-	        			dataGridInstance.refresh();
-				        dataGridInstance.saveEditData();
-	        		});
-	        	}
 
 	        	CalculateTotal();
 	        });
 
 	        var allRowsData  = dataGridInstance.option("dataSource");
-        	var newData = { NoUrut: allRowsData.length+1,KodeItem:"",NamaItem:"",KodeGudang:"", QtyOrder: 0, Qty:0, Satuan: "", Harga:0, Discount:0, VatPercent:0, HargaNet:0,LineStatus:"O" }
+        	var newData = { NoUrut: allRowsData.length + 1,KodeItem:"", Qty: 0, Satuan: "", Harga:0, Discount:0,VatPercent:0, HargaNet:0 ,LineStatus:"O"}
         	dataGridInstance.option("dataSource", [...dataGridInstance.option("dataSource"), newData]);
         	dataGridInstance.refresh();
 		}
