@@ -25,6 +25,23 @@
 	  max-width: 100%; /* Fit the image to the container width */
 	  height: 100%; /* Maintain the aspect ratio */
 	}
+
+	.image_result_sample{
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	  border: 1px solid black;
+	  /*flex-grow: 1;*/
+	  vertical-align: middle;
+	  align-content: center;
+	  flex-basis: 200;
+	  width: 100%;
+	  height: 150px;
+	}
+	.image_result_sample img {
+	  max-width: 100%; /* Fit the image to the container width */
+	  height: 100%; /* Maintain the aspect ratio */
+	}
   </style>
 <!--begin::Subheader-->
 <div class="subheader py-2 py-lg-6 subheader-solid">
@@ -82,6 +99,9 @@
 												</li>
 												<li class="nav-item" >
 													<a class="nav-link" id="printer-tab" data-bs-toggle="pill" href="#printer" role="tab" aria-controls="printer" aria-selected="false">Printer</a>
+												</li>
+												<li class="nav-item" >
+													<a class="nav-link" id="ecatalog-tab" data-bs-toggle="pill" href="#ecatalog" role="tab" aria-controls="ecatalog" aria-selected="false">E-Catalog</a>
 												</li>
 											</ul>
 										</div>
@@ -328,14 +348,196 @@
 
 													</div>
 												</div>
+
+												<div class="tab-pane fade " id="ecatalog" role="tabpanel" aria-labelledby="ecatalog-tab">
+													<div class="form-group row">
+														<div class="accordion" id="accordionExample">
+															<div class="accordion-item">
+																<h2 class="accordion-header" id="headingOne">
+																	<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+																		Banner #1
+																	</button>
+																</h2>
+																<div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+																	<div class="accordion-body">
+																		<div class="col-sm-12">
+																			<label  class="text-body">Sample Banner Pertama</label>
+																			<fieldset class="form-group mb-3">
+																				<img src="{{asset('images/sample/Page1.png')}}" width="100%">
+																			</fieldset>
+																		</div>
+																		<div class="col-sm-12">
+																			<label  class="text-body">Banner Header</label>
+																			<fieldset class="form-group mb-3">
+																				{{-- <input type="text" class="form-control" id="BannerHeader1" name="BannerHeader1" placeholder="Masukan Banner" value="{{ count($company) > 0 ? $company[0]['BannerHeader1'] : '' }}"  > --}}
+																				<textarea id="BannerHeader1" name="BannerHeader1" class="bg-transparent text-dark">
+																					{{ count($company) > 0 ? $company[0]['BannerHeader1'] : '' }}
+																				</textarea>
+																			</fieldset>
+																		</div>
+				
+																		<div class="col-sm-12">
+																			<label  class="text-body">Banner Text</label>
+																			<fieldset class="form-group mb-3">
+																				{{-- <input type="text" class="form-control" id="BannerText1" name="BannerText1" placeholder="Masukan Banner Text" value="{{ count($company) > 0 ? $company[0]['BannerText1'] : '' }}"  > --}}
+																				<textarea id="BannerText1" name="BannerText1" class="bg-transparent text-dark">
+																					{{ count($company) > 0 ? $company[0]['BannerText1'] : '' }}
+																				</textarea>
+																			</fieldset>
+																		</div>
+				
+																		<div class="col-sm-12">
+																			<label  class="text-body">Banner Image</label>
+																			<fieldset class="form-group mb-3">
+																				<textarea id = "Banner1Base64" name = "Banner1Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['Banner1'] : '' }} </textarea>
+																				
+																				<input type="file" id="fileBanner1" name="fileBanner1" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																				<div class="xContainer">
+																					<div id="Banner1" class="image_result_sample">
+																						@if (count($company) > 0)
+																							<img src=" {{$company[0]['Banner1']}} ">
+																						@else
+																							<img src="https://www.generationsforpeace.org/wp-content/uploads/2018/03/empty.jpg">
+																						@endif
+																					</div>
+																				</div>
+																			</fieldset>
+																		</div>
+																	</div>
+																</div>
+															</div>
+
+															<div class="accordion-item">
+																<h2 class="accordion-header" id="headingTwo">
+																	<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+																		Banner #2
+																	</button>
+																</h2>
+																<div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+																	<div class="accordion-body">
+																		<div class="col-sm-12">
+																			<label  class="text-body">Sample Banner</label>
+																			<fieldset class="form-group mb-3">
+																				<img src="{{asset('images/sample/Page2.png')}}" width="100%">
+																			</fieldset>
+																		</div>
+																		<div class="col-sm-12">
+																			<label  class="text-body">Banner Header</label>
+																			<fieldset class="form-group mb-3">
+																				{{-- <input type="text" class="form-control" id="BannerHeader2" name="BannerHeader2" placeholder="Masukan Banner" value="{{ count($company) > 0 ? $company[0]['BannerHeader2'] : '' }}"  > --}}
+																				<textarea id="BannerHeader2" name="BannerHeader2" class="bg-transparent text-dark">
+																					{{ count($company) > 0 ? $company[0]['BannerHeader2'] : '' }}
+																				</textarea>
+																			</fieldset>
+																		</div>
+				
+																		<div class="col-sm-12">
+																			<label  class="text-body">Banner Text</label>
+																			<fieldset class="form-group mb-3">
+																				{{-- <input type="text" class="form-control" id="BannerText2" name="BannerText2" placeholder="Masukan Banner Text" value="{{ count($company) > 0 ? $company[0]['BannerText2'] : '' }}"  > --}}
+																				<textarea id="BannerText2" name="BannerText2" class="bg-transparent text-dark">
+																					{{ count($company) > 0 ? $company[0]['BannerText2'] : '' }}
+																				</textarea>
+																			</fieldset>
+																		</div>
+				
+																		<div class="col-sm-12">
+																			<label  class="text-body">Banner Image</label>
+																			<fieldset class="form-group mb-3">
+																				<textarea id = "Banner2Base64" name = "Banner2Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['Banner2'] : '' }} </textarea>
+																				
+																				<input type="file" id="fileBanner2" name="fileBanner2" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																				<div class="xContainer">
+																					<div id="Banner2" class="image_result_sample">
+																						@if (count($company) > 0)
+																							<img src=" {{$company[0]['Banner2']}} ">
+																						@else
+																							<img src="https://www.generationsforpeace.org/wp-content/uploads/2018/03/empty.jpg">
+																						@endif
+																					</div>
+																				</div>
+																			</fieldset>
+																		</div>
+
+																	</div>
+																</div>
+
+																<div class="accordion-item">
+																	<h2 class="accordion-header" id="headingThree">
+																		<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+																			Banner #3
+																		</button>
+																	</h2>
+																	<div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
+																		<div class="accordion-body">
+																			<div class="col-sm-12">
+																				<label  class="text-body">Sample Banner</label>
+																				<fieldset class="form-group mb-3">
+																					<img src="{{asset('images/sample/Page2.png')}}" width="100%">
+																				</fieldset>
+																			</div>
+																			<div class="col-sm-12">
+																				<label  class="text-body">Banner Header</label>
+																				<fieldset class="form-group mb-3">
+																					{{-- <input type="text" class="form-control" id="BannerHeader2" name="BannerHeader2" placeholder="Masukan Banner" value="{{ count($company) > 0 ? $company[0]['BannerHeader2'] : '' }}"  > --}}
+																					<textarea id="BannerHeader3" name="BannerHeader3" class="bg-transparent text-dark">
+																						{{ count($company) > 0 ? $company[0]['BannerHeader2'] : '' }}
+																					</textarea>
+																				</fieldset>
+																			</div>
+					
+																			<div class="col-sm-12">
+																				<label  class="text-body">Banner Text</label>
+																				<fieldset class="form-group mb-3">
+																					{{-- <input type="text" class="form-control" id="BannerText2" name="BannerText2" placeholder="Masukan Banner Text" value="{{ count($company) > 0 ? $company[0]['BannerText2'] : '' }}"  > --}}
+																					<textarea id="BannerText3" name="BannerText3" class="bg-transparent text-dark">
+																						{{ count($company) > 0 ? $company[0]['BannerText3'] : '' }}
+																					</textarea>
+																				</fieldset>
+																			</div>
+					
+																			<div class="col-sm-12">
+																				<label  class="text-body">Banner Image</label>
+																				<fieldset class="form-group mb-3">
+																					<textarea id = "Banner3Base64" name = "Banner3Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['Banner3'] : '' }} </textarea>
+																					
+																					<input type="file" id="fileBanner3" name="fileBanner3" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																					<div class="xContainer">
+																						<div id="Banner3" class="image_result_sample">
+																							@if (count($company) > 0)
+																								<img src=" {{$company[0]['Banner3']}} ">
+																							@else
+																								<img src="https://www.generationsforpeace.org/wp-content/uploads/2018/03/empty.jpg">
+																							@endif
+																						</div>
+																					</div>
+																				</fieldset>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+															</div>
+														</div>
+														<div class="col-md-12">
+															<label  class="text-body">Tampilkan Link URL Di Struk Transaksi</label>
+					                            			<fieldset class="form-group mb-3">
+					                            				<select name="ShowLinkInReciept" id="ShowLinkInReciept" class="js-example-basic-single js-states form-control bg-transparent">
+					                            					<option value="0" {{ count($company) > 0 ? $company[0]['ShowLinkInReciept'] == '0' ? 'selected' : '' : '' }}>Tidak</option>
+					                            					<option value="1" {{ count($company) > 0 ? $company[0]['ShowLinkInReciept'] == '1' ? 'selected' : '' : '' }}>Ya</option>
+					                            				</select>
+					                            			</fieldset>
+														</div>
+														<div class="col-md-12">
+															<a href="{{ url('cat/').'/'.$company[0]['KodePartner'].'#home-basic' }}" target="_blank" class="btn btn-warning text-white font-weight-bold me-1 mb-1">Lihat Website</a>
+														</div>
+														{{-- E-Catalog --}}
+													</div>
+												</div>
+
 											</div>
 										</div>
 									</div>
 									<div class="form-group row">
-										
-
-	                            		
-
 	                            		<div class="col-md-12">
 	                            			<button type="submit" class="btn btn-success text-white font-weight-bold me-1 mb-1">Simpan</button>
 	                            		</div>
@@ -363,6 +565,32 @@ var _URLePub = window.URL || window.webkitURL;
 			var slip = "{{ count($company) > 0 ? $company[0]['DefaultSlip'] : 'slip1' }}"
 			jQuery('#LevelHarga').select2();
 			jQuery('#DefaultSlip').val(slip).trigger('change');
+
+			ClassicEditor.create(document.querySelector('#BannerHeader1')).then( editor => {})
+			.catch( error => {
+					console.error( error );
+			});
+			ClassicEditor.create(document.querySelector('#BannerHeader2')).then( editor => {})
+			.catch( error => {
+					console.error( error );
+			});
+			ClassicEditor.create(document.querySelector('#BannerHeader3')).then( editor => {})
+			.catch( error => {
+					console.error( error );
+			});
+
+			ClassicEditor.create(document.querySelector('#BannerText1')).then( editor => {})
+			.catch( error => {
+					console.error( error );
+			});
+			ClassicEditor.create(document.querySelector('#BannerText2')).then( editor => {})
+			.catch( error => {
+					console.error( error );
+			});
+			ClassicEditor.create(document.querySelector('#BannerText3')).then( editor => {})
+			.catch( error => {
+					console.error( error );
+			});
 		});
 		jQuery('#btTestPrint').click(function () {
 			// alert('asd')
@@ -404,42 +632,105 @@ var _URLePub = window.URL || window.webkitURL;
 			$('#Attachment').click();
 		});
 
-		$("#Attachment").change(function(){
-		var file = $(this)[0].files[0];
-		img = new Image();
-		img.src = _URL.createObjectURL(file);
-		var imgwidth = 0;
-		var imgheight = 0;
-		img.onload = function () {
-			imgwidth = this.width;
-			imgheight = this.height;
-			$('#width').val(imgwidth);
-			$('#height').val(imgheight);
-		}
-		readURL(this);
-		encodeImagetoBase64(this);
-		// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		jQuery('#Banner1').click(function(){
+			$('#fileBanner1').click();
 		});
 
-		function readURL(input) {
-		if (input.files && input.files[0]) {
-			var reader = new FileReader();
-			
-			reader.onload = function (e) {
-			// console.log(e.target.result);
-			$('#image_result').html("<img src ='"+e.target.result+"'> ");
+		jQuery('#Banner2').click(function(){
+			$('#fileBanner2').click();
+		});
+
+		jQuery('#Banner3').click(function(){
+			$('#fileBanner3').click();
+		});
+
+		jQuery("#fileBanner1").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
 			}
-			reader.readAsDataURL(input.files[0]);
+			readURL(this, "Banner1");
+			encodeImagetoBase64(this, "Banner1Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileBanner2").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "Banner2");
+			encodeImagetoBase64(this, "Banner2Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileBanner3").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "Banner3");
+			encodeImagetoBase64(this, "Banner3Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		$("#Attachment").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this,"image_result");
+			encodeImagetoBase64(this,"image_base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		function readURL(input, outputElement) {
+			if (input.files && input.files[0]) {
+				var reader = new FileReader();
+				
+				reader.onload = function (e) {
+				// console.log(e.target.result);
+				$('#'+outputElement).html("<img src ='"+e.target.result+"'> ");
+				}
+				reader.readAsDataURL(input.files[0]);
+			}
 		}
-		}
-		function encodeImagetoBase64(element) {
-		$('#image_base64').val('');
+		function encodeImagetoBase64(element, textOutput) {
+			$('#'+textOutput).val('');
 			var file = element.files[0];
 			var reader = new FileReader();
 			reader.onloadend = function() {
-			// $(".link").attr("href",reader.result);
-			// $(".link").text(reader.result);
-			$('#image_base64').val(reader.result);
+				// $(".link").attr("href",reader.result);
+				// $(".link").text(reader.result);
+				$('#'+textOutput).val(reader.result);
 			}
 			reader.readAsDataURL(file);
 		}

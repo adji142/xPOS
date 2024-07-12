@@ -107,6 +107,16 @@ class CompanyController extends Controller
                                     'TerminBayarPoS' => empty($request->input('TerminBayarPoS')) ? "" : $request->input('TerminBayarPoS'),
                                     'AllowNegativeInventory' => empty($request->input('AllowNegativeInventory')) ? "" : $request->input('AllowNegativeInventory'),
                                     'DefaultSlip' => empty($request->input('DefaultSlip')) ? "" : $request->input('DefaultSlip'),
+                                    'Banner1' => empty($request->input('Banner1Base64')) ? "" : $request->input('Banner1Base64'),
+                                    'Banner2' => empty($request->input('Banner2Base64')) ? "" : $request->input('Banner2Base64'),
+                                    'Banner3' => empty($request->input('Banner3Base64')) ? "" : $request->input('Banner3Base64'),
+                                    'BannerHeader1' => empty($request->input('BannerHeader1')) ? "" : $request->input('BannerHeader1'),
+                                    'BannerHeader2' => empty($request->input('BannerHeader2')) ? "" : $request->input('BannerHeader2'),
+                                    'BannerHeader3' => empty($request->input('BannerHeader3')) ? "" : $request->input('BannerHeader3'),
+                                    'BannerText1' => empty($request->input('BannerText1')) ? "" : $request->input('BannerText1'),
+                                    'BannerText2' => empty($request->input('BannerText2')) ? "" : $request->input('BannerText2'),
+                                    'BannerText3' => empty($request->input('BannerText3')) ? "" : $request->input('BannerText3'),
+                                    'ShowLinkInReciept' => ""
                 				]
                 			);
 

@@ -365,7 +365,7 @@
 
       		var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
       		var allRowsData  = dataGridInstance.getDataSource().items();
-      		// console.log(allRowsData)
+      		console.log(allRowsData)
       		var oDetail = [];
 
       		for (var i = 0; i < allRowsData.length; i++) {
@@ -384,7 +384,7 @@
 						'VatPercent' : allRowsData[i]['VatPercent'],
 						'HargaNet' : allRowsData[i]['HargaNet'],
 						'BaseReff' : NoOrderPembelian,
-						'BaseLine' : allRowsData[i]['BaseLine'],
+						'BaseLine' : (allRowsData[i]['QtyOrder'] == 0) ? -1 : allRowsData[i]['BaseLine'],
 						'KodeGudang' : allRowsData[i]['KodeGudang'],
 						'LineStatus':allRowsData[i]['LineStatus'],
       				}

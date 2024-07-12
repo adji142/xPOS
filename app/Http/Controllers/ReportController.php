@@ -12,6 +12,9 @@ use App\Models\ItemMaster;
 use App\Models\JenisItem;
 use App\Models\Kertas;
 use App\Models\Pelanggan;
+use App\Models\Supplier;
+use App\Models\Gudang;
+use App\Models\KelompokRekening;
 
 class ReportController extends Controller
 {
@@ -33,6 +36,23 @@ class ReportController extends Controller
             'oldTglAwal' => $TglAwal,
             'oldTglAkhir' => $TglAkhir,
             'oldKodeItem' => $KodeItem,
+		]);
+    }
+
+    function RptSaldoStock(Request $request) {
+        $KodeGudang = $request->input('KodeGudang');
+        $ShowZero = $request->input('ShowZero');
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+
+        $sakdostock = DB::select('CALL rsp_SaldoStock(?, ?, ?)', [(empty($KodeGudang) ? "" : $KodeGudang), $RecordOwnerID, $ShowZero]);
+        $gudang = Gudang::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                    ->get();
+        
+        return view("report.inventory.saldostock",[
+			'sakdostock' => $sakdostock,
+            'gudang' => $gudang,
+            'oldKodeGudang' => $KodeGudang,
+            'oldShowZero' => $ShowZero
 		]);
     }
 
@@ -136,6 +156,69 @@ class ReportController extends Controller
             'oldTglAkhir' => $TglAkhir,
             'oldPelanggan' => $Pelanggan,
             'oldTipeLaporan' => $TipeLaporan
+		]);
+    }
+
+    function RptPembelian(Request $request) {
+        $TglAwal = $request->input('TglAwal');
+        $TglAkhir = $request->input('TglAkhir');
+        $Supplier = $request->input('Supplier');
+        $StatusTransaksi = $request->input('StatusTransaksi');
+        $TipeLaporan = $request->input('TipeLaporan');
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+
+        $pembelian = DB::select('CALL rsp_Pembelian(?, ?, ?, ?,?)', [$TglAwal, $TglAkhir, (empty($Supplier) ? "" : $Supplier), $RecordOwnerID, (empty($StatusTransaksi) ? "" : $StatusTransaksi)]);
+        $osupplier = Supplier::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                        ->where('Status', 1)
+                        ->get();
+        
+        return view("report.pembelian.pembelian",[
+			'pembelian' => $pembelian,
+            'supplier' => $osupplier,
+            'oldTglAwal' => $TglAwal,
+            'oldTglAkhir' => $TglAkhir,
+            'oldSupplier' => $Supplier,
+            'oldStatus' => $StatusTransaksi,
+            'oldTipeLaporan' => $TipeLaporan
+		]);
+    }
+
+    function RptReturPembelian(Request $request) {
+        $TglAwal = $request->input('TglAwal');
+        $TglAkhir = $request->input('TglAkhir');
+        $Supplier = $request->input('Supplier');
+        $TipeLaporan = $request->input('TipeLaporan');
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+
+        $pembelian = DB::select('CALL rsp_ReturPembelian(?, ?, ?, ?)', [$TglAwal, $TglAkhir, (empty($Supplier) ? "" : $Supplier), $RecordOwnerID]);
+        $osupplier = Supplier::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                        ->where('Status', 1)
+                        ->get();
+        
+        return view("report.pembelian.returpembelian",[
+			'pembelian' => $pembelian,
+            'supplier' => $osupplier,
+            'oldTglAwal' => $TglAwal,
+            'oldTglAkhir' => $TglAkhir,
+            'oldSupplier' => $Supplier,
+            'oldTipeLaporan' => $TipeLaporan
+		]);
+    }
+
+    // Akutansi
+
+    function RptSaldoRekening(Request $request) {
+        $KelompokRekening = $request->input('KelompokRekening');
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+
+        $saldorekening = DB::select('CALL rsp_SaldoRekening(?, ?)', [(empty($KelompokRekening) ? "" : $KelompokRekening), $RecordOwnerID]);
+        $kelompokrekening = KelompokRekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                            ->get();
+        
+        return view("report.akutansi.saldorekening",[
+			'saldorekening' => $saldorekening,
+            'kelompokrekening' => $kelompokrekening,
+            'oldKelompokRekening' => $KelompokRekening,
 		]);
     }
 }

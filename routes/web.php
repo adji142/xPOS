@@ -45,6 +45,7 @@ use App\Http\Controllers\JournalController;
 use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\DiskonPeriodikController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\KatalogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -605,8 +606,24 @@ Route::get('/diskonperiodik/export', [DiskonPeriodikController::class,'Export'])
 */
 
 Route::get('/report/kartustock', [ReportController::class, 'KartuStock'])->name('report-kartustock')->middleware('auth');
+Route::get('/report/saldostock', [ReportController::class, 'RptSaldoStock'])->name('report-saldostock')->middleware('auth');
 Route::post('/report/getpapersize', [ReportController::class, 'GetKertas'])->name('report-getpapersize')->middleware('auth');
 Route::get('/report/generatebarcode', [ReportController::class, 'GenerateBarcode'])->name('report-generatebarcode')->middleware('auth');
 Route::get('/report/generatetemplate', [ReportController::class, 'GenerateBarcodeTemplate'])->name('report-generatetemplate')->middleware('auth');
 Route::get('/report/penjualan', [ReportController::class, 'RptPenjualan'])->name('report-penjualan')->middleware('auth');
 Route::get('/report/returpenjualan', [ReportController::class, 'RptReturPenjualan'])->name('report-returpenjualan')->middleware('auth');
+Route::get('/report/pembelian', [ReportController::class, 'RptPembelian'])->name('report-pembelian')->middleware('auth');
+Route::get('/report/returpembelian', [ReportController::class, 'RptReturPembelian'])->name('report-returpembelian')->middleware('auth');
+Route::get('/report/saldorekening', [ReportController::class, 'RptSaldoRekening'])->name('report-saldorekening')->middleware('auth');
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Katalog
+|--------------------------------------------------------------------------
+|
+*/
+
+Route::get('/cat/{ID}', [KatalogController::class, 'View'])->name('cat-catalouge');
+Route::post('/cat/itemmaster', [KatalogController::class, 'ViewItemMaster'])->name('cat-itemmaster');

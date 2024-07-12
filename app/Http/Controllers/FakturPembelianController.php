@@ -270,7 +270,7 @@ class FakturPembelianController extends Controller
 				$modelDetail->VatPercent = $key['VatPercent'];
 				$modelDetail->Discount = $key['Discount'];
 
-				$modelDetail->BaseReff = $key['BaseReff'];
+				$modelDetail->BaseReff = (empty($key['BaseReff']) ? "" : $key['BaseReff']);
 				$modelDetail->BaseLine = $key['BaseLine'];
 				$modelDetail->KodeGudang = $key['KodeGudang'];
 
