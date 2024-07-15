@@ -6,7 +6,7 @@ namespace Kreait\Firebase\Http;
 
 use GuzzleHttp\Psr7\AppendStream;
 use GuzzleHttp\Psr7\Request;
-use function GuzzleHttp\Psr7\stream_for;
+use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface;
 
@@ -25,26 +25,19 @@ final class RequestWithSubRequests implements HasSubRequests, RequestInterface
 {
     use WrappedPsr7Request;
 
-    /** @var string */
-    private $method = 'POST';
+    private string $method = 'POST';
 
-    /** @var string */
-    private $boundary;
+    private string $boundary;
 
-    /** @var array<string, string|array> */
-    private $headers;
+    private AppendStream $body;
 
-    /** @var AppendStream */
-    private $body;
-
-    /** @var Requests */
-    private $subRequests;
+    private Requests $subRequests;
 
     /**
      * @param string|UriInterface $uri
      * @param string $version Protocol version
      */
-    public function __construct($uri, Requests $subRequests, $version = '1.1')
+    public function __construct($uri, Requests $subRequests, string $version = '1.1')
     {
         $this->boundary = \sha1(\uniqid('', true));
 
@@ -88,7 +81,7 @@ final class RequestWithSubRequests implements HasSubRequests, RequestInterface
 
     private function appendStream(string $value): void
     {
-        $this->body->addStream(stream_for($value));
+        $this->body->addStream(Utils::streamFor($value));
     }
 
     private function subRequestHeadersAsString(RequestInterface $request): string

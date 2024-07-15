@@ -10,11 +10,10 @@ use Kreait\Firebase\Exception\DatabaseException;
 
 class Transaction
 {
-    /** @var ApiClient */
-    private $apiClient;
+    private ApiClient $apiClient;
 
     /** @var string[] */
-    private $etags;
+    private array $etags;
 
     /**
      * @internal
@@ -25,6 +24,9 @@ class Transaction
         $this->etags = [];
     }
 
+    /**
+     * @throws DatabaseException
+     */
     public function snapshot(Reference $reference): Snapshot
     {
         $uri = (string) $reference->getUri();

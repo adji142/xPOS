@@ -18,14 +18,11 @@ use Psr\Http\Message\UriInterface;
  */
 class Reference
 {
-    /** @var UriInterface */
-    private $uri;
+    private UriInterface $uri;
 
-    /** @var ApiClient */
-    private $apiClient;
+    private ApiClient $apiClient;
 
-    /** @var Validator */
-    private $validator;
+    private Validator $validator;
 
     /**
      * @internal
@@ -71,8 +68,6 @@ class Reference
      * @see https://firebase.google.com/docs/reference/js/firebase.database.Reference#parent
      *
      * @throws OutOfRangeException if requested for the root Reference
-     *
-     * @return Reference
      */
     public function getParent(): self
     {
@@ -82,15 +77,13 @@ class Reference
             throw new OutOfRangeException('Cannot get parent of root reference');
         }
 
-        return new self($this->uri->withPath($parentPath), $this->apiClient, $this->validator);
+        return new self($this->uri->withPath('/'.\ltrim($parentPath, '/')), $this->apiClient, $this->validator);
     }
 
     /**
      * The root location of a Reference.
      *
      * @see https://firebase.google.com/docs/reference/js/firebase.database.Reference#root
-     *
-     * @return Reference
      */
     public function getRoot(): self
     {
@@ -106,12 +99,10 @@ class Reference
      * @see https://firebase.google.com/docs/reference/js/firebase.database.Reference#child
      *
      * @throws InvalidArgumentException if the path is invalid
-     *
-     * @return Reference
      */
     public function getChild(string $path): self
     {
-        $childPath = \sprintf('%s/%s', \trim($this->uri->getPath(), '/'), \trim($path, '/'));
+        $childPath = \sprintf('/%s/%s', \trim($this->uri->getPath(), '/'), \trim($path, '/'));
 
         try {
             return new self($this->uri->withPath($childPath), $this->apiClient, $this->validator);
@@ -171,11 +162,11 @@ class Reference
     }
 
     /**
-     * Creates a Query with the specified starting point.
+     * Creates a Query with the specified starting point (inclusive).
      *
      * @see Query::startAt()
      *
-     * @param int|float|string|bool $value $value
+     * @param scalar $value
      */
     public function startAt($value): Query
     {
@@ -183,11 +174,23 @@ class Reference
     }
 
     /**
-     * Creates a Query with the specified ending point.
+     * Creates a Query with the specified starting point (exclusive).
+     *
+     * @see Query::startAfter()
+     *
+     * @param scalar $value
+     */
+    public function startAfter($value): Query
+    {
+        return $this->query()->startAfter($value);
+    }
+
+    /**
+     * Creates a Query with the specified ending point (inclusive).
      *
      * @see Query::endAt()
      *
-     * @param int|float|string|bool $value
+     * @param scalar $value
      */
     public function endAt($value): Query
     {
@@ -195,11 +198,23 @@ class Reference
     }
 
     /**
+     * Creates a Query with the specified ending point (exclusive).
+     *
+     * @see Query::endBefore()
+     *
+     * @param scalar $value
+     */
+    public function endBefore($value): Query
+    {
+        return $this->query()->endBefore($value);
+    }
+
+    /**
      * Creates a Query which includes children which match the specified value.
      *
      * @see Query::equalTo()
      *
-     * @param int|float|string|bool $value
+     * @param scalar $value
      */
     public function equalTo($value): Query
     {
@@ -258,8 +273,6 @@ class Reference
      * @param mixed $value
      *
      * @throws DatabaseException if the API reported an error
-     *
-     * @return Reference
      */
     public function set($value): self
     {
@@ -299,7 +312,7 @@ class Reference
      *
      * @see https://firebase.google.com/docs/reference/js/firebase.database.Reference#push
      *
-     * @param mixed $value
+     * @param mixed|null $value
      *
      * @throws DatabaseException if the API reported an error
      *
@@ -307,7 +320,7 @@ class Reference
      */
     public function push($value = null): self
     {
-        $value = $value ?? [];
+        $value ??= [];
 
         $newKey = $this->apiClient->push($this->uri, $value);
         $newPath = \sprintf('%s/%s', $this->uri->getPath(), $newKey);
@@ -350,8 +363,6 @@ class Reference
      * @param array<mixed> $values
      *
      * @throws DatabaseException if the API reported an error
-     *
-     * @return Reference
      */
     public function update(array $values): self
     {
@@ -382,10 +393,8 @@ class Reference
      * Returns the absolute URL for this location.
      *
      * @see getUri()
-     *
-     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return (string) $this->getUri();
     }

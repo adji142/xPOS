@@ -30,8 +30,7 @@ use Throwable;
  */
 class AuthApiExceptionConverter
 {
-    /** @var ErrorResponseParser */
-    private $responseParser;
+    private ErrorResponseParser $responseParser;
 
     /**
      * @internal
@@ -41,12 +40,10 @@ class AuthApiExceptionConverter
         $this->responseParser = new ErrorResponseParser();
     }
 
-    /**
-     * @return AuthException
-     */
-    public function convertException(Throwable $exception): FirebaseException
+    public function convertException(Throwable $exception): AuthException
     {
-        if ($exception instanceof RequestException) {
+        // @phpstan-ignore-next-line
+        if ($exception instanceof RequestException && !($exception instanceof ConnectException)) {
             return $this->convertGuzzleRequestException($exception);
         }
 
@@ -61,8 +58,9 @@ class AuthApiExceptionConverter
     {
         $message = $e->getMessage();
         $code = $e->getCode();
+        $response = $e->getResponse();
 
-        if ($response = $e->getResponse()) {
+        if ($response !== null) {
             $message = $this->responseParser->getErrorReasonFromResponse($response);
             $code = $response->getStatusCode();
         }

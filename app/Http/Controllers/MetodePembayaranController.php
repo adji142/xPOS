@@ -70,6 +70,9 @@ class MetodePembayaranController extends Controller
             $model->Active = $request->input('Active');
             $model->MetodeVerifikasi = $request->input('MetodeVerifikasi');
             $model->TipePembayaran = $request->input('TipePembayaran');
+            $model->ClientKey = $request->input('ClientKey');
+            $model->ServerKey = $request->input('ServerKey');
+            $model->MerchantID = $request->input('MerchantID');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -112,7 +115,10 @@ class MetodePembayaranController extends Controller
                                     'Image' => $request->input('image_base64'),
                                     'Active' => $request->input('Active'),
                                     'MetodeVerifikasi' => $request->input('MetodeVerifikasi'),
-                                    'TipePembayaran' => $request->input('TipePembayaran')
+                                    'TipePembayaran' => $request->input('TipePembayaran'),
+                                    'ClientKey' => $request->input('ClientKey'),
+                                    'ServerKey' => $request->input('ServerKey'),
+                                    'MerchantID' => $request->input('MerchantID'),
                 				]
                 			);
 

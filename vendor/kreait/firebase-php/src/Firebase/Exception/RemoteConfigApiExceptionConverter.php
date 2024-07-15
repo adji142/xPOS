@@ -16,8 +16,7 @@ use Throwable;
  */
 class RemoteConfigApiExceptionConverter
 {
-    /** @var ErrorResponseParser */
-    private $responseParser;
+    private ErrorResponseParser $responseParser;
 
     /**
      * @internal
@@ -27,10 +26,7 @@ class RemoteConfigApiExceptionConverter
         $this->responseParser = new ErrorResponseParser();
     }
 
-    /**
-     * @return RemoteConfigException
-     */
-    public function convertException(Throwable $exception): FirebaseException
+    public function convertException(Throwable $exception): RemoteConfigException
     {
         if ($exception instanceof RequestException) {
             return $this->convertGuzzleRequestException($exception);
@@ -47,8 +43,9 @@ class RemoteConfigApiExceptionConverter
     {
         $message = $e->getMessage();
         $code = $e->getCode();
+        $response = $e->getResponse();
 
-        if ($response = $e->getResponse()) {
+        if ($response !== null) {
             $message = $this->responseParser->getErrorReasonFromResponse($response);
             $code = $response->getStatusCode();
         }

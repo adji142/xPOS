@@ -6,17 +6,14 @@ namespace Kreait\Firebase\Util;
 
 class Deprecation
 {
-    /**
-     * @noinspection OverridingDeprecatedMethodInspection
-     */
-    public static function trigger(string $method, ?string $replacement = null): void
+    public static function trigger(string $classOrMethod, ?string $replacement = null): void
     {
-        $message = "{$method} is deprecated.";
+        $message = "{$classOrMethod} is deprecated.";
 
         if ($replacement) {
             $message .= " Use {$replacement} instead.";
         }
 
-        \trigger_error($message, \E_USER_DEPRECATED);
+        \trigger_error($message, E_USER_DEPRECATED);
     }
 }

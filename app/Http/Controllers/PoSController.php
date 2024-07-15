@@ -18,7 +18,7 @@ use App\Models\GrupPelanggan;
 use App\Models\Provinsi;
 use App\Models\Printer;
 
-require_once(app_path('Libraries/phpserial/src/PhpSerial.php'));
+// require_once(app_path('Libraries/phpserial/src/PhpSerial.php'));
 class PoSController extends Controller
 {
     public function View(Request $request)

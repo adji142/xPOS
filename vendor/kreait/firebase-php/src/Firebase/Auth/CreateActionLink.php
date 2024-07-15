@@ -9,25 +9,24 @@ use Kreait\Firebase\Value\Email;
 
 final class CreateActionLink
 {
-    /** @var string */
-    private $type;
+    private string $type;
+    private Email $email;
+    private ActionCodeSettings $settings;
+    private ?string $tenantId = null;
+    private ?string $locale = null;
 
-    /** @var Email */
-    private $email;
-
-    /** @var ActionCodeSettings */
-    private $settings;
-
-    private function __construct()
+    private function __construct(string $type, Email $email, ActionCodeSettings $settings)
     {
+        $this->type = $type;
+        $this->email = $email;
+        $this->settings = $settings;
     }
 
-    public static function new(string $type, Email $email, ActionCodeSettings $settings): self
+    public static function new(string $type, Email $email, ActionCodeSettings $settings, ?string $tenantId = null, ?string $locale = null): self
     {
-        $instance = new self();
-        $instance->type = $type;
-        $instance->email = $email;
-        $instance->settings = $settings;
+        $instance = new self($type, $email, $settings);
+        $instance->tenantId = $tenantId;
+        $instance->locale = $locale;
 
         return $instance;
     }
@@ -45,5 +44,15 @@ final class CreateActionLink
     public function settings(): ActionCodeSettings
     {
         return $this->settings ?? ValidatedActionCodeSettings::empty();
+    }
+
+    public function tenantId(): ?string
+    {
+        return $this->tenantId;
+    }
+
+    public function locale(): ?string
+    {
+        return $this->locale;
     }
 }

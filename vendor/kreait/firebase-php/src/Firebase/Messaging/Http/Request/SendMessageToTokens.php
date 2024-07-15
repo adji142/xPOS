@@ -15,11 +15,11 @@ use Psr\Http\Message\RequestInterface;
 
 final class SendMessageToTokens implements HasSubRequests, RequestInterface
 {
-    public const MAX_AMOUNT_OF_TOKENS = 500;
-
     use WrappedPsr7Request;
 
-    public function __construct(string $projectId, Message $message, RegistrationTokens $registrationTokens)
+    public const MAX_AMOUNT_OF_TOKENS = 500;
+
+    public function __construct(string $projectId, Message $message, RegistrationTokens $registrationTokens, bool $validateOnly = false)
     {
         if ($registrationTokens->count() > self::MAX_AMOUNT_OF_TOKENS) {
             throw new InvalidArgumentException('A multicast message can be sent to a maximum amount of '.self::MAX_AMOUNT_OF_TOKENS.' tokens.');
@@ -36,6 +36,6 @@ final class SendMessageToTokens implements HasSubRequests, RequestInterface
             $messages[] = new RawMessageFromArray($messageData);
         }
 
-        $this->wrappedRequest = new SendMessages($projectId, new Messages(...$messages));
+        $this->wrappedRequest = new SendMessages($projectId, new Messages(...$messages), $validateOnly);
     }
 }

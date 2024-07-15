@@ -4,30 +4,25 @@ declare(strict_types=1);
 
 namespace Kreait\Firebase\Auth;
 
-use Lcobucci\JWT\Parser;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Token\Plain;
 
 final class SignInResult
 {
-    /** @var string|null */
-    private $idToken;
-
-    /** @var string|null */
-    private $accessToken;
-
-    /** @var string|null */
-    private $refreshToken;
-
-    /** @var int|null */
-    private $ttl;
-
+    private ?string $idToken = null;
+    private ?string $accessToken = null;
+    private ?string $refreshToken = null;
+    private ?int $ttl = null;
     /** @var array<string, mixed> */
-    private $data = [];
+    private array $data = [];
+    private ?string $firebaseUserId = null;
+    private ?string $tenantId = null;
 
-    /** @var string|null */
-    private $firebaseUserId;
+    private Configuration $config;
 
     private function __construct()
     {
+        $this->config = Configuration::forUnsecuredSigner();
     }
 
     /**
@@ -63,12 +58,49 @@ final class SignInResult
         // @codeCoverageIgnoreEnd
 
         if ($this->idToken) {
-            $idToken = (new Parser())->parse($this->idToken);
+            $idToken = $this->config->parser()->parse($this->idToken);
+
+            // @codeCoverageIgnoreStart
+            if (!($idToken instanceof Plain)) {
+                return null;
+            }
+            // @codeCoverageIgnoreEnd
 
             foreach (['sub', 'localId', 'user_id'] as $claim) {
-                if ($uid = $idToken->getClaim($claim, false)) {
+                if ($uid = $idToken->claims()->get($claim, false)) {
                     return $this->firebaseUserId = $uid;
                 }
+            }
+        }
+
+        if ($localId = $this->data['localId'] ?? null) {
+            return $this->firebaseUserId = $localId;
+        }
+
+        return null;
+    }
+
+    public function firebaseTenantId(): ?string
+    {
+        if ($this->tenantId) {
+            return $this->tenantId;
+        }
+
+        if ($this->idToken) {
+            $idToken = $this->config->parser()->parse($this->idToken);
+
+            if (!($idToken instanceof Plain)) {
+                return null;
+            }
+
+            $firebaseClaims = $idToken->claims()->get('firebase', new \stdClass());
+
+            if (\is_object($firebaseClaims) && \property_exists($firebaseClaims, 'tenant')) {
+                return $this->tenantId = $firebaseClaims->tenant;
+            }
+
+            if (\is_array($firebaseClaims) && \array_key_exists('tenant', $firebaseClaims)) {
+                return $this->tenantId = $firebaseClaims['tenant'];
             }
         }
 

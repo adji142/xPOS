@@ -15,8 +15,6 @@ use Throwable;
 class DT
 {
     /**
-     * @internal
-     *
      * @param mixed $value
      */
     public static function toUTCDateTimeImmutable($value): DateTimeImmutable
@@ -38,24 +36,25 @@ class DT
         if (\is_scalar($value) || (\is_object($value) && \method_exists($value, '__toString'))) {
             $value = (string) $value;
         } else {
-            $type = \is_object($value) ? \get_class($value) : \gettype($value);
+            $type = \get_debug_type($value);
+
             throw new InvalidArgumentException("This {$type} cannot be parsed to a DateTime value");
         }
 
         if (\ctype_digit($value)) {
             // Seconds
-            if ($value === '0' || \mb_strlen($value) === \mb_strlen((string) $now)) {
-                if ($result = DateTimeImmutable::createFromFormat('U', $value)) {
-                    return $result->setTimezone($tz);
-                }
+            if (($value === '0' || \mb_strlen($value) === \mb_strlen((string) $now)) && ($result = DateTimeImmutable::createFromFormat('U', $value))) {
+                return $result->setTimezone($tz);
             }
 
             // Milliseconds
-            if (
-                (\mb_strlen($value) === \mb_strlen((string) ($now * 1000)))
-                && $result = DateTimeImmutable::createFromFormat('U.u', \sprintf('%F', (float) ($value / 1000)))
-            ) {
-                return $result->setTimezone($tz);
+            if (\mb_strlen($value) === \mb_strlen((string) ($now * 1000))) {
+                $floatValue = (float) $value;
+                $result = DateTimeImmutable::createFromFormat('U.u', \sprintf('%F', $floatValue / 1000));
+
+                if ($result !== false) {
+                    return $result->setTimezone($tz);
+                }
             }
         }
 

@@ -5,7 +5,7 @@
     "keywords": ["framework", "laravel"],
     "license": "MIT",
     "require": {
-        "php": "^7.3|^8.0",
+        "php": "^7.3|^8.1",
         "charlieuki/receiptprinter": "^1.2",
         "firebase/php-jwt": "^6.10",
         "fruitcake/laravel-cors": "^2.0",
@@ -15,7 +15,8 @@
         "laravel/sanctum": "^2.15",
         "laravel/tinker": "^2.5",
         "maatwebsite/excel": "^3.1",
-        "realrashid/sweet-alert": "^7.1"
+        "realrashid/sweet-alert": "^7.1",
+        "midtrans/midtrans-php": "2.*"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

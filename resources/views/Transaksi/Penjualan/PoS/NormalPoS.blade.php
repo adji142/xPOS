@@ -466,11 +466,31 @@ License: You must have a valid license purchased only from themeforest(the above
 				<tbody>
 				  <tr class="d-flex align-items-center justify-content-between">
 					<th class="border-0 px-0 font-size-lg mb-0 font-size-bold text-primary">
-						<h1>Total Bayar</h1>
+						<h1>Total Transaksi</h1>
 					</th>
 					<td class="border-0 justify-content-end d-flex text-primary font-size-lg font-size-bold px-0 font-size-lg mb-0 font-size-bold text-primary">
 						<input type="hidden" name="_TotalTagihan" id="_TotalTagihan">
 						<h1 id="_TotalTagihanFormated">Rp. </h1>
+					</td>
+				  </tr>
+
+				  <tr class="d-flex align-items-center justify-content-between">
+					<th class="border-0 px-0 font-size-lg mb-0 font-size-bold text-primary">
+						<h1>Pembulatan</h1>
+					</th>
+					<td class="border-0 justify-content-end d-flex text-primary font-size-lg font-size-bold px-0 font-size-lg mb-0 font-size-bold text-primary">
+						<input type="hidden" name="_Pembulatan" id="_Pembulatan">
+						<h1 id="_PembulatanFormated">Rp. </h1>
+					</td>
+				  </tr>
+
+				  <tr class="d-flex align-items-center justify-content-between">
+					<th class="border-0 px-0 font-size-lg mb-0 font-size-bold text-primary">
+						<h1>Total Bayar</h1>
+					</th>
+					<td class="border-0 justify-content-end d-flex text-primary font-size-lg font-size-bold px-0 font-size-lg mb-0 font-size-bold text-primary">
+						<input type="hidden" name="_TotalNetBayar" id="_TotalNetBayar">
+						<h1 id="_TotalNetBayarFormated">Rp. </h1>
 					</td>
 				  </tr>
 				</tbody>
@@ -491,7 +511,7 @@ License: You must have a valid license purchased only from themeforest(the above
 										<ul class="horizontal-list">
 
 											@foreach($metodepembayaran as $ko)
-												<li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2" StsPyment={{$ko->Active}} id={{ $ko->id }}>
+												<li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2" StsPyment={{$ko->Active}} id={{ $ko->id }} CaraVerifikasi={{$ko->MetodeVerifikasi}} TipePembayaran={{$ko->TipePembayaran}}>
 													<div class="list-left d-flex align-items-center">
 														<span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-light-dark text-white me-2">
 															<img src="{{ $ko->Image }}" class="bi bi-lightning-fill" width="80%">
@@ -833,7 +853,8 @@ License: You must have a valid license purchased only from themeforest(the above
 <link href="{{ asset('devexpress/dx.light.css')}}" rel="stylesheet" type="text/css" />
 <script src="{{asset('devexpress/dx.all.js')}}"></script>
 <script src="{{asset('api/select2/select2.min.js')}}"></script>
-	
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+
 </body>
 <!--end::Body-->
 </html>
@@ -850,6 +871,8 @@ License: You must have a valid license purchased only from themeforest(the above
 	var _Printer = [];
 	var _Pelanggan = [];
 	var _KodeMetodePembayaran = -1;
+	var _MetodeVerifikasiPembayaran = '';
+	var _TipePembayaran = '';
 
 	document.addEventListener('DOMContentLoaded', () => {
 	    const listItems = document.querySelectorAll('.horizontal-list li');
@@ -861,10 +884,18 @@ License: You must have a valid license purchased only from themeforest(the above
 
 	            // Add active class to the clicked item
 	            var Sts = $('#'+item.id).attr('stspyment');
+				_MetodeVerifikasiPembayaran = $('#'+item.id).attr('CaraVerifikasi');
+				_TipePembayaran = $('#'+item.id).attr('TipePembayaran');
+				console.log(_TipePembayaran);
 	            if (Sts =='Y') {
 	            	item.classList.add('active');
 	            	_KodeMetodePembayaran = item.id;
-	            	$('#JumlahBayar').val(0);
+					if (_TipePembayaran == "NON") {
+						$('#JumlahBayar').val(jQuery('#_TotalNetBayar').attr("originalvalue"));	
+					}
+					else{
+						$('#JumlahBayar').val(0);
+					}
 	            	$('#JumlahBayar').focus();
 	            }
 	        });
@@ -1217,10 +1248,32 @@ License: You must have a valid license purchased only from themeforest(the above
 
 		    $('#_TotalTagihan').val($('#_GrandTotal').attr('originalvalue'));
 		    $('#_TotalTagihanFormated').text($('#_GrandTotal').val())
+
+			// Pembulatan
+			var TotalPenjualan = $('#_GrandTotal').attr('originalvalue');
+			var TotalPembulatan = Math.ceil(TotalPenjualan);
+			var NilaiPembulatan = TotalPembulatan - TotalPenjualan;
+			console.log(NilaiPembulatan)
+			// formatCurrency($('#_TotalServices'), _tempTotalServices);
+			// $('#_Pembulatan').val();
+			formatCurrency($('#_Pembulatan'), NilaiPembulatan)
+		    $('#_PembulatanFormated').text($('#_Pembulatan').val())
+
+			// Total Penjualan
+			// $('#_TotalNetBayar').val();
+			formatCurrency($('#_TotalNetBayar'), TotalPembulatan)
+		    $('#_TotalNetBayarFormated').text($('#_TotalNetBayar').val())
 		});
 
 		$('#btSimpanPembayaran').click(function () {
-			SaveData('C',$('#btSimpanPembayaran'),'Submit');
+			// PaymentGateWay();
+
+			if (_MetodeVerifikasiPembayaran == "AUTO") {
+				PaymentGateWay('C',$('#btSimpanPembayaran'),'Submit');
+			}
+			else{
+				SaveData('C',$('#btSimpanPembayaran'),'Submit');
+			}
 		});
 
 		$('#btSearchCustomer').click(function () {
@@ -1977,7 +2030,7 @@ License: You must have a valid license purchased only from themeforest(the above
   		for (var i = 0; i < allRowsData.length; i++) {
   			// Things[i]
   			if (allRowsData[i]['KodeItem'] != "") {
-  				var oItemMaster = GetItemInfo(allRowsData[i]['KodeItem']);
+  				// var oItemMaster = GetItemInfo(allRowsData[i]['KodeItem']);
   				var oDisk = 0;
 
   				if (allRowsData[i]['DiskonPersen'] > 0) {
@@ -1988,7 +2041,7 @@ License: You must have a valid license purchased only from themeforest(the above
   					oDisk += allRowsData[i]['DiskonRp'];
   				}
 
-  				console.log(oItemMaster[0].Satuan);
+  				// console.log(oItemMaster[0].Satuan);
 
   				var oItem = {
   					'NoUrut' : allRowsData[i]['LineNumber'],
@@ -2044,7 +2097,8 @@ License: You must have a valid license purchased only from themeforest(the above
 			'TotalTransaksi' : jQuery('#_SubTotal').attr("originalvalue"),
 			'Potongan' : jQuery('#_TotalDiskon').attr("originalvalue"),
 			'Pajak' : 0,
-			'TotalPembelian' : jQuery('#_GrandTotal').attr("originalvalue"),
+			'Pembulatan' : jQuery('#_Pembulatan').attr("originalvalue"),
+			'TotalPembelian' : jQuery('#_TotalNetBayar').attr("originalvalue"),
 			'TotalRetur' : 0,
 			'TotalPembayaran' : (Status) == 'T' ? 0 : jQuery('#JumlahBayar').attr("originalvalue"),
 			'Status' : Status,
@@ -2114,6 +2168,156 @@ License: You must have a valid license purchased only from themeforest(the above
 
 		ButonObject.text(ButtonDefaultText);
   		ButonObject.attr('disabled',false);
+	}
+
+	function PaymentGateWay(Status, ButonObject, ButtonDefaultText) {
+
+		var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
+  		var allRowsData  = dataGridInstance.getDataSource().items();
+
+  		var NoTransaksi = "";
+  		if (jQuery('#_NoTransaksi').text() != "<OTOMATIS>") {
+  			NoTransaksi = jQuery('#_NoTransaksi').text();
+  		}
+  		// console.log(allRowsData)
+  		var oDetail = [];
+
+  		for (var i = 0; i < allRowsData.length; i++) {
+  			// Things[i]
+  			if (allRowsData[i]['KodeItem'] != "") {
+  				// var oItemMaster = GetItemInfo(allRowsData[i]['KodeItem']);
+  				var oDisk = 0;
+
+  				if (allRowsData[i]['DiskonPersen'] > 0) {
+  					oDisk += (allRowsData[i]['Qty'] * allRowsData[i]['Harga']) * allRowsData[i]['DiskonPersen'] / 100;
+  				}
+
+  				if (allRowsData[i]['DiskonRp'] > 0) {
+  					oDisk += allRowsData[i]['DiskonRp'];
+  				}
+
+  				// console.log(oItemMaster[0].Satuan);
+
+  				var oItem = {
+  					'NoUrut' : allRowsData[i]['LineNumber'],
+					'KodeItem' : allRowsData[i]['KodeItem'],
+					'Qty' : allRowsData[i]['Qty'] * allRowsData[i]['QtyKonversi'],
+					'QtyKonversi' : allRowsData[i]['QtyKonversi'],
+					'Satuan' : allRowsData[i]['Satuan'],
+					'Harga' : allRowsData[i]['Harga'],
+					'Discount' : oDisk,
+					'HargaNet' : (allRowsData[i]['Qty'] * allRowsData[i]['Total']) - oDisk,
+					'BaseReff' : 'POS',
+					'BaseLine' : -1,
+					'KodeGudang' : _Company[0]['GudangPoS'],
+					'LineStatus': Status,
+					'VatPercent' : allRowsData[i]['VatPercent'],
+					'HargaPokokPenjualan' : allRowsData[i]['HargaPokokPenjualan'],
+  				}
+  				
+  				oDetail.push(oItem)
+  			}
+  		}
+
+  		if (_ServicesData.length > 0) {
+  			for (var i = 0; i < _ServicesData.length; i++) {
+  				var oItem = {
+  					'NoUrut' : oDetail.length + 1,
+					'KodeItem' : _ServicesData[i]['KodeItem'],
+					'Qty' : 1,
+					'Satuan' : '',
+					'Harga' : _ServicesData[i]['Jumlah'],
+					'Discount' : 0,
+					'HargaNet' : _ServicesData[i]['Jumlah'],
+					'BaseReff' : '',
+					'BaseLine' : -1,
+					'KodeGudang' : 'UMM',
+					'LineStatus': Status,
+  				}
+  				
+  				oDetail.push(oItem)
+  			}
+  		}
+
+  		// jQuery('#_NoTransaksi').text()
+  		var oData = {
+			'NoTransaksi' : NoTransaksi,
+			'TglTransaksi' : _Tanggal + " " + _Jam,
+			'TglJatuhTempo' : _Tanggal,
+			'NoReff' : 'POS',
+			'KodeSales' : jQuery('#KodeSales').val(),
+			'KodePelanggan' : jQuery('#KodePelanggan').val(),
+			'KodeTermin' : _Company[0]['TerminBayarPoS'],
+			'Termin' : 0,
+			'TotalTransaksi' : jQuery('#_SubTotal').attr("originalvalue"),
+			'Potongan' : jQuery('#_TotalDiskon').attr("originalvalue"),
+			'Pajak' : 0,
+			'Pembulatan' : jQuery('#_Pembulatan').attr("originalvalue"),
+			'TotalPembelian' : jQuery('#_TotalNetBayar').attr("originalvalue"),
+			'TotalRetur' : 0,
+			'TotalPembayaran' : (Status) == 'T' ? 0 : jQuery('#JumlahBayar').attr("originalvalue"),
+			'Status' : Status,
+			'Keterangan' : '',
+			'MetodeBayar' : _KodeMetodePembayaran,
+			'ReffPembayaran' : $('#NomorRefrensiPembayaran').val(),
+			'Detail' : oDetail
+		}
+		
+		fetch( "{{route('pembayaranpenjualan-createpayment')}}", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRF-TOKEN': '{{ csrf_token() }}'
+			},
+			body: JSON.stringify(oData)
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.snap_token) {
+				snap.pay(data.snap_token, {
+					onSuccess: function(result){
+						console.log(result);
+						if(result.transaction_status == "cancel"){
+							Swal.fire({
+								icon: "error",
+								title: "Opps...",
+								text: "Pembayaran Dibatalkan",
+							})
+						}
+						else{
+							// order_id
+							$('#NomorRefrensiPembayaran').val(result.order_id)
+							SaveData(Status, ButonObject, ButtonDefaultText)
+						}
+						// Proses pembayaran sukses
+					},
+					onPending: function(result){
+						console.log(result);
+						// Pembayaran tertunda
+					},
+					onError: function(result){
+						// console.log(result);
+						Swal.fire({
+							icon: "error",
+							title: "Opps...",
+							text: result,
+						})
+						// Pembayaran gagal
+					},
+					onClose: function(){
+						console.log('customer closed the popup without finishing the payment');
+					}
+				});
+			} else {
+				// alert('Error: ' + data.error);
+				Swal.fire({
+					icon: "error",
+					title: "Opps...",
+					text: data.error,
+				})
+			}
+		})
+		.catch(error => console.error('Error:', error));
 	}
 
 	function formatCurrency(input, amount) {

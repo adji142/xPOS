@@ -263,6 +263,7 @@ class FakturPenjualanController extends Controller
 			$model->TotalPembelian = $jsonData['TotalPembelian'];
 			$model->TotalRetur = $jsonData['TotalRetur'];
 			$model->TotalPembayaran = $jsonData['TotalPembayaran'];
+			$model->Pembulatan = $jsonData['Pembulatan'];
 			$model->Status = $jsonData['Status'];
 			$model->Keterangan = $jsonData['Keterangan'];
 			$model->MetodeBayar = $jsonData['MetodeBayar'];

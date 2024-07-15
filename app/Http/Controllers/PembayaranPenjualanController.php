@@ -18,6 +18,10 @@ use App\Models\Company;
 use App\Models\AutoPosting;
 use App\Models\SettingAccount;
 use App\Models\Rekening;
+use App\Models\ItemMaster;
+
+use Midtrans\Config;
+use Midtrans\Snap;
 
 class PembayaranPenjualanController extends Controller
 {
@@ -477,4 +481,184 @@ class PembayaranPenjualanController extends Controller
 		}
 		return response()->json($data);
 	}
+
+	public function createMidTransTransaction(Request $request)
+    {
+		$jsonData = $request->json()->all();
+
+		$MetodeBayar = $jsonData['MetodeBayar'];
+		$KodePelanggan = $jsonData['KodePelanggan'];
+		$TotalPembelian = $jsonData['TotalPembelian'];
+
+		$GetSetting = MetodePembayaran::where('RecordOwnerID',  Auth::user()->RecordOwnerID)
+						->where('id', $MetodeBayar)
+						->get();
+		$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
+		
+		if(count($GetSetting) > 0){
+			Config::$serverKey = $GetSetting[0]['ServerKey'];
+			Config::$isProduction = config('midtrans.is_production');
+			Config::$isSanitized = config('midtrans.is_sanitized');
+			Config::$is3ds = config('midtrans.is_3ds');
+
+			// Get Customer
+
+			$Pelanggan = Pelanggan::where('KodePelanggan', $KodePelanggan)
+							->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+							->get();
+
+			if($KodePelanggan == ""){
+				return response()->json(['error' => "Pelanggan Belum diisi"]);
+			}
+			// Run Validation
+			// Jumlah Detail
+			if (count($jsonData['Detail']) == 0) {
+				return response()->json(['error' => "Data Detail Tidak boleh Kosong"]);
+			}
+
+			foreach ($jsonData['Detail'] as $key) {
+				$itemMaster = ItemMaster::where('KodeItem', $key['KodeItem'])
+								->where('RecordOwnerID',Auth::user()->RecordOwnerID)
+								->get();
+				// Stock
+				if ($oCompany) {
+					if ($oCompany->AllowNegativeInventory == NULL || $oCompany->AllowNegativeInventory == 'N') {
+						$oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
+									->where('KodeItem',$key['KodeItem'])
+									->where('Stock','>',0)
+									->get();
+
+						if (count($oItem) == 0) {
+							return response()->json(['error' => "Stock Item ".$key['KodeItem'].' Tidak Cukup']);
+						}
+					}
+				}
+				else{
+					return response()->json(['error' => "Partner Tidak ditemukan"]);
+				}
+
+				// Persediaan
+
+				$Setting = NEW SettingAccount();
+				$getSetting = $Setting->GetInventoryAccount($key["KodeItem"]);
+				
+				$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('KodeRekening', $getSetting)->get();
+
+				if (count($validate) == 0) {
+					return response()->json(['error' => "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account"]);
+				}
+
+				if ($itemMaster[0]['TypeItem'] == 1) {
+					// Akun Akutansi Penjualan
+					$getSetting = $Setting->GetSetting("InvAcctPendapatanJual");
+					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('KodeRekening', $getSetting)->get();
+
+					if (count($validate) == 0) {
+						return response()->json(['error' => "Akun Rekening Akutansi Penjualan Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account"]);
+					}
+				}
+				elseif ($itemMaster[0]['TypeItem'] == 4) {
+					// Akun Akutansi Pendapatan Jasa
+					$getSetting = $Setting->GetSetting("InvAcctPendapatanJasa");
+					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('KodeRekening', $getSetting)->get();
+
+					if (count($validate) == 0) {
+						return response()->json(['error' => "Akun Rekening Akutansi Penjualan Jasa Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account"]);
+					}
+				}
+				elseif ($itemMaster[0]['TypeItem'] == 5) {
+					// Akun Akutansi Konsinyasi
+
+					$getSetting = $Setting->GetSetting("KnAcctPenerimaanKonsinyasi");
+					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('KodeRekening', $getSetting)->get();
+
+					if (count($validate) == 0) {
+						return response()->json(['error' => "Akun Rekening Akutansi Konsnyasi Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account"]);
+					}
+
+					// Akun Akutansi Hutang
+
+					$getSetting = $Setting->GetSetting("KnAcctHutangKonsinyasi");
+					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('KodeRekening', $getSetting)->get();
+
+					if (count($validate) == 0) {
+						return response()->json(['error' => "Akun Rekening Akutansi Hutang Konsnyasi Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account"]);
+					}
+				}
+			}
+
+			// Akun Akutansi Piutang
+			$Setting = NEW SettingAccount();
+			$getSetting = $Setting->GetSetting("PjAcctPiutang");
+			$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+							->where('KodeRekening', $getSetting)->get();
+
+			if (count($validate) == 0) {
+				return response()->json(['error' => "Akun Rekening Akutansi Piutang Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account"]);
+			}
+
+			// Akun Akutansi PPN
+			$Setting = NEW SettingAccount();
+			$getSetting = $Setting->GetSetting("PjAcctPajakPenjualan");
+			$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+							->where('KodeRekening', $getSetting)->get();
+
+			if (count($validate) == 0) {
+				return response()->json(['error' => "Akun Rekening Akutansi Piutang Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account"]);
+			}
+
+			// Harga Pokok
+			$Setting = NEW SettingAccount();
+			$getSetting = $Setting->GetSetting("InvAcctHargaPokokPenjualan");
+			$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+							->where('KodeRekening', $getSetting)->get();
+
+			if (count($validate) == 0) {
+				return response()->json(['error' => "Akun Rekening Akutansi Harga Pokok Penjualan Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account"]);
+			}
+
+			// Pembayaran
+			$metode = MetodePembayaran::selectRaw("COALESCE(metodepembayaran.AkunPembayaran, '') AkunPembayaran")
+						->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+						->where('id', $jsonData['MetodeBayar'])->first();
+
+			if ($metode->AkunPembayaran == "" && $oCompany->isPostingAkutansi == 1) {
+				return response()->json(['error' => "Akun Rekening Akutansi Pembayaran Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Metode Pembayaran"]);
+			}
+
+
+
+			// Data transaksi yang akan dikirimkan ke Midtrans
+			$transaction_details = [
+				'order_id' => uniqid(),
+				'gross_amount' => floatval($TotalPembelian), // Jumlah total transaksi
+			];
+
+			$customer_details = [
+				'first_name' => $Pelanggan[0]['NamaPelanggan'],
+			];
+
+			$transaction = [
+				'transaction_details' => $transaction_details,
+            	'customer_details' => $customer_details,
+				'payment_type' => 'qris',
+            	'qris' => []
+			];
+
+			try {
+				$snapToken = Snap::getSnapToken($transaction);
+				return response()->json(['snap_token' => $snapToken]);
+			} catch (\Exception $e) {
+				return response()->json(['error' => $e->getMessage()]);
+			}
+		}
+		else{
+			return response()->json(['error' => "Metode Pembayaran Tidak Valid"]);
+		}
+    }
 }

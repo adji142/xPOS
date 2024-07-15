@@ -157,12 +157,44 @@
 	                            			
 	                            		</div>
 
+										<div id="divMidtrans" style="display: none">
+											<hr>
+											<div class="col-md-12">
+												<center>Midtrans Secret Information</center>
+											</div>
+
+											<div class="col-md-4">
+												<label  class="text-body">Merchant ID</label>
+												<fieldset class="form-group mb-3">
+													<input type="text" class="form-control" id="MerchantID" name="MerchantID" placeholder="Masukan Nama MerchantID" value="{{ count($metodepembayaran) > 0 ? $metodepembayaran[0]['MerchantID'] : '' }}" >
+												</fieldset>
+											</div>
+
+											<div class="col-md-4">
+												<label  class="text-body">Client Key</label>
+												<fieldset class="form-group mb-3">
+													<input type="text" class="form-control" id="ClientKey" name="ClientKey" placeholder="Masukan Nama ClientKey" value="{{ count($metodepembayaran) > 0 ? $metodepembayaran[0]['ClientKey'] : '' }}" >
+												</fieldset>
+											</div>
+
+											<div class="col-md-4">
+												<label  class="text-body">Server Key</label>
+												<fieldset class="form-group mb-3">
+													<input type="text" class="form-control" id="ServerKey" name="ServerKey" placeholder="Masukan Nama ServerKey" value="{{ count($metodepembayaran) > 0 ? $metodepembayaran[0]['ServerKey'] : '' }}" >
+												</fieldset>
+											</div>
+										</div>
+
 	                            		<div class="col-md-12">
 	                            			<button type="submit" class="btn btn-success text-white font-weight-bold me-1 mb-1">Simpan</button>
 	                            		</div>
 	                            	</div>
 
                             	</form>
+
+								<div class="col-md-12">
+									<button class="btn btn-success text-white font-weight-bold me-1 mb-1" id="btTestKoneksi">Test Koneksi</button>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -177,6 +209,7 @@
 @endsection
 
 @push('scripts')
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script type="text/javascript">
 	var _URL = window.URL || window.webkitURL;
     var _URLePub = window.URL || window.webkitURL;
@@ -185,14 +218,52 @@
 			var metodepembayaran = <?php echo $metodepembayaran ?>;
 			
 			if (metodepembayaran.length > 0) {
-				jQuery('#AkunPembayaran').val(metodepembayaran[0]["AkunPembayaran"]).trigger('change')
+				jQuery('#AkunPembayaran').val(metodepembayaran[0]["AkunPembayaran"]).trigger('change');
+				jQuery('#MetodeVerifikasi').val(metodepembayaran[0]["MetodeVerifikasi"]).trigger('change');
 			}
 		})
+	});
+
+	jQuery('#MetodeVerifikasi').change(function () {
+		// MetodeVerifikasi
+		// alert('asdasd');
+		if(jQuery('#MetodeVerifikasi').val() == "AUTO"){
+			jQuery('#divMidtrans').css({
+				"display" : "contents"
+			})
+		}
+		else{
+			jQuery('#divMidtrans').css({
+				"display" : "none"
+			})
+		}
 	});
 
 	jQuery('#image_result').click(function(){
         $('#Attachment').click();
     });
+
+	jQuery('#btTestKoneksi').click(function () {
+		fetch('/xpos/create-transaction', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRF-TOKEN': '{{ csrf_token() }}'
+			},
+			body: JSON.stringify({
+				// Tambahkan data transaksi jika diperlukan
+			})
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.snap_token) {
+				snap.pay(data.snap_token);
+			} else {
+				alert('Error: ' + data.error);
+			}
+		})
+		.catch(error => console.error('Error:', error));
+	});
 
     $("#Attachment").change(function(){
       var file = $(this)[0].files[0];

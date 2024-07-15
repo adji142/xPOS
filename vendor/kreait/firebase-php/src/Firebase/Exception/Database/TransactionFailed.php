@@ -11,8 +11,7 @@ use Throwable;
 
 final class TransactionFailed extends RuntimeException implements FirebaseException
 {
-    /** @var Reference */
-    private $reference;
+    private Reference $reference;
 
     public function __construct(Reference $query, string $message = '', int $code = 0, ?Throwable $previous = null)
     {
@@ -35,7 +34,7 @@ final class TransactionFailed extends RuntimeException implements FirebaseExcept
 
     public static function onReference(Reference $reference, ?Throwable $error = null): self
     {
-        $code = $error ? $error->getCode() : 0;
+        $code = $error !== null ? $error->getCode() : 0;
 
         return new self($reference, '', $code, $error);
     }

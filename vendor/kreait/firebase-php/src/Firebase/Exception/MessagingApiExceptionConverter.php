@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Kreait\Firebase\Exception;
 
+use DateTimeImmutable;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
+use Kreait\Clock;
+use Kreait\Clock\SystemClock;
 use Kreait\Firebase\Exception\Messaging\ApiConnectionFailed;
 use Kreait\Firebase\Exception\Messaging\AuthenticationError;
 use Kreait\Firebase\Exception\Messaging\InvalidMessage;
 use Kreait\Firebase\Exception\Messaging\MessagingError;
 use Kreait\Firebase\Exception\Messaging\NotFound;
+use Kreait\Firebase\Exception\Messaging\QuotaExceeded;
 use Kreait\Firebase\Exception\Messaging\ServerError;
 use Kreait\Firebase\Exception\Messaging\ServerUnavailable;
 use Kreait\Firebase\Http\ErrorResponseParser;
@@ -22,15 +26,17 @@ use Throwable;
  */
 class MessagingApiExceptionConverter
 {
-    /** @var ErrorResponseParser */
-    private $responseParser;
+    private ErrorResponseParser $responseParser;
+
+    private Clock $clock;
 
     /**
      * @internal
      */
-    public function __construct()
+    public function __construct(?Clock $clock = null)
     {
         $this->responseParser = new ErrorResponseParser();
+        $this->clock = $clock ?? new SystemClock();
     }
 
     /**
@@ -38,7 +44,8 @@ class MessagingApiExceptionConverter
      */
     public function convertException(Throwable $exception): FirebaseException
     {
-        if ($exception instanceof RequestException) {
+        // @phpstan-ignore-next-line
+        if ($exception instanceof RequestException && !($exception instanceof ConnectException)) {
             return $this->convertGuzzleRequestException($exception);
         }
 
@@ -62,23 +69,43 @@ class MessagingApiExceptionConverter
 
         switch ($code) {
             case 400:
-                $convertedError = new InvalidMessage($message, $code, $previous);
+                $convertedError = new InvalidMessage($message);
+
                 break;
             case 401:
             case 403:
-                $convertedError = new AuthenticationError($message, $code, $previous);
+                $convertedError = new AuthenticationError($message);
+
                 break;
             case 404:
-                $convertedError = new NotFound($message, $code, $previous);
+                $convertedError = new NotFound($message);
+
+                break;
+            case 429:
+                $convertedError = new QuotaExceeded($message);
+                $retryAfter = $this->getRetryAfter($response);
+
+                if ($retryAfter !== null) {
+                    $convertedError = $convertedError->withRetryAfter($retryAfter);
+                }
+
                 break;
             case 500:
-                $convertedError = new ServerError($message, $code, $previous);
+                $convertedError = new ServerError($message);
+
                 break;
             case 503:
-                $convertedError = new ServerUnavailable($message, $code, $previous);
+                $convertedError = new ServerUnavailable($message);
+                $retryAfter = $this->getRetryAfter($response);
+
+                if ($retryAfter !== null) {
+                    $convertedError = $convertedError->withRetryAfter($retryAfter);
+                }
+
                 break;
             default:
                 $convertedError = new MessagingError($message, $code, $previous);
+
                 break;
         }
 
@@ -87,10 +114,35 @@ class MessagingApiExceptionConverter
 
     private function convertGuzzleRequestException(RequestException $e): MessagingException
     {
-        if ($response = $e->getResponse()) {
+        $response = $e->getResponse();
+
+        if ($response !== null) {
             return $this->convertResponse($response, $e);
         }
 
         return new MessagingError($e->getMessage(), $e->getCode(), $e);
+    }
+
+    private function getRetryAfter(ResponseInterface $response): ?DateTimeImmutable
+    {
+        $retryAfter = $response->getHeader('Retry-After')[0] ?? null;
+
+        if (!$retryAfter) {
+            return null;
+        }
+
+        if (\is_numeric($retryAfter)) {
+            return $this->clock->now()->modify("+{$retryAfter} seconds");
+        }
+
+        try {
+            return new DateTimeImmutable($retryAfter);
+        } catch (Throwable $e) {
+            // We can't afford to throw exceptions in an exception handler :)
+            // Here, if the Retry-After header doesn't have a numeric value
+            // or a date that can be handled by DateTimeImmutable, we just
+            // throw it away, sorry not sorry ¯\_(ツ)_/¯
+            return null;
+        }
     }
 }

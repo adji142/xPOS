@@ -46,7 +46,7 @@ use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\DiskonPeriodikController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\KatalogController;
-
+use App\Http\Controllers\PaymentGatewayController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -304,6 +304,7 @@ Route::get('/metodepembayaran/form/{id}', [MetodePembayaranController::class,'Fo
 Route::post('/metodepembayaran/store', [MetodePembayaranController::class, 'store'])->name('metodepembayaran-store')->middleware('auth');
 Route::post('/metodepembayaran/edit', [MetodePembayaranController::class, 'edit'])->name('metodepembayaran-edit')->middleware('auth');
 Route::delete('/metodepembayaran/delete/{id}', [MetodePembayaranController::class, 'deletedata'])->name('metodepembayaran-delete')->middleware('auth');
+Route::post('/create-transaction', [PaymentGatewayController::class, 'createTransaction'])->name('create-transaction')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------
@@ -541,6 +542,7 @@ Route::post('/pembayaranpenjualan/storeJson', [PembayaranPenjualanController::cl
 Route::post('/pembayaranpenjualan/editJson', [PembayaranPenjualanController::class, 'editJson'])->name('pembayaranpenjualan-editJson')->middleware('auth');
 Route::post('/pembayaranpenjualan/readheader', [PembayaranPenjualanController::class, 'ViewHeader'])->name('pembayaranpenjualan-readheader')->middleware('auth');
 Route::post('/pembayaranpenjualan/readdetail', [PembayaranPenjualanController::class, 'ViewDetail'])->name('pembayaranpenjualan-readdetail')->middleware('auth');
+Route::post('/pembayaranpenjualan/createpayment', [PembayaranPenjualanController::class, 'createMidTransTransaction'])->name('pembayaranpenjualan-createpayment')->middleware('auth');
 
 
 /*

@@ -14,7 +14,7 @@ use Traversable;
 final class TopicSubscriptions implements Countable, IteratorAggregate
 {
     /** @var TopicSubscription[] */
-    private $subscriptions;
+    private array $subscriptions;
 
     public function __construct(TopicSubscription ...$subscriptions)
     {
@@ -31,7 +31,7 @@ final class TopicSubscriptions implements Countable, IteratorAggregate
      *
      * @return Traversable<TopicSubscription>|TopicSubscription[]
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         yield from $this->subscriptions;
     }

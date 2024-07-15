@@ -5,25 +5,33 @@ declare(strict_types=1);
 namespace Kreait\Firebase\Messaging\Http\Request;
 
 use GuzzleHttp\Psr7\Request;
-use function GuzzleHttp\Psr7\stream_for;
-use function GuzzleHttp\Psr7\uri_for;
+use GuzzleHttp\Psr7\Utils;
 use Kreait\Firebase\Http\WrappedPsr7Request;
 use Kreait\Firebase\Messaging\Message;
+use Kreait\Firebase\Util\JSON;
 use Psr\Http\Message\RequestInterface;
 
-final class SendMessage implements RequestInterface
+final class SendMessage implements MessageRequest, RequestInterface
 {
     use WrappedPsr7Request;
 
-    public function __construct(string $projectId, Message $message)
+    private Message $message;
+
+    public function __construct(string $projectId, Message $message, bool $validateOnly = false)
     {
-        $uri = uri_for('https://fcm.googleapis.com/v1/projects/'.$projectId.'/messages:send');
-        $body = stream_for(\json_encode(['message' => $message]));
+        $uri = Utils::uriFor('https://fcm.googleapis.com/v1/projects/'.$projectId.'/messages:send');
+        $body = Utils::streamFor(JSON::encode(['message' => $message, 'validate_only' => $validateOnly]));
         $headers = [
             'Content-Type' => 'application/json; charset=UTF-8',
-            'Content-Length' => $body->getSize(),
+            'Content-Length' => (string) $body->getSize(),
         ];
 
         $this->wrappedRequest = new Request('POST', $uri, $headers, $body);
+        $this->message = $message;
+    }
+
+    public function message(): Message
+    {
+        return $this->message;
     }
 }
