@@ -9,4 +9,19 @@ class PengakuanBarangDetail extends Model
 {
     use HasFactory;
     protected $table = "pengakuanbarangdetail";
+
+    protected $fillable = [
+        'NoTransaksi',
+        'NoUrut',
+        'KodeItem',
+        'Qty',
+        'Satuan',
+        'Harga',
+        'TotalTransaksi',
+        'KodeGudang',
+        'KodeRekening',
+        'RecordOwnerID',
+        'created_at',
+        'updated_at'
+    ];
 }

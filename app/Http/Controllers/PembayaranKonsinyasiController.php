@@ -78,12 +78,26 @@ class PembayaranKonsinyasiController extends Controller
 	    return response()->json($data);
 	}
 
+	function getKonsinyasiValue(Request $request) {
+		$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+		$TglAwal = $request->input('TglAwal');
+   		$TglAkhir = $request->input('TglAkhir');
+   		$KodeVendor = $request->input('KodeVendor');
+		$RecordOwnerID = Auth::user()->RecordOwnerID;
+
+		$transaksikonsinyasi = DB::select('CALL fsp_read_penjualan_konsinyasi(?, ?, ?, ?)', [$TglAwal, $TglAkhir,$RecordOwnerID, (empty($KodeVendor) ? "" : $KodeVendor)]);
+
+		$data['data']= $transaksikonsinyasi;
+	    return response()->json($data);
+	}
+
 	public function Form($NoTransaksi = null)
 	   {
 			$supplier = Supplier::where('Status', 1)
 						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 			$pembayarankonsinyasiheader = PembayaranKonsinyasiHeader::where('NoTransaksi', $NoTransaksi)
 							->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+			
 
 			$sql = "fakturpembelianheader.NoTransaksi, fakturpembelianheader.TglTransaksi, pembayarankonsinyasidetail.KodeMetodePembayaran, pembayarankonsinyasidetail.Keterangan, fakturpembelianheader.TotalPembelian AS TotalHutang, pembayarankonsinyasidetail.TotalPembayaran";
 			$pembayarankonsinyasidetail = PembayaranKonsinyasiDetail::selectRaw($sql)
@@ -127,7 +141,7 @@ class PembayaranKonsinyasiController extends Controller
 			$model->NoTransaksi = $NoTransaksi;
 			$model->TglTransaksi = $jsonData['TglTransaksi'];
 			$model->KodeSupplier = $jsonData['KodeSupplier'];
-			$model->TotalPembelian = $jsonData['TotalPembelian'];
+			$model->TotalPembelian = $jsonData['TotalPembayaran'];
 			$model->TotalPembayaran = $jsonData['TotalPembayaran'];
 			$model->KodeMetodePembayaran = $jsonData['KodeMetodePembayaran'];
 			$model->NoReff = $jsonData['NoReff'];
@@ -160,7 +174,8 @@ class PembayaranKonsinyasiController extends Controller
 				$modelDetail = new PembayaranKonsinyasiDetail;
 				$modelDetail->NoTransaksi = $NoTransaksi;
 				$modelDetail->NoUrut = $NoUrut;
-				$modelDetail->BaseReff = $key['NoTransaksi'];
+				$modelDetail->BaseReff = $key['BaseReff'];
+				$modelDetail->BaseLine = $key['BaseLine'];
 				$modelDetail->TotalPembayaran = $key['TotalPembayaran'];
 				$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
 				$modelDetail->KodeMetodePembayaran = $key['KodeMetodePembayaran'];

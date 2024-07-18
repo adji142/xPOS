@@ -269,8 +269,7 @@
 
 							<div class="topbar-item" data-bs-toggle="dropdown" data-display="static">
 								<div class="btn btn-icon w-auto btn-clean d-flex align-items-center pr-1 ps-3">
-									<span class="text-dark-50 font-size-base d-none d-xl-inline me-3">Angilina
-										Deo</span>
+									<span class="text-dark-50 font-size-base d-none d-xl-inline me-3">{{ Auth::user()->name }}</span>
 									<span class="symbol symbol-35 symbol-light-success">
 										<span class="symbol-label font-size-h5 ">
 											<svg width="20px" height="20px" viewBox="0 0 16 16"
@@ -299,7 +298,7 @@
 									Edit Profile
 								</a>
 
-								<a href="#" class="dropdown-item">
+								<a href="{{ route('logout') }}" class="dropdown-item">
 									<span class="svg-icon svg-icon-xl svg-icon-primary me-2">
 										<svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
 											viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"

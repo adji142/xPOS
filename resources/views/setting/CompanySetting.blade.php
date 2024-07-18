@@ -42,6 +42,9 @@
 	  max-width: 100%; /* Fit the image to the container width */
 	  height: 100%; /* Maintain the aspect ratio */
 	}
+	.enableFileControl{
+		display: inline!important;
+	}
   </style>
 <!--begin::Subheader-->
 <div class="subheader py-2 py-lg-6 subheader-solid">
@@ -102,6 +105,9 @@
 												</li>
 												<li class="nav-item" >
 													<a class="nav-link" id="ecatalog-tab" data-bs-toggle="pill" href="#ecatalog" role="tab" aria-controls="ecatalog" aria-selected="false">E-Catalog</a>
+												</li>
+												<li class="nav-item" >
+													<a class="nav-link" id="bulkaction-tab" data-bs-toggle="pill" href="#bulkaction" role="tab" aria-controls="bulkaction" aria-selected="false">Import Data</a>
 												</li>
 											</ul>
 										</div>
@@ -534,6 +540,66 @@
 													</div>
 												</div>
 
+												<div class="tab-pane fade " id="bulkaction" role="tabpanel" aria-labelledby="printer-tab">
+													<div class="form-group row">
+														<div class="col-md-10">
+					                            			<label  class="text-body">Daftar Barang <a href="{{ asset('sample/BulkItemMaster.xlsx')}}">Download Sample</a></label>
+					                            			<fieldset class="form-group mb-4">
+					                            				<input type="file" class="form-control enableFileControl" id="BulkItemMaster" name="BulkItemMaster" accept=".xls, .xlsx" />
+					                            			</fieldset>
+					                            			
+					                            		</div>
+														<div class="col-md-2">
+															<label  class="text-body">.</label>
+															<fieldset class="form-group mb-4">
+																<button type="button" class="btn btn-success text-white font-weight-bold me-1 mb-1" id="btInportItem">Proses</button>
+															</fieldset>
+														</div>
+
+														<div class="col-md-10">
+					                            			<label  class="text-body">Harga Jual <a href="{{ asset('sample/BulkHargaJual.xlsx')}}">Download Sample</a></label>
+					                            			<fieldset class="form-group mb-4">
+					                            				<input type="file" class="form-control enableFileControl" id="BulkHargaJual" name="BulkHargaJual" accept=".xls, .xlsx" />
+					                            			</fieldset>
+					                            			
+					                            		</div>
+														<div class="col-md-2">
+															<label  class="text-body">.</label>
+															<fieldset class="form-group mb-4">
+																<button type="button" class="btn btn-success text-white font-weight-bold me-1 mb-1" id="btInportHargaJual">Proses</button>
+															</fieldset>
+														</div>
+
+														<div class="col-md-10">
+					                            			<label  class="text-body">Pelanggan <a href="{{ asset('sample/BulkPelanggan.xlsx')}}">Download Sample</a></label>
+					                            			<fieldset class="form-group mb-4">
+					                            				<input type="file" class="form-control enableFileControl" id="BulkPelanggan" name="BulkPelanggan" accept=".xls, .xlsx" />
+					                            			</fieldset>
+					                            			
+					                            		</div>
+														<div class="col-md-2">
+															<label  class="text-body">.</label>
+															<fieldset class="form-group mb-4">
+																<button type="button" class="btn btn-success text-white font-weight-bold me-1 mb-1" id="btInportPelanggan">Proses</button>
+															</fieldset>
+														</div>
+
+														<div class="col-md-10">
+					                            			<label  class="text-body">Supplier <a href="{{ asset('sample/BulkSupplier.xlsx')}}">Download Sample</a></label>
+					                            			<fieldset class="form-group mb-4">
+					                            				<input type="file" class="form-control enableFileControl" id="BulkSupplier" name="BulkSupplier" accept=".xls, .xlsx" />
+					                            			</fieldset>
+					                            			
+					                            		</div>
+														<div class="col-md-2">
+															<label  class="text-body">.</label>
+															<fieldset class="form-group mb-4">
+																<button type="button" class="btn btn-success text-white font-weight-bold me-1 mb-1" id="btInportSupplier">Proses</button>
+															</fieldset>
+														</div>
+													</div>
+												</div>
+
 											</div>
 										</div>
 									</div>
@@ -710,6 +776,163 @@ var _URLePub = window.URL || window.webkitURL;
 			readURL(this,"image_result");
 			encodeImagetoBase64(this,"image_base64");
 			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery('#btInportItem').click(function () {
+			var formData = new FormData();
+			formData.append('BulkItemMaster', jQuery('#BulkItemMaster')[0].files[0]);
+
+			$.ajax({
+	            async:false,
+	            type: 'post',
+	            url: "{{route('companysetting-importitem')}}",
+	            headers: {
+	                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+	            },
+	            data: formData,
+	            processData: false,
+                contentType: false,
+	            success: function(response) {
+	                // bindGridDetail(response.data)
+	                // console.log(response);
+					if (response.success) {
+						Swal.fire({
+							icon: "success",
+							title: 'Horay',
+							text: 'Data Berhasil Disimpan',
+							// footer: '<a href>Why do I have this issue?</a>'
+						}).then((result)=>{
+							location.reload();
+						});
+					}
+					else{
+						Swal.fire({
+							icon: "error",
+							title: 'Error',
+							text: response.message,
+							// footer: '<a href>Why do I have this issue?</a>'
+						});
+					}
+	            }
+	        });
+		});
+
+
+		jQuery('#btInportHargaJual').click(function () {
+			var formData = new FormData();
+			formData.append('BulkHargaJual', jQuery('#BulkHargaJual')[0].files[0]);
+
+			$.ajax({
+	            async:false,
+	            type: 'post',
+	            url: "{{route('companysetting-importharga')}}",
+	            headers: {
+	                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+	            },
+	            data: formData,
+	            processData: false,
+                contentType: false,
+	            success: function(response) {
+	                // bindGridDetail(response.data)
+	                // console.log(response);
+					if (response.success) {
+						Swal.fire({
+							icon: "success",
+							title: 'Horay',
+							text: 'Data Berhasil Disimpan',
+							// footer: '<a href>Why do I have this issue?</a>'
+						}).then((result)=>{
+							location.reload();
+						});
+					}
+					else{
+						Swal.fire({
+							icon: "error",
+							title: 'Error',
+							text: response.message,
+							// footer: '<a href>Why do I have this issue?</a>'
+						});
+					}
+	            }
+	        });
+		});
+
+		jQuery('#btInportPelanggan').click(function () {
+			var formData = new FormData();
+			formData.append('BulkPelanggan', jQuery('#BulkPelanggan')[0].files[0]);
+
+			$.ajax({
+	            async:false,
+	            type: 'post',
+	            url: "{{route('companysetting-importpelanggan')}}",
+	            headers: {
+	                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+	            },
+	            data: formData,
+	            processData: false,
+                contentType: false,
+	            success: function(response) {
+	                // bindGridDetail(response.data)
+	                // console.log(response);
+					if (response.success) {
+						Swal.fire({
+							icon: "success",
+							title: 'Horay',
+							text: 'Data Berhasil Disimpan',
+							// footer: '<a href>Why do I have this issue?</a>'
+						}).then((result)=>{
+							location.reload();
+						});
+					}
+					else{
+						Swal.fire({
+							icon: "error",
+							title: 'Error',
+							text: response.message,
+							// footer: '<a href>Why do I have this issue?</a>'
+						});
+					}
+	            }
+	        });
+		});
+
+		jQuery('#btInportSupplier').click(function () {
+			var formData = new FormData();
+			formData.append('BulkSupplier', jQuery('#BulkSupplier')[0].files[0]);
+
+			$.ajax({
+	            async:false,
+	            type: 'post',
+	            url: "{{route('companysetting-importsupplier')}}",
+	            headers: {
+	                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+	            },
+	            data: formData,
+	            processData: false,
+                contentType: false,
+	            success: function(response) {
+	                // bindGridDetail(response.data)
+	                // console.log(response);
+					if (response.success) {
+						Swal.fire({
+							icon: "success",
+							title: 'Horay',
+							text: 'Data Berhasil Disimpan',
+							// footer: '<a href>Why do I have this issue?</a>'
+						}).then((result)=>{
+							location.reload();
+						});
+					}
+					else{
+						Swal.fire({
+							icon: "error",
+							title: 'Error',
+							text: response.message,
+							// footer: '<a href>Why do I have this issue?</a>'
+						});
+					}
+	            }
+	        });
 		});
 
 		function readURL(input, outputElement) {

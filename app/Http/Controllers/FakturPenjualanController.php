@@ -14,6 +14,8 @@ use App\Models\FakturPenjualanHeader;
 use App\Models\FakturPenjualanDetail;
 use App\Models\DeliveryNoteDetail;
 use App\Models\DeliveryNoteHeader;
+use App\Models\PembayaranPenjualanDetail;
+use App\Models\PembayaranPenjualanHeader;
 use App\Models\Pelanggan;
 use App\Models\Termin;
 use App\Models\ItemMaster;
@@ -334,6 +336,54 @@ class FakturPenjualanController extends Controller
 					goto jump;
 				}
 				skip:
+			}
+
+			// Append Pembayaran
+			if($jsonData['TotalPembayaran'] > 0){
+				// Header
+				$modelBayar = new PembayaranPenjualanHeader;
+	           	
+				$numberingDataBayar = new DocumentNumbering();
+				$NoTransaksiBayar = $numberingDataBayar->GetNewDoc("INPAY","pembayaranpenjualanheader","NoTransaksi");
+
+				$modelBayar->Periode = $Year.$Month;
+				$modelBayar->NoTransaksi = $NoTransaksiBayar;
+				$modelBayar->TglTransaksi = $jsonData['TglTransaksi'];
+				$modelBayar->KodePelanggan = $jsonData['KodePelanggan'];
+				$modelBayar->TotalPembelian = $jsonData['TotalPembelian'];
+				$modelBayar->TotalPembayaran = $jsonData['TotalPembayaran'];
+				$modelBayar->KodeMetodePembayaran = $jsonData['MetodeBayar'];
+				$modelBayar->NoReff = $jsonData['ReffPembayaran'];
+				$modelBayar->Keterangan = $jsonData['Keterangan'];
+				$modelBayar->RecordOwnerID = Auth::user()->RecordOwnerID;
+				$modelBayar->CreatedBy = Auth::user()->name;
+				$modelBayar->UpdatedBy = "";
+				$modelBayar->Posted = 0;
+				$modelBayar->Status = $jsonData['Status'];
+
+				$saveBayar = $modelBayar->save();
+
+				if (!$saveBayar) {
+					$data['message'] = "Gagal Menyimpan Data Pembayaran Penjualan";
+					$errorCount += 1;
+					goto jump;
+				}
+				// Detail
+				$modelDetailBayar = new PembayaranPenjualanDetail;
+				$modelDetailBayar->NoTransaksi = $NoTransaksiBayar;
+				$modelDetailBayar->NoUrut = 0;
+				$modelDetailBayar->BaseReff = $NoTransaksi;
+				$modelDetailBayar->TotalPembayaran = $jsonData['TotalPembayaran'];
+				$modelDetailBayar->RecordOwnerID = Auth::user()->RecordOwnerID;
+				$modelDetailBayar->KodeMetodePembayaran = $jsonData['MetodeBayar'];
+				$modelDetailBayar->Keterangan = $jsonData['Keterangan'];
+
+				$saveBayar = $modelDetailBayar->save();
+				if (!$saveBayar) {
+					$data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
+					$errorCount += 1;
+					goto jump;
+				}
 			}
 
 			// Auto Journal

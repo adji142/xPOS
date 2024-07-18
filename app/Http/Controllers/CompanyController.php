@@ -1,5 +1,8 @@
 <?php
+/**
+ * create Import from excel with Maatwebsite with input file and button only using jquery and laravel, the table column is KodeItem, NamaItem, Merk. Merk column have a relation in Merk Table, before inserting, please check Merk value, if Merk Column not Exist in Merk Table, give me notification with message, Merk is not exist in Merk Table
 
+ */
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -14,6 +17,15 @@ use App\Models\Company;
 use App\Models\Printer;
 use App\Models\Gudang;
 use App\Models\Termin;
+
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\ItemMasterImport;
+use App\Imports\HargaJualImport;
+use App\Imports\PelangganImport;
+use App\Imports\SupplierImport;
+
+use App\Exceptions\CustomImportException;
+use Throwable;
 
 class CompanyController extends Controller
 {
@@ -143,6 +155,74 @@ class CompanyController extends Controller
             return redirect()->back();
         }
     }
+
+    function ImportItemMaster(Request $request) {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        Excel::import(new ItemMasterImport, $request->file('BulkItemMaster'));
+
+        if (session()->has('error')) {
+            $data['success'] = false;
+            $data['message'] = session('error');
+            // return response()->json(['error' => session('error')], 400);
+        }
+        else{
+            $data['success'] = true;
+        }
+        
+        return response()->json($data);
+    }
+    function ImportHargaJual(Request $request) {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        Excel::import(new HargaJualImport, $request->file('BulkHargaJual'));
+
+        if (session()->has('error')) {
+            $data['success'] = false;
+            $data['message'] = session('error');
+            // return response()->json(['error' => session('error')], 400);
+        }
+        else{
+            $data['success'] = true;
+        }
+        
+        return response()->json($data);
+    }
+
+    function ImportPelanggan(Request $request) {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        Excel::import(new PelangganImport, $request->file('BulkPelanggan'));
+
+        if (session()->has('error')) {
+            $data['success'] = false;
+            $data['message'] = session('error');
+            // return response()->json(['error' => session('error')], 400);
+        }
+        else{
+            $data['success'] = true;
+        }
+        
+        return response()->json($data);
+    }
+
+    function ImportSupplier(Request $request) {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        Excel::import(new SupplierImport, $request->file('BulkSupplier'));
+
+        if (session()->has('error')) {
+            $data['success'] = false;
+            $data['message'] = session('error');
+            // return response()->json(['error' => session('error')], 400);
+        }
+        else{
+            $data['success'] = true;
+        }
+        
+        return response()->json($data);
+    }
+
     public function TestPrint()
     {
     	// Set params

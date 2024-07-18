@@ -33,13 +33,13 @@ class SupplierController extends Controller
 		                    }      
 		                })->where('supplier.RecordOwnerID','=',Auth::user()->RecordOwnerID);
 
-        $supplier = $supplier->paginate(4);
+        // $supplier = $supplier->paginate(4);
 
         $title = 'Delete Supplier !';
         $text = "Are you sure you want to delete ?";
         confirmDelete($title, $text);
         return view("master.BussinessPartner.Supplier",[
-            'supplier' => $supplier, 
+            'supplier' => $supplier->get(), 
         ]);
     }
 

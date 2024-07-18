@@ -22,7 +22,7 @@ class DashboardController extends Controller
 
         $daybyday = FakturPenjualanHeader::selectRaw("SUM(TotalPembelian) Total")
                         ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                        ->whereBetween(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'),[$TglAkhir, $TglAkhir])
+                        ->whereBetween(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'),[DB::raw("DATE('".$TglAkhir."')"), DB::raw("DATE('".$TglAkhir."')")])
                         ->where('Status','<>',DB::raw("'D'"))
                         ->get();
         $mtd = FakturPenjualanHeader::selectRaw("SUM(TotalPembelian) Total")

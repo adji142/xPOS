@@ -11,6 +11,34 @@ class ItemMaster extends Model
 {
     use HasFactory;
     protected $table = "itemmaster";
+    protected $fillable = [
+      'KodeItem',
+      'NamaItem',
+      'KodeJenisItem',
+      'KodeMerk',
+      'TypeItem',
+      'Rak',
+      'KodeGudang',
+      'KodeSupplier',
+      'Satuan',
+      'Barcode',
+      'Gambar',
+      'HargaPokokPenjualan',
+      'HargaJual',
+      'HargaBeliTerakhir',
+      'Stock',
+      'StockMinimum',
+      'isKonsinyasi',
+      'Active',
+      'AcctHPP',
+      'AcctPenjualan',
+      'AcctPenjualanJasa',
+      'AcctPersediaan',
+      'VatPercent',
+      'RecordOwnerID',
+      'created_at',
+      'updated_at'
+    ];
 
 
     public function GetItemData($RecordOwnerID,$KodeJenis, $Merk, $TipeItem,$TipeItemIN, $Active, $Scan, $ShowKonversi)

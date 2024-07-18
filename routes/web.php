@@ -47,6 +47,7 @@ use App\Http\Controllers\DiskonPeriodikController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\KatalogController;
 use App\Http\Controllers\PaymentGatewayController;
+use App\Http\Controllers\PembayaranKonsinyasiController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -274,6 +275,11 @@ Route::post('/acctsetting/edit', [SettingAccountController::class, 'edit'])->nam
 Route::get('/companysetting', [CompanyController::class,'View'])->name('companysetting')->middleware('auth');
 Route::get('/companysetting/testprint', [CompanyController::class,'TestPrint'])->name('companysetting-testprint')->middleware('auth');
 Route::post('/companysetting/edit', [CompanyController::class, 'edit'])->name('companysetting-edit')->middleware('auth');
+Route::post('/companysetting/importitem', [CompanyController::class, 'ImportItemMaster'])->name('companysetting-importitem')->middleware('auth');
+Route::post('/companysetting/importharga', [CompanyController::class, 'ImportHargaJual'])->name('companysetting-importharga')->middleware('auth');
+Route::post('/companysetting/importpelanggan', [CompanyController::class, 'ImportPelanggan'])->name('companysetting-importpelanggan')->middleware('auth');
+Route::post('/companysetting/importsupplier', [CompanyController::class, 'ImportSupplier'])->name('companysetting-importsupplier')->middleware('auth');
+
 
 // DocumentNumbering
 Route::get('/docnum', [DocumentNumberingController::class,'View'])->name('docnum')->middleware('auth');
@@ -452,6 +458,20 @@ Route::post('/retcons/readheader', [ReturKonsinyasiController::class, 'ViewHeade
 Route::post('/retcons/readdetail', [ReturKonsinyasiController::class, 'ViewDetail'])->name('retcons-readdetail')->middleware('auth');
 Route::post('/retcons/findheader', [ReturKonsinyasiController::class, 'FindHeader'])->name('retcons-findheader')->middleware('auth');
 
+
+/*
+|--------------------------------------------------------------------------
+| Pembayaran Konsinyasi
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/pembayaranpembeliankonsinyasi', [PembayaranKonsinyasiController::class,'View'])->name('pembayaranpembeliankonsinyasi')->middleware('auth');
+Route::get('/pembayaranpembeliankonsinyasi/form/{id}', [PembayaranKonsinyasiController::class,'Form'])->name('pembayaranpembeliankonsinyasi-form')->middleware('auth');
+Route::post('/pembayaranpembeliankonsinyasi/storeJson', [PembayaranKonsinyasiController::class, 'storeJson'])->name('pembayaranpembeliankonsinyasi-storeJson')->middleware('auth');
+Route::post('/pembayaranpembeliankonsinyasi/editJson', [PembayaranKonsinyasiController::class, 'editJson'])->name('pembayaranpembeliankonsinyasi-editJson')->middleware('auth');
+Route::post('/pembayaranpembeliankonsinyasi/readheader', [PembayaranKonsinyasiController::class, 'ViewHeader'])->name('pembayaranpembeliankonsinyasi-readheader')->middleware('auth');
+Route::post('/pembayaranpembeliankonsinyasi/readdetail', [PembayaranKonsinyasiController::class, 'ViewDetail'])->name('pembayaranpembeliankonsinyasi-readdetail')->middleware('auth');
+Route::post('/pembayaranpembeliankonsinyasi/readpenjualan', [PembayaranKonsinyasiController::class, 'getKonsinyasiValue'])->name('pembayaranpembeliankonsinyasi-readpenjualan')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------

@@ -9,4 +9,12 @@ class HargaJual extends Model
 {
     use HasFactory;
     protected $table ='historyhargajual';
+    protected $fillable = [
+        'KodeItem',
+        'HargaJual',
+        'TipeMarkUp',
+        'RecordOwnerID',
+        'created_at',
+        'updated_at'
+    ];
 }
