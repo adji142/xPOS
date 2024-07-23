@@ -68,7 +68,9 @@ class CompanyController extends Controller
         
         }
 
-        $company = Company::Where('KodePartner','=',Auth::user()->RecordOwnerID)->get();
+        $company = Company::Where('KodePartner','=',Auth::user()->RecordOwnerID)
+                    ->leftJoin('subscriptionheader', 'company.KodePaketLangganan', 'subscriptionheader.NoTransaksi')
+                    ->get();
         $printer = Printer::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
         $gudang = Gudang::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
         $temin = Termin::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
@@ -128,23 +130,19 @@ class CompanyController extends Controller
                                     'BannerText1' => empty($request->input('BannerText1')) ? "" : $request->input('BannerText1'),
                                     'BannerText2' => empty($request->input('BannerText2')) ? "" : $request->input('BannerText2'),
                                     'BannerText3' => empty($request->input('BannerText3')) ? "" : $request->input('BannerText3'),
-                                    'ShowLinkInReciept' => ""
+                                    'ShowLinkInReciept' => 0
                 				]
                 			);
 
-                if ($update) {
-                    $clientOS = $request->input('client_os');
+                $clientOS = $request->input('client_os');
 
-                    if ($clientOS == "Windows") {
-                        $printername = empty($request->input('NamaPosPrinter')) ? "" : $request->input('NamaPosPrinter');
-                        $command = 'wmic printer where name="' .$printername. '" call setdefaultprinter';
-                        $output = shell_exec($command);
-                    }
-                    alert()->success('Success','Data Perusahaan berhasil disimpan.');
-                    return redirect('companysetting');
-                }else{
-                    throw new \Exception('Edit Perusahaan Gagal');
+                if ($clientOS == "Windows") {
+                    $printername = empty($request->input('NamaPosPrinter')) ? "" : $request->input('NamaPosPrinter');
+                    $command = 'wmic printer where name="' .$printername. '" call setdefaultprinter';
+                    $output = shell_exec($command);
                 }
+                alert()->success('Success','Data Perusahaan berhasil disimpan.');
+                return redirect('companysetting');
             } else{
                 throw new \Exception('Perusahaan not found.');
             }

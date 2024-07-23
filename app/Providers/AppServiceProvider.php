@@ -56,6 +56,11 @@ class AppServiceProvider extends ServiceProvider
                                 $value->on("userrole.userid","=","users.id")
                                         ->on("userrole.RecordOwnerID","=","users.RecordOwnerID");
                             })
+                            ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
+                            ->Join('subscriptiondetail', function ($value){
+                                $value->on('permission.id','=','subscriptiondetail.PermissionID')
+                                ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
+                            })
                             ->where("users.email","=",Auth::user()->email)
                             ->where("users.RecordOwnerID","=",Auth::user()->RecordOwnerID)
                             // ->where("permission.MenuInduk","=","0")
@@ -83,6 +88,11 @@ class AppServiceProvider extends ServiceProvider
                             ->Join("users",function($value){
                                 $value->on("userrole.userid","=","users.id")
                                         ->on("userrole.RecordOwnerID","=","users.RecordOwnerID");
+                            })
+                            ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
+                            ->Join('subscriptiondetail', function ($value){
+                                $value->on('permission.id','=','subscriptiondetail.PermissionID')
+                                ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
                             })
                             ->where("users.email","=",Auth::user()->email)
                             ->where("users.RecordOwnerID","=",Auth::user()->RecordOwnerID)
@@ -114,6 +124,11 @@ class AppServiceProvider extends ServiceProvider
                                 ->Join("users",function($value){
                                     $value->on("userrole.userid","=","users.id")
                                             ->on("userrole.RecordOwnerID","=","users.RecordOwnerID");
+                                })
+                                ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
+                                ->Join('subscriptiondetail', function ($value){
+                                    $value->on('permission.id','=','subscriptiondetail.PermissionID')
+                                    ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
                                 })
                                 ->where("users.email","=",Auth::user()->email)
                                 ->where("users.RecordOwnerID","=",Auth::user()->RecordOwnerID)

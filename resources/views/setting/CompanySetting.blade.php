@@ -45,6 +45,12 @@
 	.enableFileControl{
 		display: inline!important;
 	}
+	#isPostingAkutansi[readonly] {
+		pointer-events: none;
+		touch-action: none;
+		background-color: #e9ecef;
+		color: #495057;
+	}
   </style>
 <!--begin::Subheader-->
 <div class="subheader py-2 py-lg-6 subheader-solid">
@@ -232,7 +238,7 @@
 					                            		<div class="col-md-6">
 					                            			<label  class="text-body">Posting Akutansi ?</label>
 					                            			<fieldset class="form-group mb-3">
-					                            				<select name="isPostingAkutansi" id="isPostingAkutansi" class="js-example-basic-single js-states form-control bg-transparent">
+					                            				<select name="isPostingAkutansi" id="isPostingAkutansi" class="js-states form-control bg-transparent" readonly>
 					                            					<option value="0" {{ count($company) > 0 ? $company[0]['isPostingAkutansi'] == 0 ? 'selected' : '' : '' }} >Tidak</option>
 					                            					<option value="1" {{ count($company) > 0 ? $company[0]['isPostingAkutansi'] == 1 ? 'selected' : '' : '' }}>Ya</option>
 					                            				</select>
@@ -626,6 +632,7 @@
 <script type="text/javascript">
 var _URL = window.URL || window.webkitURL;
 var _URLePub = window.URL || window.webkitURL;
+var oCompany;
 	$(function () {
 		jQuery(document).ready(function () {
 			var slip = "{{ count($company) > 0 ? $company[0]['DefaultSlip'] : 'slip1' }}"
@@ -657,7 +664,22 @@ var _URLePub = window.URL || window.webkitURL;
 			.catch( error => {
 					console.error( error );
 			});
+
+			oCompany = <?php echo $company ?>;
+			console.log(oCompany)
+			jQuery('#isPostingAkutansi').val(oCompany[0]['AllowAccounting']);
+
+			if (oCompany[0]['AllowKatalogOnline'] == 0) {
+				jQuery('#ecatalog-tab').hide();
+			}
 		});
+
+		jQuery('#isPostingAkutansi').on('mousedown', function(event) {
+			if (jQuery(this).attr('readonly')) {
+				event.preventDefault();
+			}
+		});
+
 		jQuery('#btTestPrint').click(function () {
 			// alert('asd')
 			$.ajax({

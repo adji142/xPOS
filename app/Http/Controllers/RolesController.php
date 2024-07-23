@@ -55,6 +55,11 @@ class RolesController extends Controller
                             ->on('permissionrole.roleid','=',DB::raw("'".$id."'"))
                             ->on('permissionrole.RecordOwnerID','=',DB::raw("'".$RecordOwnerID."'"));
                         })
+                        ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
+                        ->Join('subscriptiondetail', function ($value){
+                            $value->on('permission.id','=','subscriptiondetail.PermissionID')
+                            ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
+                        })
                         // ->where('permissionrole.roleid','=',$userrole->roleid)
                         // ->where('permissionrole.RecordOwnerID','=', Auth::user()->RecordOwnerID)
                         ->where("permission.Status","=","1")
@@ -78,6 +83,11 @@ class RolesController extends Controller
                         ->on('permissionrole.roleid','=',DB::raw("'".$id."'"))
                         ->on('permissionrole.RecordOwnerID','=',DB::raw("'".$RecordOwnerID."'"));
                     })
+                    ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
+                    ->Join('subscriptiondetail', function ($value){
+                        $value->on('permission.id','=','subscriptiondetail.PermissionID')
+                        ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
+                    })
                     // ->where('permissionrole.roleid','=',$userrole->roleid)
                     // ->where('permissionrole.RecordOwnerID','=', Auth::user()->RecordOwnerID)
                     ->where("permission.Status","=","1")
@@ -100,6 +110,11 @@ class RolesController extends Controller
                         $value->on('permission.id','=','permissionrole.permissionid')
                         ->on('permissionrole.roleid','=',DB::raw("'".$id."'"))
                         ->on('permissionrole.RecordOwnerID','=',DB::raw("'".$RecordOwnerID."'"));
+                    })
+                    ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
+                    ->Join('subscriptiondetail', function ($value){
+                        $value->on('permission.id','=','subscriptiondetail.PermissionID')
+                        ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
                     })
                     // ->where('permissionrole.roleid','=',$userrole->roleid)
                     // ->where('permissionrole.RecordOwnerID','=', Auth::user()->RecordOwnerID)

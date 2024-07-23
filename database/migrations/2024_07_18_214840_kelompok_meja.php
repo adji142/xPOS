@@ -13,7 +13,12 @@ class KelompokMeja extends Migration
      */
     public function up()
     {
-        //
+        Schema::create('kelompokmeja', function (Blueprint $table) {
+            $table->string('KodeKelompokMeja')->unique();
+            $table->string('NamaKelompokMeja');
+            $table->string('RecordOwnerID')->unique();
+            $table->timestamps();
+        });
     }
 
     /**
@@ -23,6 +28,6 @@ class KelompokMeja extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('kelompokmeja');
     }
 }

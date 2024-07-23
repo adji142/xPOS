@@ -5,8 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Meja extends Model
+class SubscriptionImage extends Model
 {
     use HasFactory;
-    protected $table ='meja';
+    protected $table = "subscriptionimage";
 }

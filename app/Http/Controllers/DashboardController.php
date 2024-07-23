@@ -61,4 +61,8 @@ class DashboardController extends Controller
             'perbandinganharga' => $perbandinganharga
         ]);
     }
+
+    function dashboardAdmin() {
+        return view("dashboardadmin");
+    }
 }

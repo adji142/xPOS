@@ -202,16 +202,16 @@ class ItemMasterController extends Controller
       $satuan = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
       $gudang = Gudang::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
       $rekeninghpp = Rekening::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                      ->where('KodeKelompok','=', 5)
+                      // ->where('KodeKelompok','=', 5)
                       ->where('Jenis','=',2)
                       ->get();
       $rekeningpenjualan = Rekening::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                      ->where('KodeKelompok','=', 4)
+                      // ->where('KodeKelompok','=', 4)
                       ->where('Jenis','=',2)
                       ->get();
 
       $rekeninginventory = Rekening::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                      ->where('KodeKelompok','=', 1)
+                      // ->where('KodeKelompok','=', 1)
                       ->where('Jenis','=',2)
                       ->get();
 
@@ -288,6 +288,7 @@ class ItemMasterController extends Controller
           else{
             $model->isKonsinyasi = "N";
           }
+          $model->VatPercent = $jsonData['VatPercent'];
           $model->Active = 'Y';
           $model->AcctHPP = empty($jsonData['AcctHPP']) ? "" : $jsonData['AcctHPP'];
           $model->AcctPenjualan = empty($jsonData['AcctPenjualan']) ? "" : $jsonData['AcctPenjualan'];

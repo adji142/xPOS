@@ -48,6 +48,9 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\KatalogController;
 use App\Http\Controllers\PaymentGatewayController;
 use App\Http\Controllers\PembayaranKonsinyasiController;
+use App\Http\Controllers\KelompokMejaController;
+use App\Http\Controllers\MejaController;
+use App\Http\Controllers\SubscriptionController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -62,6 +65,7 @@ use App\Http\Controllers\PembayaranKonsinyasiController;
 Route::get('/', [LoginController::class,'login'])->name('login');
 Route::post('/action-login', [LoginController::class, 'action_login'])->name('action-login');
 Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard')->middleware('auth');
+Route::get('/dashboardadmin', [DashboardController::class, 'dashboardAdmin'])->name('dashboardadmin')->middleware('auth');
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
 /*
@@ -634,9 +638,12 @@ Route::get('/report/generatebarcode', [ReportController::class, 'GenerateBarcode
 Route::get('/report/generatetemplate', [ReportController::class, 'GenerateBarcodeTemplate'])->name('report-generatetemplate')->middleware('auth');
 Route::get('/report/penjualan', [ReportController::class, 'RptPenjualan'])->name('report-penjualan')->middleware('auth');
 Route::get('/report/returpenjualan', [ReportController::class, 'RptReturPenjualan'])->name('report-returpenjualan')->middleware('auth');
+Route::get('/report/pembayaranpenjualan', [ReportController::class, 'RptPembayaranPenjualan'])->name('report-pembayaranpenjualan')->middleware('auth');
 Route::get('/report/pembelian', [ReportController::class, 'RptPembelian'])->name('report-pembelian')->middleware('auth');
 Route::get('/report/returpembelian', [ReportController::class, 'RptReturPembelian'])->name('report-returpembelian')->middleware('auth');
+Route::get('/report/pembayaranpembelian', [ReportController::class, 'RptPembayaranPembelian'])->name('report-pembayaranpembelian')->middleware('auth');
 Route::get('/report/saldorekening', [ReportController::class, 'RptSaldoRekening'])->name('report-saldorekening')->middleware('auth');
+Route::get('/report/neracasaldo', [ReportController::class, 'RptNeracaSaldo'])->name('report-neracasaldo')->middleware('auth');
 
 
 
@@ -649,3 +656,53 @@ Route::get('/report/saldorekening', [ReportController::class, 'RptSaldoRekening'
 
 Route::get('/cat/{ID}', [KatalogController::class, 'View'])->name('cat-catalouge');
 Route::post('/cat/itemmaster', [KatalogController::class, 'ViewItemMaster'])->name('cat-itemmaster');
+
+/*
+|--------------------------------------------------------------------------
+| Kelompok Meja
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/kelompokmeja', [KelompokMejaController::class,'View'])->name('kelompokmeja')->middleware('auth');
+Route::get('/kelompokmeja/form/{id}', [KelompokMejaController::class,'Form'])->name('kelompokmeja-form')->middleware('auth');
+Route::post('/kelompokmeja/store', [KelompokMejaController::class, 'store'])->name('kelompokmeja-store')->middleware('auth');
+Route::post('/kelompokmeja/edit', [KelompokMejaController::class, 'edit'])->name('kelompokmeja-edit')->middleware('auth');
+
+// json
+Route::post('/kelompokmeja/read', [KelompokMejaController::class, 'ViewJson'])->name('kelompokmeja-ViewJson')->middleware('auth');
+Route::post('/kelompokmeja/storeJson', [KelompokMejaController::class, 'storeJson'])->name('kelompokmeja-storeJson')->middleware('auth');
+Route::post('/kelompokmeja/editJson', [KelompokMejaController::class, 'editJson'])->name('kelompokmeja-editJson')->middleware('auth');
+// end json
+Route::delete('/kelompokmeja/delete/{id}', [KelompokMejaController::class, 'deletedata'])->name('kelompokmeja-delete')->middleware('auth');
+Route::get('/kelompokmeja/export', [KelompokMejaController::class,'Export'])->name('kelompokmeja-export')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Meja
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/meja', [MejaController::class,'View'])->name('meja')->middleware('auth');
+Route::get('/meja/form/{id}', [MejaController::class,'Form'])->name('meja-form')->middleware('auth');
+Route::post('/meja/store', [MejaController::class, 'store'])->name('meja-store')->middleware('auth');
+Route::post('/meja/edit', [MejaController::class, 'edit'])->name('meja-edit')->middleware('auth');
+
+// json
+Route::post('/meja/read', [MejaController::class, 'ViewJson'])->name('meja-ViewJson')->middleware('auth');
+Route::post('/meja/storeJson', [MejaController::class, 'storeJson'])->name('meja-storeJson')->middleware('auth');
+Route::post('/meja/editJson', [MejaController::class, 'editJson'])->name('meja-editJson')->middleware('auth');
+// end json
+Route::delete('/meja/delete/{id}', [MejaController::class, 'deletedata'])->name('meja-delete')->middleware('auth');
+Route::get('/meja/export', [MejaController::class,'Export'])->name('meja-export')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Subscription
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/subs', [SubscriptionController::class,'View'])->name('subs')->middleware('auth');
+Route::get('/subs/form/{id}', [SubscriptionController::class,'Form'])->name('subs-form')->middleware('auth');
+Route::post('/subs/storeJson', [SubscriptionController::class, 'storeJson'])->name('subs-storeJson')->middleware('auth');
+Route::post('/subs/editJson', [SubscriptionController::class, 'editJson'])->name('subs-editJson')->middleware('auth');

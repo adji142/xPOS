@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class Meja extends Migration
+class Subscription extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,7 @@ class Meja extends Migration
      */
     public function up()
     {
-        Schema::create('meja', function (Blueprint $table) {
-            $table->string('KodeMeja')->primary();
-            $table->string('NamaMeja');
-            $table->string('RecordOwnerID');
-            $table->timestamps();
-        });
+        //
     }
 
     /**
@@ -28,6 +23,6 @@ class Meja extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('meja');
+        //
     }
 }

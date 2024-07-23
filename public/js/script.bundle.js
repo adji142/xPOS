@@ -924,29 +924,29 @@ jQuery(document).ready(function() {
   }); 
 
 // for classic Editor
-ClassicEditor
-.create( document.querySelector( '#editor' ),{
-    toolbar: [ 'heading', '|', 'bold', 'italic', 'link' ],
-    alignment: {
-      options: [ 'left', 'right' ]
-    }
-})
+// ClassicEditor
+// .create( document.querySelector( '#editor' ),{
+//     toolbar: [ 'heading', '|', 'bold', 'italic', 'link' ],
+//     alignment: {
+//       options: [ 'left', 'right' ]
+//     }
+// })
 
-.catch( error => {
-    console.error( error );
-});
+// .catch( error => {
+//     console.error( error );
+// });
 
-ClassicEditor
-.create( document.querySelector( '#editor3' ),{
-    toolbar: [ 'heading', '|', 'bold', 'italic', 'link' ],
-    alignment: {
-      options: [ 'left', 'right' ]
-    }
-})
+// ClassicEditor
+// .create( document.querySelector( '#editor3' ),{
+//     toolbar: [ 'heading', '|', 'bold', 'italic', 'link' ],
+//     alignment: {
+//       options: [ 'left', 'right' ]
+//     }
+// })
 
-.catch( error => {
-    console.error( error );
-});
+// .catch( error => {
+//     console.error( error );
+// });
 
 InlineEditor
 .create( document.querySelector( '#editor2' ) )

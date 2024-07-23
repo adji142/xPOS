@@ -159,6 +159,21 @@ class ReportController extends Controller
 		]);
     }
 
+    function RptPembayaranPenjualan(Request $request) {
+        $TglAwal = $request->input('TglAwal');
+        $TglAkhir = $request->input('TglAkhir');
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+
+        $penjualan = DB::select('CALL rsp_PembayaranPenjualan(?, ?, ?)', [$TglAwal, $TglAkhir, $RecordOwnerID]);
+
+        
+        return view("report.penjualan.pembayaranpenjualan",[
+			'penjualan' => $penjualan,
+            'oldTglAwal' => $TglAwal,
+            'oldTglAkhir' => $TglAkhir,
+		]);
+    }
+
     function RptPembelian(Request $request) {
         $TglAwal = $request->input('TglAwal');
         $TglAkhir = $request->input('TglAkhir');
@@ -205,6 +220,21 @@ class ReportController extends Controller
 		]);
     }
 
+    function RptPembayaranPembelian(Request $request) {
+        $TglAwal = $request->input('TglAwal');
+        $TglAkhir = $request->input('TglAkhir');
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+
+        $pembelian = DB::select('CALL rsp_PembayaranPembelian(?, ?, ?)', [$TglAwal, $TglAkhir, $RecordOwnerID]);
+
+        
+        return view("report.pembelian.pembayaranpembelian",[
+			'pembelian' => $pembelian,
+            'oldTglAwal' => $TglAwal,
+            'oldTglAkhir' => $TglAkhir,
+		]);
+    }
+
     // Akutansi
 
     function RptSaldoRekening(Request $request) {
@@ -220,5 +250,48 @@ class ReportController extends Controller
             'kelompokrekening' => $kelompokrekening,
             'oldKelompokRekening' => $KelompokRekening,
 		]);
+    }
+
+    function RptNeracaSaldo(Request $request) {
+        $Bulan = $request->input('Bulan');
+        $Tahun = $request->input('Tahun');
+        $Level = $request->input('Level');
+
+        $year = array();
+        $countYear = 5;
+        
+        $currentYear = Carbon::now()->year;
+
+        // var_dump($currentYear);
+        for ($i=0; $i < $countYear; $i++) { 
+            $item = array(
+                'Year' => $currentYear - $i
+            );
+            array_push($year, $item);
+        }
+        for ($i=1; $i < $countYear; $i++) { 
+            $item = array(
+                'Year' => $currentYear + $i
+            );
+            array_push($year, $item);
+        }
+
+        uasort($year, function($a, $b) {
+            return $a['Year'] - $b['Year']; // Ascending order
+            // var_dump($b);
+        });
+
+        // var_dump(json_encode($year));
+        $neracasaldo = DB::select('CALL rsp_NeracaSaldo(?, ?)', [$Tahun.$Bulan, $Level]);
+
+        return view("report.akutansi.neracasaldo",[
+            'neracasaldo' => $neracasaldo,
+			'year' => $year,
+            'nowyear' => $currentYear,
+            'OldTahun' => empty($Tahun) ? $currentYear : $Tahun,
+            'OldBulan' => empty($Bulan) ? Carbon::now()->month : $Tahun,
+            'OldLevel' => $Level
+		]);
+
     }
 }

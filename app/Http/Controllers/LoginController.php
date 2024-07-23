@@ -73,7 +73,12 @@ class LoginController extends Controller
                 }
 
                 if (Auth::Attempt($data)) {
-                    return redirect('dashboard');
+                    if ($RecordOwnerID == "999999") {
+                        return redirect('dashboardadmin');
+                    }
+                    else{
+                        return redirect('dashboard');
+                    }
                 } else{
                     throw new \Exception('Email atau Password Salah');
                 }

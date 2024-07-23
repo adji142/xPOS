@@ -618,18 +618,20 @@
 		var itemkonversi = <?php echo $itemkonversi ?>;
 		oItemMaster = <?php echo $itembahanrakitan ?>;
 
-		console.log(ItemMasterDataEdited)
-		if(ItemMasterDataEdited[0]['AcctHPP'] == ""){
-			jQuery('#AcctHPP').val(dataSetting[0]['InvAcctHargaPokokPenjualan']).trigger('change');
-		}
-		if(ItemMasterDataEdited[0]['AcctPenjualan'] == ""){
-			jQuery('#AcctPenjualan').val(dataSetting[0]['InvAcctPendapatanJual']).trigger('change');
-		}
-		if(ItemMasterDataEdited[0]['AcctPenjualanJasa'] == ""){
-			jQuery('#AcctPenjualanJasa').val(dataSetting[0]['InvAcctPendapatanJasa']).trigger('change');
-		}
-		if(ItemMasterDataEdited[0]['AcctPersediaan'] == ""){
-			jQuery('#AcctPersediaan').val(dataSetting[0]['InvAcctPersediaan']).trigger('change');
+		// console.log(ItemMasterDataEdited)
+		if (ItemMasterDataEdited.length > 0) {
+			if(ItemMasterDataEdited[0]['AcctHPP'] == ""){
+				jQuery('#AcctHPP').val(dataSetting[0]['InvAcctHargaPokokPenjualan']).trigger('change');
+			}
+			if(ItemMasterDataEdited[0]['AcctPenjualan'] == ""){
+				jQuery('#AcctPenjualan').val(dataSetting[0]['InvAcctPendapatanJual']).trigger('change');
+			}
+			if(ItemMasterDataEdited[0]['AcctPenjualanJasa'] == ""){
+				jQuery('#AcctPenjualanJasa').val(dataSetting[0]['InvAcctPendapatanJasa']).trigger('change');
+			}
+			if(ItemMasterDataEdited[0]['AcctPersediaan'] == ""){
+				jQuery('#AcctPersediaan').val(dataSetting[0]['InvAcctPersediaan']).trigger('change');
+			}	
 		}
 
 		if (bahanrakitan.length > 0) {
