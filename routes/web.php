@@ -51,6 +51,7 @@ use App\Http\Controllers\PembayaranKonsinyasiController;
 use App\Http\Controllers\KelompokMejaController;
 use App\Http\Controllers\MejaController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\InvoicePenggunaController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -63,7 +64,9 @@ use App\Http\Controllers\SubscriptionController;
 */
 
 Route::get('/', [LoginController::class,'login'])->name('login');
+Route::get('/daftar', [LoginController::class,'Register'])->name('daftar');
 Route::post('/action-login', [LoginController::class, 'action_login'])->name('action-login');
+Route::post('/action-daftar', [LoginController::class, 'actionRegister'])->name('action-daftar');
 Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard')->middleware('auth');
 Route::get('/dashboardadmin', [DashboardController::class, 'dashboardAdmin'])->name('dashboardadmin')->middleware('auth');
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
@@ -698,7 +701,7 @@ Route::get('/meja/export', [MejaController::class,'Export'])->name('meja-export'
 
 /*
 |--------------------------------------------------------------------------
-| Subscription
+| Subscription - Admin
 |--------------------------------------------------------------------------
 |
 */
@@ -706,3 +709,26 @@ Route::get('/subs', [SubscriptionController::class,'View'])->name('subs')->middl
 Route::get('/subs/form/{id}', [SubscriptionController::class,'Form'])->name('subs-form')->middleware('auth');
 Route::post('/subs/storeJson', [SubscriptionController::class, 'storeJson'])->name('subs-storeJson')->middleware('auth');
 Route::post('/subs/editJson', [SubscriptionController::class, 'editJson'])->name('subs-editJson')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Subscription - Admin
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/penggunaaplikasi', [CompanyController::class,'AdminPelanggan'])->name('penggunaaplikasi')->middleware('auth');
+Route::post('/penggunaaplikasi/suspend', [CompanyController::class, 'UpdateSuspend'])->name('penggunaaplikasi-suspend')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Invoice Pengguna - Admin
+|--------------------------------------------------------------------------
+|
+*/
+Route::post('/invpengguna/storeJson', [InvoicePenggunaController::class, 'storeJson'])->name('invpengguna-storeJson')->middleware('auth');
+Route::post('/invpengguna/bayar', [InvoicePenggunaController::class, 'SimpanPembayaran'])->name('invpengguna-bayar')->middleware('auth');
+Route::post('/invpengguna/viewheader', [InvoicePenggunaController::class, 'GetHeader'])->name('invpengguna-viewheader')->middleware('auth');
+Route::get('/tagihanpengguna', [InvoicePenggunaController::class, 'View'])->name('invpengguna-tagihanpengguna')->middleware('auth');
+
+Route::get('/testseed', [CompanyController::class, 'GenerateInitialData'])->name('testseed');

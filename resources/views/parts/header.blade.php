@@ -30,7 +30,7 @@
 		<!--begin::Logo-->
 		<a href="index.html" class="brand-logo">
 
-			<span class="brand-text"><img style="height: 25px;" alt="Logo" src="{{ asset('images/misc/logo.png')}}" /></span>
+			<span class="brand-text"><img style="height: 100%;" alt="Logo" src="{{ asset('images/misc/logo-dashboard.png')}}" /></span>
 
 		</a>
 		<!--end::Logo-->
@@ -73,9 +73,9 @@
 				<div class="brand flex-column-auto" id="tc_brand">
 					<!--begin::Logo-->
 					<a href="index.html" class="brand-logo">
-						<img class="brand-image" style="height: 25px;" alt="Logo" src="{{ asset('images/misc/k.png')}}" />
-						<span class="brand-text"><img style="height: 25px;" alt="Logo"
-								src="{{asset('images/misc/logo.png')}}" /></span>
+						<img class="brand-image" style="height: 100%;" alt="Logo" src="{{ asset('images/misc/LogoFront.png')}}" />
+						<span class="brand-text"><img style="height: 100%;" alt="Logo"
+								src="{{asset('images/misc/logo-dashboard.png')}}" /></span>
 
 					</a>
 					<!--end::Logo-->

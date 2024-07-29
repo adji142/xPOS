@@ -30,7 +30,7 @@
 		<!--begin::Logo-->
 		<a href="index.html" class="brand-logo">
 
-			<span class="brand-text"><img style="height: 25px;" alt="Logo" src="{{ asset('images/misc/logo.png')}}" /></span>
+			<span class="brand-text"><img style="height: 25px;" alt="Logo" src="{{ asset('images/misc/logo-dashboard.png')}}" /></span>
 
 		</a>
 		<!--end::Logo-->
@@ -73,9 +73,9 @@
 				<div class="brand flex-column-auto" id="tc_brand">
 					<!--begin::Logo-->
 					<a href="index.html" class="brand-logo">
-						<img class="brand-image" style="height: 25px;" alt="Logo" src="{{ asset('images/misc/k.png')}}" />
-						<span class="brand-text"><img style="height: 25px;" alt="Logo"
-								src="{{asset('images/misc/logo.png')}}" /></span>
+						<img class="brand-image" style="height: 50px;" alt="Logo" src="{{ asset('images/misc/LogoFront.png')}}" />
+						<span class="brand-text"><img style="height: 50px;" alt="Logo"
+								src="{{asset('images/misc/logo-dashboard.png')}}" /></span>
 
 					</a>
 					<!--end::Logo-->
@@ -144,18 +144,18 @@
                                     <div id="accordion1">
                                         <ul class="nav flex-column">
                                             <li class="nav-item">
-                                                <a href="dashboard" class="nav-link sub-nav-link">
+                                                <a href="penggunaaplikasi" class="nav-link sub-nav-link">
                                                     <span class="svg-icon nav-icon d-flex justify-content-center">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="10px" height="10px" fill="currentColor" class="bi bi-circle" viewBox="0 0 16 16">
                                                             <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                                                           </svg>
                                                     </span>
-                                                    <span class="nav-text">Active Subscription</span>
+                                                    <span class="nav-text">Pengguna</span>
                                                 </a>
                                             </li>
 
                                             <li class="nav-item">
-                                                <a href="dashboard" class="nav-link sub-nav-link">
+                                                <a href="tagihanpengguna" class="nav-link sub-nav-link">
                                                     <span class="svg-icon nav-icon d-flex justify-content-center">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="10px" height="10px" fill="currentColor" class="bi bi-circle" viewBox="0 0 16 16">
                                                             <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
@@ -355,6 +355,7 @@
 
 
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 	<script src="{{asset('js/plugin.bundle.min.js')}}"></script>
 	<script src="{{asset('js/bootstrap.bundle.min.js')}}"></script>
 	

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use DB;
 use Log;
+use Illuminate\Support\Facades\Artisan;
 
 use charlieuki\ReceiptPrinter\ReceiptPrinter as ReceiptPrinter;
 
@@ -17,6 +18,7 @@ use App\Models\Company;
 use App\Models\Printer;
 use App\Models\Gudang;
 use App\Models\Termin;
+use App\Models\SubscriptionHeader;
 
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ItemMasterImport;
@@ -27,8 +29,51 @@ use App\Imports\SupplierImport;
 use App\Exceptions\CustomImportException;
 use Throwable;
 
+
+use Database\Seeders\DocumentNumberingSeeder;
+use Database\Seeders\SettingAccountSeeder;
+use Database\Seeders\RekeningSeeder;
+use Database\Seeders\KelompokRekeningSeeder;
+use Database\Seeders\GudangSeeder;
+use Database\Seeders\SatuanSeeder;
+
 class CompanyController extends Controller
 {
+
+    function AdminPelanggan(Request $request) {
+        $Status = $request->input('Status');
+
+        $subquery = DB::table('tagihanpenggunaheader')
+                        ->selectRaw("NoTransaksi,KodePelanggan, MAX(created_at) created")
+                        ->groupBy('NoTransaksi','KodePelanggan');
+
+        $oCompany = Company::selectRaw("company.*, subscriptionheader.NamaSubscription, DATE_ADD(company.EndSubs, INTERVAL company.ExtraDays DAY) JatuhTempo, 
+                            case when NOW() BETWEEN DATE_ADD(company.EndSubs,INTERVAL -10 DAY) AND company.EndSubs OR NOW() > company.EndSubs THEN 'Bill' ELSE '' END Subscription,
+                            CASE WHEN tagihanpenggunaheader.TotalBayar = 0 THEN 'Belum Bayar-warning' ELSE 
+                                case when NOW() BETWEEN DATE_ADD(company.EndSubs,INTERVAL -10 DAY) AND company.EndSubs THEN 'Akan Jatuh Tempo-warning' ELSE 
+                                    CASE WHEN NOW() > company.EndSubs THEN 'Expired-danger' ELSE 
+                                        CASE WHEN tagihanpenggunaheader.TotalBayar > 0 AND company.EndSubs > NOW() THEN 'Aktif-success' ELSE 
+                                            CASE WHEN company.EndSubs > NOW() THEN 'Aktif-success' ELSE 
+                                                CASE WHEN company.StartSubs is null THEN 'Perlu Aktivasi-danger' ELSE '' END
+                                            END
+                                        END
+                                    END
+                                END
+                            END StatusSubscription ")
+                        ->leftJoin('subscriptionheader','company.KodePaketLangganan','subscriptionheader.NoTransaksi')
+                        ->leftJoinSub($subquery, 'inv', function ($join) {
+                            // Bind the placeholder value during the join
+                            $join->on('company.KodePartner', '=', 'inv.KodePelanggan');
+                        })
+                        ->leftJoin('tagihanpenggunaheader', 'tagihanpenggunaheader.NoTransaksi','inv.NoTransaksi')
+                        ->get();
+        $subs = SubscriptionHeader::all();
+
+        return view("Admin.Pengguna",[
+            'oCompany' => $oCompany,
+            'subs' => $subs
+        ]);
+    }
     public function View(Request $request)
     {
     	// Test Printer
@@ -152,6 +197,114 @@ class CompanyController extends Controller
             alert()->error('Error',$e->getMessage());
             return redirect()->back();
         }
+    }
+
+    public function UpdateSuspend(Request $request){
+    	Log::debug($request->all());
+        try {
+
+            $model = Company::where('KodePartner','=',$request->input('KodePartner'));
+
+            if ($model) {
+                if ($request->input('isSuspended') == 1) {
+                    $update = DB::table('company')
+                            ->where('KodePartner','=',$request->input('KodePartner'))
+                			->update(
+                				[
+                					// 'NamaGudang'=>$request->input('NamaGudang'),
+                					'isSuspended' => empty($request->input('isSuspended')) ? "" : $request->input('isSuspended'),
+									'SuspendReason' => empty($request->input('SuspendReason')) ? "" : $request->input('SuspendReason')
+                				]
+                			);
+                }
+                elseif ($request->input('isSuspended') == 2) {
+                    $update = DB::table('company')
+                            ->where('KodePartner','=',$request->input('KodePartner'))
+                			->update(
+                				[
+									'EndSubs' => $request->input('EndSubs'),
+                                    'StartSubs' => $request->input('StartSubs'),
+                                    'ExtraDays' => 1
+                				]
+                			);
+                    
+                            $RecordOwnerID = $request->input('KodePartner');
+                            DocumentNumberingSeeder::setParameter($RecordOwnerID);
+                            Artisan::call('db:seed', ['--class' => 'DocumentNumberingSeeder']);
+                            // return response()->json(['message' => 'Database seeded successfully']);
+
+                            // Gudang
+                            GudangSeeder::setParameter($RecordOwnerID);
+                            Artisan::call('db:seed', ['--class' => 'GudangSeeder']);
+                            // return response()->json(['message' => 'Database seeded successfully']);
+
+                            // Kelompok Rekening
+                            // KelompokRekeningSeeder::setParameter($RecordOwnerID);
+                            // Artisan::call('db:seed', ['--class' => 'KelompokRekeningSeeder']);
+
+                            // Rekening Akutansi
+                            RekeningSeeder::setParameter($RecordOwnerID);
+                            Artisan::call('db:seed', ['--class' => 'RekeningSeeder']);
+
+                            // Setting Account
+                            SettingAccountSeeder::setParameter($RecordOwnerID);
+                            Artisan::call('db:seed', ['--class' => 'SettingAccountSeeder']);
+
+                            // Satuan
+                            SatuanSeeder::setParameter($RecordOwnerID);
+                            Artisan::call('db:seed', ['--class' => 'SatuanSeeder']);
+                }
+                else{
+                    $update = DB::table('company')
+                            ->where('KodePartner','=',$request->input('KodePartner'))
+                			->update(
+                				[
+                					// 'NamaGudang'=>$request->input('NamaGudang'),
+                					'isSuspended' => $request->input('isSuspended'),
+									'EndSubs' => $request->input('EndSubs')
+                				]
+                			);
+                }
+                alert()->success('Success','Data Perusahaan berhasil disimpan.');
+                return redirect('penggunaaplikasi');
+            } else{
+                throw new \Exception('Perusahaan not found.');
+            }
+        } catch (\Exception $e) {
+            Log::debug($e->getMessage());
+
+            alert()->error('Error',$e->getMessage());
+            return redirect()->back();
+        }
+    }
+
+    public function GenerateInitialData(Request $request){
+        // $request->input['RecordOwnerID']
+        $RecordOwnerID = 'CL0005';
+        DocumentNumberingSeeder::setParameter($RecordOwnerID);
+        Artisan::call('db:seed', ['--class' => 'DocumentNumberingSeeder']);
+        // return response()->json(['message' => 'Database seeded successfully']);
+
+        // Gudang
+        GudangSeeder::setParameter($RecordOwnerID);
+        Artisan::call('db:seed', ['--class' => 'GudangSeeder']);
+        // return response()->json(['message' => 'Database seeded successfully']);
+
+        // Kelompok Rekening
+        // KelompokRekeningSeeder::setParameter($RecordOwnerID);
+        // Artisan::call('db:seed', ['--class' => 'KelompokRekeningSeeder']);
+
+        // Rekening Akutansi
+        RekeningSeeder::setParameter($RecordOwnerID);
+        Artisan::call('db:seed', ['--class' => 'RekeningSeeder']);
+
+        // Setting Account
+        SettingAccountSeeder::setParameter($RecordOwnerID);
+        Artisan::call('db:seed', ['--class' => 'SettingAccountSeeder']);
+
+        // Satuan
+        SatuanSeeder::setParameter($RecordOwnerID);
+        Artisan::call('db:seed', ['--class' => 'SatuanSeeder']);
     }
 
     function ImportItemMaster(Request $request) {

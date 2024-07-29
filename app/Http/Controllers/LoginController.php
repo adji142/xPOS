@@ -11,6 +11,18 @@ use Log;
 
 use App\Models\Company;
 use App\Models\User;
+use App\Models\SubscriptionHeader;
+use App\Models\SubscriptionDetail;
+use App\Models\SubscriptionImage;
+
+use App\Models\Provinsi;
+use App\Models\Kota;
+use App\Models\Kelurahan;
+use App\Models\Kecamatan;
+use App\Models\Roles;
+use App\Models\PermissionRole;
+use App\Models\UserRole;
+use App\Models\Permission;
 
 class LoginController extends Controller
 {
@@ -19,8 +31,27 @@ class LoginController extends Controller
 
     }
     public function login() {
-        return view("auth.login");
+        $subscriptionheader = SubscriptionHeader::all();
+        return view("auth.login",[
+            'subscriptionheader' => $subscriptionheader
+        ]);
     }
+
+    public function Register() {
+        $subscriptionheader = SubscriptionHeader::all();
+        $provinsi = Provinsi::all();
+        $kota = Kota::all();
+        $kelurahan = Kelurahan::all();
+        $kecamatan = Kecamatan::all();
+        return view("auth.register",[
+            'subscriptionheader' => $subscriptionheader,
+            'provinsi' => $provinsi,
+            'kota' => $kota,
+            'kelurahan' => $kelurahan,
+            'kecamatan' => $kecamatan 
+        ]);
+    }
+
     public function action_login(Request $request)
     {
         try {
@@ -59,10 +90,20 @@ class LoginController extends Controller
             // $oPartner = DB::tables('company')
             //                 ->whereDate('EndSubs','>',$DueDate)
             //                 ->get();
-            $oPartner = Company::where('EndSubs','<',$DueDate);
+            $oPartner = Company::where('EndSubs','<',$DueDate)
+                            ->where('KodePartner', $RecordOwnerID);
 
-            if ($oPartner->count() > 0) {
+            if ($oPartner->count() > 0 && $RecordOwnerID != "999999") {
                 throw new \Exception('Langganan Telah Habis, Silahkan Melakukan Perpanjangan Langganan');
+                goto jump;
+            }
+
+            // $oValidation = $oPartner->first();
+            $oValidation = Company::where('KodePartner','=',$RecordOwnerID)->first();
+            // var_dump($oPartner->first());
+
+            if ($oValidation->isSuspended == 1) {
+                throw new \Exception('Akun And Kena Suspend Dengan Alasan '.$oValidation->SuspendReason.'. Silahkan Hubungi Administrator');
                 goto jump;
             }
 
@@ -175,6 +216,123 @@ class LoginController extends Controller
             $data['message'] = $e->getMessage();
         }
         return response()->json($data);
+    }
+
+    function actionRegister(Request $request) {
+        DB::beginTransaction();
+        $errorCount = 0;
+        $errorMessage = "";
+
+        try {
+            $KodePartner = "";
+            $prefix = "CL";
+            $lastNoTrx = Company::where(DB::raw('LEFT(KodePartner,2)'),'=',$prefix)->count()+1;
+            $KodePartner = $prefix.str_pad($lastNoTrx, 4, '0', STR_PAD_LEFT);
+
+
+            $model = new Company();
+            $model->KodePartner = $KodePartner;
+            $model->NamaPartner = $request->input('NamaPartner');
+            $model->NamaPIC = $request->input('NamaPIC');
+            $model->NIKPIC = "-";
+            $model->NoHP = $request->input('NoHP');
+            $model->NoTlp = $request->input('NoHP');
+            $model->ProvID = $request->input('ProvID');
+            $model->KotaID = $request->input('KotaID');
+            $model->KecID = $request->input('KecID');
+            $model->KelID = $request->input('KelID');
+            $model->AlamatTagihan = $request->input('AlamatTagihan');
+            $model->tempStore = $request->input('password');
+            $model->JenisUsaha = $request->input('JenisUsaha');
+            $model->KodePaketLangganan = $request->input('ProductSelected');
+            // $model->ProductPrice = $request->input('ProductPrice');
+
+            $save = $model->save();
+
+            if (!$save) {
+                $errorCount +=1;
+                $errorMessage = "Gagal menyimpan data Partner";
+            }
+
+            // isi Kelompok Akses
+            $saverole = Roles::insertGetId([
+                'RoleName' => "SuperAdmin",
+                'RecordOwnerID' => $KodePartner
+            ]);
+
+            $akses = new PermissionRole;
+            $akses->roleid = $saverole;
+            $akses->permissionid = 1;
+            $akses->RecordOwnerID = $KodePartner;
+            $aksessave = $akses->save();
+
+            $akses = new PermissionRole;
+            $akses->roleid = $saverole;
+            $akses->permissionid = 60;
+            $akses->RecordOwnerID = $KodePartner;
+            $aksessave = $akses->save();
+
+            $akses = new PermissionRole;
+            $akses->roleid = $saverole;
+            $akses->permissionid = 61;
+            $akses->RecordOwnerID = $KodePartner;
+            $aksessave = $akses->save();
+
+            $akses = new PermissionRole;
+            $akses->roleid = $saverole;
+            $akses->permissionid = 63;
+            $akses->RecordOwnerID = $KodePartner;
+            $aksessave = $akses->save();
+            // isi User
+
+            // $KelompokAkses = $request->input('KelompokAkses');
+
+
+            $saveUser = User::insertGetId([
+                'name' => $request->input('NamaPIC'),
+                'email' => $request->input('email'),
+                'password' => Hash::make($request->input('password')),
+                'Active' => 'N',
+                'RecordOwnerID' => $KodePartner,
+                'BranchID' => ''
+            ]);
+
+            if ($saveUser) {
+            	if ($saverole != "") {
+            		$model = new UserRole;
+            		$model->userid = $saveUser;
+            		$model->roleid = $saverole;
+            		$model->RecordOwnerID = $KodePartner;
+
+            		$saveUserRole = $model->save();
+            		if (!$saveUserRole) {
+            			throw new \Exception('Gagal Menyimpan Data Akses');
+            			goto jump;
+            		}
+            	}
+            }else{
+                // throw new \Exception('Penambahan Data Gagal');
+                $errorCount +=1;
+                $errorMessage = "Gagal menyimpan data User";
+                // DB::rollback();
+            }
+        } catch (\Exception $e) {
+            $errorCount +=1;
+            $errorMessage = "Internal Error: ".$e->getMessage();
+        }
+
+        jump:
+        if ($errorCount > 0) {
+            DB::rollback();
+            // throw new \Exception('Proses Gagal');
+            // alert()->success('Success','Proses Data Gagal '.$errorMessage);
+            var_dump($errorMessage);
+        }
+        else{
+            DB::commit();
+            alert()->success('Success','Data Langganan Berhasil disimpan, Silahkan Menghubungi Administrator untuk konfirmasi');
+            return redirect('/');
+        }
     }
 
     public function logout()
