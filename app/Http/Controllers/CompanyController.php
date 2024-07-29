@@ -116,6 +116,9 @@ class CompanyController extends Controller
         } catch (\Exception $e) {
             alert()->error('Error',$e->getMessage());
         }
+        catch (\Throwable $th) {
+            alert()->error('Error',"asd");
+        }
 
         $company = Company::Where('KodePartner','=',Auth::user()->RecordOwnerID)
                         ->leftJoin('subscriptionheader', 'company.KodePaketLangganan', 'subscriptionheader.NoTransaksi')
