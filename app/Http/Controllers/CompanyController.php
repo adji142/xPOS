@@ -79,43 +79,47 @@ class CompanyController extends Controller
     	// Test Printer
 
     	// exec("print /d:USB001: D:\testprinting.txt");
-        $clientOS = $request->input('client_os');
-        if ($clientOS == "Windows") {
-            
+        try {
+            $clientOS = $request->input('client_os');
+            if ($clientOS == "Windows") {
+                
 
-            $printers = shell_exec('wmic printer get name');
-            $printerList = explode("\n", $printers);
-            $printerList = array_filter(array_map('trim', $printerList));
-            array_shift($printerList);
+                $printers = shell_exec('wmic printer get name');
+                $printerList = explode("\n", $printers);
+                $printerList = array_filter(array_map('trim', $printerList));
+                array_shift($printerList);
 
-            foreach ($printerList as $printername) {
-                $exist = Printer::where('DeviceName','=',$printername)
-                    ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+                foreach ($printerList as $printername) {
+                    $exist = Printer::where('DeviceName','=',$printername)
+                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
-                if (count($exist) > 0) {
-                    goto skip;
+                    if (count($exist) > 0) {
+                        goto skip;
+                    }
+                    // echo $printer . "<br>";
+                    $model = new Printer;
+                    $model->NamaPrinter = $printername;
+                    $model->PrinterInterface = 'USB';
+                    $model->DeviceName = $printername;
+                    $model->DeviceAddress = $printername;
+                    $model->PrinterToken = '-';
+                    $model->Used = 0;
+                    $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+                    $save = $model->save();
+                    skip:
                 }
-                // echo $printer . "<br>";
-                $model = new Printer;
-                $model->NamaPrinter = $printername;
-                $model->PrinterInterface = 'USB';
-                $model->DeviceName = $printername;
-                $model->DeviceAddress = $printername;
-                $model->PrinterToken = '-';
-                $model->Used = 0;
-                $model->RecordOwnerID = Auth::user()->RecordOwnerID;
-
-                $save = $model->save();
-                skip:
+                // var_dump($printerList);
+                // echo $printerList[0];
+            
             }
-            // var_dump($printerList);
-            // echo $printerList[0];
-        
+        } catch (\Exception $e) {
+            alert()->error('Error',$e->getMessage());
         }
 
         $company = Company::Where('KodePartner','=',Auth::user()->RecordOwnerID)
-                    ->leftJoin('subscriptionheader', 'company.KodePaketLangganan', 'subscriptionheader.NoTransaksi')
-                    ->get();
+                        ->leftJoin('subscriptionheader', 'company.KodePaketLangganan', 'subscriptionheader.NoTransaksi')
+                        ->get();
         $printer = Printer::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
         $gudang = Gudang::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
         $temin = Termin::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
@@ -126,10 +130,10 @@ class CompanyController extends Controller
         return view("setting.CompanySetting",[
             'company' => $company,
             'printer' => $printer,
-            'gudang' => $gudang,
-            'temin' => $temin,
-            'clientOS' => $clientOS
-        ]);
+                'gudang' => $gudang,
+                'temin' => $temin,
+                'clientOS' => $clientOS
+            ]);
     }
     public function edit(Request $request){
     	Log::debug($request->all());
@@ -191,7 +195,7 @@ class CompanyController extends Controller
             } else{
                 throw new \Exception('Perusahaan not found.');
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::debug($e->getMessage());
 
             alert()->error('Error',$e->getMessage());
