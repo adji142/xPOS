@@ -117,7 +117,7 @@ class CompanyController extends Controller
             alert()->error('Error',$e->getMessage());
         }
         catch (\Throwable $th) {
-            alert()->error('Error',"asd");
+            alert()->error('Error',"Server tidak support shell_exec");
         }
 
         $company = Company::Where('KodePartner','=',Auth::user()->RecordOwnerID)
