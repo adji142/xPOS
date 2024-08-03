@@ -98,11 +98,6 @@ interface ConnectionInterface
     /**
      * @param array $args
      */
-    public function restoreObject(array $args = []);
-
-    /**
-     * @param array $args
-     */
     public function copyObject(array $args = []);
 
     /**
