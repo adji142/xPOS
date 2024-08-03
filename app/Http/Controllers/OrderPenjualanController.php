@@ -155,7 +155,7 @@ class OrderPenjualanController extends Controller
        $jsonData = $request->json()->all();
        try {
    			$currentDate = Carbon::now();
-			$Year = $currentDate->format('y');
+			$Year = $currentDate->format('Y');
 			$Month = $currentDate->format('m');
 
             $model = new OrderPenjualanHeader;

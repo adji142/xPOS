@@ -13,6 +13,7 @@ use App\Models\Roles;
 use App\Models\PermissionRole;
 use App\Models\UserRole;
 use App\Models\Permission;
+use App\Models\SubscriptionDetail;
 
 class RolesController extends Controller
 {
@@ -48,23 +49,33 @@ class RolesController extends Controller
         $RecordOwnerID = Auth::user()->RecordOwnerID;
 
         $oMenu = array();
-        $data = "hai ini data";
-        $permissionrole = Permission::selectRaw("permission.*,COALESCE(permissionrole.roleid,'') roleid")
-                        ->leftJoin('permissionrole', function ($value) use($id, $RecordOwnerID){
-                            $value->on('permission.id','=','permissionrole.permissionid')
-                            ->on('permissionrole.roleid','=',DB::raw("'".$id."'"))
-                            ->on('permissionrole.RecordOwnerID','=',DB::raw("'".$RecordOwnerID."'"));
-                        })
-                        ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
-                        ->Join('subscriptiondetail', function ($value){
-                            $value->on('permission.id','=','subscriptiondetail.PermissionID')
-                            ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
-                        })
-                        // ->where('permissionrole.roleid','=',$userrole->roleid)
-                        // ->where('permissionrole.RecordOwnerID','=', Auth::user()->RecordOwnerID)
-                        ->where("permission.Status","=","1")
-                        ->where("permission.Level","=","1")->get();
-
+        // $data = "hai ini data";
+        // $permissionrole = Permission::selectRaw("permission.*,COALESCE(permissionrole.roleid,'') roleid")
+        //                 ->leftJoin('permissionrole', function ($value) use($id, $RecordOwnerID){
+        //                     $value->on('permission.id','=','permissionrole.permissionid')
+        //                     ->on('permissionrole.roleid','=',DB::raw("'".$id."'"))
+        //                     ->on('permissionrole.RecordOwnerID','=',DB::raw("'".$RecordOwnerID."'"));
+        //                 })
+        //                 ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
+        //                 ->Join('subscriptiondetail', function ($value){
+        //                     $value->on('permission.id','=','subscriptiondetail.PermissionID')
+        //                     ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
+        //                 })
+        //                 ->where("permission.Status","=","1")
+        //                 ->where("permission.Level","=","1")->get();
+        
+        $permissionrole = SubscriptionDetail::selectRaw("permission.*,COALESCE(permissionrole.roleid,'') roleid")
+                            ->leftJoin('permission','permission.id', 'subscriptiondetail.PermissionID')
+                            ->leftJoin('permissionrole', function ($value) use($id, $RecordOwnerID){
+                                $value->on('permission.id','=','permissionrole.permissionid')
+                                ->on('permissionrole.roleid','=',DB::raw("'".$id."'"))
+                                ->on('permissionrole.RecordOwnerID','=',DB::raw("'".$RecordOwnerID."'"));
+                            })
+                            ->join('company', 'subscriptiondetail.NoTransaksi', 'company.KodePaketLangganan')
+                            ->where("permission.Status","=","1")
+                            ->where("permission.Level","=","1")
+                            ->where('company.KodePartner', $RecordOwnerID)
+                            ->get();
         foreach ($permissionrole as $lv1) {
             $temp = array();
 
@@ -76,24 +87,37 @@ class RolesController extends Controller
             $temp['MenuInduk'] = $lv1->MenuInduk;
             $temp['Selected'] = $lv1->roleid;
 
-            $dt2 = Permission::selectRaw("permission.*,COALESCE(permissionrole.roleid,'') roleid")
+            // $dt2 = Permission::selectRaw("permission.*,COALESCE(permissionrole.roleid,'') roleid")
+            //         ->leftJoin('permissionrole', function ($value) use($id, $RecordOwnerID){
+            //             // var_dump($userrole);
+            //             $value->on('permission.id','=','permissionrole.permissionid')
+            //             ->on('permissionrole.roleid','=',DB::raw("'".$id."'"))
+            //             ->on('permissionrole.RecordOwnerID','=',DB::raw("'".$RecordOwnerID."'"));
+            //         })
+            //         ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
+            //         ->Join('subscriptiondetail', function ($value){
+            //             $value->on('permission.id','=','subscriptiondetail.PermissionID')
+            //             ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
+            //         })
+            //         ->where("permission.Status","=","1")
+            //         ->where("permission.Level","=","2")
+            //         ->where("permission.MenuInduk","=",$lv1->id)
+            //         ->get();
+
+            $dt2 = SubscriptionDetail::selectRaw("permission.*,COALESCE(permissionrole.roleid,'') roleid")
+                    ->leftJoin('permission','permission.id', 'subscriptiondetail.PermissionID')
                     ->leftJoin('permissionrole', function ($value) use($id, $RecordOwnerID){
-                        // var_dump($userrole);
                         $value->on('permission.id','=','permissionrole.permissionid')
                         ->on('permissionrole.roleid','=',DB::raw("'".$id."'"))
                         ->on('permissionrole.RecordOwnerID','=',DB::raw("'".$RecordOwnerID."'"));
                     })
-                    ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
-                    ->Join('subscriptiondetail', function ($value){
-                        $value->on('permission.id','=','subscriptiondetail.PermissionID')
-                        ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
-                    })
-                    // ->where('permissionrole.roleid','=',$userrole->roleid)
-                    // ->where('permissionrole.RecordOwnerID','=', Auth::user()->RecordOwnerID)
+                    ->join('company', 'subscriptiondetail.NoTransaksi', 'company.KodePaketLangganan')
                     ->where("permission.Status","=","1")
                     ->where("permission.Level","=","2")
                     ->where("permission.MenuInduk","=",$lv1->id)
+                    ->where('company.KodePartner', $RecordOwnerID)
                     ->get();
+
             $array2 = array();
             foreach ($dt2 as $lv2) {
                 $temp2 = array();
@@ -105,23 +129,34 @@ class RolesController extends Controller
                 $temp2['MenuInduk'] = $lv2->MenuInduk;
                 $temp2['Selected'] = $lv2->roleid;
 
-                $dt3 = Permission::selectRaw("permission.*,COALESCE(permissionrole.roleid,'') roleid")
-                    ->leftJoin('permissionrole', function ($value) use($id, $RecordOwnerID){
-                        $value->on('permission.id','=','permissionrole.permissionid')
-                        ->on('permissionrole.roleid','=',DB::raw("'".$id."'"))
-                        ->on('permissionrole.RecordOwnerID','=',DB::raw("'".$RecordOwnerID."'"));
-                    })
-                    ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
-                    ->Join('subscriptiondetail', function ($value){
-                        $value->on('permission.id','=','subscriptiondetail.PermissionID')
-                        ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
-                    })
-                    // ->where('permissionrole.roleid','=',$userrole->roleid)
-                    // ->where('permissionrole.RecordOwnerID','=', Auth::user()->RecordOwnerID)
-                    ->where("permission.Status","=","1")
-                    ->where("permission.Level","=","3")
-                    ->where("permission.MenuInduk","=",$lv2->id)
-                    ->get();
+                // $dt3 = Permission::selectRaw("permission.*,COALESCE(permissionrole.roleid,'') roleid")
+                //     ->leftJoin('permissionrole', function ($value) use($id, $RecordOwnerID){
+                //         $value->on('permission.id','=','permissionrole.permissionid')
+                //         ->on('permissionrole.roleid','=',DB::raw("'".$id."'"))
+                //         ->on('permissionrole.RecordOwnerID','=',DB::raw("'".$RecordOwnerID."'"));
+                //     })
+                //     ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
+                //     ->Join('subscriptiondetail', function ($value){
+                //         $value->on('permission.id','=','subscriptiondetail.PermissionID')
+                //         ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
+                //     })
+                //     ->where("permission.Status","=","1")
+                //     ->where("permission.Level","=","3")
+                //     ->where("permission.MenuInduk","=",$lv2->id)
+                //     ->get();
+                $dt3 = SubscriptionDetail::selectRaw("permission.*,COALESCE(permissionrole.roleid,'') roleid")
+                        ->leftJoin('permission','permission.id', 'subscriptiondetail.PermissionID')
+                        ->leftJoin('permissionrole', function ($value) use($id, $RecordOwnerID){
+                            $value->on('permission.id','=','permissionrole.permissionid')
+                            ->on('permissionrole.roleid','=',DB::raw("'".$id."'"))
+                            ->on('permissionrole.RecordOwnerID','=',DB::raw("'".$RecordOwnerID."'"));
+                        })
+                        ->join('company', 'subscriptiondetail.NoTransaksi', 'company.KodePaketLangganan')
+                        ->where("permission.Status","=","1")
+                        ->where("permission.Level","=","3")
+                        ->where("permission.MenuInduk","=",$lv2->id)
+                        ->where('company.KodePartner', $RecordOwnerID)
+                        ->get();
 
                 $array3 = array();
                 foreach ($dt3 as $lv3) {

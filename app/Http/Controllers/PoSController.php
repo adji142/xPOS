@@ -44,16 +44,29 @@ class PoSController extends Controller
         $printer = Printer::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                     ->where('DeviceAddress','=', $company[0]['NamaPosPrinter'])->first();
 
-    	return view("Transaksi.Penjualan.PoS.NormalPoS",[
-            'pelanggan' => $pelanggan,
-            'company' => $company,
-            'itemServices' =>$itemServices,
-            'metodepembayaran' => $metodepembayaran,
-            'sales' => $sales,
-            'gruppelanggan' => $gruppelanggan,
-            'provinsi' => $provinsi,
-            'printer' => $printer
-        ]);
+        switch ($company[0]["JenisUsaha"]) {
+            case 'Retail':
+                return view("Transaksi.Penjualan.PoS.NormalPoS",[
+                    'pelanggan' => $pelanggan,
+                    'company' => $company,
+                    'itemServices' =>$itemServices,
+                    'metodepembayaran' => $metodepembayaran,
+                    'sales' => $sales,
+                    'gruppelanggan' => $gruppelanggan,
+                    'provinsi' => $provinsi,
+                    'printer' => $printer
+                ]);
+                break;
+            case 'FnB':
+                alert()->error('Error','Fitur PoS untuk Bisnis FnB Belum Tersedia');
+                break;
+            case 'Services':
+                alert()->error('Error','Fitur PoS untuk Bisnis Services Belum Tersedia');
+                break;
+            default:
+                # code...
+                break;
+        }
     }
 
     public function GetDiscount(Request $request)

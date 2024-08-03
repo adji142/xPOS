@@ -111,7 +111,7 @@ class PenghapusanBarangController extends Controller
 
 	    try {
 	    	$currentDate = Carbon::now();
-			$Year = $currentDate->format('y');
+			$Year = $currentDate->format('Y');
 			$Month = $currentDate->format('m');
 
             $model = new PenghapusanBarangHeader;

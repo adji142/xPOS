@@ -147,7 +147,7 @@ class ReturKonsinyasiController extends Controller
 			}
 
 			$currentDate = Carbon::now();
-			$Year = $currentDate->format('y');
+			$Year = $currentDate->format('Y');
 			$Month = $currentDate->format('m');
 
 			$numberingData = new DocumentNumbering();

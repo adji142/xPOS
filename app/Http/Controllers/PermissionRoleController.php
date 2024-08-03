@@ -21,8 +21,7 @@ class PermissionPermissionRoleController extends Controller
 
         $sql = "*";
 
-        $roles = Role::selectRaw($sql)
-        		->where('permissionrole.RecordOwnerID','=',Auth::user()->RecordOwnerID);
+        $roles = Role::selectRaw($sql)->where('permissionrole.RecordOwnerID','=',Auth::user()->RecordOwnerID);
 
         $roles = $roles->paginate(4);
 

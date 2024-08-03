@@ -117,7 +117,7 @@ class PembayaranController extends Controller
 	    	$oCompany = Company::where('KodePartner',Auth::user()->RecordOwnerID)->first();
 
 	    	$currentDate = Carbon::now();
-			$Year = $currentDate->format('y');
+			$Year = $currentDate->format('Y');
 			$Month = $currentDate->format('m');
 
 			$model = new PembayaranHeader;

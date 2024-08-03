@@ -15,6 +15,7 @@ use App\Models\Pelanggan;
 use App\Models\Supplier;
 use App\Models\Gudang;
 use App\Models\KelompokRekening;
+use App\Models\Company;
 
 class ReportController extends Controller
 {
@@ -256,6 +257,7 @@ class ReportController extends Controller
         $Bulan = $request->input('Bulan');
         $Tahun = $request->input('Tahun');
         $Level = $request->input('Level');
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
 
         $year = array();
         $countYear = 5;
@@ -293,5 +295,61 @@ class ReportController extends Controller
             'OldLevel' => $Level
 		]);
 
+    }
+
+    function rptLabaRugi(Request $request) {
+        $Bulan = $request->input('Bulan');
+        $Tahun = $request->input('Tahun');
+        $TipeLaporan = $request->input('TipeLaporan');
+        $ShowZero = "0";
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+        
+        $ocompany = Company::where('KodePartner', $RecordOwnerID)->first();
+
+        $year = array();
+        $countYear = 5;
+        
+        $currentYear = Carbon::now()->year;
+
+        // var_dump($currentYear);
+        for ($i=0; $i < $countYear; $i++) { 
+            $item = array(
+                'Year' => $currentYear - $i
+            );
+            array_push($year, $item);
+        }
+        for ($i=1; $i < $countYear; $i++) { 
+            $item = array(
+                'Year' => $currentYear + $i
+            );
+            array_push($year, $item);
+        }
+
+        uasort($year, function($a, $b) {
+            return $a['Year'] - $b['Year']; // Ascending order
+            // var_dump($b);
+        });
+
+        $oData = array();
+
+        switch ($TipeLaporan) {
+            case '1':
+                $oData = DB::select('CALL rsp_ProfitandLost(?, ?)', [$Tahun.$Bulan, $RecordOwnerID]);
+                break;
+            case '2' :
+                $oData = DB::select('CALL rsp_ProfitandLostPerItem(?, ?, ?)', [$Tahun.$Bulan, $RecordOwnerID, $ShowZero]);
+                break;
+        }
+
+        return view("report.akutansi.labarugi",[
+            'labarugi' => $oData,
+			'year' => $year,
+            'nowyear' => $currentYear,
+            'OldTahun' => empty($Tahun) ? $currentYear : $Tahun,
+            'OldBulan' => empty($Bulan) ? Carbon::now()->month : $Bulan,
+            'OldTipeLaporan' => $TipeLaporan,
+            'OldShowZero' => $ShowZero,
+            'AksesAccounting' => $ocompany->isPostingAkutansi
+		]);
     }
 }

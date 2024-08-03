@@ -647,6 +647,7 @@ Route::get('/report/returpembelian', [ReportController::class, 'RptReturPembelia
 Route::get('/report/pembayaranpembelian', [ReportController::class, 'RptPembayaranPembelian'])->name('report-pembayaranpembelian')->middleware('auth');
 Route::get('/report/saldorekening', [ReportController::class, 'RptSaldoRekening'])->name('report-saldorekening')->middleware('auth');
 Route::get('/report/neracasaldo', [ReportController::class, 'RptNeracaSaldo'])->name('report-neracasaldo')->middleware('auth');
+Route::get('/report/labarugi', [ReportController::class, 'rptLabaRugi'])->name('report-labarugi')->middleware('auth');
 
 
 

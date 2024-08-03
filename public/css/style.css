@@ -14783,6 +14783,7 @@ table.dataTable.row-border tbody th, table.dataTable.row-border tbody td, table.
     background: #ae69f5; }
 
 .aside {
+  /* var(--artical-background-panel); */
   background-color: var(--artical-background-panel);
   width: 265px; }
   .aside .brand {

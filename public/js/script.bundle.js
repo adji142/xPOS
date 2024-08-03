@@ -570,7 +570,7 @@ jQuery('.kt_notes_panel_close').on("click", function(e){
     jQuery('body').removeClass('color-theme-blue');
     jQuery('body').removeClass('color-theme-yellow');
     jQuery('body').removeClass('color-theme-navy-blue');
-    
+    jQuery('body').addClass('color-theme-red');
   })
   jQuery('#color-theme-blue').on('click', function(e){
     jQuery('body').removeClass('color-theme-red');
