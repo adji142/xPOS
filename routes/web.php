@@ -52,6 +52,9 @@ use App\Http\Controllers\KelompokMejaController;
 use App\Http\Controllers\MejaController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\InvoicePenggunaController;
+use App\Http\Controllers\VariantMenuController;
+use App\Http\Controllers\MenuAddonController;
+use App\Http\Controllers\TipeOrderRestoController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -733,3 +736,63 @@ Route::post('/invpengguna/viewheader', [InvoicePenggunaController::class, 'GetHe
 Route::get('/tagihanpengguna', [InvoicePenggunaController::class, 'View'])->name('invpengguna-tagihanpengguna')->middleware('auth');
 
 Route::get('/testseed', [CompanyController::class, 'GenerateInitialData'])->name('testseed');
+
+
+/*
+|--------------------------------------------------------------------------
+| Variant Menu
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/grupvariant', [VariantMenuController::class,'View'])->name('grupvariant')->middleware('auth');
+Route::get('/grupvariant/form/{id}', [VariantMenuController::class,'Form'])->name('grupvariant-form')->middleware('auth');
+Route::post('/grupvariant/store', [VariantMenuController::class, 'store'])->name('grupvariant-store')->middleware('auth');
+Route::post('/grupvariant/edit', [VariantMenuController::class, 'edit'])->name('grupvariant-edit')->middleware('auth');
+
+// json
+Route::post('/grupvariant/read', [VariantMenuController::class, 'ViewJson'])->name('grupvariant-ViewJson')->middleware('auth');
+Route::post('/grupvariant/storeJson', [VariantMenuController::class, 'storeJson'])->name('meja-storeJson')->middleware('auth');
+Route::post('/grupvariant/editJson', [VariantMenuController::class, 'editJson'])->name('meja-editJson')->middleware('auth');
+// end json
+Route::delete('/grupvariant/delete/{id}', [VariantMenuController::class, 'deletedata'])->name('grupvariant-delete')->middleware('auth');
+Route::get('/grupvariant/export', [VariantMenuController::class,'Export'])->name('grupvariant-export')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Addon Menu
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/menuaddon', [MenuAddonController::class,'View'])->name('menuaddon')->middleware('auth');
+Route::get('/menuaddon/form/{id}', [MenuAddonController::class,'Form'])->name('menuaddon-form')->middleware('auth');
+Route::post('/menuaddon/store', [MenuAddonController::class, 'store'])->name('menuaddon-store')->middleware('auth');
+Route::post('/menuaddon/edit', [MenuAddonController::class, 'edit'])->name('menuaddon-edit')->middleware('auth');
+
+// json
+Route::post('/menuaddon/read', [MenuAddonController::class, 'ViewJson'])->name('menuaddon-ViewJson')->middleware('auth');
+Route::post('/menuaddon/storeJson', [MenuAddonController::class, 'storeJson'])->name('menuaddon-storeJson')->middleware('auth');
+Route::post('/menuaddon/editJson', [MenuAddonController::class, 'editJson'])->name('menuaddon-editJson')->middleware('auth');
+// end json
+Route::delete('/menuaddon/delete/{id}', [MenuAddonController::class, 'deletedata'])->name('menuaddon-delete')->middleware('auth');
+Route::get('/menuaddon/export', [MenuAddonController::class,'Export'])->name('menuaddon-export')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Tipe Order Resto
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/tipeorderresto', [TipeOrderRestoController::class,'View'])->name('tipeorderresto')->middleware('auth');
+Route::get('/tipeorderresto/form/{id}', [TipeOrderRestoController::class,'Form'])->name('tipeorderresto-form')->middleware('auth');
+Route::post('/tipeorderresto/store', [TipeOrderRestoController::class, 'store'])->name('tipeorderresto-store')->middleware('auth');
+Route::post('/tipeorderresto/edit', [TipeOrderRestoController::class, 'edit'])->name('tipeorderresto-edit')->middleware('auth');
+
+// json
+Route::post('/tipeorderresto/read', [TipeOrderRestoController::class, 'ViewJson'])->name('tipeorderresto-ViewJson')->middleware('auth');
+Route::post('/tipeorderresto/storeJson', [TipeOrderRestoController::class, 'storeJson'])->name('tipeorderresto-storeJson')->middleware('auth');
+Route::post('/tipeorderresto/editJson', [TipeOrderRestoController::class, 'editJson'])->name('tipeorderresto-editJson')->middleware('auth');
+// end json
+Route::delete('/tipeorderresto/delete/{id}', [TipeOrderRestoController::class, 'deletedata'])->name('tipeorderresto-delete')->middleware('auth');
+Route::get('/tipeorderresto/export', [TipeOrderRestoController::class,'Export'])->name('tipeorderresto-export')->middleware('auth');
