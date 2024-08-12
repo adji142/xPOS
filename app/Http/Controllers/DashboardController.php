@@ -50,7 +50,7 @@ class DashboardController extends Controller
                         ->orderBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
                         ->get();
 
-        $perbandinganharga = DB::select('CALL rsp_perbandinganhargasupplier(?, ?)', [$awalTahun, $TglAkhir]);
+        $perbandinganharga = DB::select('CALL rsp_perbandinganhargasupplier(?, ?, ?)', [$awalTahun, $TglAkhir, Auth::user()->RecordOwnerID]);
         // var_dump($perbandinganharga);
     	return view("dashboard",[
             'daybyday' => $daybyday[0]['Total'],
