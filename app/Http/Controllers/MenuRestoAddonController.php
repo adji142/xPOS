@@ -44,7 +44,7 @@ class MenuRestoAddonController extends Controller
         $title = 'Delete Menu ini !';
         $text = "Are you sure you want to delete ?";
         confirmDelete($title, $text);
-        return view("resto.menu",[
+        return view("Resto.menu",[
             'menudata'=>$oMenuData
         ]);
     }
@@ -72,7 +72,7 @@ class MenuRestoAddonController extends Controller
                         ->where('Father', $KodeItemHasil)
                         ->get();
 
-        return view("resto.menu-Input",[
+        return view("Resto.menu-Input",[
             'menu' => array(),
             'menuheader' => $menuheader,
             'menudetail' => $menudetail,
