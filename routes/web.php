@@ -55,6 +55,7 @@ use App\Http\Controllers\InvoicePenggunaController;
 use App\Http\Controllers\VariantMenuController;
 use App\Http\Controllers\MenuAddonController;
 use App\Http\Controllers\TipeOrderRestoController;
+use App\Http\Controllers\MenuRestoAddonController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -796,3 +797,24 @@ Route::post('/tipeorderresto/editJson', [TipeOrderRestoController::class, 'editJ
 // end json
 Route::delete('/tipeorderresto/delete/{id}', [TipeOrderRestoController::class, 'deletedata'])->name('tipeorderresto-delete')->middleware('auth');
 Route::get('/tipeorderresto/export', [TipeOrderRestoController::class,'Export'])->name('tipeorderresto-export')->middleware('auth');
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Tipe Order Resto
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/menu', [MenuRestoAddonController::class,'View'])->name('menu')->middleware('auth');
+Route::get('/menu/form/{id}', [MenuRestoAddonController::class,'Form'])->name('menu-form')->middleware('auth');
+Route::post('/menu/store', [MenuRestoAddonController::class, 'store'])->name('menu-store')->middleware('auth');
+Route::post('/menu/edit', [MenuRestoAddonController::class, 'edit'])->name('menu-edit')->middleware('auth');
+
+// json
+Route::post('/menu/read', [MenuRestoAddonController::class, 'ViewJson'])->name('menu-ViewJson')->middleware('auth');
+Route::post('/menu/storeJson', [MenuRestoAddonController::class, 'storeJson'])->name('menu-storeJson')->middleware('auth');
+Route::post('/menu/editJson', [MenuRestoAddonController::class, 'editJson'])->name('menu-editJson')->middleware('auth');
+// end json
+Route::delete('/menu/delete/{KodeItemHasil}', [MenuRestoAddonController::class, 'deletedata'])->name('menu-delete')->middleware('auth');
+Route::get('/menu/export', [MenuRestoAddonController::class,'Export'])->name('menu-export')->middleware('auth');

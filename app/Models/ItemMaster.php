@@ -46,7 +46,17 @@ class ItemMaster extends Model
     	$sql = "itemmaster.KodeItem, itemmaster.NamaItem, itemmaster.Barcode,itemmaster.HargaJual,
       itemmaster.HargaPokokPenjualan,itemmaster.HargaBeliTerakhir,itemmaster.Stock, itemmaster.StockMinimum, 
       merk.NamaMerk, jenisitem.NamaJenis, gudang.NamaGudang, supplier.NamaSupplier, satuan.NamaSatuan, 
-      CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END END END END ItemType, 
+      CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE 
+        CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE 
+          CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE 
+            CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE 
+              CASE WHEN itemmaster.TypeItem = 5 THEN 'Konsinyasi' ELSE 
+                CASE WHEN itemmaster.TypeItem = 6 THEN 'Bahan Baku' ELSE '' END 
+              END
+            END 
+          END 
+        END 
+      END ItemType, 
       itemmaster.Rak, 1 As QtyKonversi, itemmaster.Satuan, COALESCE(itemmaster.VatPercent,0) VatPercent, COALESCE(itemmaster.Gambar,'') Gambar ";
         $itemmaster = ItemMaster::selectRaw($sql)
                 ->leftJoin('jenisitem', function ($value){
@@ -103,7 +113,11 @@ class ItemMaster extends Model
           CASE WHEN itemmaster.TypeItem = 1 THEN 'Inventory' ELSE 
             CASE WHEN itemmaster.TypeItem = 2 THEN 'Non. Inventory' ELSE 
               CASE WHEN itemmaster.TypeItem = 3 THEN 'Rakitan' ELSE 
-                CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE '' END 
+                CASE WHEN itemmaster.TypeItem = 4 THEN 'Jasa' ELSE 
+                  CASE WHEN itemmaster.TypeItem = 5 THEN 'Konsinyasi' ELSE 
+                    CASE WHEN itemmaster.TypeItem = 6 THEN 'Bahan Baku' ELSE '' END 
+                  END
+                END 
               END 
             END 
           END ItemType, itemmaster.Rak, CASE WHEN COALESCE(itemkonversi.QtyKonversi,0) = 0 then 1 else COALESCE(itemkonversi.QtyKonversi,0) end QtyKonversi,

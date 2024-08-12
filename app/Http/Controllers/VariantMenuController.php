@@ -22,6 +22,7 @@ class VariantMenuController extends Controller
                         $value->on('variantdetail.variant_id','=','variantheader.id')
                         ->on('variantdetail.RecordOwnerID','=','variantheader.RecordOwnerID');
                     })
+                    ->where('variantheader.RecordOwnerID',  Auth::user()->RecordOwnerID)
                     ->groupBy('variantheader.id','variantheader.NamaGrup', 'variantheader.OpsiPilihan')
                     ->get();
         $title = 'Delete Grup variant !';
@@ -216,7 +217,7 @@ class VariantMenuController extends Controller
 		        alert()->success('Success','Data Variant Berhasil dihapus.');
                 return redirect('grupvariant');
 	        }
-    	} catch (Exception $e) {
+    	} catch (\Exception $e) {
     		Log::debug($e->getMessage());
 
             alert()->error('Error',$e->getMessage());

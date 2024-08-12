@@ -123,7 +123,9 @@
 												<option value="3" {{ count($itemmaster) > 0 && $itemmaster[0]['TypeItem'] == '3' ? 'selected' : '' }}>Rakitan</option>
 												<option value="4" {{ count($itemmaster) > 0 && $itemmaster[0]['TypeItem'] == '4' ? 'selected' : '' }}>Jasa</option>
 												<option value="5" {{ count($itemmaster) > 0 && $itemmaster[0]['TypeItem'] == '5' ? 'selected' : '' }}>Konsinyasi</option>
-												
+												@if ($oCompany[0]["JenisUsaha"] == "FnB")
+												<option value="6" {{ count($itemmaster) > 0 && $itemmaster[0]['TypeItem'] == '6' ? 'selected' : '' }}>Bahan Baku</option>
+												@endif
 											</select>
                             			</fieldset>
                             			

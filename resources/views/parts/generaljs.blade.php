@@ -1,5 +1,5 @@
 <script type="text/javascript">
-	function BindLookupServices(TagName,KeyExpress,data,ColumnData) {
+	function BindLookupServices(TagName,KeyExpress,data,ColumnData, selection = "single") {
 		var dataGridInstance = jQuery("#"+TagName).dxDataGrid({
 			allowColumnResizing: true,
 			dataSource: data,
@@ -19,7 +19,7 @@
                 }
             },
             selection: {
-                mode: "single" // Enable single selection mode
+                mode: selection // Enable single selection mode
             },
             searchPanel: {
 	            visible: true,
