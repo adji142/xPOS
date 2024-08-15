@@ -49,6 +49,26 @@ class MenuRestoAddonController extends Controller
         ]);
     }
 
+    function ViewJson(Request $request){
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+        $KodeJenis = $request->input('KodeJenis');
+        
+        $sql = "itemmaster.KodeItem, itemmaster.NamaItem, menuheader.HargaPokokStandar, menuheader.HargaJual, 
+                        menuheader.Gambar";
+                $itemmenu = ItemMaster::selectRaw($sql)
+                            ->Join('menuheader', function ($value){
+                                $value->on('menuheader.KodeItemHasil','=','itemmaster.KodeItem')
+                                ->on('menuheader.RecordOwnerID','=','itemmaster.RecordOwnerID');
+                            })
+                            ->where('Active','Y');
+        if ($KodeJenis != "") {
+            $itemmenu->where('itemmaster.KodeJenisItem', $KodeJenis);
+        }
+
+        $data['data']= $itemmenu->get();
+        return response()->json($data);
+    }
+
     public function Form($KodeItemHasil = null)
     {   
         $oItem = new ItemMaster();
@@ -68,8 +88,13 @@ class MenuRestoAddonController extends Controller
                         ->where('menudetail.RecordOwnerID', Auth::user()->RecordOwnerID)
                         ->where('menudetail.Father', $KodeItemHasil)
                         ->get();
-        $menuvariant = MenuRestoVariant::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-                        ->where('Father', $KodeItemHasil)
+        $menuvariant = MenuRestoVariant::selectRaw("menuvarian.*, variantheader.NamaGrup ")
+                        ->leftJoin('variantheader', function ($value){
+                            $value->on('menuvarian.VariantGrupID','=','variantheader.id')
+                            ->on('menuvarian.RecordOwnerID','=','variantheader.RecordOwnerID');
+                        })
+                        ->where('menuvarian.RecordOwnerID', Auth::user()->RecordOwnerID)
+                        ->where('menuvarian.Father', $KodeItemHasil)
                         ->get();
 
         return view("Resto.menu-Input",[
@@ -117,40 +142,42 @@ class MenuRestoAddonController extends Controller
             $header->RecordOwnerID = Auth::user()->RecordOwnerID;
             $saveHeader = $header->save();
 
-            if (count($DetailParameter) == 0) {
-                $errorMessage = "Data Bahan Tidak boleh kosong";
-                $errorCount +=1;
-                goto jump;
-            }
+            // if (count($DetailParameter) == 0) {
+            //     $errorMessage = "Data Bahan Tidak boleh kosong";
+            //     $errorCount +=1;
+            //     goto jump;
+            // }
 
             $HargaPokokStandar = 0;
 
-            foreach ($DetailParameter as $dt) {
-                if ($dt["Pemakaian"] == 0) {
-                    $errorMessage = "Pemakaian Bahan Item ";
-                    $errorCount +=1;
-                    goto jump;
+            if ($DetailParameter) {
+                foreach ($DetailParameter as $dt) {
+                    if ($dt["Pemakaian"] == 0) {
+                        $errorMessage = "Pemakaian Bahan Item ";
+                        $errorCount +=1;
+                        goto jump;
+                    }
+                    $oItemMaster = ItemMaster::where('KodeItem', $dt['KodeItem'])
+                                    ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                                    ->first();
+    
+                    $detail = new MenuRestoDetail();
+                    $detail->Father = $KodeItemHasil;
+                    $detail->KodeItemRM = $dt['KodeItem'];
+                    $detail->QtyBahan = $dt["Pemakaian"];
+                    $detail->HargaPokok = $oItemMaster->HargaPokokPenjualan;
+                    $detail->Satuan = $dt["Satuan"];
+                    $detail->RecordOwnerID = Auth::user()->RecordOwnerID;
+                    $detail->save();
+    
+                    if (!$detail) {
+                        $errorMessage = "Menyimpan data Bahan " . dt["NamaBahan"] . " Gagal dilakukan";
+                        $errorCount +=1;
+                        goto jump;
+                    }
+    
+                    $HargaPokokStandar = $HargaPokokStandar + ($oItemMaster->HargaPokokPenjualan * $dt["Pemakaian"]);
                 }
-                $oItemMaster = ItemMaster::where('KodeItem', $dt['KodeItem'])
-                                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
-                                ->first();
-
-                $detail = new MenuRestoDetail();
-                $detail->Father = $KodeItemHasil;
-                $detail->KodeItemRM = $dt['KodeItem'];
-                $detail->QtyBahan = $dt["Pemakaian"];
-                $detail->HargaPokok = $oItemMaster->HargaPokokPenjualan;
-                $detail->Satuan = $dt["Satuan"];
-                $detail->RecordOwnerID = Auth::user()->RecordOwnerID;
-                $detail->save();
-
-                if (!$detail) {
-                    $errorMessage = "Menyimpan data Bahan " . dt["NamaBahan"] . " Gagal dilakukan";
-                    $errorCount +=1;
-                    goto jump;
-                }
-
-                $HargaPokokStandar = $HargaPokokStandar + ($oItemMaster->HargaPokokPenjualan * $dt["Pemakaian"]);
             }
 
 
@@ -171,9 +198,21 @@ class MenuRestoAddonController extends Controller
             }
 
             if ($HargaPokokStandar == 0) {
-                $errorMessage = "Harga Pokok Tidak Boleh Kosong, Silahkan cek masing masing harga pokok bahan baku";
-                $errorCount +=1;
-                goto jump;
+                // $errorMessage = "Harga Pokok Tidak Boleh Kosong, Silahkan cek masing masing harga pokok bahan baku";
+                // $errorCount +=1;
+                // goto jump;
+                $oItemMaster = ItemMaster::where('KodeItem', $KodeItemHasil)
+                                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                                ->first();
+
+                                $update = DB::table('menuheader')
+                                ->where('KodeItemHasil','=', $KodeItemHasil)
+                                ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                                ->update(
+                                    [
+                                        'HargaPokokStandar' => $oItemMaster->HargaPokokPenjualan,
+                                    ]
+                                );
             }
             else{
                 $update = DB::table('menuheader')
@@ -181,7 +220,7 @@ class MenuRestoAddonController extends Controller
                         ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                         ->update(
                             [
-                                'HargaPokokStandar' => $HargaPokokStandar,
+                                'HargaPokokStandar' => $oItemMaster->HargaPokokPenjualan,
                             ]
                         );
             }
@@ -240,11 +279,11 @@ class MenuRestoAddonController extends Controller
                         );
 
             
-            if (!$DetailParameter) {
-                $errorMessage = "Data Bahan Menu tidak ada";
-                $errorCount +=1;
-                goto jump;
-            }
+            // if (!$DetailParameter) {
+            //     $errorMessage = "Data Bahan Menu tidak ada";
+            //     $errorCount +=1;
+            //     goto jump;
+            // }
 
             $delete = DB::table('menudetail')
 		                ->where('father','=', $KodeItemHasil)
@@ -252,32 +291,34 @@ class MenuRestoAddonController extends Controller
 		                ->delete();
             $HargaPokokStandar = 0;
 
-            foreach ($DetailParameter as $dt) {
-                if ($dt["Pemakaian"] == 0) {
-                    $errorMessage = "Pemakaian Bahan Item ";
-                    $errorCount +=1;
-                    goto jump;
+            if ($DetailParameter) {
+                foreach ($DetailParameter as $dt) {
+                    if ($dt["Pemakaian"] == 0) {
+                        $errorMessage = "Pemakaian Bahan Item ";
+                        $errorCount +=1;
+                        goto jump;
+                    }
+                    $oItemMaster = ItemMaster::where('KodeItem', $dt['KodeItem'])
+                                    ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                                    ->first();
+    
+                    $detail = new MenuRestoDetail();
+                    $detail->Father = $KodeItemHasil;
+                    $detail->KodeItemRM = $dt['KodeItem'];
+                    $detail->QtyBahan = $dt["Pemakaian"];
+                    $detail->HargaPokok = $oItemMaster->HargaPokokPenjualan;
+                    $detail->Satuan = $dt["Satuan"];
+                    $detail->RecordOwnerID = Auth::user()->RecordOwnerID;
+                    $detail->save();
+    
+                    if (!$detail) {
+                        $errorMessage = "Menyimpan data Bahan " . dt["NamaBahan"] . " Gagal dilakukan";
+                        $errorCount +=1;
+                        goto jump;
+                    }
+    
+                    $HargaPokokStandar = $HargaPokokStandar + ($oItemMaster->HargaPokokPenjualan * $dt["Pemakaian"]);
                 }
-                $oItemMaster = ItemMaster::where('KodeItem', $dt['KodeItem'])
-                                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
-                                ->first();
-
-                $detail = new MenuRestoDetail();
-                $detail->Father = $KodeItemHasil;
-                $detail->KodeItemRM = $dt['KodeItem'];
-                $detail->QtyBahan = $dt["Pemakaian"];
-                $detail->HargaPokok = $oItemMaster->HargaPokokPenjualan;
-                $detail->Satuan = $dt["Satuan"];
-                $detail->RecordOwnerID = Auth::user()->RecordOwnerID;
-                $detail->save();
-
-                if (!$detail) {
-                    $errorMessage = "Menyimpan data Bahan " . dt["NamaBahan"] . " Gagal dilakukan";
-                    $errorCount +=1;
-                    goto jump;
-                }
-
-                $HargaPokokStandar = $HargaPokokStandar + ($oItemMaster->HargaPokokPenjualan * $dt["Pemakaian"]);
             }
 
             if ($DetailVariant) {
@@ -302,9 +343,18 @@ class MenuRestoAddonController extends Controller
             }
 
             if ($HargaPokokStandar == 0) {
-                $errorMessage = "Harga Pokok Tidak Boleh Kosong, Silahkan cek masing masing harga pokok bahan baku";
-                $errorCount +=1;
-                goto jump;
+                $oItemMaster = ItemMaster::where('KodeItem', $KodeItemHasil)
+                                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                                ->first();
+
+                                $update = DB::table('menuheader')
+                                ->where('KodeItemHasil','=', $KodeItemHasil)
+                                ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                                ->update(
+                                    [
+                                        'HargaPokokStandar' => $oItemMaster->HargaPokokPenjualan,
+                                    ]
+                                );
             }
             else{
                 $update = DB::table('menuheader')

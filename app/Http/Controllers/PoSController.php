@@ -17,7 +17,15 @@ use App\Models\Sales;
 use App\Models\GrupPelanggan;
 use App\Models\Provinsi;
 use App\Models\Printer;
-
+use App\Models\TipeOrderResto;
+use App\Models\KelompokMeja;
+use App\Models\Meja;
+use App\Models\MenuRestoHeader;
+use App\Models\MenuRestoDetail;
+use App\Models\MenuRestoVariant;
+use App\Models\VariantMenuHeader;
+use App\Models\VariantMenuDetail;
+use App\Models\JenisItem;
 // require_once(app_path('Libraries/phpserial/src/PhpSerial.php'));
 class PoSController extends Controller
 {
@@ -44,6 +52,7 @@ class PoSController extends Controller
         $printer = Printer::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                     ->where('DeviceAddress','=', $company[0]['NamaPosPrinter'])->first();
 
+        // var_dump($company[0]["JenisUsaha"]);
         switch ($company[0]["JenisUsaha"]) {
             case 'Retail':
                 return view("Transaksi.Penjualan.PoS.NormalPoS",[
@@ -58,13 +67,45 @@ class PoSController extends Controller
                 ]);
                 break;
             case 'FnB':
-                alert()->error('Error','Fitur PoS untuk Bisnis FnB Belum Tersedia');
+                // alert()->error('Error','Fitur PoS untuk Bisnis FnB Belum Tersedia');
+                // return redirect()->back();
+                $kelompokmeja = KelompokMeja::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+                $meja = Meja::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+                $tipeorder = TipeOrderResto::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+                $jenisitem = JenisItem::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+
+                $sql = "itemmaster.KodeItem, itemmaster.NamaItem, menuheader.HargaPokokStandar, menuheader.HargaJual, 
+                        menuheader.Gambar";
+                $itemmenu = ItemMaster::selectRaw($sql)
+                            ->Join('menuheader', function ($value){
+                                $value->on('menuheader.KodeItemHasil','=','itemmaster.KodeItem')
+                                ->on('menuheader.RecordOwnerID','=','itemmaster.RecordOwnerID');
+                            })
+                            ->where('Active','Y')
+                            ->get();
+
+                return view("Transaksi.Penjualan.PoS.FnBPoS",[
+                    'pelanggan' => $pelanggan,
+                    'company' => $company,
+                    'itemServices' =>$itemServices,
+                    'metodepembayaran' => $metodepembayaran,
+                    'sales' => $sales,
+                    'gruppelanggan' => $gruppelanggan,
+                    'provinsi' => $provinsi,
+                    'printer' => $printer,
+                    'itemmenu' => $itemmenu,
+                    'kelompokmeja' => $kelompokmeja,
+                    'meja' => $meja,
+                    'tipeorder' => $tipeorder,
+                    'jenisitem' => $jenisitem
+                ]);
                 break;
             case 'Services':
                 alert()->error('Error','Fitur PoS untuk Bisnis Services Belum Tersedia');
+                return redirect()->back();
                 break;
             default:
-                # code...
+                alert()->error('Error','Jenis Usaha belum ada');
                 break;
         }
     }

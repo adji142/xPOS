@@ -18,12 +18,14 @@
         vertical-align: middle;
         align-content: center;
         flex-basis: 200;
-        width: 150px;
+        width: 200px;
         height: 200px;
     }
     .image_result img {
         max-width: 100%; /* Fit the image to the container width */
+        width: 100%;
         height: 100%; /* Maintain the aspect ratio */
+        object-fit: cover;
     }
 </style>
 <!--begin::Subheader-->
@@ -283,7 +285,11 @@
             }
 
             for (let index = 0; index < oDataMenuVariant.length; index++) {
-                addNewLineVariant(oDataMenuVariant[index], index +1);   
+                var oData = {
+                    'id' : oDataMenuVariant[index]['VariantGrupID'],
+                    'NamaGrup' : oDataMenuVariant[index]['NamaGrup']
+                }
+                addNewLineVariant(oData, index +1);   
             }
 
             AsignRowNumber();
@@ -522,7 +528,7 @@
     }
 
     function addNewLineVariant(oData, index) {
-        console.log(oData);
+        console.log(oVariantDetail);
         var RandomID = generateRandomText(10);
         var newRow = document.createElement('tr');
         newRow.className = RandomID;
