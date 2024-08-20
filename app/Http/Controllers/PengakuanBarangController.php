@@ -101,12 +101,17 @@ class PengakuanBarangController extends Controller
 
     public function storeJson(Request $request)
     {
-    	$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
-	    Log::debug($request->all());
+    	$jsonData = $request->json()->all();
+		$oData = $this->addPengakuanBarang($jsonData);
+	    return response()->json($oData);
+    }
+
+	public function addPengakuanBarang($jsonData){
+		$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+	    Log::debug($jsonData);
 	    DB::beginTransaction();
 
 	    $errorCount = 0;
-	    $jsonData = $request->json()->all();
 
 	    try {
 	    	$currentDate = Carbon::now();
@@ -128,6 +133,7 @@ class PengakuanBarangController extends Controller
 	        $model->CreatedBy = Auth::user()->name;
 	        $model->UpdatedBy = '';
 	        $model->Posted = 0;
+			$model->JenisTransaksi = array_key_exists('JenisTransaksi', $jsonData) ? $jsonData['JenisTransaksi'] : 1;
 	        $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 	        $save = $model->save();
 
@@ -266,7 +272,7 @@ class PengakuanBarangController extends Controller
 	    }
 
 	    return response()->json($data);
-    }
+	}
 
     public function editJson(Request $request){
     	Log::debug($request->all());

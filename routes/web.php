@@ -518,7 +518,8 @@ Route::post('/fpenjualan/retailPos', [FakturPenjualanController::class, 'storePo
 Route::post('/fpenjualan/editStatus', [FakturPenjualanController::class, 'EditTransactionStatus'])->name('fpenjualan-editStatus')->middleware('auth');
 Route::get('/fpenjualan/print/{id}', [FakturPenjualanController::class, 'CetakFaktur'])->name('fpenjualan-print')->middleware('auth');
 Route::get('/fpenjualan/printthermal/{id}', [FakturPenjualanController::class, 'PrintThermalReciept'])->name('fpenjualan-printthermal')->middleware('auth');
-
+Route::post('/fpenjualan/retailPosFnb', [FakturPenjualanController::class, 'storePoSFnB'])->name('fpenjualan-retailPosFnB')->middleware('auth');
+Route::post('/fpenjualan/editJsonPosFnb', [FakturPenjualanController::class, 'editJsonPoSFnB'])->name('fpenjualan-editJsonPosFnB')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------

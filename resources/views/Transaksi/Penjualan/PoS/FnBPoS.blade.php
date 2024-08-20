@@ -198,276 +198,277 @@ License: You must have a valid license purchased only from themeforest(the above
 		   </div>
 	   </div>
    </header>
-   <div class="contentPOS">
-	    <div class="container-fluid">
-			<div class="row">
-				<div class="col-xl-4 order-xl-first">
-					<div class="card card-custom gutter-b bg-white border-0">
-						<div class="card-body">
-							<div class="d-flex justify-content-between colorfull-select">
-								<div class="selectmain">
-									<select class="arabic-select w-200px bag-primary" id="cboJenisItem">
-										<option value="">Semua Kelompok Item</option>
-										@foreach ($jenisitem as $item)
-											<option value="{{ $item->KodeJenis }}">{{ $item->NamaJenis }}</option>
-										@endforeach
-									</select>
+	<form id="PoSSubmit">
+		<div class="contentPOS">
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-xl-4 order-xl-first">
+						<div class="card card-custom gutter-b bg-white border-0">
+							<div class="card-body">
+								<div class="d-flex justify-content-between colorfull-select">
+									<div class="selectmain">
+										<select class="arabic-select w-200px bag-primary" id="cboJenisItem">
+											<option value="">Semua Kelompok Item</option>
+											@foreach ($jenisitem as $item)
+												<option value="{{ $item->KodeJenis }}">{{ $item->NamaJenis }}</option>
+											@endforeach
+										</select>
+									</div>
 								</div>
-							</div>
-                            <hr>
-                            <div class="product-items">
-								<div class="row" id="lsvProductList">
-									@if (count($itemmenu) > 0)
-										@foreach ($itemmenu as $item)
-										<div class="col-xl-4 col-lg-2 col-md-3 col-sm-4 col-6" >
-											<div class="productCard ProductSelected" data-KodeItem= "{{ $item->KodeItem }}" >
-												<div class="productThumb">
-													<img class="img-fluid" src="{{ $item->Gambar }}" alt="ix">
+								<hr>
+								<div class="product-items">
+									<div class="row" id="lsvProductList">
+										@if (count($itemmenu) > 0)
+											@foreach ($itemmenu as $item)
+											<div class="col-xl-4 col-lg-2 col-md-3 col-sm-4 col-6" >
+												<div class="productCard ProductSelected" data-KodeItem= "{{ $item->KodeItem }}" >
+													<div class="productThumb">
+														<img class="img-fluid" src="{{ $item->Gambar }}" alt="ix">
+													</div>
+													<div class="productContent">
+														<center>
+															{{ $item->NamaItem }}
+														</center>
+													</div>
 												</div>
-												<div class="productContent">
-													<center>
-														{{ $item->NamaItem }}
-													</center>
+											</div>
+											@endforeach
+										@endif
+									</div>
+								</div>
+								
+							</div>	
+						
+						</div>
+					</div>
+					<div class="col-xl-8 order-xl-first">
+						<div class="row">
+							<div class="col-md-12">
+								<div class="">
+									<div class="card card-custom gutter-b bg-white border-0" >
+										<div class="card-body">
+											<div class="row">
+												<div class="col-md-12" style="text-align: center;">
+													<label class="text-dark" >Nomor Dokumen</label>
+													<h2><div id="_NoTransaksi"></div></h2>
+												</div>
+												<hr>
+												<div class="col-md-6">
+													<div class="row">
+														<div  class="col-md-12">
+															<div class="shop-profile">
+																<div class="media">
+																	<div class="bg-primary w-100px h-100px d-flex justify-content-center align-items-center">
+																		<h2 class="mb-0 white">K</h2>
+																	</div>
+																	<div class="media-body ms-3">
+																		<h3 class="title font-weight-bold">
+																			{{ $company[0]['NamaPartner'] }}
+																		</h3>
+																		<p class="phoonenumber">
+																			{{ $company[0]['NoTlp'] }}
+																		</p>
+																		<p class="adddress">
+																			{{ $company[0]['AlamatTagihan'] }}
+																		</p>
+																		<p class="countryname">Indonesia</p>
+																	</div>
+																</div>
+															</div>
+														</div>
+														<div  class="col-md-12">
+															<div class="btn btn-secondary text-white font-weight-bold me-1 mb-1 " id="btTipeOrder">
+																<div id="txtTipeOrder">
+																	<center>
+																		<h4 class="mb-0 white">Tipe Order</h4>
+																	</center>
+																</div>
+															</div>
+															<div class="btn btn-success text-white font-weight-bold me-1 mb-1 " id="btNomorMeja">
+																<div id="txtNomorMeja">
+																	<center>
+																		<h4 class="mb-0 white">Nomor Meja</h4>
+																	</center>
+																</div>
+															</div>
+														</div>
+														
+													</div>
+												</div>
+												<div class="col-md-6">
+													<div class="row">
+														<div class="col-md-12">
+															<div class="form-group row mb-0">
+																<label> <b>Bussiness Partner Area</b> </label>
+																<div class="col-md-12">
+																	<label class="text-dark" >Pilih Pelanggan </label>
+																	<fieldset class="form-group mb-3 d-flex">
+																		<select class="js-example-basic-single js-states form-control bg-transparent" id="KodePelanggan" name="KodePelanggan">
+																			<option value="">Pilih Pelanggan</option>
+																			@foreach($pelanggan as $ko)
+																				<option value="{{ $ko->KodePelanggan }}">
+																					{{ $ko->NamaPelanggan }}
+																				</option>
+																			@endforeach
+																		</select>
+																		<button class="btn-success btn ms-1 white pt-1 pb-1 d-flex align-items-center justify-content-center" id="btSearchCustomer">Cari</button>
+																		<button class="btn-secondary btn ms-1 white pt-1 pb-1 d-flex align-items-center justify-content-center" id="btAddCustomer">Add</button>
+																	</fieldset>
+																</div>
+															</div>
+														</div>
+														<div class="col-md-12">
+															<label class="text-dark" >Nomor Refrensi </label>
+															<fieldset class="form-group mb-3 d-flex">
+																<input type="text" class="form-control" id="NoReff" name="NoReff" placeholder="Masukan No Reff" >
+															</fieldset>
+														</div>
+														<div class="col-md-12">
+															<div> 
+																<button type="button" class="btn btn-primary white mb-2"  data-bs-toggle="modal" id="btBayar">
+																	<i class="fas fa-money-bill-wave me-2"></i>
+																	Bayar
+																</button>
+																<button type="button" class="btn btn-danger white mb-2" title="Delete" id="btBatal">
+																	<i class="fas fa-trash-alt me-2"></i>
+																	Batal
+																</button>
+							
+																<button type="button" class="btn btn-secondary white mb-2" id="btDraft">
+																	Simpan Sementara
+																</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+											
+										</div>	
+									</div>
+									<div class="card card-custom gutter-b bg-white border-0 table-contentpos">
+										<div class="card-body" >
+											<div class="form-group row mb-0">
+												<div class="table-responsive" id="printableTable">
+													<table id="PosDetail" class="display" style="width:100%">
+														<thead>
+															<tr>
+																<th width="2%">#</th>
+																<th width="20%">Item</th>
+																<th width="12%">Qty</th>
+																<th>Harga</th>
+																<th width="12%">Disk</th>
+																<th>Total</th>
+																<th class=" no-sort text-end">Action</th>
+															</tr>
+														</thead>
+														<tbody id="AppendArea">
+			
+														</tbody>
+													</table>
+												</div>
+											</div>	
+										</div>
+									</div>	
+								</div>	
+							</div>
+							<div class="col-md-12">
+								<div class="card card-custom gutter-b bg-white border-0" >
+									<div class="card-body">
+										<div class="row">
+											<div class="col-md-5">
+												
+											</div>
+											<div class="col-md-6">
+												<div class="resulttable-pos">
+													<table class="table right-table">
+														<tbody>
+															<tr class="d-flex align-items-center justify-content-between">
+																<th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">
+																	Total Items
+																</th>
+																<td class="border-0 justify-content-end d-flex text-dark font-size-base">
+																	<input type="text" name="_TotalItem" id="_TotalItem" value="0" class="form-control TotalText">
+																</td>
+																
+															</tr>
+															<tr class="d-flex align-items-center justify-content-between">
+																<th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">
+																	Subtotal
+																</th>
+																<td class="border-0 justify-content-end d-flex text-dark font-size-base">
+																	<input type="text" name="_SubTotal" id="_SubTotal" value="0" class="form-control TotalText">
+																</td>
+															
+															</tr>
+															<tr class="d-flex align-items-center justify-content-between">
+																<th class="border-0 ">
+																	<div class="d-flex align-items-center font-size-h5 mb-0 font-size-bold text-dark">
+																		DISCOUNT
+																	</div>
+																</th>
+																<td class="border-0 justify-content-end d-flex text-dark font-size-base">
+																	<input type="text" name="_TotalDiskon" id="_TotalDiskon" value="0" class="form-control TotalText">
+																</td>
+															
+															</tr>
+															<tr class="d-flex align-items-center justify-content-between">
+																<th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">
+																		Tax
+																</th>
+																<td class="border-0 justify-content-end d-flex text-dark font-size-base">
+																	<input type="text" name="_TotalTax" id="_TotalTax" value="0" class="form-control TotalText">
+																</td>
+															
+															</tr>
+															<tr class="d-flex align-items-center justify-content-between">
+																<th class="border-0">
+																	<div class="d-flex align-items-center font-size-h5 mb-0 font-size-bold text-dark">
+																	Services
+																		<span class="badge badge-secondary white rounded-circle ms-2" id="btshippingcost">
+																		<svg xmlns="http://www.w3.org/2000/svg" class="svg-sm" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_11" x="0px" y="0px" width="512px" height="512px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve">
+																			<g>
+																			<rect x="234.362" y="128" width="43.263" height="256"></rect>
+																			<rect x="128" y="234.375" width="256" height="43.25"></rect>
+																			</g>
+																			</svg>
+																		</span>
+																
+																	</div>
+																</th>
+																<td class="border-0 justify-content-end d-flex text-dark font-size-base" >
+																	<input type="text" name="_TotalServices" id="_TotalServices" value="0" class="form-control TotalText">
+																	<span style="margin: 0 5px;"> </span>
+																	<div class="d-flex align-items-center font-size-h5 mb-0 font-size-bold text-dark">
+																		<a href="#" id="btResetServices"> Reset</a>
+																	</div>
+																</td>
+															
+															</tr>
+															<tr class="d-flex align-items-center justify-content-between item-price">
+																<th class="border-0 font-size-h5 mb-0 font-size-bold text-primary">
+																	TOTAL
+																</th>
+																<td>:</td>
+																<td class="border-0 justify-content-end d-flex text-primary font-size-base">
+																	<input type="text" name="_GrandTotal" id="_GrandTotal" value="0" class="form-control TotalText">
+																</td>
+															
+															</tr>
+													
+														</tbody>
+													</table>
 												</div>
 											</div>
 										</div>
-										@endforeach
-									@endif
+									</div>	
 								</div>
 							</div>
-                            
-						</div>	
-					
+						</div>
 					</div>
-				</div>
-				<div class="col-xl-8 order-xl-first">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="">
-                                <div class="card card-custom gutter-b bg-white border-0" >
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-12" style="text-align: center;">
-                                                <label class="text-dark" >Nomor Dokumen</label>
-                                                <h2><div id="_NoTransaksi"></div></h2>
-                                            </div>
-                                            <hr>
-                                            <div class="col-md-6">
-												<div class="row">
-													<div  class="col-md-12">
-														<div class="shop-profile">
-															<div class="media">
-																<div class="bg-primary w-100px h-100px d-flex justify-content-center align-items-center">
-																	<h2 class="mb-0 white">K</h2>
-																</div>
-																<div class="media-body ms-3">
-																	<h3 class="title font-weight-bold">
-																		{{ $company[0]['NamaPartner'] }}
-																	</h3>
-																	<p class="phoonenumber">
-																		{{ $company[0]['NoTlp'] }}
-																	</p>
-																	<p class="adddress">
-																		{{ $company[0]['AlamatTagihan'] }}
-																	</p>
-																	<p class="countryname">Indonesia</p>
-																</div>
-															</div>
-														</div>
-													</div>
-													<div  class="col-md-12">
-														<div class="btn btn-secondary text-white font-weight-bold me-1 mb-1 " id="btTipeOrder">
-															<div id="txtTipeOrder">
-																<center>
-																	<h4 class="mb-0 white">Tipe Order</h4>
-																</center>
-															</div>
-                                                        </div>
-														<div class="btn btn-success text-white font-weight-bold me-1 mb-1 " id="btNomorMeja">
-															<div id="txtNomorMeja">
-																<center>
-																	<h4 class="mb-0 white">Nomor Meja</h4>
-																</center>
-															</div>
-                                                        </div>
-													</div>
-													
-												</div>
-                                            </div>
-											<div class="col-md-6">
-												<div class="row">
-													<div class="col-md-12">
-														<div class="form-group row mb-0">
-															<label> <b>Bussiness Partner Area</b> </label>
-															<div class="col-md-12">
-																<label class="text-dark" >Pilih Pelanggan </label>
-																<fieldset class="form-group mb-3 d-flex">
-																	<select class="js-example-basic-single js-states form-control bg-transparent" id="KodePelanggan" name="KodePelanggan">
-																		<option value="">Pilih Pelanggan</option>
-																		@foreach($pelanggan as $ko)
-																			<option value="{{ $ko->KodePelanggan }}">
-																				{{ $ko->NamaPelanggan }}
-																			</option>
-																		@endforeach
-																	</select>
-																	<button class="btn-success btn ms-1 white pt-1 pb-1 d-flex align-items-center justify-content-center" id="btSearchCustomer">Cari</button>
-																	<button class="btn-secondary btn ms-1 white pt-1 pb-1 d-flex align-items-center justify-content-center" id="btAddCustomer">Add</button>
-																</fieldset>
-															</div>
-														</div>
-													</div>
-													<div class="col-md-12">
-														<label class="text-dark" >Nomor Refrensi </label>
-														<fieldset class="form-group mb-3 d-flex">
-															<input type="text" class="form-control" id="NoReff" name="NoReff" placeholder="Masukan No Reff" >
-														</fieldset>
-													</div>
-													<div class="col-md-12">
-														<div> 
-															<button type="button" class="btn btn-primary white mb-2"  data-bs-toggle="modal" id="btBayar">
-																<i class="fas fa-money-bill-wave me-2"></i>
-																Bayar
-															</button>
-															<button type="button" class="btn btn-danger white mb-2" title="Delete" id="btBatal">
-																<i class="fas fa-trash-alt me-2"></i>
-																Batal
-															</button>
-						
-															<button type="button" class="btn btn-secondary white mb-2" id="btDraft">
-																Simpan Sementara
-															</button>
-														</div>
-													</div>
-												</div>
-											</div>
-                                        </div>
-                                        
-                                    </div>	
-                                </div>
-                                <div class="card card-custom gutter-b bg-white border-0 table-contentpos">
-                                    <div class="card-body" >
-                                        <div class="form-group row mb-0">
-                                            <div class="table-responsive" id="printableTable">
-                                                <table id="PosDetail" class="display" style="width:100%">
-                                                    <thead>
-                                                        <tr>
-                                                            <th width="2%">#</th>
-                                                            <th width="20%">Item</th>
-                                                            <th width="12%">Qty</th>
-                                                            <th>Harga</th>
-                                                            <th width="12%">Disk</th>
-															<th>Total</th>
-                                                            <th class=" no-sort text-end">Action</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="AppendArea">
-        
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>	
-                                    </div>
-                                </div>	
-                            </div>	
-                        </div>
-                        <div class="col-md-12">
-                            <div class="card card-custom gutter-b bg-white border-0" >
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-5">
-                                            
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="resulttable-pos">
-                                                <table class="table right-table">
-                                                    <tbody>
-                                                        <tr class="d-flex align-items-center justify-content-between">
-                                                            <th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">
-                                                                Total Items
-                                                            </th>
-                                                            <td class="border-0 justify-content-end d-flex text-dark font-size-base">
-                                                                <input type="text" name="_TotalItem" id="_TotalItem" value="0" class="form-control TotalText">
-                                                            </td>
-                                                            
-                                                        </tr>
-                                                        <tr class="d-flex align-items-center justify-content-between">
-                                                            <th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">
-                                                                Subtotal
-                                                            </th>
-                                                            <td class="border-0 justify-content-end d-flex text-dark font-size-base">
-                                                                <input type="text" name="_SubTotal" id="_SubTotal" value="0" class="form-control TotalText">
-                                                            </td>
-                                                        
-                                                          </tr>
-                                                          <tr class="d-flex align-items-center justify-content-between">
-                                                            <th class="border-0 ">
-                                                                <div class="d-flex align-items-center font-size-h5 mb-0 font-size-bold text-dark">
-                                                                    DISCOUNT
-                                                                </div>
-                                                            </th>
-                                                            <td class="border-0 justify-content-end d-flex text-dark font-size-base">
-                                                                <input type="text" name="_TotalDiskon" id="_TotalDiskon" value="0" class="form-control TotalText">
-                                                            </td>
-                                                        
-                                                        </tr>
-                                                        <tr class="d-flex align-items-center justify-content-between">
-                                                            <th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">
-                                                                    Tax
-                                                            </th>
-                                                            <td class="border-0 justify-content-end d-flex text-dark font-size-base">
-                                                                <input type="text" name="_TotalTax" id="_TotalTax" value="0" class="form-control TotalText">
-                                                            </td>
-                                                        
-                                                          </tr>
-                                                          <tr class="d-flex align-items-center justify-content-between">
-                                                            <th class="border-0">
-                                                                <div class="d-flex align-items-center font-size-h5 mb-0 font-size-bold text-dark">
-                                                                Services
-                                                                    <span class="badge badge-secondary white rounded-circle ms-2" id="btshippingcost">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="svg-sm" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_11" x="0px" y="0px" width="512px" height="512px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve">
-                                                                        <g>
-                                                                        <rect x="234.362" y="128" width="43.263" height="256"></rect>
-                                                                        <rect x="128" y="234.375" width="256" height="43.25"></rect>
-                                                                        </g>
-                                                                        </svg>
-                                                                    </span>
-                                                            
-                                                                </div>
-                                                            </th>
-                                                            <td class="border-0 justify-content-end d-flex text-dark font-size-base" >
-                                                                <input type="text" name="_TotalServices" id="_TotalServices" value="0" class="form-control TotalText">
-                                                                <span style="margin: 0 5px;"> </span>
-                                                                <div class="d-flex align-items-center font-size-h5 mb-0 font-size-bold text-dark">
-                                                                    <a href="#" id="btResetServices"> Reset</a>
-                                                                </div>
-                                                            </td>
-                                                        
-                                                          </tr>
-                                                          <tr class="d-flex align-items-center justify-content-between item-price">
-                                                            <th class="border-0 font-size-h5 mb-0 font-size-bold text-primary">
-                                                                TOTAL
-                                                            </th>
-                                                            <td>:</td>
-                                                            <td class="border-0 justify-content-end d-flex text-primary font-size-base">
-                                                                <input type="text" name="_GrandTotal" id="_GrandTotal" value="0" class="form-control TotalText">
-                                                            </td>
-                                                        
-                                                          </tr>
-                                                
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>	
-                            </div>
-                        </div>
-                    </div>
 				</div>
 			</div>
 		</div>
-   </div>
-
+	</form>
    <div class="modal fade text-left" id="payment-popup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel11" style="display: none;" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-scrollable  modal-dialog-centered modal-lg" role="document">
 		<div class="modal-content">
@@ -980,6 +981,9 @@ License: You must have a valid license purchased only from themeforest(the above
 	var _NamaMeja = '';
 
 	var _oItemMenu = [];
+	var _gridKodeItem = [];
+
+	var _oTxtKodeItem = [];
 
 	document.addEventListener('DOMContentLoaded', () => {
 	    const listItems = document.querySelectorAll('.horizontal-list.payment li');
@@ -1009,6 +1013,7 @@ License: You must have a valid license purchased only from themeforest(the above
 						}
 						$('#JumlahBayar').focus();
 					}
+					SetEnableCommand();
 				});
 			});	
 		}
@@ -1022,6 +1027,7 @@ License: You must have a valid license purchased only from themeforest(the above
 					_idJenisOrder = item.id;
 					_JenisOrder = $('#'+item.id).attr('NamaJenisOrder');
 					_DineIn = $('#'+item.id).attr('DineIn');
+					SetEnableCommand();
 				});
 			});	
 		}
@@ -1034,10 +1040,10 @@ License: You must have a valid license purchased only from themeforest(the above
 					item.classList.add('active');
 					_KodeMeja = item.id;
 					_NamaMeja = $('#'+item.id).attr('NamaMeja');
+					SetEnableCommand();
 				});
 			});	
 		}
-	    SetEnableCommand();
 	});
 	jQuery(function () {
 		jQuery(document).ready(function() {
@@ -1081,6 +1087,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	    	bindGridLookupCustomer(_Pelanggan);
 
 	    	jQuery('#_NoTransaksi').text("<OTOMATIS>");
+			SetEnableCommand();
 		});
 
 		jQuery('#cboJenisItem').change(function () {
@@ -1147,6 +1154,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				$("#btNomorMeja").css("pointer-events", "none");
 			}
 			jQuery('#txtTipeOrder').html(xHTML);
+			SetEnableCommand();
 		});
 
 		jQuery('#btPilihNomorMeja').click(function () {
@@ -1161,14 +1169,15 @@ License: You must have a valid license purchased only from themeforest(the above
 				xHTML += '</center>';
 			}
 			jQuery('#txtNomorMeja').html(xHTML);
+			SetEnableCommand();
 		});
 
 		$('.ProductSelected').on('click', function() {
 			var kodeItem = $(this).data('kodeitem'); // Retrieve the custom attribute
-			// console.log('KodeItem:', kodeItem);
 			AddNewRow(kodeItem)
 			AsignRowNumber();
-			// You can now use the 'kodeItem' variable as needed
+			FirstRowHandling();
+			CalculateTotal();
 		});
 
 		$('#btPilihLookupData').click(function () {
@@ -1479,10 +1488,26 @@ License: You must have a valid license purchased only from themeforest(the above
         newRow.id = "InputSectionData"
 
 		var tbody = document.querySelectorAll('#InputSectionData');
+		// console.log(tbody);
         var index = 0;
 
 		if (tbody.length > 0) {
 			index = tbody.length + 1;
+		}
+
+		// Check if Exists
+		var existingRow = Array.from(document.querySelectorAll('input[id="txtKodeItem"]')).find(function(input) {
+			return input.value === KodeItem;
+		});
+
+		if (existingRow) {
+        // If the row exists, update QtyText
+			var row = existingRow.closest('tr');
+			var qtyText = row.querySelector('input[id="txtQty"]');
+			console.log(qtyText)
+			qtyText.value = parseInt(qtyText.value) + 1; // Or set to any value you want
+			updateTotal(row); // Update Total based on new Qty
+			return;
 		}
 
 		// Filter Item
@@ -1507,6 +1532,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		
 		// Item
 		NamaItemText.type  = 'text';
+		NamaItemText.id = "txtNamaItem";
         NamaItemText.name = 'DetailParameter['+index+'][NamaItem]';
         NamaItemText.placeholder = "Tambah Nama Item";
         NamaItemText.className = 'form-control';
@@ -1517,6 +1543,7 @@ License: You must have a valid license purchased only from themeforest(the above
         ItemCol.appendChild(NamaItemText);
 
         KodeItemText.type = "hidden";
+		KodeItemText.id = "txtKodeItem";
         KodeItemText.name = 'DetailParameter['+index+'][KodeItem]';
         KodeItemText.value = KodeItem;
         ItemCol.appendChild(KodeItemText);
@@ -1524,65 +1551,64 @@ License: You must have a valid license purchased only from themeforest(the above
 
 		// Jumlah
         QtyText.type  = 'number';
+		QtyText.id = "txtQty";
         QtyText.name = 'DetailParameter['+index+'][Qty]';
         QtyText.placeholder = "Quantity";
         QtyText.className = 'form-control';
         QtyText.value = 1;
         QtyText.required = true;
-        QtyText.id = "Qty";
         QtyText.addEventListener('input', function() {
-            let value = QtyText.value;
+			updateTotal(newRow);
+			CalculateTotal();
+            // let value = QtyText.value;
             // console.log('Current Value: ' + value);
             // PemakaianText.value = value;
-            QtyText.setAttribute('Qty', value);
-			TotalText.value = value * HargaText.value;
+            // QtyText.setAttribute('Qty', value);
+			// TotalText.value = value * HargaText.value;
         });
         QtyCol.appendChild(QtyText);
 		// End Jumlah
 
 		// Harga
         HargaText.type  = 'number';
+		HargaText.id = "txtHarga";
         HargaText.name = 'DetailParameter['+index+'][HargaJual]';
         HargaText.placeholder = "Harga";
         HargaText.className = 'form-control';
         HargaText.value = filteredItem[0]["HargaJual"];
         HargaText.required = true;
 		HargaText.readOnly = true;
-        HargaText.id = "HargaJual";
-        HargaText.addEventListener('input', function() {
-            let value = HargaText.value;
-            // console.log('Current Value: ' + value);
-            // PemakaianText.value = value;
-            HargaText.setAttribute('HargaJual', value);
-        });
         HargaCol.appendChild(HargaText);
 		// End Harga
 
 		// Diskon
 		DiskonText.type  = 'number';
+		DiskonText.id = "txtDiskon";
         DiskonText.name = 'DetailParameter['+index+'][Diskon]';
         DiskonText.placeholder = "Diskon (%)";
         DiskonText.className = 'form-control';
         DiskonText.value = 0;
         DiskonText.required = true;
-        DiskonText.id = "Diskon";
 		DiskonText.addEventListener('input', function() {
-            let value = DiskonText.value;
+			updateTotal(newRow);
+			CalculateTotal();
+            // let value = DiskonText.value;
             // console.log('Current Value: ' + value);
             // PemakaianText.value = value;
-            DiskonText.setAttribute('HargaJual', value);
+            // DiskonText.setAttribute('HargaJual', value);
         });
         DiskonCol.appendChild(DiskonText);
 		// End Diskon
 
 		// Total
 		TotalText.type  = 'number';
+		TotalText.id = "txtTotal";
         TotalText.name = 'DetailParameter['+index+'][Total]';
         TotalText.placeholder = "Total";
         TotalText.className = 'form-control';
         TotalText.value = (QtyText.value * HargaText.value) - ((DiskonText.value / 100) * (QtyText.value * HargaText.value));
         TotalText.required = true;
-        TotalText.id = "Total";
+		TotalText.readOnly = true;
         TotalCol.appendChild(TotalText);
 		// End Total
 		console.log(QtyText.value + " * " + HargaText.value)
@@ -1602,6 +1628,8 @@ License: You must have a valid license purchased only from themeforest(the above
                 element.remove();
             });
             AsignRowNumber();
+			FirstRowHandling();
+			CalculateTotal();
             // console.log(elements)
         };
         RemoveCol.appendChild(RemoveText);
@@ -1613,6 +1641,21 @@ License: You must have a valid license purchased only from themeforest(the above
 		newRow.appendChild(TotalCol);
 		newRow.appendChild(RemoveCol);
         document.getElementById('AppendArea').appendChild(newRow);
+
+		_oTxtKodeItem = document.querySelectorAll('#txtKodeItem');
+	}
+
+	function CalculateRowTotal(qty, harga, diskon) {
+		return (qty * harga) - ((diskon / 100) * (qty * harga));
+		CalculateTotal();
+	}
+
+	function updateTotal(row) {
+		var qty = row.querySelector('input[id="txtQty"]').value;
+		var harga = row.querySelector('input[id="txtHarga"]').value;
+		var diskon = row.querySelector('input[id="txtDiskon"]').value;
+		var totalText = row.querySelector('input[id="txtTotal"]');
+		totalText.value = CalculateRowTotal(qty, harga, diskon);
 	}
 
 	function AsignRowNumber() {
@@ -1634,6 +1677,32 @@ License: You must have a valid license purchased only from themeforest(the above
         }
         return randomText;
     }
+
+	function FirstRowHandling() {
+		var tbody = document.querySelectorAll('#InputSectionData');
+		if (tbody.length == 1) {
+			// Find and remove the empty message element if it exists
+			// $('td.dataTables_empty').remove();
+			var emptyMessage = document.querySelector('td.dataTables_empty');
+			console.log(emptyMessage)
+			if (emptyMessage) {
+				emptyMessage.remove();
+			}
+		}
+		else if (tbody.length == 0) {
+			var newEmptyMessage = document.createElement('tr');
+			var emptyCell = document.createElement('td');
+			emptyCell.colSpan = 7; // Adjust colspan as needed
+			emptyCell.className = 'dataTables_empty';
+			emptyCell.textContent = 'No data available in table';
+			newEmptyMessage.appendChild(emptyCell);
+
+			document.getElementById('AppendArea').appendChild(newEmptyMessage);
+		}
+		
+	}
+
+	
 
 
 	function LoadDraftOrderList() {
@@ -2046,9 +2115,6 @@ License: You must have a valid license purchased only from themeforest(the above
 		ButonObject.text('Tunggu Sebentar.....');
   		ButonObject.attr('disabled',true);
 
-  		var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
-  		var allRowsData  = dataGridInstance.getDataSource().items();
-
   		var NoTransaksi = "";
   		if (jQuery('#_NoTransaksi').text() != "<OTOMATIS>") {
   			NoTransaksi = jQuery('#_NoTransaksi').text();
@@ -2056,42 +2122,40 @@ License: You must have a valid license purchased only from themeforest(the above
   		// console.log(allRowsData)
   		var oDetail = [];
 
-  		for (var i = 0; i < allRowsData.length; i++) {
-  			// Things[i]
-  			if (allRowsData[i]['KodeItem'] != "") {
-  				// var oItemMaster = GetItemInfo(allRowsData[i]['KodeItem']);
-  				var oDisk = 0;
+		var rows = document.querySelectorAll('#AppendArea tr');
+		var NoUrut = 0;
+		rows.forEach(function(row) {
+			var totalInput = row.querySelector('input[id="txtTotal"]');
+			var RowKodeItem = row.querySelector('input[id="txtKodeItem"]');
+			var RowQty = row.querySelector('input[id="txtQty"]');
+			var RowHarga = row.querySelector('input[id="txtHarga"]');
+			var RowDiskon = row.querySelector('input[id="txtDiskon"]');
 
-  				if (allRowsData[i]['DiskonPersen'] > 0) {
-  					oDisk += (allRowsData[i]['Qty'] * allRowsData[i]['Harga']) * allRowsData[i]['DiskonPersen'] / 100;
-  				}
-
-  				if (allRowsData[i]['DiskonRp'] > 0) {
-  					oDisk += allRowsData[i]['DiskonRp'];
-  				}
-
-  				// console.log(oItemMaster[0].Satuan);
-
-  				var oItem = {
-  					'NoUrut' : allRowsData[i]['LineNumber'],
-					'KodeItem' : allRowsData[i]['KodeItem'],
-					'Qty' : allRowsData[i]['Qty'] * allRowsData[i]['QtyKonversi'],
-					'QtyKonversi' : allRowsData[i]['QtyKonversi'],
-					'Satuan' : allRowsData[i]['Satuan'],
-					'Harga' : allRowsData[i]['Harga'],
+			if (totalInput) {
+				var oDisk = parseFloat(RowQty.value) * parseFloat(RowHarga.value) * (parseFloat(RowDiskon.value)/ 100);
+				
+				var oItem = {
+  					'NoUrut' : NoUrut,
+					'KodeItem' : RowKodeItem.value,
+					'Qty' : RowQty.value,
+					'QtyKonversi' : RowQty.value,
+					'Satuan' : '',
+					'Harga' : RowHarga.value,
 					'Discount' : oDisk,
-					'HargaNet' : (allRowsData[i]['Qty'] * allRowsData[i]['Total']) - oDisk,
+					'HargaNet' : (RowQty.value * RowHarga.value) - oDisk,
 					'BaseReff' : 'POS',
 					'BaseLine' : -1,
 					'KodeGudang' : _Company[0]['GudangPoS'],
 					'LineStatus': Status,
-					'VatPercent' : allRowsData[i]['VatPercent'],
-					'HargaPokokPenjualan' : allRowsData[i]['HargaPokokPenjualan'],
+					'VatPercent' : 0,
+					'HargaPokokPenjualan' : 0,
   				}
   				
   				oDetail.push(oItem)
-  			}
-  		}
+
+				NoUrut+=1
+			}
+		});
 
   		if (_ServicesData.length > 0) {
   			for (var i = 0; i < _ServicesData.length; i++) {
@@ -2119,7 +2183,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			'TglTransaksi' : _Tanggal + " " + _Jam,
 			'TglJatuhTempo' : _Tanggal,
 			'NoReff' : 'POS',
-			'KodeSales' : jQuery('#KodeSales').val(),
+			'KodeSales' : '',
 			'KodePelanggan' : jQuery('#KodePelanggan').val(),
 			'KodeTermin' : _Company[0]['TerminBayarPoS'],
 			'Termin' : 0,
@@ -2134,14 +2198,18 @@ License: You must have a valid license purchased only from themeforest(the above
 			'Keterangan' : '',
 			'MetodeBayar' : _KodeMetodePembayaran,
 			'ReffPembayaran' : $('#NomorRefrensiPembayaran').val(),
+			'JenisOrder' : _idJenisOrder,
+			'KodeMeja' : _KodeMeja,
 			'Detail' : oDetail
 		}
+
+		console.log(oData);
 
 		// Save Data
 
 		$.ajax({
 			async:false,
-			url: (NoTransaksi) == "" ? "{{route('fpenjualan-retailPos')}}" : "{{route('fpenjualan-editJson')}}",
+			url: (NoTransaksi) == "" ? "{{route('fpenjualan-retailPosFnB')}}" : "{{route('fpenjualan-editJsonPosFnB')}}",
 			type: 'POST',
 			contentType: 'application/json',
 			headers: {
@@ -2362,41 +2430,28 @@ License: You must have a valid license purchased only from themeforest(the above
     }
 
 	function CalculateTotal() {
-		var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
-  		var allRowsData  = dataGridInstance.getDataSource().items();
+		var rows = document.querySelectorAll('#AppendArea tr'); // Select all rows within the AppendArea
+		var grandTotal = 0;
   		// console.log(allRowsData)
 
-  		var _tempTotalItem = 0;
+  		var _tempTotalItem = rows.length - 1;
   		var _tempSubTotal = 0;
   		var _tempTotalDiskon = 0;
   		var _tempTotalTax = 0;
   		var _tempTotalServices = 0;
   		var _tempGrandTotal = 0;
 
-  		dataGridInstance.getDataSource().store().load().done(function (data) {
-  			_tempTotalItem = data.length;
-	        for (var i = 0; i < data.length; i++) {
-	        	console.log(data[i]['Diskon'])
-	        	var _Total = data[i]['Qty'] * data[i]['Harga'];
-				var _diskonPerRow = 0;
-      			_tempSubTotal += _Total;
-      			if (data[i]['DiskonPersen'] > 0) {
-      				_tempTotalDiskon += data[i]['Qty'] * data[i]['Harga'] * (data[i]['DiskonPersen'] / 100);
-					_diskonPerRow = data[i]['Qty'] * data[i]['Harga'] * (data[i]['DiskonPersen'] / 100);
-      				// console.log(_TotalDiskon)
-      			}
-      			else if (data[i]['DiskonRp'] > 0) {
-      				_tempTotalDiskon += data[i]['DiskonRp'];
-					_diskonPerRow = data[i]['DiskonRp'];
-      			}
+		rows.forEach(function(row) {
+			var totalInput = row.querySelector('input[id="txtTotal"]');
+			var RowQty = row.querySelector('input[id="txtQty"]');
+			var RowHarga = row.querySelector('input[id="txtHarga"]');
+			var RowDiskon = row.querySelector('input[id="txtDiskon"]');
 
-				if (parseFloat(data[i]['VatPercent']) > 0) {
-					var Gross = _Total - _diskonPerRow;
-					var tax = (parseFloat(data[i]['VatPercent']) / 100) * Gross;
-					_tempTotalTax +=  tax;
-				}
-      		}
-	    });
+			if (totalInput) {
+				_tempSubTotal += parseFloat(totalInput.value) || 0;
+				_tempTotalDiskon += parseFloat(RowQty.value) * parseFloat(RowHarga.value) * (parseFloat(RowDiskon.value)/ 100);
+			}
+		});
 
 	    // Jasa
 	    for (var i = 0; i < _ServicesData.length; i++) {
@@ -2414,12 +2469,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	    formatCurrency($('#_GrandTotal'), _tempSubTotal + _tempTotalServices - _tempTotalDiskon + _tempTotalTax);
 		formatCurrency($('#_TotalTax'), _tempTotalTax);
 
-  		// $('#_TotalItem').text(_tempTotalItem);
-  		// $('#_SubTotal').text(_tempSubTotal);
-  		// $('#_GrandTotal').text(_tempSubTotal - _tempTotalDiskon);
-
-  		$('#_Barcode').val('');
-  		$('#_Barcode').focus();
+		SetEnableCommand();
 	}
 
 
@@ -2429,23 +2479,51 @@ License: You must have a valid license purchased only from themeforest(the above
 		// Set Tipe Order
 		var xTipeOrderHTML = "";
 		// Set Tipe Order
-    	if ($('#JumlahBayar').attr('originalvalue') == 0) {
-    		ErrorCount +=1;
-    	}
-
-    	if (_KodeMetodePembayaran == -1) {
-    		ErrorCount +=1;	
-    	}
+    	
 
     	// if ($('#JumlahBayar').attr('originalvalue') < $('#_TotalTagihan').val()) {
     	// 	ErrorCount +=1;
     	// }
 
+		// console.log(_idJenisOrder +" > " + _DineIn + " > " + _KodeMeja);
+		if (_idJenisOrder == -1) {
+			ErrorCount +=1;
+		}
+
+		if (_DineIn == 'Y' && _KodeMeja == "" ) {
+			ErrorCount +1;
+		}
+
+		if ($('#KodePelanggan').val() == "") {
+			ErrorCount +1;
+		}
+
     	if (ErrorCount >0) {
-    		$('#btSimpanPembayaran').attr('disabled',true);
+			var xBayarError = 0;
+			if ($('#JumlahBayar').attr('originalvalue') == 0) {
+				// $('#btSimpanPembayaran').attr('disabled',true);
+				xBayarError +=1 ;
+			}
+
+			if (_KodeMetodePembayaran == -1) {
+				// $('#btSimpanPembayaran').attr('disabled',true);
+				xBayarError +=1
+			}
+
+			if (xBayarError > 0) {
+				$('#btSimpanPembayaran').attr('disabled',true);
+			}
+			else{
+				$('#btSimpanPembayaran').attr('disabled',false);
+			}
+    		
+			// $('#btBayar').attr('disabled',true);
+			$('#btDraft').attr('disabled',true);
     	}
     	else{
     		$('#btSimpanPembayaran').attr('disabled',false);
+			$('#btDraft').attr('disabled',false);
+			// $('#btBayar').attr('disabled',false);
     	}
 
     }

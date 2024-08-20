@@ -28,6 +28,12 @@ use App\Models\SettingAccount;
 use App\Models\Rekening;
 use App\Models\Company;
 use App\Models\Printer;
+use App\Http\Controllers\PenghapusanBarangController;
+use App\Http\Controllers\PengakuanBarangController;
+use App\Models\MenuRestoHeader;
+use App\Models\MenuRestoDetail;
+use App\Models\MenuRestoVariant;
+use App\Models\MenuRestoAddon;
 
 class FakturPenjualanController extends Controller
 {
@@ -202,6 +208,829 @@ class FakturPenjualanController extends Controller
 	        'satuan' => $satuan,
 	        'gudang' => $gudang
 	    ]);
+	}
+
+	private function CustomRequestMerging(Request $request){
+		$jsonData = $request->json()->all();
+		$IFP = array();
+		$RFP = array();
+		$currentDate = Carbon::now();
+
+		$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
+		$HargaPokokPenjualan = 0;
+		foreach ($jsonData['Detail'] as $key) {
+			$RM = array();
+			$FG = array();
+			$oMenu = MenuRestoDetail::selectRaw("menudetail.*, itemmaster.HargaPokokPenjualan, itemmaster.Satuan")
+						->leftJoin('itemmaster', function ($value){
+							$value->on('menudetail.Father','=','itemmaster.KodeItem')
+							->on('menudetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+						})
+						->where('menudetail.RecordOwnerID', Auth::user()->RecordOwnerID)
+						->where('menudetail.Father', $key['KodeItem'])
+						->get();
+			$oItemMaster = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+							->where('itemmaster.KodeItem', $key['KodeItem'])
+							->first();
+
+
+			if (count($oMenu) > 0) {
+				foreach ($oMenu as $itemRM){
+					$tempRM = array(
+						'KodeItem' => $itemRM['KodeItemRM'],
+						'Qty' => $itemRM['QtyBahan'] * $key['Qty'],
+						'Satuan' => $itemRM['Satuan'],
+						'Harga' => $itemRM['HargaPokokPenjualan'],
+						'KodeGudang' => $key['KodeGudang']
+					);
+
+					array_push($RM, $tempRM);
+				}
+
+				$IFP = array(
+					'TglTransaksi' => $currentDate->format('Y-m-d'),
+					'NoReff' => '',
+					'Keterangan' => 'Pemakaian Bahan',
+					'Status' => 'O',
+					'TotalTransaksi' => $jsonData['TotalPembelian'],
+					'JenisTransaksi' => 2,
+					'Detail' => $RM
+				);
+				// Issue For Production
+
+				// Reciept From Production
+				$tempFG = array(
+					'KodeItem' => $key['KodeItem'],
+					'Qty' => $key['Qty'],
+					'Satuan' => $oItemMaster->Satuan,
+					'Harga' => $HargaPokokPenjualan,
+					'KodeGudang' => $oCompany->GudangPoS
+				);
+
+				array_push($FG, $tempFG);
+
+				$RFP = new Request([
+					'TglTransaksi' => $currentDate->format('Y-m-d'),
+					'NoReff' => '',
+					'Keterangan' => 'Hasil Barang Jadi',
+					'Status' => 'O',
+					'TotalTransaksi' => $jsonData['TotalPembelian'],
+					'JenisTransaksi' =>2,
+					'Detail' => $FG
+				]);
+				// Reciept From Production
+			}
+		}
+
+		$oArrayData = [
+			'OriginalData' => $jsonData,
+			'IssueForProduction' => $IFP,
+			'RecieptFromProduction' => $RFP
+		];
+		
+		return $oArrayData;
+	}
+
+	private function CreatePenghapusanBarang($oData){
+		$PenghapusanBarangController = new PenghapusanBarangController();
+		$response = $PenghapusanBarangController->addPenghapusanBarang($oData);
+		$responseData = json_decode($response->getContent(), true);
+
+		return $responseData;
+	}
+
+	private function CreatePengakuanBarang($oData){
+		$PengakuanBarangController = new PengakuanBarangController();
+		$responseRFP = $PengakuanBarangController->addPengakuanBarang($oData);
+		$responseDataRFP = json_decode($responseRFP->getContent(), true);
+
+		return $responseDataRFP;
+	}
+
+	public function storePoSFnB(Request $request)
+	{
+		$data = array('success' => false, 'message' => '', 'data' => array(), 'LastTRX' => '' ,'Kembalian' => 0);
+		Log::debug("Init Transaction");
+		DB::beginTransaction();
+
+		$errorCount = 0;
+
+		$jsonData = $request->json()->all();
+		// var_dump($jsonData['KodePelanggan']);
+		$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
+
+		$oKembalian = 0;
+		try {
+
+			if ($jsonData['KodePelanggan'] == "") {
+				$data['message'] = "Pelanggan Tidak boleh kosong";
+				$errorCount +=1;
+				goto jump;
+			}
+			
+			$currentDate = Carbon::now();
+			$Year = $currentDate->format('Y');
+			$Month = $currentDate->format('m');
+
+			$numberingData = new DocumentNumbering();
+			$NoTransaksi = $numberingData->GetNewDoc("POS","fakturpenjualanheader","NoTransaksi");
+			$HargaPokokPenjualan = 0;
+
+			if($jsonData['Status'] != "T"){
+
+				$IFP = array();
+				$RFP = array();
+				$currentDate = Carbon::now();
+
+				$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
+				$HargaPokokPenjualan = 0;
+				foreach ($jsonData['Detail'] as $key) {
+					$RM = array();
+					$FG = array();
+					$oMenu = MenuRestoDetail::selectRaw("menudetail.*, CASE WHEN itemmaster.HargaPokokPenjualan = 0 THEN menudetail.HargaPokok ELSE itemmaster.HargaPokokPenjualan END AS HargaPokokPenjualan, itemmaster.Satuan")
+								->leftJoin('itemmaster', function ($value){
+									$value->on('menudetail.Father','=','itemmaster.KodeItem')
+									->on('menudetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+								})
+								->where('menudetail.RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('menudetail.Father', $key['KodeItem'])
+								->get();
+					$oItemMaster = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('itemmaster.KodeItem', $key['KodeItem'])
+									->first();
+
+
+					if (count($oMenu) > 0) {
+						foreach ($oMenu as $itemRM){
+							$Setting = NEW SettingAccount();
+							$getSetting = $Setting->GetSetting("InvAcctPenyesuaiaanStockKeluar");
+							$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+							->where('KodeRekening', $getSetting)->get();
+
+							$tempRM = array(
+								'KodeItem' => $itemRM['KodeItemRM'],
+								'Qty' => $itemRM['QtyBahan'] * $key['Qty'],
+								'Satuan' => $itemRM['Satuan'],
+								'Harga' => $itemRM['HargaPokokPenjualan'],
+								'KodeGudang' => $key['KodeGudang'],
+								'KodeRekening' => $getSetting
+							);
+
+							array_push($RM, $tempRM);
+
+							$HargaPokokPenjualan += ($itemRM['QtyBahan'] * $key['Qty']) * $itemRM['HargaPokokPenjualan'];
+						}
+
+						$IFP = array(
+							'TglTransaksi' => $currentDate->format('Y-m-d'),
+							'NoReff' => $NoTransaksi,
+							'Keterangan' => 'Pemakaian Bahan',
+							'Status' => 'O',
+							'TotalTransaksi' => $HargaPokokPenjualan,
+							'JenisTransaksi' => 2,
+							'Detail' => $RM
+						);
+
+						$oIFPRet = $this->CreatePenghapusanBarang($IFP);
+						// var_dump($oIFPRet);
+						if (isset($oIFPRet['success']) && $oIFPRet['success'] === false) {
+							$data['success'] = false;
+							$data['message'] = $oIFPRet['message'];
+		
+							$errorCount +=1;
+							goto jump;
+						}
+						// Issue For Production
+
+						// Reciept From Production
+						$Setting = NEW SettingAccount();
+						$getSetting = $Setting->GetSetting("InvAcctPenyesuaiaanStockMasuk");
+						$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+						->where('KodeRekening', $getSetting)->get();
+
+						$tempFG = array(
+							'KodeItem' => $key['KodeItem'],
+							'Qty' => $key['Qty'],
+							'Satuan' => $oItemMaster->Satuan,
+							'Harga' => $HargaPokokPenjualan,
+							'KodeGudang' => $oCompany->GudangPoS,
+							'KodeRekening' => $getSetting
+						);
+
+						array_push($FG, $tempFG);
+
+						$RFP = new Request([
+							'TglTransaksi' => $currentDate->format('Y-m-d'),
+							'NoReff' => $NoTransaksi,
+							'Keterangan' => 'Hasil Barang Jadi',
+							'Status' => 'O',
+							'TotalTransaksi' => $HargaPokokPenjualan,
+							'JenisTransaksi' =>2,
+							'Detail' => $FG
+						]);
+
+						$oRFPRet = $this->CreatePengakuanBarang($RFP);
+						if (isset($oRFPRet['success']) && $oRFPRet['success'] === false) {
+							$data['success'] = false;
+							$data['message'] = $oRFPRet['message'];
+		
+							$errorCount +=1;
+							goto jump;
+						}
+						// Reciept From Production
+					}
+				}
+				
+			}
+
+	        $data['LastTRX'] = $NoTransaksi;
+	        $model = new FakturPenjualanHeader;
+
+	        $model->Periode = $Year.$Month;
+	        $model->NoTransaksi= $NoTransaksi;
+	        $model->Transaksi= 'POS';
+	        $model->TglTransaksi = $jsonData['TglTransaksi'];
+			$model->TglJatuhTempo = $jsonData['TglJatuhTempo'];
+			$model->NoReff = $jsonData['NoReff'];
+			$model->KodePelanggan = $jsonData['KodePelanggan'];
+			$model->KodeTermin = empty($jsonData['KodeTermin']) ? "" : $jsonData['KodeTermin'];
+			$model->Termin = $jsonData['Termin'];
+			$model->TotalTransaksi = $jsonData['TotalTransaksi'];
+			$model->Potongan = $jsonData['Potongan'];
+			$model->Pajak = $jsonData['Pajak'];
+			$model->TotalPembelian = $jsonData['TotalPembelian'];
+			$model->TotalRetur = $jsonData['TotalRetur'];
+			$model->TotalPembayaran = $jsonData['TotalPembayaran'];
+			$model->Pembulatan = $jsonData['Pembulatan'];
+			$model->Status = $jsonData['Status'];
+			$model->Keterangan = $jsonData['Keterangan'];
+			$model->MetodeBayar = $jsonData['MetodeBayar'];
+			$model->ReffPembayaran = $jsonData['ReffPembayaran'];
+			$model->KodeSales = $jsonData['KodeSales'];
+			$model->Posted = 0;
+			$model->TipeOrder = $jsonData['JenisOrder'];
+			$model->NomorMeja = $jsonData['KodeMeja'];
+			$model->CreatedBy = Auth::user()->name;
+			$model->UpdatedBy = "";
+            $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+   
+			$save = $model->save();
+
+
+			$oKembalian = floatval($jsonData['TotalPembayaran']) - floatval($jsonData['TotalPembelian']);
+			$data['Kembalian'] = $oKembalian;
+			foreach ($jsonData['Detail'] as $key) {
+				if ($key['Qty'] == 0) {
+					goto skip;
+				}
+
+				if ($oCompany) {
+					if ($oCompany->AllowNegativeInventory == NULL || $oCompany->AllowNegativeInventory == 'N') {
+						$oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
+									->where('KodeItem',$key['KodeItem'])
+									->where('Stock','>',0)
+									->get();
+
+						if (count($oItem) == 0) {
+							$data['message'] = "Stock Item ".$key['KodeItem'].' Tidak Cukup';
+							$errorCount += 1;
+							goto jump;		
+						}
+					}
+				}
+				else{
+					$data['message'] = "Partner Tidak ditemukan";
+					$errorCount += 1;
+					goto jump;
+				}
+
+				$oItemMaster = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('itemmaster.KodeItem', $key['KodeItem'])
+								->first();
+
+				$modelDetail = new FakturPenjualanDetail;
+           		$modelDetail->NoTransaksi = $NoTransaksi;
+				$modelDetail->NoUrut = $key['NoUrut'];
+				$modelDetail->KodeItem = $key['KodeItem'];
+				$modelDetail->Qty = $key['Qty'];
+				$modelDetail->QtyKonversi = $key['QtyKonversi'];
+				$modelDetail->QtyRetur = 0;
+				$modelDetail->Satuan = $oItemMaster->Satuan;
+				$modelDetail->Harga = $key['Harga'];
+				$modelDetail->Discount = $key['Discount'];
+
+				$modelDetail->BaseReff = $key['BaseReff'];
+				$modelDetail->BaseLine = $key['BaseLine'];
+				$modelDetail->KodeGudang = $oCompany->GudangPoS;
+
+				$HargaGros = $key['Qty'] * $key['Harga'];
+				$modelDetail->HargaNet = $HargaGros - floatval($key['Discount']);
+				$modelDetail->LineStatus = $key['LineStatus'];
+				$modelDetail->VatPercent = $key['VatPercent'];
+				$modelDetail->HargaPokokPenjualan = $oItemMaster->HargaPokokPenjualan;
+				$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+				$save = $modelDetail->save();
+
+				if (!$save) {
+					$data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
+					$errorCount += 1;
+					goto jump;
+				}
+				skip:
+			}
+
+			// Append Pembayaran
+			if($jsonData['TotalPembayaran'] > 0){
+				// Header
+				$modelBayar = new PembayaranPenjualanHeader;
+	           	
+				$numberingDataBayar = new DocumentNumbering();
+				$NoTransaksiBayar = $numberingDataBayar->GetNewDoc("INPAY","pembayaranpenjualanheader","NoTransaksi");
+
+				$modelBayar->Periode = $Year.$Month;
+				$modelBayar->NoTransaksi = $NoTransaksiBayar;
+				$modelBayar->TglTransaksi = $jsonData['TglTransaksi'];
+				$modelBayar->KodePelanggan = $jsonData['KodePelanggan'];
+				$modelBayar->TotalPembelian = $jsonData['TotalPembelian'];
+				$modelBayar->TotalPembayaran = $jsonData['TotalPembayaran'];
+				$modelBayar->KodeMetodePembayaran = $jsonData['MetodeBayar'];
+				$modelBayar->NoReff = $jsonData['ReffPembayaran'];
+				$modelBayar->Keterangan = $jsonData['Keterangan'];
+				$modelBayar->RecordOwnerID = Auth::user()->RecordOwnerID;
+				$modelBayar->CreatedBy = Auth::user()->name;
+				$modelBayar->UpdatedBy = "";
+				$modelBayar->Posted = 0;
+				$modelBayar->Status = $jsonData['Status'];
+
+				$saveBayar = $modelBayar->save();
+
+				if (!$saveBayar) {
+					$data['message'] = "Gagal Menyimpan Data Pembayaran Penjualan";
+					$errorCount += 1;
+					goto jump;
+				}
+				// Detail
+				$modelDetailBayar = new PembayaranPenjualanDetail;
+				$modelDetailBayar->NoTransaksi = $NoTransaksiBayar;
+				$modelDetailBayar->NoUrut = 0;
+				$modelDetailBayar->BaseReff = $NoTransaksi;
+				$modelDetailBayar->TotalPembayaran = $jsonData['TotalPembayaran'];
+				$modelDetailBayar->RecordOwnerID = Auth::user()->RecordOwnerID;
+				$modelDetailBayar->KodeMetodePembayaran = $jsonData['MetodeBayar'];
+				$modelDetailBayar->Keterangan = $jsonData['Keterangan'];
+
+				$saveBayar = $modelDetailBayar->save();
+				if (!$saveBayar) {
+					$data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
+					$errorCount += 1;
+					goto jump;
+				}
+			}
+
+			// Auto Journal
+
+			// Generate Header :
+
+			if($jsonData['Status'] != "T"){
+				$arrHeader = array(
+					'NoTransaksi' => "",
+					'KodeTransaksi' => "OINV",
+					'TglTransaksi' => $jsonData['TglTransaksi'],
+					'NoReff' => $NoTransaksi,
+					'StatusTransaksi' => "O",
+					'RecordOwnerID' => Auth::user()->RecordOwnerID,
+				);
+				$arrDetail = array();
+	
+				// CalculateTotal
+				$JurnalTotalTransaksi = 0;
+				$JurnalPotongan = 0;
+				$JurnalPajak = 0;
+				$JurnalTotalPembelian =0;
+				$JurnalKonsinyasi = 0;
+	
+				foreach ($jsonData['Detail'] as $key) {
+	
+					if ($key['Discount'] ==0) {
+						$JurnalTotalTransaksi += $key['Qty'] * $key['Harga'];
+					}
+					else{
+						$JurnalTotalTransaksi += $key['Qty'] * $key['Harga'];
+	
+						$HargaGros = $key['Qty'] * $key['Harga'];
+	
+						$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
+						$JurnalPotongan += $diskon;
+					}
+	
+					if ($key['VatPercent'] > 0) {
+						$HargaGros = $key['Qty'] * $key['Harga'];
+						$JurnalPajak += ($key['VatPercent'] / 100) * $HargaGros;
+					}
+				}
+				$JurnalTotalPembelian = $JurnalTotalTransaksi - $JurnalPotongan + $JurnalPajak;
+				// End CalculateTotal
+				// GetAccount :
+				$Setting = NEW SettingAccount();
+				$getSetting = $Setting->GetSetting("PjAcctPiutang");
+				$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('KodeRekening', $getSetting)->get();
+	
+				if (count($validate) == 0) {
+					$data['message'] = "Akun Rekening Akutansi Piutang Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+					$errorCount +=1;
+					goto jump;
+				}
+	
+				// Piutang
+	
+				$temp = array(
+					'KodeTransaksi' => "OINV", 
+					'KodeRekening' => $getSetting,
+					'KodeRekeningBukuBesar' => "",
+					'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+					'KodeMataUang' => "",
+					'Valas' => 0,
+					'NilaiTukar' => 0,
+					'Jumlah' => $JurnalTotalPembelian, 
+					'Keterangan' => $jsonData['Keterangan'], 
+					'HeaderKas' => "",
+					'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+				);
+	
+				array_push($arrDetail, $temp);
+				// End Piutang
+	
+				if ($JurnalPajak > 0) {
+					// GetAccount :
+					$Setting = NEW SettingAccount();
+					$getSetting = $Setting->GetSetting("PjAcctPajakPenjualan");
+					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('KodeRekening', $getSetting)->get();
+	
+					if (count($validate) == 0) {
+						$data['message'] = "Akun Rekening Akutansi Piutang Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+						$errorCount +=1;
+						goto jump;
+					}
+	
+					// PPN
+	
+					$temp = array(
+						'KodeTransaksi' => "OINV", 
+						'KodeRekening' => $getSetting,
+						'KodeRekeningBukuBesar' => "",
+						'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+						'KodeMataUang' => "",
+						'Valas' => 0,
+						'NilaiTukar' => 0,
+						'Jumlah' => $JurnalPajak, 
+						'Keterangan' => $jsonData['Keterangan'], 
+						'HeaderKas' => "",
+						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+					);
+	
+					array_push($arrDetail, $temp);
+					// End PPN
+				}
+	
+				// Penjualan
+	
+				$getPenjualanvalue = FakturPenjualanDetail::selectRaw("itemmaster.KodeItem,itemmaster.TypeItem, SUM(fakturpenjualandetail.HargaNet) TotalPenjualan, SUM(fakturpenjualandetail.HargaPokokPenjualan * fakturpenjualandetail.Qty) TotalHPP")
+						->leftJoin('itemmaster', function ($value){
+							$value->on('fakturpenjualandetail.KodeItem','=','itemmaster.KodeItem')
+							->on('fakturpenjualandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+						})
+						->where('fakturpenjualandetail.NoTransaksi', $NoTransaksi)
+						->where('fakturpenjualandetail.RecordOwnerID', Auth::user()->RecordOwnerID)
+						->groupBy('itemmaster.TypeItem','itemmaster.KodeItem')
+						->get();
+				// var_dump($getPenjualanvalue);
+	
+				
+				foreach ($getPenjualanvalue as $key) {
+					if ($key['TypeItem'] == 1) {
+						$getSetting = $Setting->GetSetting("InvAcctPendapatanJual");
+						$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+										->where('KodeRekening', $getSetting)->get();
+	
+						if (count($validate) == 0) {
+							$data['message'] = "Akun Rekening Akutansi Penjualan Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+							$errorCount +=1;
+							goto jump;
+						}
+	
+						$temp = array(
+							'KodeTransaksi' => "OINV", 
+							'KodeRekening' => $getSetting,
+							'KodeRekeningBukuBesar' => "",
+							'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+							'KodeMataUang' => "",
+							'Valas' => 0,
+							'NilaiTukar' => 0,
+							'Jumlah' => $key['TotalPenjualan'], 
+							'Keterangan' => $jsonData['Keterangan'], 
+							'HeaderKas' => "",
+							'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+						);
+	
+						array_push($arrDetail, $temp);
+					}
+					else if ($key['TypeItem'] == 4) {
+						$getSetting = $Setting->GetSetting("InvAcctPendapatanJasa");
+						$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+										->where('KodeRekening', $getSetting)->get();
+	
+						if (count($validate) == 0) {
+							$data['message'] = "Akun Rekening Akutansi Penjualan Jasa Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+							$errorCount +=1;
+							goto jump;
+						}
+	
+						$temp = array(
+							'KodeTransaksi' => "OINV", 
+							'KodeRekening' => $getSetting,
+							'KodeRekeningBukuBesar' => "",
+							'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+							'KodeMataUang' => "",
+							'Valas' => 0,
+							'NilaiTukar' => 0,
+							'Jumlah' => $key['TotalPenjualan'], 
+							'Keterangan' => $jsonData['Keterangan'], 
+							'HeaderKas' => "",
+							'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+						);
+	
+						array_push($arrDetail, $temp);
+					}
+					else if ($key['TypeItem'] == 5) {
+						// Penjualan
+						$getSetting = $Setting->GetSetting("InvAcctPendapatanJual");
+						$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+										->where('KodeRekening', $getSetting)->get();
+	
+						if (count($validate) == 0) {
+							$data['message'] = "Akun Rekening Akutansi Penjualan Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+							$errorCount +=1;
+							goto jump;
+						}
+	
+						$temp = array(
+							'KodeTransaksi' => "OINV", 
+							'KodeRekening' => $getSetting,
+							'KodeRekeningBukuBesar' => "",
+							'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+							'KodeMataUang' => "",
+							'Valas' => 0,
+							'NilaiTukar' => 0,
+							'Jumlah' => $key['TotalPenjualan'], 
+							'Keterangan' => $jsonData['Keterangan'], 
+							'HeaderKas' => "",
+							'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+						);
+	
+						array_push($arrDetail, $temp);
+						// Penjualan
+						// Hutang Dagang Belum diakui
+						$getSetting = $Setting->GetSetting("KnAcctPenerimaanKonsinyasi");
+						$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+										->where('KodeRekening', $getSetting)->get();
+
+						if (count($validate) == 0) {
+							$data['message'] = "Akun Rekening Akutansi Konsnyasi Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+							$errorCount +=1;
+							goto jump;
+						}
+	
+						$temp = array(
+							'KodeTransaksi' => "OINV", 
+							'KodeRekening' => $getSetting,
+							'KodeRekeningBukuBesar' => "",
+							'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+							'KodeMataUang' => "",
+							'Valas' => 0,
+							'NilaiTukar' => 0,
+							'Jumlah' => $key['TotalHPP'], 
+							'Keterangan' => "Hutang Konsinyasi", 
+							'HeaderKas' => "",
+							'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+						);
+	
+						array_push($arrDetail, $temp);
+						// Hutang Dagang Belum diakui
+
+						// Hutang
+						$getSetting = $Setting->GetSetting("KnAcctHutangKonsinyasi");
+						$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+										->where('KodeRekening', $getSetting)->get();
+
+						if (count($validate) == 0) {
+							$data['message'] = "Akun Rekening Akutansi Hutang Konsnyasi Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+							$errorCount +=1;
+							goto jump;
+						}
+	
+						$temp = array(
+							'KodeTransaksi' => "OINV", 
+							'KodeRekening' => $getSetting,
+							'KodeRekeningBukuBesar' => "",
+							'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+							'KodeMataUang' => "",
+							'Valas' => 0,
+							'NilaiTukar' => 0,
+							'Jumlah' => $key['TotalHPP'], 
+							'Keterangan' => "Hutang Konsinyasi", 
+							'HeaderKas' => "",
+							'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+						);
+	
+						array_push($arrDetail, $temp);
+						// Hutang
+					}
+					else{
+						$data['message'] = "Akun Rekening Akutansi Tidak Valid ";
+						$errorCount +=1;
+						goto jump;
+					}
+	
+					// GIT
+					// GetAccount :
+					$Setting = NEW SettingAccount();
+					// $getSetting = $Setting->GetSetting("InvAcctPersediaan");
+					$getSetting = $Setting->GetInventoryAccount($key["KodeItem"]);
+					
+					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('KodeRekening', $getSetting)->get();
+
+					if (count($validate) == 0) {
+						$data['message'] = "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+						$errorCount +=1;
+						goto jump;
+					}
+
+					// Hutang
+
+					$temp = array(
+						'KodeTransaksi' => "OINV", 
+						'KodeRekening' => $getSetting,
+						'KodeRekeningBukuBesar' => "",
+						'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+						'KodeMataUang' => "",
+						'Valas' => 0,
+						'NilaiTukar' => 0,
+						'Jumlah' => $key['TotalHPP'], 
+						'Keterangan' => $jsonData['Keterangan'], 
+						'HeaderKas' => "",
+						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+					);
+
+					array_push($arrDetail, $temp);
+					// End GIT
+	
+					// HPP
+					// GetAccount :
+					$Setting = NEW SettingAccount();
+					$getSetting = $Setting->GetSetting("InvAcctHargaPokokPenjualan");
+					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('KodeRekening', $getSetting)->get();
+	
+					if (count($validate) == 0) {
+						$data['message'] = "Akun Rekening Akutansi Harga Pokok Penjualan Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+						$errorCount +=1;
+						goto jump;
+					}
+	
+					// Hutang
+	
+					$temp = array(
+						'KodeTransaksi' => "OINV", 
+						'KodeRekening' => $getSetting,
+						'KodeRekeningBukuBesar' => "",
+						'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+						'KodeMataUang' => "",
+						'Valas' => 0,
+						'NilaiTukar' => 0,
+						'Jumlah' => $key['TotalHPP'], 
+						'Keterangan' => $jsonData['Keterangan'], 
+						'HeaderKas' => "",
+						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+					);
+	
+					array_push($arrDetail, $temp);
+					// End HPP
+				}
+	
+				// Pembayaran $jsonData['MetodeBayar']
+				// GetAccount :
+				$Setting = NEW SettingAccount();
+				$getSetting = $Setting->GetSetting("PjAcctPiutang");
+				$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('KodeRekening', $getSetting)->get();
+	
+				if (count($validate) == 0) {
+					$data['message'] = "Akun Rekening Akutansi Piutang Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+					$errorCount +=1;
+					goto jump;
+				}
+	
+				// Piutang
+	
+				$temp = array(
+					'KodeTransaksi' => "OINV", 
+					'KodeRekening' => $getSetting,
+					'KodeRekeningBukuBesar' => "",
+					'DK' => ($jsonData['Status'] == "D") ? 1 : 2,  
+					'KodeMataUang' => "",
+					'Valas' => 0,
+					'NilaiTukar' => 0,
+					'Jumlah' => $JurnalTotalPembelian, 
+					'Keterangan' => $jsonData['Keterangan'], 
+					'HeaderKas' => "",
+					'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+				);
+	
+				array_push($arrDetail, $temp);
+				// End Piutang
+	
+				// Pembayaran
+				$metode = MetodePembayaran::selectRaw("COALESCE(metodepembayaran.AkunPembayaran, '') AkunPembayaran")
+								->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('id', $jsonData['MetodeBayar'])->first();
+	
+				if ($metode->AkunPembayaran == "" && $oCompany->isPostingAkutansi == 1) {
+					$data['message'] = "Akun Rekening Akutansi Pembayaran Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Metode Pembayaran";
+					$errorCount += 1;
+					goto jump;
+				}
+	
+				$temp = array(
+					'KodeTransaksi' => "OINV", 
+					'KodeRekening' => $metode->AkunPembayaran,
+					'KodeRekeningBukuBesar' => "",
+					'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+					'KodeMataUang' => "",
+					'Valas' => 0,
+					'NilaiTukar' => 0,
+					'Jumlah' => $jsonData['TotalPembayaran'], 
+					'Keterangan' => $jsonData['ReffPembayaran'], 
+					'HeaderKas' => "",
+					'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+				);
+	
+				array_push($arrDetail, $temp);
+				// End Pembayran
+
+				// Kembalian
+				$JurnalKembalian = $jsonData['TotalPembayaran'] - $JurnalTotalPembelian;
+				if($oKembalian > 0){
+					$temp = array(
+						'KodeTransaksi' => "OINV", 
+						'KodeRekening' => $metode->AkunPembayaran,
+						'KodeRekeningBukuBesar' => "",
+						'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+						'KodeMataUang' => "",
+						'Valas' => 0,
+						'NilaiTukar' => 0,
+						'Jumlah' => $JurnalKembalian, 
+						'Keterangan' => "Kembalian Pembayaran", 
+						'HeaderKas' => "",
+						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+					);
+		
+					array_push($arrDetail, $temp);
+				}
+				// End Kembalian
+
+				// Konsinyasi
+
+				// End Konsinyasi
+				// Save Journal
+				$autoPosting = new AutoPosting();
+	
+				if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
+					$data["message"] = "Gagal Simpan Jurnal";
+					$errorCount +=1;
+					goto jump;
+				}
+				// End Save Jurnal
+			}
+			jump:
+	        if ($errorCount > 0) {
+		        DB::rollback();
+		        $data['success'] = false;
+	        }
+	        else{
+		        DB::commit();
+		        $data['success'] = true;
+	        }
+
+		} catch (\Exception $e) {
+			Log::debug($e->getMessage());
+	        $data['message'] = $e->getMessage();
+		}
+
+		return response()->json($data);
 	}
 
 	public function storePoS(Request $request)
@@ -943,7 +1772,7 @@ class FakturPenjualanController extends Controller
 										->get();
 
 							if (count($oItem) == 0) {
-								$data['message'] = "Stock Item ".$key['NamaItem'].' Tidak Cukup';
+								$data['message'] = "Stock Item ".$key['KodeItem'].' Tidak Cukup';
 								$errorCount += 1;
 								goto jump;		
 							}
@@ -1344,6 +2173,577 @@ class FakturPenjualanController extends Controller
 
        try {
    
+           $model = FakturPenjualanHeader::where('NoTransaksi','=',$jsonData['NoTransaksi'])
+           				->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
+   
+           if ($model) {
+               $update = DB::table('fakturpenjualanheader')
+                           ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
+                           ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                           ->update(
+                               [
+                                    'TglTransaksi' => $jsonData['TglTransaksi'],
+									'TglJatuhTempo' => $jsonData['TglJatuhTempo'],
+									'NoReff' => $jsonData['NoReff'],
+									'KodePelanggan' => $jsonData['KodePelanggan'],
+									'KodeTermin' => $jsonData['KodeTermin'],
+									'Termin' => $jsonData['Termin'],
+									'TotalTransaksi' => $jsonData['TotalTransaksi'],
+									'Potongan' => $jsonData['Potongan'],
+									'Pajak' => $jsonData['Pajak'],
+									'TotalPembelian' => $jsonData['TotalPembelian'],
+									'TotalRetur' => $jsonData['TotalRetur'],
+									'TotalPembayaran' => $jsonData['TotalPembayaran'],
+									'Status' => $jsonData['Status'],
+									'Keterangan' => $jsonData['Keterangan'],
+									'UpdatedBy' => Auth::user()->name
+                               ]
+                           );
+
+                if (count($jsonData['Detail']) > 0) {
+                	$delete = DB::table('fakturpenjualandetail')
+		                        ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
+		                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+		                        ->delete();
+
+		            $BaseReff="";
+		            foreach ($jsonData['Detail'] as $key) {
+		            	$BaseReff = empty($key['BaseReff']) ? "" : $key['BaseReff'];
+		            	if ($key['Qty'] == 0) {
+							goto skip;
+						}
+
+						if ($oCompany) {
+							if ($key['BaseReff'] == "") {
+								if ($oCompany->AllowNegativeInventory == NULL || $oCompany->AllowNegativeInventory == 'N') {
+									$oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
+												->where('KodeItem',$key['KodeItem'])
+												->where('Stock','>',0)
+												->get();
+
+									if (count($oItem) == 0) {
+										$data['message'] = "Stock Item ".$key['NamaItem'].' Tidak Cukup';
+										$errorCount += 1;
+										goto jump;		
+									}
+								}
+
+								if ($key['KodeGudang'] == "") {
+									$data['message'] = "Gudang Harus diisi";
+										$errorCount += 1;
+										goto jump;		
+								}
+							}
+						}
+						else{
+							$data['message'] = "Partner Tidak ditemukan";
+							$errorCount += 1;
+							goto jump;
+						}
+
+						$modelDetail = new FakturPenjualanDetail;
+		           		$modelDetail->NoTransaksi = $jsonData['NoTransaksi'];
+						$modelDetail->NoUrut = $key['NoUrut'];
+						$modelDetail->KodeItem = $key['KodeItem'];
+						$modelDetail->Qty = $key['Qty'];
+						$modelDetail->QtyKonversi = $key['QtyKonversi'];
+						$modelDetail->Satuan = $key['Satuan'];
+						$modelDetail->Harga = $key['Harga'];
+						$modelDetail->VatPercent = $key['VatPercent'];
+						$modelDetail->Discount = $key['Discount'];
+
+						$modelDetail->BaseReff = empty($key['BaseReff']) ? "" : $key['BaseReff'];
+						$modelDetail->BaseLine = $key['BaseLine'];
+						$modelDetail->KodeGudang = $key['KodeGudang'];
+						$modelDetail->VatPercent = $key['VatPercent'];
+						$modelDetail->HargaPokokPenjualan = $key['HargaPokokPenjualan'];
+
+						$HargaGros = $key['Qty'] * $key['Harga'];
+						$modelDetail->HargaNet = $HargaGros - floatval($key['Discount']);
+						$modelDetail->LineStatus = $key['LineStatus'];
+						$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+						if ($key['Discount'] ==0) {
+							$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
+						}
+						else{
+							$HargaGros = $key['Qty'] * $key['Harga'];
+							$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
+							$modelDetail->HargaNet = $HargaGros - $diskon;
+						}
+
+						if ($key['VatPercent'] > 0) {
+							$NilaiTax = (100 + $key['VatPercent']) / 100;
+							$modelDetail->HargaNet *= $NilaiTax;
+						}
+						$modelDetail->LineStatus = 'O';
+						$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+						$save = $modelDetail->save();
+
+						if (!$save) {
+							$data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
+							$errorCount += 1;
+							goto jump;
+						}
+						skip:
+		            }
+
+		            // Auto Journal
+
+					// Generate Header :
+
+					// CalculateTotal
+					$JurnalTotalTransaksi = 0;
+					$JurnalPotongan = 0;
+					$JurnalPajak = 0;
+					$JurnalTotalPembelian =0;
+		
+					foreach ($jsonData['Detail'] as $key) {
+		
+						if ($key['Discount'] ==0) {
+							$JurnalTotalTransaksi += $key['Qty'] * $key['Harga'];
+						}
+						else{
+							$JurnalTotalTransaksi += $key['Qty'] * $key['Harga'];
+		
+							$HargaGros = $key['Qty'] * $key['Harga'];
+		
+							$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
+							$JurnalPotongan += $diskon;
+						}
+		
+						if ($key['VatPercent'] > 0) {
+							$HargaGros = $key['Qty'] * $key['Harga'];
+							$JurnalPajak += ($key['VatPercent'] / 100) * $HargaGros;
+						}
+					}
+
+					$JurnalTotalPembelian = $JurnalTotalTransaksi - $JurnalPotongan + $JurnalPajak;
+					// End CalculateTotal
+					
+					$arrHeader = array(
+								'NoTransaksi' => "",
+								'KodeTransaksi' => "OINV",
+								'TglTransaksi' => $jsonData['TglTransaksi'],
+								'NoReff' => $jsonData['NoTransaksi'],
+								'StatusTransaksi' => "O",
+								'RecordOwnerID' => Auth::user()->RecordOwnerID,
+							);
+					$arrDetail = array();
+
+					// GetAccount :
+					$Setting = NEW SettingAccount();
+					$getSetting = $Setting->GetSetting("PjAcctPiutang");
+					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('KodeRekening', $getSetting)->get();
+
+					if (count($validate) == 0) {
+						$data['message'] = "Akun Rekening Akutansi Piutang Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+						$errorCount +=1;
+						goto jump;
+					}
+
+					// Piutang
+
+					$temp = array(
+						'KodeTransaksi' => "OINV", 
+						'KodeRekening' => $getSetting,
+						'KodeRekeningBukuBesar' => "",
+						'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+						'KodeMataUang' => "",
+						'Valas' => 0,
+						'NilaiTukar' => 0,
+						'Jumlah' => $JurnalTotalPembelian, 
+						'Keterangan' => $jsonData['Keterangan'], 
+						'HeaderKas' => "",
+						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+					);
+
+					array_push($arrDetail, $temp);
+					// End Piutang
+
+					if ($JurnalPajak > 0) {
+						// GetAccount :
+						$Setting = NEW SettingAccount();
+						$getSetting = $Setting->GetSetting("PjAcctPajakPenjualan");
+						$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+										->where('KodeRekening', $getSetting)->get();
+
+						if (count($validate) == 0) {
+							$data['message'] = "Akun Rekening Akutansi Piutang Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+							$errorCount +=1;
+							goto jump;
+						}
+
+						// PPN
+
+						$temp = array(
+							'KodeTransaksi' => "OINV", 
+							'KodeRekening' => $getSetting,
+							'KodeRekeningBukuBesar' => "",
+							'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+							'KodeMataUang' => "",
+							'Valas' => 0,
+							'NilaiTukar' => 0,
+							'Jumlah' => $JurnalPajak, 
+							'Keterangan' => $jsonData['Keterangan'], 
+							'HeaderKas' => "",
+							'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+						);
+
+						array_push($arrDetail, $temp);
+						// End PPN
+					}
+
+					// Penjualan
+
+					$getPenjualanvalue = DeliveryNoteDetail::selectRaw('itemmaster.TypeItem, SUM(deliverynotedetail.HargaNet) TotalPenjualan, SUM(deliverynotedetail.HargaPokokPenjualan * deliverynotedetail.Qty) TotalHPP')
+							->leftJoin('itemmaster', function ($value){
+	        					$value->on('deliverynotedetail.KodeItem','=','itemmaster.KodeItem')
+	        					->on('deliverynotedetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+	        				})
+	        				->where('deliverynotedetail.NoTransaksi', $BaseReff)
+	        				->where('deliverynotedetail.RecordOwnerID', Auth::user()->RecordOwnerID)
+	        				->groupBy('itemmaster.TypeItem')
+	        				->get();
+	        		// var_dump($getPenjualanvalue);
+
+	        		if ($BaseReff == "") {
+	        			$getPenjualanvalue = FakturPenjualanDetail::selectRaw("itemmaster.KodeItem,itemmaster.TypeItem, SUM((fakturpenjualandetail.Qty * fakturpenjualandetail.Harga) - fakturpenjualandetail.Discount) TotalPenjualan, SUM(fakturpenjualandetail.HargaPokokPenjualan * fakturpenjualandetail.Qty) TotalHPP")
+	        				->leftJoin('itemmaster', function ($value){
+	        					$value->on('fakturpenjualandetail.KodeItem','=','itemmaster.KodeItem')
+	        					->on('fakturpenjualandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+	        				})
+	        				->where('fakturpenjualandetail.NoTransaksi', $jsonData['NoTransaksi'])
+	        				->where('fakturpenjualandetail.RecordOwnerID', Auth::user()->RecordOwnerID)
+	        				->groupBy('itemmaster.TypeItem','itemmaster.KodeItem')
+	        				->get();
+	        		}
+					foreach ($getPenjualanvalue as $key) {
+						if ($key['TypeItem'] == 1) {
+							$getSetting = $Setting->GetSetting("InvAcctPendapatanJual");
+							$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+											->where('KodeRekening', $getSetting)->get();
+
+							if (count($validate) == 0) {
+								$data['message'] = "Akun Rekening Akutansi Penjualan Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+								$errorCount +=1;
+								goto jump;
+							}
+
+							$temp = array(
+								'KodeTransaksi' => "OINV", 
+								'KodeRekening' => $getSetting,
+								'KodeRekeningBukuBesar' => "",
+								'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+								'KodeMataUang' => "",
+								'Valas' => 0,
+								'NilaiTukar' => 0,
+								'Jumlah' => $key['TotalPenjualan'], 
+								'Keterangan' => $jsonData['Keterangan'], 
+								'HeaderKas' => "",
+								'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+							);
+
+							array_push($arrDetail, $temp);
+						}
+						else if ($key['TypeItem'] == 4) {
+							$getSetting = $Setting->GetSetting("InvAcctPendapatanJasa");
+							$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+											->where('KodeRekening', $getSetting)->get();
+
+							if (count($validate) == 0) {
+								$data['message'] = "Akun Rekening Akutansi Penjualan Jasa Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+								$errorCount +=1;
+								goto jump;
+							}
+
+							$temp = array(
+								'KodeTransaksi' => "OINV", 
+								'KodeRekening' => $getSetting,
+								'KodeRekeningBukuBesar' => "",
+								'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+								'KodeMataUang' => "",
+								'Valas' => 0,
+								'NilaiTukar' => 0,
+								'Jumlah' => $key['TotalPenjualan'], 
+								'Keterangan' => $jsonData['Keterangan'], 
+								'HeaderKas' => "",
+								'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+							);
+
+							array_push($arrDetail, $temp);
+						}
+						else{
+							$data['message'] = "Akun Rekening Akutansi Tidak Valid ";
+							$errorCount +=1;
+							goto jump;
+						}
+
+						if ($BaseReff != "") {
+							// GIT
+							// GetAccount :
+							$Setting = NEW SettingAccount();
+							$getSetting = $Setting->GetSetting("PjAcctGoodsInTransit");
+							$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+											->where('KodeRekening', $getSetting)->get();
+
+							if (count($validate) == 0) {
+								$data['message'] = "Akun Rekening Akutansi Goods In Transit Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+								$errorCount +=1;
+								goto jump;
+							}
+
+							// Hutang
+
+							$temp = array(
+								'KodeTransaksi' => "OINV", 
+								'KodeRekening' => $getSetting,
+								'KodeRekeningBukuBesar' => "",
+								'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+								'KodeMataUang' => "",
+								'Valas' => 0,
+								'NilaiTukar' => 0,
+								'Jumlah' => $key['TotalHPP'], 
+								'Keterangan' => $jsonData['Keterangan'], 
+								'HeaderKas' => "",
+								'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+							);
+
+							array_push($arrDetail, $temp);
+							// End GIT
+						}
+						else{
+							// GIT
+							// GetAccount :
+							$Setting = NEW SettingAccount();
+							// $getSetting = $Setting->GetSetting("InvAcctPersediaan");
+							$getSetting = $Setting->GetInventoryAccount($key["KodeItem"]);
+							$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+											->where('KodeRekening', $getSetting)->get();
+
+							if (count($validate) == 0) {
+								$data['message'] = "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+								$errorCount +=1;
+								goto jump;
+							}
+
+							// Hutang
+
+							$temp = array(
+								'KodeTransaksi' => "OINV", 
+								'KodeRekening' => $getSetting,
+								'KodeRekeningBukuBesar' => "",
+								'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
+								'KodeMataUang' => "",
+								'Valas' => 0,
+								'NilaiTukar' => 0,
+								'Jumlah' => $key['TotalHPP'], 
+								'Keterangan' => $jsonData['Keterangan'], 
+								'HeaderKas' => "",
+								'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+							);
+
+							array_push($arrDetail, $temp);
+							// End GIT
+						}
+
+						// HPP
+						// GetAccount :
+						$Setting = NEW SettingAccount();
+						$getSetting = $Setting->GetSetting("InvAcctHargaPokokPenjualan");
+						$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+										->where('KodeRekening', $getSetting)->get();
+
+						if (count($validate) == 0) {
+							$data['message'] = "Akun Rekening Akutansi Harga Pokok Penjualan Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
+							$errorCount +=1;
+							goto jump;
+						}
+
+						// Hutang
+
+						$temp = array(
+							'KodeTransaksi' => "OINV", 
+							'KodeRekening' => $getSetting,
+							'KodeRekeningBukuBesar' => "",
+							'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
+							'KodeMataUang' => "",
+							'Valas' => 0,
+							'NilaiTukar' => 0,
+							'Jumlah' => $key['TotalHPP'], 
+							'Keterangan' => $jsonData['Keterangan'], 
+							'HeaderKas' => "",
+							'RecordOwnerID' =>  Auth::user()->RecordOwnerID
+						);
+
+						array_push($arrDetail, $temp);
+						// End HPP
+					}
+
+					// Save Journal
+					$autoPosting = new AutoPosting();
+
+					if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
+						$data["message"] = "Gagal Simpan Jurnal";
+						$errorCount +=1;
+						goto jump;
+					}
+					// End Save Jurnal
+                }
+           } else{
+               $data['message'] = 'Models not found.';
+           }
+           jump:
+	        if ($errorCount > 0) {
+		        DB::rollback();
+		        $data['success'] = false;
+	        }
+	        else{
+		        DB::commit();
+		        $data['success'] = true;
+	        }
+       } catch (Exception $e) {
+           Log::debug($e->getMessage());
+   
+           $data['message'] = $e->getMessage();
+       }
+       return response()->json($data);
+   }
+
+   public function editJsonPoSFnB(Request $request)
+   {
+   		$data = array('success' => false, 'message' => '', 'data' => array(), 'LastTRX' => '' ,'Kembalian' => "");
+
+       Log::debug($request->all());
+       DB::beginTransaction();
+
+       $errorCount = 0;
+       $jsonData = $request->json()->all();
+
+       $oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
+
+       try {
+
+			if($jsonData['Status'] != "T"){
+				foreach ($jsonData['Detail'] as $key) {
+					// Issue For Production
+					$RM = array();
+					$FG = array();
+					$oMenu = MenuRestoDetail::selectRaw("menudetail.*, itemmaster.HargaPokokPenjualan, itemmaster.Satuan")
+								->leftJoin('itemmaster', function ($value){
+									$value->on('menudetail.Father','=','itemmaster.KodeItem')
+									->on('menudetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+								})
+								->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('menudetail.Father', $key['KodeItem'])
+								->get();
+					$oItemMaster = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('itemmaster.KodeItem', $key['KodeItem'])
+									->first();
+					
+					if (count($oMenu) > 0) {
+						foreach ($oMenu as $itemRM){
+
+							// Check Stock
+							if ($oCompany) {
+								if ($oCompany->AllowNegativeInventory == NULL || $oCompany->AllowNegativeInventory == 'N') {
+									$oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
+												->where('KodeItem',$itemRM['KodeItemRM'])
+												->where('Stock','>',0)
+												->get();
+			
+									if (count($oItem) == 0) {
+										$data['message'] = "Stock Item ".$itemRM['KodeItemRM'].' Tidak Cukup';
+										$errorCount += 1;
+										goto jump;		
+									}
+								}
+							}
+							else{
+								$data['message'] = "Partner Tidak ditemukan";
+								$errorCount += 1;
+								goto jump;
+							}
+
+							$tempRM = array(
+								'KodeItem' => $itemRM['KodeItemRM'],
+								'Qty' => $itemRM['QtyBahan'] * $key['Qty'],
+								'Satuan' => $itemRM['Satuan'],
+								'Harga' => $itemRM['HargaPokokPenjualan'],
+								'KodeGudang' => $key['KodeGudang']
+							);
+
+							array_push($RM, $tempRM);
+						}
+
+						$IFP = new Request([
+							'TglTransaksi' => Carbon::now(),
+							'NoReff' => $NoTransaksi,
+							'Keterangan' => 'Pemakaian Bahan',
+							'Status' => 'O',
+							'TotalTransaksi' => $jsonData['TotalPembelian'],
+							'Detail' => $RM
+						]);
+		
+						$IFP->headers->set('Content-Type', 'application/json');
+						$PenghapusanBarangController = new PenghapusanBarangController();
+						$response = $PenghapusanBarangController->storeJson($IFP);
+						$responseData = json_decode($response->getContent(), true);
+		
+						if (isset($responseData['success']) && $responseData['success'] === false) {
+							$data['success'] = false;
+							$data['message'] = $responseData['message'];
+		
+							$errorCount +=1;
+							goto jump;
+						}
+						// Issue For Production
+					}
+
+					// Penerimaan Hasil
+					if ($oCompany->GudangPoS == "") {
+						$data['success'] = false;
+						$data['message'] = "Gudang Belum ditentukan, Silahkan Setting Gudang di menu Master->Pengaturan->Perusahaan";
+
+						$errorCount +=1;
+						goto jump;
+					}
+					$tempFG = array(
+						'KodeItem' => $key['KodeItem'],
+						'Qty' => $key['Qty'],
+						'Satuan' => $oItemMaster->Satuan,
+						'Harga' => $HargaPokokPenjualan,
+						'KodeGudang' => $oCompany->GudangPoS
+					);
+
+					array_push($FG, $tempFG);
+
+					$RFP = new Request([
+						'TglTransaksi' => Carbon::now(),
+						'NoReff' => $NoTransaksi,
+						'Keterangan' => 'Pemakaian Bahan',
+						'Status' => 'O',
+						'TotalTransaksi' => $jsonData['TotalPembelian'],
+						'Detail' => $RM
+					]);
+
+					$RFP->headers->set('Content-Type', 'application/json');
+					$PengakuanBarangController = new PengakuanBarangController();
+					$responseRFP = $PengakuanBarangController->storeJson($IFP);
+					$responseDataRFP = json_decode($responseRFP->getContent(), true);
+
+					if (isset($responseDataRFP['success']) && $responseDataRFP['success'] === false) {
+						$data['success'] = false;
+						$data['message'] = $responseDataRFP['message'];
+
+						$errorCount +=1;
+						goto jump;
+					}
+					// Penerimaan Hasil
+				}
+			}
            $model = FakturPenjualanHeader::where('NoTransaksi','=',$jsonData['NoTransaksi'])
            				->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
    

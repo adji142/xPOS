@@ -100,13 +100,18 @@ class PenghapusanBarangController extends Controller
 
     public function storeJson(Request $request)
     {
-    	$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
-	    Log::debug($request->all());
+		$jsonData = $request->json()->all();
+		$oData = $this->addPenghapusanBarang($jsonData);
+	    return response()->json($oData);
+    }
+
+	public function addPenghapusanBarang($jsonData){
+		$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+		Log::debug($jsonData);
 	    DB::beginTransaction();
 
 	    $errorCount = 0;
-	    $jsonData = $request->json()->all();
-
+		// var_dump($jsonData);
 		$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
 
 	    try {
@@ -129,6 +134,7 @@ class PenghapusanBarangController extends Controller
 	        $model->CreatedBy = Auth::user()->name;
 	        $model->UpdatedBy = '';
 	        $model->Posted = 0;
+			$model->JenisTransaksi = array_key_exists('JenisTransaksi', $jsonData) ? $jsonData['JenisTransaksi'] : 1;
 	        $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 	        $save = $model->save();
 
@@ -160,7 +166,8 @@ class PenghapusanBarangController extends Controller
 									->get();
 
 						if (count($oItem) == 0) {
-							$data['message'] = "Stock Item ".$key['NamaItem'].' Tidak Cukup';
+							$data['message'] = "Stock Item ".$key['KodeItem'].' Tidak Cukup';
+							$data['title'] = "#Penghapusan Barang";
 							$errorCount += 1;
 							goto jump;		
 						}
@@ -207,6 +214,11 @@ class PenghapusanBarangController extends Controller
 
 			$TotalRow = 0;
 			foreach ($jsonData['Detail'] as $key) {
+				if ($key['KodeRekening'] == "") {
+					$data['message'] = "Akun Rekening Akutansi Harus diisi";
+					$errorCount +=1;
+					goto jump;
+				}
 				$temp = array(
 					'KodeTransaksi' => "GI", 
 					'KodeRekening' => $key['KodeRekening'],
@@ -279,7 +291,7 @@ class PenghapusanBarangController extends Controller
 	    }
 
 	    return response()->json($data);
-    }
+	}
 
     public function editJson(Request $request){
     	Log::debug($request->all());
