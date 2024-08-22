@@ -52,6 +52,10 @@ class PoSController extends Controller
         $printer = Printer::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                     ->where('DeviceAddress','=', $company[0]['NamaPosPrinter'])->first();
 
+
+        if ($printer == null) {
+            $printer = "[]";
+        }
         // var_dump($company[0]["JenisUsaha"]);
         switch ($company[0]["JenisUsaha"]) {
             case 'Retail':

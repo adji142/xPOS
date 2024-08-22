@@ -260,29 +260,39 @@ class LoginController extends Controller
                 'RecordOwnerID' => $KodePartner
             ]);
 
-            $akses = new PermissionRole;
-            $akses->roleid = $saverole;
-            $akses->permissionid = 1;
-            $akses->RecordOwnerID = $KodePartner;
-            $aksessave = $akses->save();
+            $detailpermission = SubscriptionDetail::where('NoTransaksi',$request->input('ProductSelected'))->get();
 
-            $akses = new PermissionRole;
-            $akses->roleid = $saverole;
-            $akses->permissionid = 60;
-            $akses->RecordOwnerID = $KodePartner;
-            $aksessave = $akses->save();
+            foreach ($detailpermission as $key) {
+                $akses = new PermissionRole;
+                $akses->roleid = $saverole;
+                $akses->permissionid = $key->PermissionID;
+                $akses->RecordOwnerID = $KodePartner;
+                $aksessave = $akses->save();
+            }
 
-            $akses = new PermissionRole;
-            $akses->roleid = $saverole;
-            $akses->permissionid = 61;
-            $akses->RecordOwnerID = $KodePartner;
-            $aksessave = $akses->save();
+            // $akses = new PermissionRole;
+            // $akses->roleid = $saverole;
+            // $akses->permissionid = 1;
+            // $akses->RecordOwnerID = $KodePartner;
+            // $aksessave = $akses->save();
 
-            $akses = new PermissionRole;
-            $akses->roleid = $saverole;
-            $akses->permissionid = 63;
-            $akses->RecordOwnerID = $KodePartner;
-            $aksessave = $akses->save();
+            // $akses = new PermissionRole;
+            // $akses->roleid = $saverole;
+            // $akses->permissionid = 60;
+            // $akses->RecordOwnerID = $KodePartner;
+            // $aksessave = $akses->save();
+
+            // $akses = new PermissionRole;
+            // $akses->roleid = $saverole;
+            // $akses->permissionid = 61;
+            // $akses->RecordOwnerID = $KodePartner;
+            // $aksessave = $akses->save();
+
+            // $akses = new PermissionRole;
+            // $akses->roleid = $saverole;
+            // $akses->permissionid = 63;
+            // $akses->RecordOwnerID = $KodePartner;
+            // $aksessave = $akses->save();
             // isi User
 
             // $KelompokAkses = $request->input('KelompokAkses');

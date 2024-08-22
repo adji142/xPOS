@@ -260,6 +260,9 @@ class CompanyController extends Controller
                             // Satuan
                             SatuanSeeder::setParameter($RecordOwnerID);
                             Artisan::call('db:seed', ['--class' => 'SatuanSeeder']);
+
+                            // Generate Permission
+
                 }
                 else{
                     $update = DB::table('company')

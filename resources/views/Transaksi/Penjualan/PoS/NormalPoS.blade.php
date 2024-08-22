@@ -900,10 +900,12 @@ License: You must have a valid license purchased only from themeforest(the above
 	            }
 	        });
 	    });
+
 	    SetEnableCommand();
 	});
 	jQuery(function () {
 		jQuery(document).ready(function() {
+
 			$('#_Barcode').focus();
 			bindGrid([]);
 
