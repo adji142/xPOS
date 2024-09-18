@@ -1,0 +1,5 @@
+1. Validasi Stock, waktu scan barang
+2. Tambah logo client dan nama user di ganti nama perusahaan
+3. Tambah fitur kirim email
+4. Tambah laporan sales di menu dashboard admin
+5. 
