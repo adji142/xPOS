@@ -38,7 +38,7 @@
 		<div class="d-flex align-items-center">
            
 			<div class="posicon">
-				<a href="{{ url($lv2['fpenjualan-pos']) }}" class="btn btn-primary d-flex align-items-center justify-content-center white me-2">POS</a>
+				<a href="{{ url('fpenjualan/pos') }}" class="btn btn-primary d-flex align-items-center justify-content-center white me-2">POS</a>
 			</div>
 			<button class="btn p-0" id="tc_aside_mobile_toggle">
 				<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-justify-right" fill="currentColor"
@@ -201,7 +201,7 @@
 									<li class="menu-item menu-item-open menu-item-here menu-item-submenu menu-item-rel menu-item-open menu-item-here menu-item-active p-0"
 									data-menu-toggle="click" aria-haspopup="true">
 									<!--begin::Toggle-->
-									<div class="btn  btn-clean btn-dropdown mr-0 p-0" id="tc_aside_toggle">
+									<div class="btn  btn-clean btn-dropdown mr-0 p-0" id="tc_aside_toggle"> 
 										<span class="svg-icon svg-icon-xl svg-icon-primary">
 
 											<svg width="24px" height="24px" viewBox="0 0 16 16" class="bi bi-list"
@@ -210,6 +210,29 @@
 													d="M2.5 11.5A.5.5 0 0 1 3 11h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 3h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z" />
 											</svg>
 										</span>
+									</div>
+									
+									<div class="topbar">
+										<div class="dropdown btn btn-danger">
+											<div class="topbar-item">
+												<div class="btn btn-icon w-auto btn-clean d-flex align-items-center pr-1 ps-3">
+													<span class="symbol symbol-35 symbol-light-success">
+														<span class="symbol-label font-size-h5 ">
+															<img src = "{{ $cData[0]['icon'] }}" width="20px" height="20px">
+															<!-- <svg width="20px" height="20px" viewBox="0 0 16 16"
+																class="bi bi-person-fill" fill="currentColor"
+																xmlns="http://www.w3.org/2000/svg">
+																<path fill-rule="evenodd"
+																	d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+															</svg> -->
+														</span>
+													</span>
+													<label></label>
+													<a href="{{ url('companysetting') }}" class="text-dark-50 font-size-base d-none d-xl-inline me-3"> {{ $cData[0]['NamaPartner'] }}</a>
+												</div>
+											</div>
+
+										</div>
 									</div>
 									<!--end::Toolbar-->
 								</li>
@@ -223,7 +246,7 @@
 					<!--begin::Topbar-->
 					<div class="topbar">
 						<div class="posicon d-lg-block d-none">
-							<a href="{{ url($lv2['fpenjualan-pos']) }}" class="btn btn-primary white me-2">POS</a>
+							<a href="{{ url('fpenjualan/pos') }}" class="btn btn-primary white me-2">POS</a>
 						</div>
 
 						<!--begin::Quick Actions-->
