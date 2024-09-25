@@ -283,10 +283,11 @@
                 }
                 addNewLine(oData, index +1);   
             }
+            // console.log(oDataMenuVariant)
 
             for (let index = 0; index < oDataMenuVariant.length; index++) {
                 var oData = {
-                    'id' : oDataMenuVariant[index]['VariantGrupID'],
+                    'id' : oDataMenuVariant[index]['id'],
                     'NamaGrup' : oDataMenuVariant[index]['NamaGrup']
                 }
                 addNewLineVariant(oData, index +1);   
@@ -359,10 +360,10 @@
 
 		var selectedRows = dataGridInstance.getSelectedRowsData();
 
-		console.log(selectedRows[0]["KodeItem"]);
+		// console.log(selectedRows[0]["KodeItem"]);
 		if (selectedRows.length > 0) {
             for (let index = 0; index < selectedRows.length; index++) {
-                console.log("Add Row : " + index)
+                // console.log("Add Row : " + index)
                 // console.log(CheckifExist(selectedRows[index]["KodeItem"]));
                 if (!CheckifExist(selectedRows[index]["KodeItem"])) {
                     addNewLine(selectedRows[index], index +1);   
@@ -383,7 +384,7 @@
 		// console.log(selectedRows[0]["KodeItem"]);
 		if (selectedRows.length > 0) {
             for (let index = 0; index < selectedRows.length; index++) {
-                console.log("Add Row : " + index)
+                // console.log("Add Row : " + index)
                 // console.log(CheckifExist(selectedRows[index]["KodeItem"]));
                 if (!CheckVariantifExist(selectedRows[index]["id"])) {
                     addNewLineVariant(selectedRows[index], index +1);   
@@ -439,7 +440,7 @@
     }
 
     function addNewLine(oData, index) {
-        console.log(oData)
+        // console.log(oData)
         var RandomID = generateRandomText(10);
         var newRow = document.createElement('tr');
         newRow.className = RandomID;
@@ -528,7 +529,7 @@
     }
 
     function addNewLineVariant(oData, index) {
-        console.log(oVariantDetail);
+        console.log(oData);
         var RandomID = generateRandomText(10);
         var newRow = document.createElement('tr');
         newRow.className = RandomID;
@@ -572,11 +573,12 @@
         // nomorObj.innerText   = index;
         // nomorCol.appendChild(nomorObj);
 
+        console.log(oVariantDetail);
         let filteredVariantDetail = oVariantDetail.filter(function(variant) {
             return variant.variant_id == oData["id"];
         });
 
-        console.log(filteredVariantDetail)
+        // console.log(filteredVariantDetail)
 
         for (let index = 0; index < filteredVariantDetail.length; index++) {
             var newRowDetail = document.createElement('tr');
@@ -603,7 +605,7 @@
             KeteranganHiddenText.type  = 'hidden';
             KeteranganHiddenText.name = 'DetailVariant['+index+'][variant_id]';
             KeteranganHiddenText.required = true;
-            KeteranganHiddenText.value = oData["id"];
+            KeteranganHiddenText.value = filteredVariantDetail[index]["id"];
             KeteranganHiddenText.readOnly = true;
             KeteranganCol.appendChild(KeteranganHiddenText);
 
@@ -662,7 +664,7 @@
         tbody.forEach(function(row, index) {
             var cells = row.querySelectorAll('td');
             
-            console.log(cells)
+            // console.log(cells)
             cells.forEach(function(cell) {
                 var inputElement = cell.querySelector('input[type="text"]');
                 if (inputElement) {
@@ -672,7 +674,7 @@
                         retData = true;
                     }
                     // Log or use the custom attribute value
-                    console.log('Row:', index + 1, 'Custom Attribute:', customAttribute);
+                    // console.log('Row:', index + 1, 'Custom Attribute:', customAttribute);
                 }
             });
         });
@@ -688,7 +690,7 @@
         tbody.forEach(function(row, index) {
             var cells = row.querySelectorAll('td');
             
-            console.log(cells)
+            // console.log(cells)
             cells.forEach(function(cell) {
                 var inputElement = cell.querySelector('input[type="text"]');
                 if (inputElement) {
@@ -698,7 +700,7 @@
                         retData = true;
                     }
                     // Log or use the custom attribute value
-                    console.log('Row:', index + 1, 'Custom Attribute:', customAttribute);
+                    // console.log('Row:', index + 1, 'Custom Attribute:', customAttribute);
                 }
             });
         });

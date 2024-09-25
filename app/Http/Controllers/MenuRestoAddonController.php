@@ -88,10 +88,14 @@ class MenuRestoAddonController extends Controller
                         ->where('menudetail.RecordOwnerID', Auth::user()->RecordOwnerID)
                         ->where('menudetail.Father', $KodeItemHasil)
                         ->get();
-        $menuvariant = MenuRestoVariant::selectRaw("menuvarian.*, variantheader.NamaGrup ")
+        $menuvariant = MenuRestoVariant::selectRaw("DISTINCT variantheader.* ")
+                        ->leftJoin('variantdetail', function ($value){
+                            $value->on('menuvarian.VariantGrupID','=','variantdetail.id')
+                            ->on('menuvarian.RecordOwnerID','=','variantdetail.RecordOwnerID');
+                        })
                         ->leftJoin('variantheader', function ($value){
-                            $value->on('menuvarian.VariantGrupID','=','variantheader.id')
-                            ->on('menuvarian.RecordOwnerID','=','variantheader.RecordOwnerID');
+                            $value->on('variantheader.id','=','variantdetail.variant_id')
+                            ->on('variantheader.RecordOwnerID','=','variantdetail.RecordOwnerID');
                         })
                         ->where('menuvarian.RecordOwnerID', Auth::user()->RecordOwnerID)
                         ->where('menuvarian.Father', $KodeItemHasil)

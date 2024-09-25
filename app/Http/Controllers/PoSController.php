@@ -87,6 +87,20 @@ class PoSController extends Controller
                             })
                             ->where('Active','Y')
                             ->get();
+                
+                $sql = "menuvarian.Father, variantdetail.variant_id AS VariantGrupID, variantheader.NamaGrup, 
+                variantdetail.id AS VariantID, variantdetail.NamaVariant, variantheader.OpsiPilihan, variantdetail.ExtraPrice ";
+                $variantData = MenuRestoVariant::selectRaw($sql)
+                                ->join('variantdetail', function ($value)  {
+                                    $value->on('menuvarian.VariantGrupID','=','variantdetail.id')
+                                    ->on('menuvarian.RecordOwnerID','=','variantdetail.RecordOwnerID');
+                                })
+                                ->join('variantheader',function ($value) {
+                                    $value->on('variantheader.id','=','variantdetail.variant_id')
+                                    ->on('variantheader.RecordOwnerID','=','variantdetail.RecordOwnerID');
+                                })
+                                ->where('menuvarian.RecordOwnerID', Auth::user()->RecordOwnerID)
+                                ->get();
 
                 return view("Transaksi.Penjualan.PoS.FnBPoS",[
                     'pelanggan' => $pelanggan,
@@ -101,7 +115,8 @@ class PoSController extends Controller
                     'kelompokmeja' => $kelompokmeja,
                     'meja' => $meja,
                     'tipeorder' => $tipeorder,
-                    'jenisitem' => $jenisitem
+                    'jenisitem' => $jenisitem,
+                    'variantmenu'=> $variantData
                 ]);
                 break;
             case 'Services':

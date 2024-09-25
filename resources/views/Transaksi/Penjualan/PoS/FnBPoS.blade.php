@@ -89,6 +89,46 @@ License: You must have a valid license purchased only from themeforest(the above
 		.horizontal-list-meja li.active {
 		    background-color: #ffcc00; /* Change to the desired color when clicked */
 		}
+
+		.horizontal-list-meja {
+		    display: grid; /* Uses CSS Grid */
+		    grid-template-columns: repeat(4, 1fr); /* Each row will have 4 items */
+		    gap: 10px; /* Adds space between items */
+		    list-style: none; /* Removes default list styling */
+		    padding: 0; /* Removes default padding */
+		    margin: 0; /* Removes default margin */
+		}
+
+		.horizontal-list-meja li {
+		    background-color: #f0f0f0;
+		    padding: 10px;
+		    border: 1px solid #ccc;
+		    text-align: center;
+		}
+		.horizontal-list-meja li.active {
+		    background-color: #ffcc00; /* Change to the desired color when clicked */
+		}
+
+		/*  */
+		.horizontal-list-variant {
+		    display: grid; /* Uses CSS Grid */
+		    grid-template-columns: repeat(4, 1fr); /* Each row will have 4 items */
+		    gap: 10px; /* Adds space between items */
+		    list-style: none; /* Removes default list styling */
+		    padding: 0; /* Removes default padding */
+		    margin: 0; /* Removes default margin */
+		}
+
+		.horizontal-list-variant li {
+		    background-color: #f0f0f0;
+		    padding: 10px;
+		    border: 1px solid #ccc;
+		    text-align: center;
+		}
+		.horizontal-list-variant li.active {
+		    background-color: #ffcc00; /* Change to the desired color when clicked */
+		}
+		/*  */
 		/* Style for text alignment */
 		.aligned-textbox {
 		    text-align: right; /* Change 'center' to 'left' or 'right' for different alignments */
@@ -940,6 +980,37 @@ License: You must have a valid license purchased only from themeforest(the above
 	</div>	  	  
 </div>
 
+
+<div class="modal fade text-left" id="LookupMenuVariant" tabindex="-1" role="dialog" aria-labelledby="myModalLabel11" style="display: none;" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-scrollable  modal-dialog-centered modal-lg" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h3 class="modal-title" id="myModalLabel11">Variant Menu</h3>
+			<button type="button" class="close rounded-pill btn btn-sm btn-icon btn-light btn-hover-primary m-0" data-bs-dismiss="modal" aria-label="Close">
+			  <svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+				  <path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+			  </svg>
+			</button>
+		  </div>
+		  <div class="modal-body">
+				<div class="form-group row">
+					<div class="col-md-12">
+						<div id="lsvVariantMenu"></div>
+						<div id="lsvMenuAddon"></div>
+					</div>
+				</div>
+
+				<div class="form-group row justify-content-end mb-0">
+					<div class="col-md-6  text-end">
+						<button class="btn btn-primary" id="btPilihVariant">Pilih Variant</button>
+					</div>
+				</div>
+
+		  	</div>
+		</div>
+	</div>	  	  
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{{ asset('js/plugin.bundle.min.js')}}"></script>
 <script src="{{ asset('js/bootstrap.bundle.min.js')}}"></script>
@@ -985,11 +1056,16 @@ License: You must have a valid license purchased only from themeforest(the above
 
 	var _oTxtKodeItem = [];
 
+	var _oVariantMenu = [];
+
+	var _oSelectedVariant = [];
+
 	document.addEventListener('DOMContentLoaded', () => {
 	    const listItems = document.querySelectorAll('.horizontal-list.payment li');
 		const listTipeOrder = document.querySelectorAll('.horizontal-list.tipeorder li');
 		const listNomorMeja = document.querySelectorAll('.horizontal-list-meja.nomormeja li');
-	    console.log(listTipeOrder);
+
+	    // console.log(listVariant);
 
 		if (listItems.length > 0) {
 			listItems.forEach(item => {
@@ -1082,6 +1158,9 @@ License: You must have a valid license purchased only from themeforest(the above
 	    	_Company = <?php echo $company ?>;
 	    	_Pelanggan = <?php echo $pelanggan ?>;
 			_Printer = <?php echo $printer ?>;
+			_oVariantMenu= <?php echo $variantmenu ?>;
+
+			// console.log(_oVariantMenu);
 
 	    	LoadDraftOrderList();
 	    	bindGridLookupCustomer(_Pelanggan);
@@ -1172,9 +1251,126 @@ License: You must have a valid license purchased only from themeforest(the above
 			SetEnableCommand();
 		});
 
+		jQuery('#btPilihVariant').click(function () {
+			jQuery('#LookupMenuVariant').modal('hide');
+			AddNewRow(jQuery('#VariantFatherItemCode').val());
+			AsignRowNumber();
+			console.log(_oSelectedVariant);
+		})
+
 		$('.ProductSelected').on('click', function() {
 			var kodeItem = $(this).data('kodeitem'); // Retrieve the custom attribute
-			AddNewRow(kodeItem)
+			// Tambah Variant
+			let filteredVariantDetail = _oVariantMenu.filter(function(variant) {
+				return variant.Father == kodeItem;
+			});
+
+			if (filteredVariantDetail.length > 0) {
+				console.log('Masuk Tambah Variant + addon')
+				console.log(filteredVariantDetail)
+				var _Header = [];
+
+				for (let index = 0; index < filteredVariantDetail.length; index++) {
+					var oData = {
+						'id' : filteredVariantDetail[index]['VariantGrupID'],
+						'NamaGrup' : filteredVariantDetail[index]['NamaGrup']
+					}
+
+					if (_Header.length > 0) {
+						let headerExist = _Header.filter(function(temp) {
+							return temp.id === filteredVariantDetail[index]['VariantGrupID'];
+						});
+						// console.log(_Header);
+						if (headerExist.length == 0) {
+							_Header.push(oData);	
+						}
+					}
+					else{
+						_Header.push(oData);
+					}
+					
+					
+				}
+				
+				var _xHTML = "<input type='hidden' value ='"+kodeItem+"' id='VariantFatherItemCode'>";
+				for (let i = 0; i < _Header.length; i++) {
+					// const element = array[i];
+					_xHTML += '<div class="row">';
+						_xHTML += '<div class="col-md-12 col-12">';
+							_xHTML += '<div class="card card-custom gutter-b bg-white border-0">';
+								_xHTML += '<div class="card-header align-items-center  border-0">';
+									_xHTML += '<div class="card-title mb-0">';
+										_xHTML += '<h3 class="card-label mb-0 font-weight-bold text-body ">'+_Header[i]['NamaGrup']+'</h3>'
+									_xHTML += '</div>';
+								_xHTML += '</div>';
+
+								_xHTML += '<div class="card-body">';
+									_xHTML += '<div class="col-md-12">';
+										// _xHTML += "MASUK DATA DISINI";
+										let ItemDetail = filteredVariantDetail.filter(function(variant) {
+											return variant.Father === kodeItem && variant.VariantGrupID === _Header[i]['id'];
+										});
+										_xHTML += '<div class="scroll-container list-group scrollbar-1">';
+											_xHTML += '<ul class="horizontal-list-variant VariantData">';
+												// _xHTML += '';
+												for (let iDetail = 0; iDetail < ItemDetail.length; iDetail++) {
+													_xHTML += '<li class="list-group-item list-group-item-action border-0 d-flex align-items-center  py-2" id='+'variant'+ItemDetail[iDetail]['VariantID']+' namavariant='+ItemDetail[iDetail]['NamaVariant']+' extraprice ='+ItemDetail[iDetail]['ExtraPrice']+'>';
+														_xHTML += '<span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-light-dark text-white me-2">';
+															_xHTML += '<img src="https://cdn-icons-png.freepik.com/256/6178/6178920.png?semt=ais_hybrid" class="bi bi-lightning-fill" width="80%">';
+														_xHTML += '</span>';
+														_xHTML += '<div class="list-content">';
+															_xHTML += '<span class="list-title text-body">'+ItemDetail[iDetail]['NamaVariant']+'</span><br>';
+															_xHTML += '<span class="list-title text-body"> <font color ="red"> + Rp. '+ parseFloat(ItemDetail[iDetail]['ExtraPrice']).toLocaleString('en-US')+'</font></span>';
+														_xHTML += '</div>';
+													_xHTML += '</li>';
+												}
+											_xHTML += '</ul>';
+										_xHTML += '</div>';
+										// console.log(ItemDetail);
+									_xHTML += '</div>';
+								_xHTML += '</div>';
+
+							_xHTML += '</div>';
+						_xHTML += '</div>';
+					_xHTML += '</div>';
+				}
+				
+				jQuery('#lsvVariantMenu').empty();
+				jQuery("#lsvVariantMenu").append(_xHTML);
+
+				jQuery('#LookupMenuVariant').modal({backdrop: 'static', keyboard: false})
+        		jQuery('#LookupMenuVariant').modal('show');
+
+				const listVariant = document.querySelectorAll('.horizontal-list-variant.VariantData li');
+
+				if (listVariant.length > 0) {
+					listVariant.forEach(item => {
+						item.addEventListener('click', () => {
+							// Remove active class from all items
+							listVariant.forEach(i => i.classList.remove('active'));
+							item.classList.add('active');
+
+
+							// _oSelectedVariant
+
+							// _KodeMeja = item.id;
+							// _NamaMeja = $('#'+item.id).attr('namavariant');
+							console.log(jQuery('#'+item.id))
+							var oTempSelectedVariant = {
+								'id' : item.id,
+								'NamaVariant' : jQuery('#'+item.id).attr('namavariant'),
+								'ExtraPrice' : jQuery('#'+item.id).attr('extraprice'),
+							}
+							// _Header.push(oData);
+							_oSelectedVariant = oTempSelectedVariant;
+							SetEnableCommand();
+						});
+					});	
+				}
+			}
+			else{
+				AddNewRow(kodeItem)
+			}
 			AsignRowNumber();
 			FirstRowHandling();
 			CalculateTotal();
@@ -1643,6 +1839,14 @@ License: You must have a valid license purchased only from themeforest(the above
         document.getElementById('AppendArea').appendChild(newRow);
 
 		_oTxtKodeItem = document.querySelectorAll('#txtKodeItem');
+
+		// Remove Blank Item
+
+		var emptyCells = document.querySelectorAll('#printableTable td.dataTables_empty');
+		emptyCells.forEach(function(cell) {
+			var row = cell.closest('tr');
+			row.parentNode.removeChild(row);
+		});
 	}
 
 	function CalculateRowTotal(qty, harga, diskon) {
