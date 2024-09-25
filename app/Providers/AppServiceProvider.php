@@ -42,6 +42,8 @@ class AppServiceProvider extends ServiceProvider
             // $navbars = Navbar::orderBy('ordering')->get();
             
             if (Auth::check()) {
+                $oCompany = Company::where('KodePartner', Auth::user()->RecordOwnerID)->get();
+
 
                 $oMenu = array();
 
@@ -163,7 +165,10 @@ class AppServiceProvider extends ServiceProvider
 
                 // var_dump($oMenu);
 
-                $view->with('navbars', $oMenu);
+                $view->with([
+                    'navbars' => $oMenu,
+                    'cData' => $oCompany
+                ]);
 
                 
             }

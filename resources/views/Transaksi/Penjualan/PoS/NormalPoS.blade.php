@@ -876,7 +876,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 	document.addEventListener('DOMContentLoaded', () => {
 	    const listItems = document.querySelectorAll('.horizontal-list li');
-	    console.log(listItems);
+	    // console.log(listItems);
 	    listItems.forEach(item => {
 	        item.addEventListener('click', () => {
 	            // Remove active class from all items
@@ -886,7 +886,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	            var Sts = $('#'+item.id).attr('stspyment');
 				_MetodeVerifikasiPembayaran = $('#'+item.id).attr('CaraVerifikasi');
 				_TipePembayaran = $('#'+item.id).attr('TipePembayaran');
-				console.log(_TipePembayaran);
+				
 	            if (Sts =='Y') {
 	            	item.classList.add('active');
 	            	_KodeMetodePembayaran = item.id;
@@ -910,7 +910,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			bindGrid([]);
 
 			var xdata = <?php echo $itemServices ?>;
-			console.log(xdata);
+			// console.log(xdata);
 
 			jQuery('.Select2-Selector').select2({
 				dropdownParent: $('#shippingcost')
@@ -941,8 +941,6 @@ License: You must have a valid license purchased only from themeforest(the above
 			_Printer = <?php echo $printer ?>;
 
 			let url = new URL("{{ url('') }}");
-			
-	    	console.log("{{ url('') }}");
 	    	LoadDraftOrderList();
 	    	bindGridLookupCustomer(_Pelanggan);
 
@@ -952,7 +950,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 
 		$('#_Barcode').on("keypress", function(e) {
-			console.log(e)
+			// console.log(e)
 	        if (e.keyCode == 13) {
 	            $.ajax({
 		            async:false,
@@ -971,7 +969,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		            },
 		            dataType: 'json',
 		            success: function(response) {
-		            	// console.log(response);
+		            	console.log(response);
 		            	var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
       					var allRowsData  = dataGridInstance.getDataSource().items();
 
@@ -984,6 +982,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		            	}
 		            	else{
 		            		if (response.data.length > 0) {
+								
 		            			var objIndex = allRowsData.findIndex(obj => obj.KodeItem == response.data[0]['KodeItem']);
 
 			            		// console.log(objIndex);
@@ -1255,7 +1254,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			var TotalPenjualan = $('#_GrandTotal').attr('originalvalue');
 			var TotalPembulatan = Math.ceil(TotalPenjualan);
 			var NilaiPembulatan = TotalPembulatan - TotalPenjualan;
-			console.log(NilaiPembulatan)
+			// console.log(NilaiPembulatan)
 			// formatCurrency($('#_TotalServices'), _tempTotalServices);
 			// $('#_Pembulatan').val();
 			formatCurrency($('#_Pembulatan'), NilaiPembulatan)
@@ -1287,7 +1286,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			var dataGridInstance = jQuery('#gridLookupCustomer').dxDataGrid('instance');
 			var selectedRows = dataGridInstance.getSelectedRowsData();
 
-			console.log(selectedRows);
+			// console.log(selectedRows);
 			if (selectedRows.length > 0) {
 				jQuery('#LookupCustomer').modal('hide');
 				jQuery('#KodePelanggan').val(selectedRows[0]['KodePelanggan']).trigger('change');
@@ -1335,7 +1334,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 
 		jQuery('#ModalKotaID').change(function () {
-			console.log('Test masuk')
+			// console.log('Test masuk')
 			$.ajax({
                 async   : false,
                 type    : "post",
@@ -1371,7 +1370,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 
 		jQuery('#ModalKecID').change(function () {
-			console.log('Test masuk')
+			// console.log('Test masuk')
 			$.ajax({
                 async   : false,
                 type    : "post",
@@ -1496,7 +1495,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
             		xHTML += '</div>';
 
-            		console.log(xHTML);
+            		// console.log(xHTML);
 
             			jQuery('#_draftOrderList').html(xHTML);
             	}
@@ -1560,7 +1559,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			let url = "{{ url('') }}";
             // url.searchParams.append('NoTransaksi', NoTransaksi);
 			url += "/fpenjualan/printthermal/"+NoTransaksi;
-			console.log(url);
+			// console.log(url);
 			// // window.location.href = url.toString();
 			window.open(url, "_blank");
 			location.reload();
@@ -1693,7 +1692,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	        onCellClick:function (e) {
 	            var rowData = dataGridInstance.option("dataSource");
 	            var columnIndex = e.columnIndex;
-	            console.log(e)
+	            // console.log(e)
 	        	if (columnIndex >= 1 && columnIndex <= 5) {
 	                dataGridInstance.editRow(e.rowIndex)	
 	            }
@@ -2278,7 +2277,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			if (data.snap_token) {
 				snap.pay(data.snap_token, {
 					onSuccess: function(result){
-						console.log(result);
+						// console.log(result);
 						if(result.transaction_status == "cancel"){
 							Swal.fire({
 								icon: "error",
@@ -2294,7 +2293,7 @@ License: You must have a valid license purchased only from themeforest(the above
 						// Proses pembayaran sukses
 					},
 					onPending: function(result){
-						console.log(result);
+						// console.log(result);
 						// Pembayaran tertunda
 					},
 					onError: function(result){
@@ -2337,7 +2336,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	function CalculateTotal() {
 		var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
   		var allRowsData  = dataGridInstance.getDataSource().items();
-  		// console.log(allRowsData)
+  		// ßß(allRowsData)
 
   		var _tempTotalItem = 0;
   		var _tempSubTotal = 0;
