@@ -1255,6 +1255,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			jQuery('#LookupMenuVariant').modal('hide');
 			AddNewRow(jQuery('#VariantFatherItemCode').val());
 			AsignRowNumber();
+			AddAddonVariantMenu(jQuery('#VariantFatherItemCode').val())
 			console.log(_oSelectedVariant);
 		})
 
@@ -1314,7 +1315,7 @@ License: You must have a valid license purchased only from themeforest(the above
 											_xHTML += '<ul class="horizontal-list-variant VariantData">';
 												// _xHTML += '';
 												for (let iDetail = 0; iDetail < ItemDetail.length; iDetail++) {
-													_xHTML += '<li class="list-group-item list-group-item-action border-0 d-flex align-items-center  py-2" id='+'variant'+ItemDetail[iDetail]['VariantID']+' namavariant='+ItemDetail[iDetail]['NamaVariant']+' extraprice ='+ItemDetail[iDetail]['ExtraPrice']+'>';
+													_xHTML += '<li class="list-group-item list-group-item-action border-0 d-flex align-items-center  py-2" id='+'variant'+ItemDetail[iDetail]['VariantID']+' namavariant='+ItemDetail[iDetail]['NamaVariant']+' extraprice ='+ItemDetail[iDetail]['ExtraPrice']+' VariantGrupID = '+ItemDetail[iDetail]['VariantGrupID']+'>';
 														_xHTML += '<span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-light-dark text-white me-2">';
 															_xHTML += '<img src="https://cdn-icons-png.freepik.com/256/6178/6178920.png?semt=ais_hybrid" class="bi bi-lightning-fill" width="80%">';
 														_xHTML += '</span>';
@@ -1360,6 +1361,7 @@ License: You must have a valid license purchased only from themeforest(the above
 								'id' : item.id,
 								'NamaVariant' : jQuery('#'+item.id).attr('namavariant'),
 								'ExtraPrice' : jQuery('#'+item.id).attr('extraprice'),
+								'VariantGrupID' : jQuery('#'+item.id).attr('VariantGrupID')
 							}
 							// _Header.push(oData);
 							_oSelectedVariant = oTempSelectedVariant;
@@ -1848,6 +1850,75 @@ License: You must have a valid license purchased only from themeforest(the above
 			row.parentNode.removeChild(row);
 		});
 	}
+	
+	function AddAddonVariantMenu(KodeItem) {
+		var RandomID = generateRandomText(10);
+        var newRow = document.createElement('tr');
+        newRow.className = RandomID;
+        newRow.id = "VariantSectionData"
+
+		var tbody = document.querySelectorAll('#VariantSectionData');
+		// console.log(tbody);
+        var index = 0;
+
+		if (tbody.length > 0) {
+			index = tbody.length + 1;
+		}
+		var nomorCol = document.createElement('td');
+		var NamaVariant = document.createElement('td');
+		NamaVariant.setAttribute("colspan",4)
+		var ExtraPrice = document.createElement('td');
+
+		var GrupVariantID = document.createElement('input');
+		var VariantID = document.createElement('input');
+		var txtNamaVariant = document.createElement("input");
+		var txtExtraPrice = document.createElement("input");
+
+		GrupVariantID.type  = 'hidden';
+		GrupVariantID.id = "txtGrupVariantID";
+		GrupVariantID.name = 'VariantParameter['+index+'][GrupVariantID]';
+		GrupVariantID.placeholder = "Tambah Nama Item";
+		GrupVariantID.className = 'form-control';
+		GrupVariantID.required = true;
+		GrupVariantID.value = _oSelectedVariant["VariantGrupID"]
+		GrupVariantID.readOnly = true;
+		NamaVariant.appendChild(GrupVariantID);
+
+		VariantID.type  = 'hidden';
+		VariantID.id = "txtVariantID";
+		VariantID.name = 'VariantParameter['+index+'][VariantID]';
+		VariantID.placeholder = "Tambah Nama Item";
+		VariantID.className = 'form-control';
+		VariantID.required = true;
+		VariantID.value = _oSelectedVariant["id"].replace("variant","")
+		VariantID.readOnly = true;
+		NamaVariant.appendChild(VariantID);
+
+		txtNamaVariant.type  = 'text';
+		txtNamaVariant.id = "txtNamaItem";
+		txtNamaVariant.name = 'VariantParameter['+index+'][NamaVariant]';
+		txtNamaVariant.placeholder = "Tambah Nama Item";
+		txtNamaVariant.className = 'form-control';
+		txtNamaVariant.required = true;
+		txtNamaVariant.value = _oSelectedVariant["NamaVariant"]
+		txtNamaVariant.readOnly = true;
+		NamaVariant.appendChild(txtNamaVariant);
+
+		txtExtraPrice.type  = 'text';
+		txtExtraPrice.id = "txtExtraPrice";
+		txtExtraPrice.name = 'VariantParameter['+index+'][ExtraPrice]';
+		txtExtraPrice.placeholder = "Tambah Nama Item";
+		txtExtraPrice.className = 'form-control';
+		txtExtraPrice.required = true;
+		txtExtraPrice.value = _oSelectedVariant["ExtraPrice"]
+		txtExtraPrice.readOnly = true;
+		ExtraPrice.appendChild(txtExtraPrice);
+
+		newRow.appendChild(nomorCol);
+        newRow.appendChild(NamaVariant);
+        newRow.appendChild(ExtraPrice);
+        document.getElementById('AppendArea').appendChild(newRow);
+	}
 
 	function CalculateRowTotal(qty, harga, diskon) {
 		return (qty * harga) - ((diskon / 100) * (qty * harga));
@@ -2325,9 +2396,13 @@ License: You must have a valid license purchased only from themeforest(the above
   		}
   		// console.log(allRowsData)
   		var oDetail = [];
+		var oVariant = [];
 
-		var rows = document.querySelectorAll('#AppendArea tr');
+		var rows = document.querySelectorAll('#AppendArea tr#InputSectionData');
+		var rowsVariant = document.querySelectorAll('#AppendArea tr#VariantSectionData');
+
 		var NoUrut = 0;
+		var NoUrutVariant = 0;
 		rows.forEach(function(row) {
 			var totalInput = row.querySelector('input[id="txtTotal"]');
 			var RowKodeItem = row.querySelector('input[id="txtKodeItem"]');

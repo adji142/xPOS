@@ -157,7 +157,9 @@
                                                 </table>
                                             </div>
                                         </div>
+                                        <div style="margin-bottom: 20px"></div>
                                         <hr>
+                                        <div style="margin-bottom: 20px"></div>
                                         <div class="col-md-12">
                                             <h3 class="card-label mb-0 font-weight-bold" style="text-align: center">
                                                 Tambahkan Variant Menu
@@ -178,6 +180,35 @@
                                                     <tbody id="AppendVariantArea">
                                                         <tr>
                                                             <td colspan="6" id="btAddVariantRow">
+                                                                <center><i class="fas fa-plus" style="color: red"></i> <font style="color: red"> Tambah Data</font> </center>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div style="margin-bottom: 20px"></div>
+                                        <hr>
+                                        <div style="margin-bottom: 20px"></div>
+                                        <div class="col-md-12">
+                                            <h3 class="card-label mb-0 font-weight-bold" style="text-align: center">
+                                                Tambahkan Addon
+                                            </h3>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <small><i>Silahkan masukan Addon Menu dari Menu ini (Jika Ada)</i></small>
+                                            <div class="table-responsive" id="printableTable">
+                                                <table id="MenuAddon" class="display" style="width:100%">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Keterangan</th>
+                                                            <th>Exra Price</th>
+                                                            <th class=" no-sort text-end">Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="AppendAddonMenuArea">
+                                                        <tr>
+                                                            <td colspan="6" id="btAddAddonRow">
                                                                 <center><i class="fas fa-plus" style="color: red"></i> <font style="color: red"> Tambah Data</font> </center>
                                                             </td>
                                                         </tr>
@@ -247,6 +278,29 @@
 	  </div>
 	</div>
 </div>
+
+<div class="modal fade text-left w-100" id="modallookupAddon" tabindex="-1" role="dialog" aria-labelledby="myModalLabel16" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" role="document">
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <h4 class="modal-title" id="myModalLabel16">Daftar Addon</h4>
+		  <button type="button" class="close rounded-pill btn btn-sm btn-icon btn-primary m-0" data-bs-dismiss="modal" aria-label="Close">
+			<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+			<path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+			</svg>	
+			</button>
+		</div>
+		<div class="modal-body">
+		  <div id="gridLookupAddon"></div>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-primary ms-1" id="btSelectAddon" data-bs-dismiss="modal">
+				<span class="">Pilih Addon</span>
+			</button>
+			</div> 		
+	  </div>
+	</div>
+</div>
 @endsection
 
 @push('scripts')
@@ -261,6 +315,8 @@
     var oDataMenuHeader = [];
     var oDataMenuDetail = [];
     var oDataMenuVariant = [];
+    var oDataMenuAddon = [];
+    var oDaftarAddon = [];
     var TableID = "";
 	$(function () {
         jQuery(document).ready(function () {
@@ -273,6 +329,9 @@
             oDataMenuDetail = <?php echo json_encode($menudetail); ?>;
             oDataMenuVariant = <?php echo json_encode($menuvariant); ?>;
 
+            oDataMenuAddon = <?php echo json_encode($menuaddon); ?>;
+            oDaftarAddon = <?php echo json_encode($daftaraddon); ?>;
+
             for (let index = 0; index < oDataMenuDetail.length; index++) {
                 // addNewLine(oDataMenuDetail[index]['NamaVariant'],oDataMenuDetail[index]['ExtraPrice']);
                 var oData = {
@@ -283,7 +342,6 @@
                 }
                 addNewLine(oData, index +1);   
             }
-            // console.log(oDataMenuVariant)
 
             for (let index = 0; index < oDataMenuVariant.length; index++) {
                 var oData = {
@@ -293,8 +351,19 @@
                 addNewLineVariant(oData, index +1);   
             }
 
+            for (let index = 0; index < oDataMenuAddon.length; index++) {
+                
+                var oData = {
+                    'id' : oDataMenuAddon[index]['id'],
+                    'NamaAddon' : oDataMenuAddon[index]['NamaAddon'],
+                    'HargaAddon' : oDataMenuAddon[index]['HargaAddon']
+                }
+                addNewLineAddon(oData, index +1)
+            }
+
             AsignRowNumber();
             jQuery('#MenuDetail').DataTable();
+            jQuery('#MenuAddon').DataTable();
             
         })
 	});
@@ -354,6 +423,27 @@
         BindLookupServices("gridLookupvariant", "id", oVariantHeader, ColumnData,"multiple");
     });
 
+    jQuery('#btAddAddonRow').click(function () {
+        jQuery('#modallookupAddon').modal({backdrop: 'static', keyboard: false})
+        jQuery('#modallookupAddon').modal('show');
+        console.log(oDaftarAddon)
+        var ColumnData = [
+            {
+                dataField: "NamaAddon",
+                caption: "Nama Addon",
+                allowSorting: true,
+                allowEditing : false
+            },
+            {
+                dataField: "HargaAddon",
+                caption: "Extra Cost",
+                allowSorting: true,
+                allowEditing : false
+            },
+        ];
+        BindLookupServices("gridLookupAddon", "id", oDaftarAddon, ColumnData,"multiple");
+    });
+
     jQuery('#btSelectItem').click(function () {
 		var dataGridInstance = jQuery('#gridLookupitem').dxDataGrid('instance');
 		var dataGridDetailInstance = jQuery('#gridContainerRakitan').dxDataGrid('instance');
@@ -392,8 +482,25 @@
             }
 		}
         dataGridInstance.deselectAll();
+        jQuery('#MenuVariant').DataTable();
         // AsignRowNumber();
 	});
+
+    jQuery('#btSelectAddon').click(function () {
+        var dataGridInstance = jQuery('#gridLookupAddon').dxDataGrid('instance');
+		var dataGridDetailInstance = jQuery('#gridLookupAddon').dxDataGrid('instance');
+        var selectedRows = dataGridInstance.getSelectedRowsData();
+
+        if (selectedRows.length > 0) {
+            for (let index = 0; index < selectedRows.length; index++) {
+                // console.log("Add Row : " + index)
+                // console.log(CheckifExist(selectedRows[index]["KodeItem"]));
+                addNewLineAddon(selectedRows[index], index +1); 
+            }
+		}
+        dataGridInstance.deselectAll();
+        jQuery('#MenuAddon').DataTable();
+    })
 
     jQuery('#image_result').click(function(){
         $('#Attachment').click();
@@ -631,9 +738,102 @@
 
             document.getElementById('AppendVariantArea').appendChild(newRowDetail);
         }
+    }
 
-        
-        jQuery('#MenuVariant').DataTable();
+
+    function addNewLineAddon(oData, index) {
+        // console.log(oData);
+        var RandomID = generateRandomText(10);
+        var newRow = document.createElement('tr');
+        newRow.className = RandomID;
+        newRow.id = "InputSectionDataAddon"
+
+        // New Row
+		var tbody = document.querySelectorAll('#InputSectionDataAddon');
+		// console.log(tbody);
+        var index = 0;
+
+		if (tbody.length > 0) {
+			index = tbody.length + 1;
+		}
+
+
+
+
+        var existingRow = Array.from(document.querySelectorAll('input[id="txtAddonID"]')).find(function(input) {
+            console.log(input.value.toString() + " => "  + oData["id"].toString())
+			return input.value.toString() === oData["id"].toString();
+		});
+
+        console.log(existingRow);
+
+        if (!existingRow) {
+            var AddonCol = document.createElement('td');
+            var ExtraPriceCol = document.createElement('td');
+            var RemoveCol = document.createElement('td');
+
+            var AddonID = document.createElement('input');
+            var AddonText = document.createElement('input');
+            var ExtraPriceText = document.createElement('input');
+
+            AddonText.type  = 'text';
+            AddonText.id = "txtNamaAddon";
+            AddonText.name = 'DetailAddon['+index+'][NamaAddon]';
+            AddonText.placeholder = "Tambah Addon";
+            AddonText.className = 'form-control';
+            AddonText.required = true;
+            AddonText.value = oData["NamaAddon"];
+            AddonText.readOnly = true;
+            AddonText.title = oData["NamaAddon"];
+            // AddonText.setAttribute('AddonID', oData["id"]);
+            AddonCol.appendChild(AddonText);
+
+            AddonID.type  = 'hidden';
+            AddonID.id = "txtAddonID";
+            AddonID.name = 'DetailAddon['+index+'][AddonID]';
+            AddonID.placeholder = "Tambah Addon";
+            AddonID.className = 'form-control';
+            AddonID.required = true;
+            AddonID.value = oData["id"];
+            AddonID.readOnly = true;
+            AddonID.title = oData["id"];
+            // AddonText.setAttribute('AddonID', oData["id"]);
+            AddonCol.appendChild(AddonID);
+
+            ExtraPriceText.type  = 'text';
+            ExtraPriceText.id = "txtHargaAddon";
+            ExtraPriceText.name = 'DetailAddon['+index+'][HargaAddon]';
+            ExtraPriceText.placeholder = "Tambah Addon";
+            ExtraPriceText.className = 'form-control';
+            ExtraPriceText.required = true;
+            ExtraPriceText.value = oData["HargaAddon"];
+            ExtraPriceText.readOnly = true;
+            ExtraPriceText.title = oData["HargaAddon"];
+            ExtraPriceCol.appendChild(ExtraPriceText);
+
+            var RemoveText = document.createElement('button');
+            RemoveText.innerText   = 'Delete Data';
+            RemoveText.type   = 'button';
+            // RemoveText.style.color = "red";
+            // RemoveText.href = "#"+RandomID;
+            RemoveText.className = "btn btn-danger RemoveLineItem";
+            RemoveText.id = "RemoveLineItem";
+            RemoveText.onclick = function() {
+                // alert('Button in row  clicked! ' + RandomID);
+                var elements = document.querySelectorAll('.'+RandomID);
+                // elements.remove();
+                elements.forEach(function(element) {
+                    element.remove();
+                });
+            };
+            RemoveCol.appendChild(RemoveText);
+
+            newRow.appendChild(AddonCol);
+            newRow.appendChild(ExtraPriceCol);
+            newRow.appendChild(RemoveCol);
+
+            document.getElementById('AppendAddonMenuArea').appendChild(newRow);
+        }
     }
 
     function generateRandomText(length) {

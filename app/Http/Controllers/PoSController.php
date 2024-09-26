@@ -26,6 +26,7 @@ use App\Models\MenuRestoVariant;
 use App\Models\VariantMenuHeader;
 use App\Models\VariantMenuDetail;
 use App\Models\JenisItem;
+use App\Models\MenuRestoAddon;
 // require_once(app_path('Libraries/phpserial/src/PhpSerial.php'));
 class PoSController extends Controller
 {
@@ -101,6 +102,14 @@ class PoSController extends Controller
                                 })
                                 ->where('menuvarian.RecordOwnerID', Auth::user()->RecordOwnerID)
                                 ->get();
+                
+                $menuaddon = MenuRestoAddon::selectRaw("addonmenudata.*, menuaddon.NamaAddon, menuaddon.HargaAddon")
+                        ->leftJoin('menuaddon', function ($value) {
+                            $value->on('menuaddon.id','=','addonmenudata.AddonMenuID')
+                            ->on('menuaddon.RecordOwnerID','=','addonmenudata.RecordOwnerID');
+                        })
+                        ->where('addonmenudata.RecordOwnerID', Auth::user()->RecordOwnerID)
+                        ->get();
 
                 return view("Transaksi.Penjualan.PoS.FnBPoS",[
                     'pelanggan' => $pelanggan,
@@ -116,7 +125,8 @@ class PoSController extends Controller
                     'meja' => $meja,
                     'tipeorder' => $tipeorder,
                     'jenisitem' => $jenisitem,
-                    'variantmenu'=> $variantData
+                    'variantmenu'=> $variantData,
+                    'menuaddon' => $menuaddon
                 ]);
                 break;
             case 'Services':

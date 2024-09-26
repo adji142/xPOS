@@ -16,6 +16,7 @@ use App\Models\MenuRestoAddon;
 
 use App\Models\VariantMenuHeader;
 use App\Models\VariantMenuDetail;
+use App\Models\MenuAddon;
 
 class MenuRestoAddonController extends Controller
 {
@@ -76,6 +77,9 @@ class MenuRestoAddonController extends Controller
         $itembahan = $oItem->GetItemData(Auth::user()->RecordOwnerID,'', '', '','6', 'Y', '',1)->get();
         $variantheader = VariantMenuHeader::where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
         $variantdetail = VariantMenuDetail::where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+        $daftaraddon = MenuAddon::selectRaw("menuaddon.*")
+                    ->where('menuaddon.RecordOwnerID', Auth::user()->RecordOwnerID)
+                    ->get();
 
         $menuheader = MenuRestoHeader::where('RecordOwnerID', Auth::user()->RecordOwnerID)
                         ->where('KodeItemHasil', $KodeItemHasil)
@@ -87,6 +91,14 @@ class MenuRestoAddonController extends Controller
                         })
                         ->where('menudetail.RecordOwnerID', Auth::user()->RecordOwnerID)
                         ->where('menudetail.Father', $KodeItemHasil)
+                        ->get();
+        $menuaddon = MenuRestoAddon::selectRaw("addonmenudata.*, menuaddon.NamaAddon, menuaddon.HargaAddon")
+                        ->leftJoin('menuaddon', function ($value) {
+                            $value->on('menuaddon.id','=','addonmenudata.AddonMenuID')
+                            ->on('menuaddon.RecordOwnerID','=','addonmenudata.RecordOwnerID');
+                        })
+                        ->where('addonmenudata.RecordOwnerID', Auth::user()->RecordOwnerID)
+                        ->where('addonmenudata.Father', $KodeItemHasil)
                         ->get();
         $menuvariant = MenuRestoVariant::selectRaw("DISTINCT variantheader.* ")
                         ->leftJoin('variantdetail', function ($value){
@@ -109,7 +121,9 @@ class MenuRestoAddonController extends Controller
             'itemhasil' => $itemhasil,
             'itembahan' => $itembahan,
             'variantheader' => $variantheader,
-            'variantdetail' => $variantdetail
+            'variantdetail' => $variantdetail,
+            'daftaraddon' => $daftaraddon,
+            'menuaddon' => $menuaddon
         ]);
     }
 
@@ -126,6 +140,7 @@ class MenuRestoAddonController extends Controller
             $HargaJual = $request->input('HargaJual');
             $DetailParameter = $request->input('DetailParameter');
             $DetailVariant = $request->input('DetailVariant');
+            $DetailAddon = $request->input('DetailAddon');
 
             $exist = MenuRestoHeader::where('KodeItemHasil', $KodeItemHasil)
                         ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
@@ -201,6 +216,22 @@ class MenuRestoAddonController extends Controller
                 }
             }
 
+            if ($DetailAddon) {
+                foreach ($DetailAddon as $dt) {
+                    $addon = new MenuRestoAddon();
+                    $addon->Father = $KodeItemHasil;
+                    $addon->AddonMenuID = $dt['AddonID'];
+                    $addon->RecordOwnerID = Auth::user()->RecordOwnerID;
+                    $addon->save();
+
+                    if (!$addon) {
+                        $errorMessage = "Menyimpan data Addon ".dt["NamaAddon"]." Gagal dilakukan";
+                        $errorCount +=1;
+                        goto jump;
+                    }
+                }
+            }
+
             if ($HargaPokokStandar == 0) {
                 // $errorMessage = "Harga Pokok Tidak Boleh Kosong, Silahkan cek masing masing harga pokok bahan baku";
                 // $errorCount +=1;
@@ -261,6 +292,7 @@ class MenuRestoAddonController extends Controller
             $HargaJual = $request->input('HargaJual');
             $DetailParameter = $request->input('DetailParameter');
             $DetailVariant = $request->input('DetailVariant');
+            $DetailAddon = $request->input('DetailAddon');
 
             $oData = MenuRestoHeader::where('id', $id)
                         ->where('RecordOwnerID', Auth::user()->RecordOwnerID);
@@ -346,6 +378,27 @@ class MenuRestoAddonController extends Controller
                 }
             }
 
+            if ($DetailAddon) {
+                $delete = DB::table('addonmenudata')
+		                ->where('father','=', $KodeItemHasil)
+		                ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+		                ->delete();
+
+                foreach ($DetailAddon as $dt) {
+                    $addon = new MenuRestoAddon();
+                    $addon->Father = $KodeItemHasil;
+                    $addon->AddonMenuID = $dt['AddonID'];
+                    $addon->RecordOwnerID = Auth::user()->RecordOwnerID;
+                    $addon->save();
+
+                    if (!$addon) {
+                        $errorMessage = "Menyimpan data Addon ".dt["NamaAddon"]." Gagal dilakukan";
+                        $errorCount +=1;
+                        goto jump;
+                    }
+                }
+            }
+
             if ($HargaPokokStandar == 0) {
                 $oItemMaster = ItemMaster::where('KodeItem', $KodeItemHasil)
                                 ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
@@ -405,6 +458,9 @@ class MenuRestoAddonController extends Controller
             $oVariant = MenuRestoVariant::where('Father', $request->KodeItemHasil)
                         ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                         ->get();
+            $oAddon = MenuRestoAddon::where('Father', $request->KodeItemHasil)
+                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                        ->get();
 
             if (count($oVariant) > 0) {
                 $variant = DB::table('menuvarian')
@@ -414,6 +470,18 @@ class MenuRestoAddonController extends Controller
                 if (!$variant) {
                     $errorCount +=1;
                     $errorMessage = "Hapus Data Variant Menu Gagal";
+                    goto jump;
+                }
+            }
+
+            if (count($oAddon) > 0) {
+                $variant = DB::table('addonmenudata')
+                        ->where('Father','=', $request->KodeItemHasil)
+                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                        ->delete();
+                if (!$variant) {
+                    $errorCount +=1;
+                    $errorMessage = "Hapus Data Addon Menu Gagal";
                     goto jump;
                 }
             }
