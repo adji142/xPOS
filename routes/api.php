@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\PrintingRecieptController;
 use App\Http\Controllers\PrinterController;
+use App\Http\Controllers\FlutterWebAppsController;
+use App\Http\Controllers\FakturPenjualanController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -30,3 +32,10 @@ Route::post('printerstore',[PrinterController::class,'store']);
 Route::post('printeredit',[PrinterController::class,'edit']);
 Route::post('printerdelete',[PrinterController::class,'delete']);
 Route::post('testnotif',[PrinterController::class,'TestNotif']);
+
+
+Route::post('initWebMenu',[FlutterWebAppsController::class,'InitProgram']);
+Route::post('saveFromTable',[FakturPenjualanController::class,'storePoSFnB']);
+
+Route::post('getMenu',[FlutterWebAppsController::class,'GetMenuByKelompok']);
+Route::post('getAddon',[FlutterWebAppsController::class,'getVariantAddonData']);

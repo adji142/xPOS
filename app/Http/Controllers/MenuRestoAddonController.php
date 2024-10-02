@@ -258,6 +258,15 @@ class MenuRestoAddonController extends Controller
                                 'HargaPokokStandar' => $oItemMaster->HargaPokokPenjualan,
                             ]
                         );
+                
+                $updateItem = DB::table('itemmaster')
+                        ->where('KodeItem','=', $KodeItemHasil)
+                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                        ->update(
+                            [
+                                'HargaPokokPenjualan' => $HargaPokokStandar,
+                            ]
+                        );
             }
 
             jump:
@@ -420,6 +429,14 @@ class MenuRestoAddonController extends Controller
                         ->update(
                             [
                                 'HargaPokokStandar' => $HargaPokokStandar,
+                            ]
+                        );
+                $updateItem = DB::table('itemmaster')
+                        ->where('KodeItem','=', $KodeItemHasil)
+                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                        ->update(
+                            [
+                                'HargaPokokPenjualan' => $HargaPokokStandar,
                             ]
                         );
             }

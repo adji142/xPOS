@@ -134,7 +134,12 @@ class PenghapusanBarangController extends Controller
 	        $model->CreatedBy = Auth::user()->name;
 	        $model->UpdatedBy = '';
 	        $model->Posted = 0;
-			$model->JenisTransaksi = array_key_exists('JenisTransaksi', $jsonData) ? $jsonData['JenisTransaksi'] : 1;
+			if (array_key_exists('JenisTransaksi', $jsonData)) {
+				$jsonData['JenisTransaksi'];
+			}
+			else{
+				$model->JenisTransaksi = 1;
+			}
 	        $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 	        $save = $model->save();
 

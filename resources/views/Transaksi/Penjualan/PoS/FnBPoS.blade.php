@@ -996,17 +996,32 @@ License: You must have a valid license purchased only from themeforest(the above
 				<div class="form-group row">
 					<div class="col-md-12">
 						<div id="lsvVariantMenu"></div>
-						<div id="lsvMenuAddon"></div>
-					</div>
-				</div>
-
-				<div class="form-group row justify-content-end mb-0">
-					<div class="col-md-6  text-end">
-						<button class="btn btn-primary" id="btPilihVariant">Pilih Variant</button>
+						{{-- <div id="lsvMenuAddon"></div> --}}
+						<div class="row">
+							<div class="col-md-12 col-12">
+								<div class="card card-custom gutter-b bg-white border-0">
+									<div class="card-header align-items-center  border-0">
+										<div class="card-title mb-0">
+											<h3 class="card-label mb-0 font-weight-bold text-body ">Addon Menu</h3>
+										</div>
+									</div>
+									<div class="card-body">
+										<div class="col-md-12">
+											<div id="gridLookupAddon"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 
 		  	</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary ms-1" id="btPilihVariant" data-bs-dismiss="modal">
+					<span class="">Pilih Variant</span>
+				</button>
+			</div> 	
 		</div>
 	</div>	  	  
 </div>
@@ -1028,6 +1043,7 @@ License: You must have a valid license purchased only from themeforest(the above
 </body>
 <!--end::Body-->
 </html>
+@extends('parts.generaljs')
 <script type="text/javascript">
 	var _LastInputed = '';
 	var _TipeDiskon = '';
@@ -1059,6 +1075,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	var _oVariantMenu = [];
 
 	var _oSelectedVariant = [];
+	var _oDaftarAddon  = [];
 
 	document.addEventListener('DOMContentLoaded', () => {
 	    const listItems = document.querySelectorAll('.horizontal-list.payment li');
@@ -1159,8 +1176,9 @@ License: You must have a valid license purchased only from themeforest(the above
 	    	_Pelanggan = <?php echo $pelanggan ?>;
 			_Printer = <?php echo $printer ?>;
 			_oVariantMenu= <?php echo $variantmenu ?>;
+			_oDaftarAddon = <?php echo $menuaddon; ?>;
 
-			// console.log(_oVariantMenu);
+			// console.log(_oDaftarAddon);
 
 	    	LoadDraftOrderList();
 	    	bindGridLookupCustomer(_Pelanggan);
@@ -1252,11 +1270,27 @@ License: You must have a valid license purchased only from themeforest(the above
 		});
 
 		jQuery('#btPilihVariant').click(function () {
+			var KodeItem = jQuery('#VariantFatherItemCode').val();
 			jQuery('#LookupMenuVariant').modal('hide');
-			AddNewRow(jQuery('#VariantFatherItemCode').val());
+			AddNewRow(KodeItem);
 			AsignRowNumber();
-			AddAddonVariantMenu(jQuery('#VariantFatherItemCode').val())
-			console.log(_oSelectedVariant);
+			AddAddonVariantMenu(KodeItem)
+			// Tambah Addon
+			var dataGridInstance = jQuery('#gridLookupAddon').dxDataGrid('instance');
+			var dataGridDetailInstance = jQuery('#gridLookupAddon').dxDataGrid('instance');
+			var selectedRows = dataGridInstance.getSelectedRowsData();
+
+			if (selectedRows.length > 0) {
+				for (let index = 0; index < selectedRows.length; index++) {
+					// console.log("Add Row : " + index)
+					// console.log(CheckifExist(selectedRows[index]["KodeItem"]));
+					// addNewLineAddon(selectedRows[index], index +1); 
+					AddAddonMenu(KodeItem, selectedRows[index])
+				}
+			}
+			dataGridInstance.deselectAll();
+			CalculateTotal();
+			// console.log(_oSelectedVariant);
 		})
 
 		$('.ProductSelected').on('click', function() {
@@ -1338,6 +1372,22 @@ License: You must have a valid license purchased only from themeforest(the above
 				
 				jQuery('#lsvVariantMenu').empty();
 				jQuery("#lsvVariantMenu").append(_xHTML);
+
+				var ColumnData = [
+					{
+						dataField: "NamaAddon",
+						caption: "Nama Addon",
+						allowSorting: true,
+						allowEditing : false
+					},
+					{
+						dataField: "HargaAddon",
+						caption: "Extra Cost",
+						allowSorting: true,
+						allowEditing : false
+					},
+				];
+				BindLookupServices("gridLookupAddon", "id", _oDaftarAddon, ColumnData,"multiple");
 
 				jQuery('#LookupMenuVariant').modal({backdrop: 'static', keyboard: false})
         		jQuery('#LookupMenuVariant').modal('show');
@@ -1821,8 +1871,13 @@ License: You must have a valid license purchased only from themeforest(the above
         RemoveText.onclick = function() {
             // alert('Button in row  clicked! ' + RandomID);
             var elements = document.querySelectorAll('.'+RandomID);
+			var elementsVariant = document.querySelectorAll('.'+KodeItem);
             // elements.remove();
             elements.forEach(function(element) {
+                element.remove();
+            });
+
+			elementsVariant.forEach(function(element) {
                 element.remove();
             });
             AsignRowNumber();
@@ -1854,7 +1909,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	function AddAddonVariantMenu(KodeItem) {
 		var RandomID = generateRandomText(10);
         var newRow = document.createElement('tr');
-        newRow.className = RandomID;
+        newRow.className = KodeItem;
         newRow.id = "VariantSectionData"
 
 		var tbody = document.querySelectorAll('#VariantSectionData');
@@ -1864,15 +1919,19 @@ License: You must have a valid license purchased only from themeforest(the above
 		if (tbody.length > 0) {
 			index = tbody.length + 1;
 		}
+
 		var nomorCol = document.createElement('td');
 		var NamaVariant = document.createElement('td');
-		NamaVariant.setAttribute("colspan",4)
+		NamaVariant.setAttribute("colspan",3)
+		var ExtraQty = document.createElement('td');
 		var ExtraPrice = document.createElement('td');
 
 		var GrupVariantID = document.createElement('input');
 		var VariantID = document.createElement('input');
 		var txtNamaVariant = document.createElement("input");
 		var txtExtraPrice = document.createElement("input");
+		var txtExtraQty = document.createElement("input");
+		var txtKodeItem = document.createElement("input");
 
 		GrupVariantID.type  = 'hidden';
 		GrupVariantID.id = "txtGrupVariantID";
@@ -1894,6 +1953,16 @@ License: You must have a valid license purchased only from themeforest(the above
 		VariantID.readOnly = true;
 		NamaVariant.appendChild(VariantID);
 
+		txtKodeItem.type  = 'text';
+		txtKodeItem.id = "txtKodeItem";
+		txtKodeItem.name = 'VariantParameter['+index+'][KodeItem]';
+		txtKodeItem.placeholder = "Tambah Nama Item";
+		txtKodeItem.className = 'form-control';
+		txtKodeItem.required = true;
+		txtKodeItem.value = KodeItem
+		txtKodeItem.readOnly = true;
+		NamaVariant.appendChild(txtKodeItem);
+
 		txtNamaVariant.type  = 'text';
 		txtNamaVariant.id = "txtNamaItem";
 		txtNamaVariant.name = 'VariantParameter['+index+'][NamaVariant]';
@@ -1914,8 +1983,103 @@ License: You must have a valid license purchased only from themeforest(the above
 		txtExtraPrice.readOnly = true;
 		ExtraPrice.appendChild(txtExtraPrice);
 
+		txtExtraQty.type  = 'text';
+		txtExtraQty.id = "txtExtraQty";
+		txtExtraQty.name = 'VariantParameter['+index+'][ExtraQty]';
+		txtExtraQty.placeholder = "Tambah Nama Item";
+		txtExtraQty.className = 'form-control';
+		txtExtraQty.required = true;
+		txtExtraQty.value = 1
+		txtExtraQty.readOnly = true;
+		ExtraQty.appendChild(txtExtraQty);
+
 		newRow.appendChild(nomorCol);
         newRow.appendChild(NamaVariant);
+		newRow.appendChild(ExtraQty);
+        newRow.appendChild(ExtraPrice);
+        document.getElementById('AppendArea').appendChild(newRow);
+	}
+
+	function AddAddonMenu(KodeItem, oData) {
+		console.log(oData);
+		var RandomID = generateRandomText(10);
+        var newRow = document.createElement('tr');
+        newRow.className = KodeItem;
+        newRow.id = "AddonSectionData"
+
+		var tbody = document.querySelectorAll('#AddonSectionData');
+		// console.log(tbody);
+        var index = 0;
+
+		if (tbody.length > 0) {
+			index = tbody.length + 1;
+		}
+
+		var nomorCol = document.createElement('td');
+		var NamaVariant = document.createElement('td');
+		NamaVariant.setAttribute("colspan",3)
+		var ExtraQty = document.createElement('td');
+		var ExtraPrice = document.createElement('td');
+
+		var MenuAddonID = document.createElement('input');
+		var txtNamaVariant = document.createElement("input");
+		var txtExtraPrice = document.createElement("input");
+		var txtExtraQty = document.createElement("input");
+		var txtKodeItem = document.createElement("input");
+
+		MenuAddonID.type  = 'hidden';
+		MenuAddonID.id = "txtMenuAddonID";
+		MenuAddonID.name = 'AddonParameter['+index+'][MenuAddonID]';
+		MenuAddonID.placeholder = "Tambah Nama Item";
+		MenuAddonID.className = 'form-control';
+		MenuAddonID.required = true;
+		MenuAddonID.value = oData["AddonMenuID"]
+		MenuAddonID.readOnly = true;
+		NamaVariant.appendChild(MenuAddonID);
+
+		txtKodeItem.type  = 'text';
+		txtKodeItem.id = "txtKodeItem";
+		txtKodeItem.name = 'AddonParameter['+index+'][KodeItem]';
+		txtKodeItem.placeholder = "Tambah Nama Item";
+		txtKodeItem.className = 'form-control';
+		txtKodeItem.required = true;
+		txtKodeItem.value = KodeItem;
+		txtKodeItem.readOnly = true;
+		NamaVariant.appendChild(txtKodeItem);
+
+		txtNamaVariant.type  = 'text';
+		txtNamaVariant.id = "txtNamaItem";
+		txtNamaVariant.name = 'AddonParameter['+index+'][NamaAddon]';
+		txtNamaVariant.placeholder = "Tambah Nama Item";
+		txtNamaVariant.className = 'form-control';
+		txtNamaVariant.required = true;
+		txtNamaVariant.value = oData["NamaAddon"]
+		txtNamaVariant.readOnly = true;
+		NamaVariant.appendChild(txtNamaVariant);
+
+		txtExtraPrice.type  = 'text';
+		txtExtraPrice.id = "txtExtraPrice";
+		txtExtraPrice.name = 'AddonParameter['+index+'][HargaAddon]';
+		txtExtraPrice.placeholder = "Tambah Nama Item";
+		txtExtraPrice.className = 'form-control';
+		txtExtraPrice.required = true;
+		txtExtraPrice.value = oData["HargaAddon"]
+		txtExtraPrice.readOnly = true;
+		ExtraPrice.appendChild(txtExtraPrice);
+
+		txtExtraQty.type  = 'text';
+		txtExtraQty.id = "txtExtraQty";
+		txtExtraQty.name = 'AddonParameter['+index+'][Qty]';
+		txtExtraQty.placeholder = "Tambah Nama Item";
+		txtExtraQty.className = 'form-control';
+		txtExtraQty.required = true;
+		txtExtraQty.value = 1
+		txtExtraQty.readOnly = true;
+		ExtraQty.appendChild(txtExtraQty);
+
+		newRow.appendChild(nomorCol);
+        newRow.appendChild(NamaVariant);
+		newRow.appendChild(ExtraQty);
         newRow.appendChild(ExtraPrice);
         document.getElementById('AppendArea').appendChild(newRow);
 	}
@@ -2400,6 +2564,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 		var rows = document.querySelectorAll('#AppendArea tr#InputSectionData');
 		var rowsVariant = document.querySelectorAll('#AppendArea tr#VariantSectionData');
+		var rowsAddon = document.querySelectorAll('#AppendArea tr#AddonSectionData');
 
 		var NoUrut = 0;
 		var NoUrutVariant = 0;
@@ -2434,6 +2599,60 @@ License: You must have a valid license purchased only from themeforest(the above
 
 				NoUrut+=1
 			}
+		});
+
+		// Variant
+
+		var VariantUrut = 0;
+		var AddonUrut = 0;
+
+		rowsVariant.forEach(function(row) {
+			var RowQty = row.querySelector('input[id="txtExtraQty"]');
+			var RowExtraPrice = row.querySelector('input[id="txtExtraPrice"]');
+			var RowVariantGrupID = row.querySelector('input[id="txtGrupVariantID"]');
+			var RowVariantID = row.querySelector('input[id="txtVariantID"]');
+			var RowNamaItem = row.querySelector('input[id="txtNamaItem"]');
+			var RowKodeItem = row.querySelector('input[id="txtKodeItem"]');
+
+			var oItem = {
+				'NoUrut'			: VariantUrut,
+				'VariantGrupID'		: RowVariantGrupID.value,
+				'VariantID'			: RowVariantID.value,
+				'AddonMenuID'		: -1,
+				'NamaGroupVariant'	: '',
+				'NamaVariant'		: RowNamaItem.value,
+				'ExtraQty'			: RowQty.value,
+				'ExtraPrice'		: RowExtraPrice.value,
+				'KodeItem'			: RowKodeItem.value
+			}
+
+			oVariant.push(oItem);
+			
+			VariantUrut += 1;
+		});
+
+		rowsAddon.forEach(function(row) {
+			var RowQty = row.querySelector('input[id="txtExtraQty"]');
+			var RowExtraPrice = row.querySelector('input[id="txtExtraPrice"]');
+			var RowMenuAddonID = row.querySelector('input[id="txtMenuAddonID"]');
+			var RowNamaItem = row.querySelector('input[id="txtNamaItem"]');
+			var RowKodeItem = row.querySelector('input[id="txtKodeItem"]');
+
+			var oItem = {
+				'NoUrut'			: AddonUrut,
+				'VariantGrupID'		: -1,
+				'VariantID'			: -1,
+				'AddonMenuID'		: RowMenuAddonID.value,
+				'NamaGroupVariant'	: '',
+				'NamaVariant'		: RowNamaItem.value,
+				'ExtraQty'			: RowQty.value,
+				'ExtraPrice'		: RowExtraPrice.value,
+				'KodeItem'			: RowKodeItem.value
+			}
+
+			oVariant.push(oItem);
+			
+			VariantUrut += 1;
 		});
 
   		if (_ServicesData.length > 0) {
@@ -2479,10 +2698,11 @@ License: You must have a valid license purchased only from themeforest(the above
 			'ReffPembayaran' : $('#NomorRefrensiPembayaran').val(),
 			'JenisOrder' : _idJenisOrder,
 			'KodeMeja' : _KodeMeja,
-			'Detail' : oDetail
+			'Detail' : oDetail,
+			'Variant' : oVariant
 		}
 
-		console.log(oData);
+		console.log(oVariant);
 
 		// Save Data
 
@@ -2711,7 +2931,11 @@ License: You must have a valid license purchased only from themeforest(the above
 	function CalculateTotal() {
 		var rows = document.querySelectorAll('#AppendArea tr'); // Select all rows within the AppendArea
 		var grandTotal = 0;
-  		// console.log(allRowsData)
+  		// console.log(rows)
+
+		var rowsItem = document.querySelectorAll('#AppendArea tr#InputSectionData');
+		var rowsVariant = document.querySelectorAll('#AppendArea tr#VariantSectionData');
+		var rowsAddon = document.querySelectorAll('#AppendArea tr#AddonSectionData');
 
   		var _tempTotalItem = rows.length - 1;
   		var _tempSubTotal = 0;
@@ -2720,7 +2944,7 @@ License: You must have a valid license purchased only from themeforest(the above
   		var _tempTotalServices = 0;
   		var _tempGrandTotal = 0;
 
-		rows.forEach(function(row) {
+		rowsItem.forEach(function(row) {
 			var totalInput = row.querySelector('input[id="txtTotal"]');
 			var RowQty = row.querySelector('input[id="txtQty"]');
 			var RowHarga = row.querySelector('input[id="txtHarga"]');
@@ -2730,6 +2954,24 @@ License: You must have a valid license purchased only from themeforest(the above
 				_tempSubTotal += parseFloat(totalInput.value) || 0;
 				_tempTotalDiskon += parseFloat(RowQty.value) * parseFloat(RowHarga.value) * (parseFloat(RowDiskon.value)/ 100);
 			}
+		});
+
+		rowsVariant.forEach(function(row) {
+			var RowQty = row.querySelector('input[id="txtExtraQty"]');
+			var RowExtraPrice = row.querySelector('input[id="txtExtraPrice"]');
+
+			console.log("Variant : " + RowQty.toString() + " * " + RowExtraPrice.toString())
+
+			_tempSubTotal += (RowQty.value * RowExtraPrice.value)
+		});
+
+		rowsAddon.forEach(function(row) {
+			var RowQty = row.querySelector('input[id="txtExtraQty"]');
+			var RowExtraPrice = row.querySelector('input[id="txtExtraPrice"]');
+
+			console.log("Addon : " + RowQty.toString() + " * " + RowExtraPrice.toString())
+
+			_tempSubTotal += (RowQty.value * RowExtraPrice.value)
 		});
 
 	    // Jasa

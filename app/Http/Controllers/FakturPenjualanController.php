@@ -12,6 +12,7 @@ use App\Models\OrderPenjualanHeader;
 use App\Models\OrderPenjualanDetail;
 use App\Models\FakturPenjualanHeader;
 use App\Models\FakturPenjualanDetail;
+use App\Models\FakturPenjualanVariant;
 use App\Models\DeliveryNoteDetail;
 use App\Models\DeliveryNoteHeader;
 use App\Models\PembayaranPenjualanDetail;
@@ -419,7 +420,17 @@ class FakturPenjualanController extends Controller
 
 						array_push($FG, $tempFG);
 
-						$RFP = new Request([
+						// $RFP = new Request([
+						// 	'TglTransaksi' => $currentDate->format('Y-m-d'),
+						// 	'NoReff' => $NoTransaksi,
+						// 	'Keterangan' => 'Hasil Barang Jadi',
+						// 	'Status' => 'O',
+						// 	'TotalTransaksi' => $HargaPokokPenjualan,
+						// 	'JenisTransaksi' =>2,
+						// 	'Detail' => $FG
+						// ]);
+
+						$RFP = array(
 							'TglTransaksi' => $currentDate->format('Y-m-d'),
 							'NoReff' => $NoTransaksi,
 							'Keterangan' => 'Hasil Barang Jadi',
@@ -427,7 +438,7 @@ class FakturPenjualanController extends Controller
 							'TotalTransaksi' => $HargaPokokPenjualan,
 							'JenisTransaksi' =>2,
 							'Detail' => $FG
-						]);
+						);
 
 						$oRFPRet = $this->CreatePengakuanBarang($RFP);
 						if (isset($oRFPRet['success']) && $oRFPRet['success'] === false) {
@@ -540,6 +551,42 @@ class FakturPenjualanController extends Controller
 				skip:
 			}
 
+			$totalVariant = 0;
+			foreach ($jsonData['Variant'] as $key) {
+				$modelvariant = new FakturPenjualanVariant;
+           		$modelvariant->NoTransaksi = $NoTransaksi;
+				$modelvariant->KodeItem = $key['KodeItem'];
+				$modelvariant->NoUrut = $key['NoUrut'];
+				$modelvariant->VariantGrupID = $key['VariantGrupID'];
+				$modelvariant->VariantID = $key['VariantID'];
+				$modelvariant->AddonMenuID = $key['AddonMenuID'];
+				$modelvariant->NamaGroupVariant = $key['NamaGroupVariant'];
+				$modelvariant->NamaVariant = $key['NamaVariant'];
+				$modelvariant->ExtraQty = $key['ExtraQty'];
+				$modelvariant->ExtraPrice = $key['ExtraPrice'];
+				$modelvariant->RecordOwnerID = Auth::user()->RecordOwnerID;;
+
+				$save = $modelvariant->save();
+
+				if (!$save) {
+					$data['message'] = "Gagal Menyimpan Data Variant di Row ".$key->NoUrut;
+					$errorCount += 1;
+					goto jump;
+				}
+				$totalVariant += $key['ExtraQty'] * $key['ExtraPrice'];
+			}
+
+			if ($totalVariant > 0) {
+				$UpdateFaktur = DB::table('fakturpenjualanheader')
+                			->where('NoTransaksi','=', $NoTransaksi)
+                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                			->update(
+                				[
+									'TotalTransaksi' => $jsonData['TotalTransaksi'] + $totalVariant,
+                				]
+                			);
+			}
+
 			// Append Pembayaran
 			if($jsonData['TotalPembayaran'] > 0){
 				// Header
@@ -609,6 +656,7 @@ class FakturPenjualanController extends Controller
 				$JurnalPajak = 0;
 				$JurnalTotalPembelian =0;
 				$JurnalKonsinyasi = 0;
+				$JurnalAddonVariant = 0;
 	
 				foreach ($jsonData['Detail'] as $key) {
 	
@@ -629,6 +677,11 @@ class FakturPenjualanController extends Controller
 						$JurnalPajak += ($key['VatPercent'] / 100) * $HargaGros;
 					}
 				}
+
+				foreach ($jsonData['Variant'] as $key) {
+					$JurnalTotalTransaksi += $key['ExtraQty'] * $key['ExtraPrice'];
+				}
+
 				$JurnalTotalPembelian = $JurnalTotalTransaksi - $JurnalPotongan + $JurnalPajak;
 				// End CalculateTotal
 				// GetAccount :
@@ -696,15 +749,23 @@ class FakturPenjualanController extends Controller
 				}
 	
 				// Penjualan
+				$subQueryPenjualan = DB::table('fakturpenjualanvariant')
+					->select(DB::raw("fakturpenjualanvariant.NoTransaksi, fakturpenjualanvariant.KodeItem, fakturpenjualanvariant.RecordOwnerID , SUM(fakturpenjualanvariant.ExtraQty * fakturpenjualanvariant.ExtraPrice) AS Total"))
+					->groupBy('fakturpenjualanvariant.NoTransaksi','fakturpenjualanvariant.KodeItem', 'fakturpenjualanvariant.RecordOwnerID');
 	
-				$getPenjualanvalue = FakturPenjualanDetail::selectRaw("itemmaster.KodeItem,itemmaster.TypeItem, SUM(fakturpenjualandetail.HargaNet) TotalPenjualan, SUM(fakturpenjualandetail.HargaPokokPenjualan * fakturpenjualandetail.Qty) TotalHPP")
+				$getPenjualanvalue = FakturPenjualanDetail::selectRaw("itemmaster.KodeItem,itemmaster.TypeItem, SUM(fakturpenjualandetail.HargaNet) + COALESCE(subquery.Total, 0) TotalPenjualan, SUM(fakturpenjualandetail.HargaPokokPenjualan * fakturpenjualandetail.Qty) TotalHPP")
 						->leftJoin('itemmaster', function ($value){
 							$value->on('fakturpenjualandetail.KodeItem','=','itemmaster.KodeItem')
 							->on('fakturpenjualandetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
 						})
+						->leftJoinSub($subQueryPenjualan, 'subquery', function ($join) {
+							$join->on('fakturpenjualandetail.NoTransaksi', '=', 'subquery.NoTransaksi')    // Additional condition 2
+							->on('fakturpenjualandetail.KodeItem','=', 'subquery.KodeItem')
+							->on('fakturpenjualandetail.RecordOwnerID', '=', 'subquery.RecordOwnerID');
+						})
 						->where('fakturpenjualandetail.NoTransaksi', $NoTransaksi)
 						->where('fakturpenjualandetail.RecordOwnerID', Auth::user()->RecordOwnerID)
-						->groupBy('itemmaster.TypeItem','itemmaster.KodeItem')
+						->groupBy('itemmaster.TypeItem','itemmaster.KodeItem','subquery.Total')
 						->get();
 				// var_dump($getPenjualanvalue);
 	
