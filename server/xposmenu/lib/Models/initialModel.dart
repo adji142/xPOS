@@ -15,4 +15,15 @@ class initialModel {
     final response = await http.post(url, body: Parameter);
     return json.decode(response.body);
   }
+  Future<Map> getMenu()async{
+    var url = Uri.parse("${sess!.Server}getMenu");
+    final response = await http.post(url, body: Parameter);
+    return json.decode(response.body);
+  }
+
+  Future<Map> getVariantAddon()async{
+    var url = Uri.parse("${sess!.Server}getAddon");
+    final response = await http.post(url, body: Parameter);
+    return json.decode(response.body);
+  }
 }

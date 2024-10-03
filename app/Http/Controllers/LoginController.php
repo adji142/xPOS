@@ -107,9 +107,16 @@ class LoginController extends Controller
                 goto jump;
             }
 
+            // Cek User Konfirmasi
+
+
             if ($user) {
                 if ($user->active == 'N') {
                     throw new \Exception('User tidak aktif !');
+                    goto jump;
+                }
+                if ($user->isConfirmed == 0) {
+                    throw new \Exception('User Belum Konfirmasi Email !');
                     goto jump;
                 }
 
@@ -350,5 +357,9 @@ class LoginController extends Controller
         auth()->user()->tokens()->delete();
         Auth::logout();
         return redirect('/');
+    }
+    
+    function Konfirmasi() {
+        
     }
 }

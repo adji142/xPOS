@@ -1,0 +1,4 @@
+ALTER TABLE xpos.users ADD KonfirmasiID varchar(255) NULL;
+ALTER TABLE xpos.users CHANGE KonfirmasiID KonfirmasiID varchar(255) NULL AFTER remember_token;
+ALTER TABLE xpos.users ADD isConfirmed INT DEFAULT 0 NULL;
+ALTER TABLE xpos.users CHANGE isConfirmed isConfirmed INT DEFAULT 0 NULL AFTER KonfirmasiID;

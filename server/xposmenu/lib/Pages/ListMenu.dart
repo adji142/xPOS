@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:intl/intl.dart';
 import 'package:xposmenu/Config/Session.dart';
 import 'package:xposmenu/Models/initialModel.dart';
 
@@ -20,6 +21,13 @@ class _ListMenu extends State<ListMenu> {
   Map _oData = {};
   String _SelectedJenisItem = "";
   List _oDataJenisItem = [];
+
+  Map _oMenu = {};
+  List _oVariant = [];
+  List _oAddon = [];
+
+  int totalItems = 0;
+  double totalCost = 0.0;
 
   final List<String> base64Images = [];
 
@@ -38,6 +46,15 @@ class _ListMenu extends State<ListMenu> {
       base64Images.add(_oData["company"][i]["Banner3"].toString().replaceAll("data:image/png;base64,", ""));
     }
     _oDataJenisItem = _oData["kelompokmenu"];
+
+    Map<String, dynamic> newItem = {
+      "KodeJenis": "",
+      "NamaJenis": "ALL",
+      "RecordOwnerID": "CL0002",
+      "created_at": "2024-10-03T10:00:00.000000Z",
+      "updated_at": "2024-10-03T10:00:00.000000Z"
+    };
+    _oDataJenisItem.insert(0, newItem);
     setState(() => {});
   }
 
@@ -55,12 +72,50 @@ class _ListMenu extends State<ListMenu> {
     // _droping = temp.toList();
     return temp;
   }
+
+  getMenuInfo(String KodeItem, int BaseType )async{
+    /*
+      1. Menu
+      2. Variant
+      3. Addon
+    */
+
+    switch (BaseType) {
+      case 1:
+        Map oParam() {
+          return {
+            "KodeKelompok": _SelectedJenisItem
+          };
+        }
+        _oMenu= await initialModel(this.widget.sess,oParam()).getMenu();
+        break;
+      case 2 :
+        Map oParam() {
+          return {
+            "KodeItem": KodeItem
+          };
+        }
+        var temp = await initialModel(this.widget.sess,oParam()).getVariantAddon();
+        _oVariant = temp["variant"];
+      default:
+        return {};
+    }
+    setState(() => {});
+  }
+
+  void _addItemToCart(double price) {
+    setState(() {
+      totalItems++;
+      totalCost += price;
+    });
+  }
   
 
   @override
   void initState() {
     super.initState();
     _fetchData();
+    // getMenuInfo("",1);
   }
 
   // Generate Data
@@ -74,6 +129,12 @@ class _ListMenu extends State<ListMenu> {
       crossAxisCount = 4; // Medium screens
     } else {
       crossAxisCount = 2; // Small screens (e.g., phones)
+    }
+
+    Map oParam() {
+      return {
+        "KodeKelompok": _SelectedJenisItem
+      };
     }
 
 
@@ -180,20 +241,33 @@ class _ListMenu extends State<ListMenu> {
                   int crossAxisCount = constraints.maxWidth < 600 ? 2 : 6;
                   double childAspectRatio = constraints.maxWidth < 600 ? 0.75 : 0.8;
 
+                  // print(_oMenu);
                   return Padding(
                     padding: const EdgeInsets.all(10.0),
-                    child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 10.0,
-                        mainAxisSpacing: 10.0,
-                        childAspectRatio: childAspectRatio,
-                      ),
-                      itemCount: 10, // Number of items in the menu
-                      itemBuilder: (context, index) {
-                        return MenuItemCard();
-                      },
-                    ),
+                    child: FutureBuilder(
+                      future: initialModel(this.widget.sess, oParam()).getMenu(), 
+                      builder: (context, snapshot){
+                        if(snapshot.hasData){
+                          // print(snapshot.data);
+                          return GridView.builder(
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossAxisCount,
+                              crossAxisSpacing: 10.0,
+                              mainAxisSpacing: 10.0,
+                              childAspectRatio: childAspectRatio,
+                            ),
+                            itemCount: snapshot.data!["data"].length, // Number of items in the menu
+                            itemBuilder: (context, index) {
+                              // print(_oMenu["data"][index]);
+                              return MenuItemCard(snapshot.data!["data"][index]);
+                            },
+                          );
+                        }
+                        else{
+                          return Center( child:  CircularProgressIndicator());
+                        }
+                      }
+                    )
                   );
                 }
               )
@@ -201,13 +275,48 @@ class _ListMenu extends State<ListMenu> {
           ],
         )
       ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: ElevatedButton(
+          onPressed: totalItems > 0
+              ? () {
+                  // Handle checkout action
+                }
+              : null, // Disable the button if no items added
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 15),
+            primary: totalItems > 0 ? Colors.green : Colors.grey,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(left: 15),
+                child: Text(
+                  '$totalItems Items',
+                  style: TextStyle(fontSize: 18, color: Colors.white),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(right: 15),
+                  child: Text(
+                  'Checkout - ${NumberFormat.currency(symbol: "Rp").format(totalCost)}',
+                  style: TextStyle(fontSize: 18, color: Colors.white),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
-}
 
-class MenuItemCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
+  Widget MenuItemCard(ItemData) {
+    // print(ItemData);
+    final formatter = NumberFormat('#,##0');
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15.0),
@@ -217,29 +326,39 @@ class MenuItemCard extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(15),
-            child: Image.network(
-              'https://st.depositphotos.com/2274151/3518/i/450/depositphotos_35186549-stock-photo-sample-grunge-red-round-stamp.jpg', // Replace with actual image URL
+            child: Image.memory(
+              Base64Decoder().convert(ItemData["Gambar"].replaceAll("data:image/jpeg;base64,", "")), // Replace with actual image URL
               height: 120,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 4.0),
             child: Text(
-              "Rp. 15.000",
+              softWrap: true,
+              ItemData["NamaItem"].toString(),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 3.0),
+            child: Text(
+              "Rp. " + formatter.format(ItemData["HargaJual"]),
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
+            padding: const EdgeInsets.only(bottom: 3.0),
             child: ElevatedButton(
               onPressed: () {
-                // Add to cart logic here
+                _addItemToCart(ItemData["HargaJual"]);
               },
               child: Text("Add to Cart"),
             ),
           ),
+
+          
         ],
       ),
     );

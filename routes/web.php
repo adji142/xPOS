@@ -56,6 +56,7 @@ use App\Http\Controllers\VariantMenuController;
 use App\Http\Controllers\MenuAddonController;
 use App\Http\Controllers\TipeOrderRestoController;
 use App\Http\Controllers\MenuRestoAddonController;
+use App\Http\Controllers\EmailController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -819,3 +820,7 @@ Route::post('/menu/editJson', [MenuRestoAddonController::class, 'editJson'])->na
 // end json
 Route::delete('/menu/delete/{KodeItemHasil}', [MenuRestoAddonController::class, 'deletedata'])->name('menu-delete')->middleware('auth');
 Route::get('/menu/export', [MenuRestoAddonController::class,'Export'])->name('menu-export')->middleware('auth');
+
+
+// Sending Email
+Route::get('/send/auth', [EmailController::class,'InitMail'])->name('send-auth');
