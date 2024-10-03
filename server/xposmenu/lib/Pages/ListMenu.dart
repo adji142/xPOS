@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:xposmenu/Config/Session.dart';
@@ -171,39 +172,75 @@ class _ListMenu extends State<ListMenu> {
                 )
               ),
             ),
-            Padding(
-              padding: EdgeInsets.only(
-                top: this.widget.sess.width! * (this.widget.sess.orientation == Orientation.landscape ? 0 : this.widget.sess.width! *1),
-                left: this.widget.sess.width! * 2,
-                right: this.widget.sess.width! * 2
-              ),
-              child: Container(
-                width: double.infinity,
-                height: this.widget.sess.hight! * 100,
-                // color: Colors.amber,
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 10.0,
-                    mainAxisSpacing: 10.0,
-                    childAspectRatio: 1.0,
-                  ), 
-                  itemCount: 20,
-                  itemBuilder: (context, index){
-                    return Container(
-                      color: Colors.blueAccent,
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Item $index',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
+            Container(
+              width: double.infinity,
+              height: this.widget.sess.hight! * 100,
+              child: LayoutBuilder(
+                builder: (context, constraints){
+                  int crossAxisCount = constraints.maxWidth < 600 ? 2 : 6;
+                  double childAspectRatio = constraints.maxWidth < 600 ? 0.75 : 0.8;
+
+                  return Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 10.0,
+                        mainAxisSpacing: 10.0,
+                        childAspectRatio: childAspectRatio,
                       ),
-                    );
-                  }
-                ),
-              ),
+                      itemCount: 10, // Number of items in the menu
+                      itemBuilder: (context, index) {
+                        return MenuItemCard();
+                      },
+                    ),
+                  );
+                }
+              )
             )
           ],
         )
+      ),
+    );
+  }
+}
+
+class MenuItemCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Image.network(
+              'https://st.depositphotos.com/2274151/3518/i/450/depositphotos_35186549-stock-photo-sample-grunge-red-round-stamp.jpg', // Replace with actual image URL
+              height: 120,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              "Rp. 15.000",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: ElevatedButton(
+              onPressed: () {
+                // Add to cart logic here
+              },
+              child: Text("Add to Cart"),
+            ),
+          ),
+        ],
       ),
     );
   }
