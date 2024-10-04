@@ -24,6 +24,7 @@ class initialModel {
   Future<Map> getVariantAddon()async{
     var url = Uri.parse("${sess!.Server}getAddon");
     final response = await http.post(url, body: Parameter);
+    print(response.body);
     return json.decode(response.body);
   }
 }

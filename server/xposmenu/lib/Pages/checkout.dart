@@ -27,6 +27,26 @@ class _checkoutState extends State<CheckoutPage> {
     // return temp["data"];
   }
 
+  double _calculateTotal(){
+    double xTotal = 0;
+    // Hitung Normal
+    print(this.widget.items);
+    for (var i = 0; i < this.widget.items.length; i++) {
+      xTotal += (this.widget.items[i]["Qty"] * this.widget.items[i]["Price"]);
+
+      // Variant
+      for (var x = 0; x < this.widget.items[i]["Variant"].length; x++) {
+        xTotal += this.widget.items[i]["Variant"][x]["ExtraPrice"];
+      }
+      // Addon
+      for (var y = 0; y < this.widget.items[i]["Addon"].length; y++) {
+        xTotal += this.widget.items[i]["Addon"][y]["HargaAddon"];
+      }
+    }
+    print(xTotal);
+    return xTotal;
+  }
+
   @override
   Widget build(BuildContext context) {
     double totalCost = 0.0;
@@ -71,8 +91,9 @@ class _checkoutState extends State<CheckoutPage> {
                               future: initialModel(this.widget.sess, {"KodeItem":item["KodeItem"],"RecordOwnerID":this.widget.sess.RecordOwnerID}).getVariantAddon(), 
                               builder: (context, snapshot){
                                 if (snapshot.hasData) {
+                                  print(this.widget.items[index]["Variant"]);
                                   if (snapshot.data!["variant"].length > 0) {
-                                    return item["Variant"].length == 0 ? GestureDetector(
+                                    return item["Variant"].length < item["Qty"] ? GestureDetector(
                                       child: Card(
                                         child: Padding(
                                           padding: EdgeInsets.only(top: 4, left: 10, right: 10, bottom: 2),
@@ -86,8 +107,15 @@ class _checkoutState extends State<CheckoutPage> {
                                       ),
                                       onTap: ()async{
                                         var result = await Navigator.push(context,MaterialPageRoute(builder: (context) => Lookup("Variant",new initialModel(this.widget.sess,{}),idRetValue: "VariantID",titleRetValue: "NamaVariant",oOptionalList: snapshot.data!["variant"],)),);
+                                        if (result != null) {
+                                          // var xData = snapshot.data!["variant"].where((item) => item['VariantID'] == result["ID"]).toList();
+                                          // print(this.widget.items[index]["Variant"]);
+                                          setState(() {
+                                            this.widget.items[index]["Variant"].add(snapshot.data!["variant"].where((item) => item['VariantID'] == result["ID"]).toList()[0]);
+                                          });
+                                        }
                                       },
-                                    ):Container();
+                                    ): Container();
                                   }
                                   else{
                                     return Container();
@@ -102,10 +130,29 @@ class _checkoutState extends State<CheckoutPage> {
                                 }
                               }
                             ),
+                            Container(
+                              child: Column(
+                                children: [
+                                  for (int i = 0; i < this.widget.items[index]["Variant"].length; i++)
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text("1 x " + this.widget.items[index]["Variant"][i]["NamaVariant"]),
+                                        Text(NumberFormat.currency(symbol: "Rp").format(this.widget.items[index]["Variant"][i]["ExtraPrice"]))
+                                      ],
+                                    )
+                                ],
+                              )
+                            ),
                             SizedBox(height: 5),
-                            Text('Quantity: $qty'),
-                            SizedBox(height: 5),
-                            Text('Price: Rp. ${NumberFormat('#,##0').format(price)}'),
+                            Divider(),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(qty.toString() +" x " + NumberFormat('#,##0').format(price).toString()),
+                                Text(NumberFormat.currency(symbol: "Rp").format(totalPrice))
+                              ],
+                            ),
                             SizedBox(height: 5),
                             Divider(),
                             FutureBuilder(
@@ -113,7 +160,7 @@ class _checkoutState extends State<CheckoutPage> {
                               builder: (context, snapshot){
                                 if (snapshot.hasData) {
                                   if (snapshot.data!["addon"].length > 0) {
-                                    return item["Addon"].length == 0 ? GestureDetector(
+                                    return GestureDetector(
                                       child: Card(
                                         child: Padding(
                                           padding: EdgeInsets.only(top: 4, left: 10, right: 10, bottom: 2),
@@ -125,7 +172,17 @@ class _checkoutState extends State<CheckoutPage> {
                                           ),
                                         ),
                                       ),
-                                    ):Container();
+                                      onTap: ()async{
+                                        var result = await Navigator.push(context,MaterialPageRoute(builder: (context) => Lookup("Addon Menu",new initialModel(this.widget.sess,{}),idRetValue: "AddonMenuID",titleRetValue: "NamaAddon",oOptionalList: snapshot.data!["addon"], Subtitle: "HargaAddon", subtitleType: 1,)),);
+                                        if (result != null) {
+                                          // var xData = snapshot.data!["variant"].where((item) => item['VariantID'] == result["ID"]).toList();
+                                          // print(this.widget.items[index]["Variant"]);
+                                          setState(() {
+                                            this.widget.items[index]["Addon"].add(snapshot.data!["addon"].where((item) => item['AddonMenuID'] == result["ID"]).toList()[0]);
+                                          });
+                                        }
+                                      },
+                                    );
                                   }
                                   else{
                                     return Container();
@@ -140,12 +197,35 @@ class _checkoutState extends State<CheckoutPage> {
                                 }
                               }
                             ),
-                            Text('Total: Rp. ${NumberFormat('#,##0').format(totalPrice)}'),
                             SizedBox(height: 5),
-                            if (item['Variant'] != null && item['Variant'].isNotEmpty)
-                              Text('Variant: ${item['Variant'].join(', ')}'),
-                            if (item['Addon'] != null && item['Addon'].isNotEmpty)
-                              Text('Add-ons: ${item['Addon'].join(', ')}'),
+                            Container(
+                              child: Column(
+                                children: [
+                                  for (int i = 0; i < this.widget.items[index]["Addon"].length; i++)
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          "1 x " + this.widget.items[index]["Addon"][i]["NamaAddon"],
+                                          style: TextStyle(
+                                            color: Colors.red
+                                          ),
+                                        ),
+                                        Text(
+                                          NumberFormat.currency(symbol: "Rp").format(this.widget.items[index]["Addon"][i]["HargaAddon"]),
+                                          style: TextStyle(
+                                            color: Colors.red
+                                          ),
+                                        )
+                                      ],
+                                    )
+                                ],
+                              )
+                            ),
+                            // if (item['Variant'] != null && item['Variant'].isNotEmpty)
+                            //   Text('Variant: ${item['Variant'].join(', ')}'),
+                            // if (item['Addon'] != null && item['Addon'].isNotEmpty)
+                            //   Text('Add-ons: ${item['Addon'].join(', ')}'),
                           ],
                         ),
                       ),
@@ -156,7 +236,7 @@ class _checkoutState extends State<CheckoutPage> {
             ),
             Divider(),
             Text(
-              'Total Cost: Rp. ${NumberFormat('#,##0').format(totalCost)}',
+              'Total: Rp. ${NumberFormat('#,##0').format(_calculateTotal())}',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
@@ -166,7 +246,7 @@ class _checkoutState extends State<CheckoutPage> {
                 // For example, navigate to payment page or API call
                 Navigator.pop(context); // or any other logic
               },
-              child: Text('Proceed to Payment'),
+              child: Text('Proses Pesanan'),
             ),
           ],
         ),
