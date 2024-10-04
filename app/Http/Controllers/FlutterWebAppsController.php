@@ -148,6 +148,7 @@ class FlutterWebAppsController extends Controller
         );
 
         $KodeItem = $request->input('KodeItem');
+        $RecordOwnerID = $request->input('RecordOwnerID');
         try {
             $sql = "menuvarian.Father, variantdetail.variant_id AS VariantGrupID, variantheader.NamaGrup, 
             variantdetail.id AS VariantID, variantdetail.NamaVariant, variantheader.OpsiPilihan, variantdetail.ExtraPrice ";
