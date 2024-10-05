@@ -27,4 +27,11 @@ class initialModel {
     print(response.body);
     return json.decode(response.body);
   }
+
+  Future<Map> SaveOrder()async{
+    var url = Uri.parse("${sess!.Server}saveFromTable");
+    final response = await http.post(url, headers: {'Content-Type': 'application/json',}, body: jsonEncode(Parameter));
+    print(response.body);
+    return json.decode(response.body);
+  }
 }

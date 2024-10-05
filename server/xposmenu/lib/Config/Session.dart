@@ -11,5 +11,6 @@ class Session {
   double? width = 0;
   double? hight = 0;
   Orientation orientation = Orientation.portrait;
-  
+  List? oCompany = [];
+  List ? otipeOrder = [];
 }

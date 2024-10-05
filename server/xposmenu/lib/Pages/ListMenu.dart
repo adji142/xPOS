@@ -44,15 +44,9 @@ class _ListMenu extends State<ListMenu> {
 
     for (var i = 0; i < _oData["company"].length; i++) {
       // data:image/png;base64,
-      base64Images.add(_oData["company"][i]["Banner1"]
-          .toString()
-          .replaceAll("data:image/png;base64,", ""));
-      base64Images.add(_oData["company"][i]["Banner2"]
-          .toString()
-          .replaceAll("data:image/png;base64,", ""));
-      base64Images.add(_oData["company"][i]["Banner3"]
-          .toString()
-          .replaceAll("data:image/png;base64,", ""));
+      base64Images.add(_oData["company"][i]["Banner1"].toString().replaceAll("data:image/png;base64,", ""));
+      base64Images.add(_oData["company"][i]["Banner2"].toString().replaceAll("data:image/png;base64,", ""));
+      base64Images.add(_oData["company"][i]["Banner3"].toString().replaceAll("data:image/png;base64,", ""));
     }
     _oDataJenisItem = _oData["kelompokmenu"];
 
@@ -64,6 +58,8 @@ class _ListMenu extends State<ListMenu> {
       "updated_at": "2024-10-03T10:00:00.000000Z"
     };
     _oDataJenisItem.insert(0, newItem);
+    this.widget.sess.oCompany = _oData["company"];
+    this.widget.sess.otipeOrder = _oData["tipeorder"];
     setState(() => {});
   }
 
@@ -319,6 +315,7 @@ class _ListMenu extends State<ListMenu> {
         padding: const EdgeInsets.all(10.0),
         child: ElevatedButton(
           onPressed: _sumItem > 0? () {
+            print(_oSelectedItem);
             Navigator.push(context,MaterialPageRoute(builder: (context) => CheckoutPage(this.widget.sess,_oSelectedItem,)));
           }
           : null, // Disable the button if no items added

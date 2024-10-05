@@ -35,7 +35,7 @@ Route::post('testnotif',[PrinterController::class,'TestNotif']);
 
 
 Route::post('initWebMenu',[FlutterWebAppsController::class,'InitProgram']);
-Route::post('saveFromTable',[FakturPenjualanController::class,'storePoSFnB']);
+Route::post('saveFromTable',[FlutterWebAppsController::class,'TableServices']);
 
 Route::post('getMenu',[FlutterWebAppsController::class,'GetMenuByKelompok']);
 Route::post('getAddon',[FlutterWebAppsController::class,'getVariantAddonData']);

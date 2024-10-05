@@ -115,10 +115,10 @@ class LoginController extends Controller
                     throw new \Exception('User tidak aktif !');
                     goto jump;
                 }
-                if ($user->isConfirmed == 0) {
-                    throw new \Exception('User Belum Konfirmasi Email !');
-                    goto jump;
-                }
+                // if ($user->isConfirmed == 0) {
+                //     throw new \Exception('User Belum Konfirmasi Email !');
+                //     goto jump;
+                // }
 
                 if (Auth::Attempt($data)) {
                     if ($RecordOwnerID == "999999") {
