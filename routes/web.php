@@ -705,6 +705,7 @@ Route::post('/meja/editJson', [MejaController::class, 'editJson'])->name('meja-e
 // end json
 Route::delete('/meja/delete/{id}', [MejaController::class, 'deletedata'])->name('meja-delete')->middleware('auth');
 Route::get('/meja/export', [MejaController::class,'Export'])->name('meja-export')->middleware('auth');
+Route::get('/meja/exportQR', [MejaController::class,'ExportQRCode'])->name('exportQR')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------

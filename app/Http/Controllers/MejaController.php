@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use DB;
 use Log;
+use Illuminate\Support\Facades\File;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
+
 
 use App\Models\Meja;
 use App\Models\KelompokMeja;
@@ -215,5 +219,29 @@ class MejaController extends Controller
 
             alert()->error('Error',$e->getMessage());
     	}
+    }
+
+    public function ExportQRCode(Request $request){
+        $directoryPath = public_path('images/qrcode/'.Auth::user()->RecordOwnerID);
+        if (!File::exists($directoryPath)) {
+            File::makeDirectory($directoryPath, 0755, true);
+            // return response()->json(['message' => 'Directory created successfully!']);
+        }
+
+        QrCode::format('png')
+        ->size(300)
+        ->generate('https://example.com', public_path('images/qrcode/'.Auth::user()->RecordOwnerID."/test.png"));
+        
+        return response()->json(['message' => 'QR code generated successfully!']);
+        $url = "http://localhost:8056/digimenu/";
+        $oData = array(
+            "RecordOwnerID" => Auth::user()->RecordOwnerID,
+            "PartnerName" => "",
+            "KodeMeja" => "",
+            "NamaMeja" => "",
+            "DeviceID" => "",
+            "IPAddress" => ""
+        );
+        
     }
 }
