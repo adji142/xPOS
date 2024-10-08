@@ -538,7 +538,7 @@ License: You must have a valid license purchased only from themeforest(the above
 						<h1>Pembulatan</h1>
 					</th>
 					<td class="border-0 justify-content-end d-flex text-primary font-size-lg font-size-bold px-0 font-size-lg mb-0 font-size-bold text-primary">
-						<input type="hidden" name="_Pembulatan" id="_Pembulatan">
+						<input type="hidden" name="_Pembulatan" id="_Pembulatan" originalvalue="0">
 						<h1 id="_PembulatanFormated">Rp. </h1>
 					</td>
 				  </tr>
@@ -548,7 +548,7 @@ License: You must have a valid license purchased only from themeforest(the above
 						<h1>Total Bayar</h1>
 					</th>
 					<td class="border-0 justify-content-end d-flex text-primary font-size-lg font-size-bold px-0 font-size-lg mb-0 font-size-bold text-primary">
-						<input type="hidden" name="_TotalNetBayar" id="_TotalNetBayar">
+						<input type="hidden" name="_TotalNetBayar" id="_TotalNetBayar" value="0">
 						<h1 id="_TotalNetBayarFormated">Rp. </h1>
 					</td>
 				  </tr>
@@ -2874,7 +2874,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			'Potongan' : jQuery('#_TotalDiskon').attr("originalvalue"),
 			'Pajak' : 0,
 			'Pembulatan' : jQuery('#_Pembulatan').attr("originalvalue"),
-			'TotalPembelian' : jQuery('#_TotalNetBayar').attr("originalvalue"),
+			'TotalPembelian' : jQuery('#_GrandTotal').attr("originalvalue"),
 			'TotalRetur' : 0,
 			'TotalPembayaran' : (Status) == 'T' ? 0 : jQuery('#JumlahBayar').attr("originalvalue"),
 			'Status' : Status,

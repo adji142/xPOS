@@ -314,9 +314,15 @@ class _ListMenu extends State<ListMenu> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(10.0),
         child: ElevatedButton(
-          onPressed: _sumItem > 0? () {
+          onPressed: _sumItem > 0? () async{
             print(_oSelectedItem);
-            Navigator.push(context,MaterialPageRoute(builder: (context) => CheckoutPage(this.widget.sess,_oSelectedItem,)));
+            await Navigator.push(context,MaterialPageRoute(builder: (context) => CheckoutPage(this.widget.sess,_oSelectedItem,))).then((value){
+              if (value) {
+                setState(() {
+                  print("Done Transaction");
+                });
+              }
+            });
           }
           : null, // Disable the button if no items added
           style: ElevatedButton.styleFrom(

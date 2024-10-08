@@ -160,6 +160,8 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'J' => 
         array (
             'JmesPath\\' => 9,
+            'Jenssegers\\Agent\\' => 17,
+            'Jaybizzle\\CrawlerDetect\\' => 24,
         ),
         'I' => 
         array (
@@ -539,6 +541,14 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         array (
             0 => __DIR__ . '/..' . '/mtdowling/jmespath.php/src',
         ),
+        'Jenssegers\\Agent\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/jenssegers/agent/src',
+        ),
+        'Jaybizzle\\CrawlerDetect\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/jaybizzle/crawler-detect/src',
+        ),
         'Illuminate\\Support\\' => 
         array (
             0 => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Macroable',
@@ -766,6 +776,13 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
                 0 => __DIR__ . '/..' . '/ezyang/htmlpurifier/library',
             ),
         ),
+        'D' => 
+        array (
+            'Detection' => 
+            array (
+                0 => __DIR__ . '/..' . '/mobiledetect/mobiledetectlib/namespaced',
+            ),
+        ),
     );
 
     public static $classMap = array (
@@ -790,10 +807,12 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'App\\Http\\Controllers\\DiskonPeriodikController' => __DIR__ . '/../..' . '/app/Http/Controllers/DiskonPeriodikController.php',
         'App\\Http\\Controllers\\DocumentNumberingController' => __DIR__ . '/../..' . '/app/Http/Controllers/DocumentNumberingController.php',
         'App\\Http\\Controllers\\DraftOrderController' => __DIR__ . '/../..' . '/app/Http/Controllers/DraftOrderController.php',
+        'App\\Http\\Controllers\\EmailController' => __DIR__ . '/../..' . '/app/Http/Controllers/EmailController.php',
         'App\\Http\\Controllers\\FakturPembelianController' => __DIR__ . '/../..' . '/app/Http/Controllers/FakturPembelianController.php',
         'App\\Http\\Controllers\\FakturPenjualanController' => __DIR__ . '/../..' . '/app/Http/Controllers/FakturPenjualanController.php',
         'App\\Http\\Controllers\\FakturPenjualanDetailController' => __DIR__ . '/../..' . '/app/Http/Controllers/FakturPenjualanDetailController.php',
         'App\\Http\\Controllers\\FakturPenjualanHeaderController' => __DIR__ . '/../..' . '/app/Http/Controllers/FakturPenjualanHeaderController.php',
+        'App\\Http\\Controllers\\FlutterWebAppsController' => __DIR__ . '/../..' . '/app/Http/Controllers/FlutterWebAppsController.php',
         'App\\Http\\Controllers\\GrupPelangganController' => __DIR__ . '/../..' . '/app/Http/Controllers/GrupPelangganController.php',
         'App\\Http\\Controllers\\GudangController' => __DIR__ . '/../..' . '/app/Http/Controllers/GudangController.php',
         'App\\Http\\Controllers\\HargaJualController' => __DIR__ . '/../..' . '/app/Http/Controllers/HargaJualController.php',
@@ -895,6 +914,7 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'App\\Imports\\ItemMasterImport' => __DIR__ . '/../..' . '/app/Imports/ItemMasterImport.php',
         'App\\Imports\\PelangganImport' => __DIR__ . '/../..' . '/app/Imports/PelangganImport.php',
         'App\\Imports\\SupplierImport' => __DIR__ . '/../..' . '/app/Imports/SupplierImport.php',
+        'App\\Mail\\SendMail' => __DIR__ . '/../..' . '/app/Mail/SendMail.php',
         'App\\Models\\AutoPosting' => __DIR__ . '/../..' . '/app/Models/AutoPosting.php',
         'App\\Models\\Bank' => __DIR__ . '/../..' . '/app/Models/Bank.php',
         'App\\Models\\Biaya' => __DIR__ . '/../..' . '/app/Models/Biaya.php',
@@ -917,6 +937,7 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'App\\Models\\FakturPenjualan' => __DIR__ . '/../..' . '/app/Models/FakturPenjualan.php',
         'App\\Models\\FakturPenjualanDetail' => __DIR__ . '/../..' . '/app/Models/FakturPenjualanDetail.php',
         'App\\Models\\FakturPenjualanHeader' => __DIR__ . '/../..' . '/app/Models/FakturPenjualanHeader.php',
+        'App\\Models\\FakturPenjualanVariant' => __DIR__ . '/../..' . '/app/Models/FakturPenjualanVariant.php',
         'App\\Models\\GeneralModel' => __DIR__ . '/../..' . '/app/Models/GeneralModel.php',
         'App\\Models\\GrupPelanggan' => __DIR__ . '/../..' . '/app/Models/GrupPelanggan.php',
         'App\\Models\\Gudang' => __DIR__ . '/../..' . '/app/Models/Gudang.php',
@@ -1284,6 +1305,7 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'DeepCopy\\TypeFilter\\Spl\\SplDoublyLinkedListFilter' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/TypeFilter/Spl/SplDoublyLinkedListFilter.php',
         'DeepCopy\\TypeFilter\\TypeFilter' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/TypeFilter/TypeFilter.php',
         'DeepCopy\\TypeMatcher\\TypeMatcher' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/TypeMatcher/TypeMatcher.php',
+        'Detection\\MobileDetect' => __DIR__ . '/..' . '/mobiledetect/mobiledetectlib/namespaced/Detection/MobileDetect.php',
         'Dflydev\\DotAccessData\\Data' => __DIR__ . '/..' . '/dflydev/dot-access-data/src/Data.php',
         'Dflydev\\DotAccessData\\DataInterface' => __DIR__ . '/..' . '/dflydev/dot-access-data/src/DataInterface.php',
         'Dflydev\\DotAccessData\\Exception\\DataException' => __DIR__ . '/..' . '/dflydev/dot-access-data/src/Exception/DataException.php',
@@ -4224,6 +4246,14 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'Illuminate\\View\\ViewFinderInterface' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/View/ViewFinderInterface.php',
         'Illuminate\\View\\ViewName' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/View/ViewName.php',
         'Illuminate\\View\\ViewServiceProvider' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/View/ViewServiceProvider.php',
+        'Jaybizzle\\CrawlerDetect\\CrawlerDetect' => __DIR__ . '/..' . '/jaybizzle/crawler-detect/src/CrawlerDetect.php',
+        'Jaybizzle\\CrawlerDetect\\Fixtures\\AbstractProvider' => __DIR__ . '/..' . '/jaybizzle/crawler-detect/src/Fixtures/AbstractProvider.php',
+        'Jaybizzle\\CrawlerDetect\\Fixtures\\Crawlers' => __DIR__ . '/..' . '/jaybizzle/crawler-detect/src/Fixtures/Crawlers.php',
+        'Jaybizzle\\CrawlerDetect\\Fixtures\\Exclusions' => __DIR__ . '/..' . '/jaybizzle/crawler-detect/src/Fixtures/Exclusions.php',
+        'Jaybizzle\\CrawlerDetect\\Fixtures\\Headers' => __DIR__ . '/..' . '/jaybizzle/crawler-detect/src/Fixtures/Headers.php',
+        'Jenssegers\\Agent\\Agent' => __DIR__ . '/..' . '/jenssegers/agent/src/Agent.php',
+        'Jenssegers\\Agent\\AgentServiceProvider' => __DIR__ . '/..' . '/jenssegers/agent/src/AgentServiceProvider.php',
+        'Jenssegers\\Agent\\Facades\\Agent' => __DIR__ . '/..' . '/jenssegers/agent/src/Facades/Agent.php',
         'JmesPath\\AstRuntime' => __DIR__ . '/..' . '/mtdowling/jmespath.php/src/AstRuntime.php',
         'JmesPath\\CompilerRuntime' => __DIR__ . '/..' . '/mtdowling/jmespath.php/src/CompilerRuntime.php',
         'JmesPath\\DebugRuntime' => __DIR__ . '/..' . '/mtdowling/jmespath.php/src/DebugRuntime.php',
@@ -5170,6 +5200,7 @@ class ComposerStaticInitc61ff82cbf0142a401a48a8161e1595a
         'Mike42\\Escpos\\PrintConnectors\\UriPrintConnector' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/PrintConnectors/UriPrintConnector.php',
         'Mike42\\Escpos\\PrintConnectors\\WindowsPrintConnector' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/PrintConnectors/WindowsPrintConnector.php',
         'Mike42\\Escpos\\Printer' => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42/Escpos/Printer.php',
+        'Mobile_Detect' => __DIR__ . '/..' . '/mobiledetect/mobiledetectlib/Mobile_Detect.php',
         'Mockery\\Adapter\\Phpunit\\MockeryPHPUnitIntegration' => __DIR__ . '/..' . '/mockery/mockery/library/Mockery/Adapter/Phpunit/MockeryPHPUnitIntegration.php',
         'Mockery\\Adapter\\Phpunit\\MockeryPHPUnitIntegrationAssertPostConditions' => __DIR__ . '/..' . '/mockery/mockery/library/Mockery/Adapter/Phpunit/MockeryPHPUnitIntegrationAssertPostConditions.php',
         'Mockery\\Adapter\\Phpunit\\MockeryTestCase' => __DIR__ . '/..' . '/mockery/mockery/library/Mockery/Adapter/Phpunit/MockeryTestCase.php',
