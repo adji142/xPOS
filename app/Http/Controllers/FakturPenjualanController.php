@@ -145,6 +145,39 @@ class FakturPenjualanController extends Controller
 					->orderBy('fakturpenjualandetail.NoUrut');
 
 	    $data['data']= $model->get();
+
+		// Get Variant Data
+
+		$oDetail = $model->get();
+		for ($i=0; $i < count($oDetail); $i++) { 
+			$oVariant = array();
+			$oAddon = array();
+
+			$query = "fakturpenjualanvariant.VariantGrupID, fakturpenjualanvariant.VariantID, fakturpenjualanvariant.NamaVariant, 
+			fakturpenjualanvariant.ExtraQty, fakturpenjualanvariant.ExtraPrice";
+
+			$variant = FakturPenjualanVariant::selectRaw($query)
+						->where('fakturpenjualanvariant.RecordOwnerID', Auth::user()->RecordOwnerID)
+						->where('fakturpenjualanvariant.NoTransaksi', $NoTransaksi)
+						->where('fakturpenjualanvariant.VariantGrupID','<>', -1)
+						->where('fakturpenjualanvariant.KodeItem', $oDetail[$i]["KodeItem"])
+						->get();
+			array_push($oVariant, $variant);
+
+			// Addon
+
+			$queryAddon = "AddonMenuID, NamaVariant as NamaAddon,  ExtraQty, ExtraPrice AS HargaAddon ";
+			$addon = FakturPenjualanVariant::selectRaw($queryAddon)
+						->where('fakturpenjualanvariant.RecordOwnerID', Auth::user()->RecordOwnerID)
+						->where('fakturpenjualanvariant.NoTransaksi', $NoTransaksi)
+						->where('fakturpenjualanvariant.AddonMenuID','<>', -1)
+						->where('fakturpenjualanvariant.KodeItem', $oDetail[$i]["KodeItem"])
+						->get();
+			array_push($oAddon, $addon);
+
+			$data["data"][$i]["Variant"] = $oVariant[0];
+			$data["data"][$i]["Addon"] = $oAddon[0];
+		}
 	    return response()->json($data);
 	}
 
@@ -153,8 +186,18 @@ class FakturPenjualanController extends Controller
    		$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
    		
    		$NoTransaksi = $request->input('NoTransaksi');
-   		$orderheader = FakturPenjualanHeader::where('NoTransaksi', $NoTransaksi)
-						->where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+		$query = "fakturpenjualanheader.*, tipeorderresto.NamaJenisOrder, tipeorderresto.DineIn, meja.NamaMeja ";
+   		$orderheader = FakturPenjualanHeader::selectRaw($query)
+						->leftJoin('tipeorderresto', function ($value){
+							$value->on('fakturpenjualanheader.TipeOrder','=','tipeorderresto.id')
+							->on('fakturpenjualanheader.RecordOwnerID','=','tipeorderresto.RecordOwnerID');
+						})
+						->leftJoin('meja', function ($value){
+							$value->on('fakturpenjualanheader.NomorMeja','=','meja.KodeMeja')
+							->on('fakturpenjualanheader.RecordOwnerID','=','meja.RecordOwnerID');
+						})
+						->where('fakturpenjualanheader.NoTransaksi', $NoTransaksi)
+						->where('fakturpenjualanheader.RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 
 		$data['data']= $orderheader;
         return response()->json($data);
@@ -2687,129 +2730,128 @@ class FakturPenjualanController extends Controller
 
        try {
 
-			if($jsonData['Status'] != "T"){
-				foreach ($jsonData['Detail'] as $key) {
-					// Issue For Production
-					$RM = array();
-					$FG = array();
-					$oMenu = MenuRestoDetail::selectRaw("menudetail.*, itemmaster.HargaPokokPenjualan, itemmaster.Satuan")
-								->leftJoin('itemmaster', function ($value){
-									$value->on('menudetail.Father','=','itemmaster.KodeItem')
-									->on('menudetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
-								})
-								->where('RecordOwnerID', Auth::user()->RecordOwnerID)
-								->where('menudetail.Father', $key['KodeItem'])
-								->get();
-					$oItemMaster = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-									->where('itemmaster.KodeItem', $key['KodeItem'])
-									->first();
-					
-					if (count($oMenu) > 0) {
-						foreach ($oMenu as $itemRM){
+		$HargaPokokPenjualan = 0;
 
-							// Check Stock
-							if ($oCompany) {
-								if ($oCompany->AllowNegativeInventory == NULL || $oCompany->AllowNegativeInventory == 'N') {
-									$oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
-												->where('KodeItem',$itemRM['KodeItemRM'])
-												->where('Stock','>',0)
-												->get();
-			
-									if (count($oItem) == 0) {
-										$data['message'] = "Stock Item ".$itemRM['KodeItemRM'].' Tidak Cukup';
-										$errorCount += 1;
-										goto jump;		
-									}
-								}
-							}
-							else{
-								$data['message'] = "Partner Tidak ditemukan";
-								$errorCount += 1;
-								goto jump;
-							}
+		if($jsonData['Status'] != "T"){
 
-							$tempRM = array(
-								'KodeItem' => $itemRM['KodeItemRM'],
-								'Qty' => $itemRM['QtyBahan'] * $key['Qty'],
-								'Satuan' => $itemRM['Satuan'],
-								'Harga' => $itemRM['HargaPokokPenjualan'],
-								'KodeGudang' => $key['KodeGudang']
-							);
+			$IFP = array();
+			$RFP = array();
+			$currentDate = Carbon::now();
 
-							array_push($RM, $tempRM);
-						}
+			$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
+			$HargaPokokPenjualan = 0;
+			foreach ($jsonData['Detail'] as $key) {
+				$RM = array();
+				$FG = array();
+				$oMenu = MenuRestoDetail::selectRaw("menudetail.*, CASE WHEN itemmaster.HargaPokokPenjualan = 0 THEN menudetail.HargaPokok ELSE itemmaster.HargaPokokPenjualan END AS HargaPokokPenjualan, itemmaster.Satuan")
+							->leftJoin('itemmaster', function ($value){
+								$value->on('menudetail.Father','=','itemmaster.KodeItem')
+								->on('menudetail.RecordOwnerID','=','itemmaster.RecordOwnerID');
+							})
+							->where('menudetail.RecordOwnerID', Auth::user()->RecordOwnerID)
+							->where('menudetail.Father', $key['KodeItem'])
+							->get();
+				$oItemMaster = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('itemmaster.KodeItem', $key['KodeItem'])
+								->first();
 
-						$IFP = new Request([
-							'TglTransaksi' => Carbon::now(),
-							'NoReff' => $NoTransaksi,
-							'Keterangan' => 'Pemakaian Bahan',
-							'Status' => 'O',
-							'TotalTransaksi' => $jsonData['TotalPembelian'],
-							'Detail' => $RM
-						]);
-		
-						$IFP->headers->set('Content-Type', 'application/json');
-						$PenghapusanBarangController = new PenghapusanBarangController();
-						$response = $PenghapusanBarangController->storeJson($IFP);
-						$responseData = json_decode($response->getContent(), true);
-		
-						if (isset($responseData['success']) && $responseData['success'] === false) {
-							$data['success'] = false;
-							$data['message'] = $responseData['message'];
-		
-							$errorCount +=1;
-							goto jump;
-						}
-						// Issue For Production
+
+				if (count($oMenu) > 0) {
+					foreach ($oMenu as $itemRM){
+						$Setting = NEW SettingAccount();
+						$getSetting = $Setting->GetSetting("InvAcctPenyesuaiaanStockKeluar");
+						$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+						->where('KodeRekening', $getSetting)->get();
+
+						$tempRM = array(
+							'KodeItem' => $itemRM['KodeItemRM'],
+							'Qty' => $itemRM['QtyBahan'] * $key['Qty'],
+							'Satuan' => $itemRM['Satuan'],
+							'Harga' => $itemRM['HargaPokokPenjualan'],
+							'KodeGudang' => $key['KodeGudang'],
+							'KodeRekening' => $getSetting
+						);
+
+						array_push($RM, $tempRM);
+
+						$HargaPokokPenjualan += ($itemRM['QtyBahan'] * $key['Qty']) * $itemRM['HargaPokokPenjualan'];
 					}
 
-					// Penerimaan Hasil
-					if ($oCompany->GudangPoS == "") {
-						$data['success'] = false;
-						$data['message'] = "Gudang Belum ditentukan, Silahkan Setting Gudang di menu Master->Pengaturan->Perusahaan";
+					$IFP = array(
+						'TglTransaksi' => $currentDate->format('Y-m-d'),
+						'NoReff' => $jsonData['NoTransaksi'],
+						'Keterangan' => 'Pemakaian Bahan',
+						'Status' => 'O',
+						'TotalTransaksi' => $HargaPokokPenjualan,
+						'JenisTransaksi' => 2,
+						'Detail' => $RM
+					);
 
+					$oIFPRet = $this->CreatePenghapusanBarang($IFP);
+					// var_dump($oIFPRet);
+					if (isset($oIFPRet['success']) && $oIFPRet['success'] === false) {
+						$data['success'] = false;
+						$data['message'] = $oIFPRet['message'];
+	
 						$errorCount +=1;
 						goto jump;
 					}
+					// Issue For Production
+
+					// Reciept From Production
+					$Setting = NEW SettingAccount();
+					$getSetting = $Setting->GetSetting("InvAcctPenyesuaiaanStockMasuk");
+					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+					->where('KodeRekening', $getSetting)->get();
+
 					$tempFG = array(
 						'KodeItem' => $key['KodeItem'],
 						'Qty' => $key['Qty'],
 						'Satuan' => $oItemMaster->Satuan,
 						'Harga' => $HargaPokokPenjualan,
-						'KodeGudang' => $oCompany->GudangPoS
+						'KodeGudang' => $oCompany->GudangPoS,
+						'KodeRekening' => $getSetting
 					);
 
 					array_push($FG, $tempFG);
 
-					$RFP = new Request([
-						'TglTransaksi' => Carbon::now(),
-						'NoReff' => $NoTransaksi,
-						'Keterangan' => 'Pemakaian Bahan',
+					// $RFP = new Request([
+					// 	'TglTransaksi' => $currentDate->format('Y-m-d'),
+					// 	'NoReff' => $NoTransaksi,
+					// 	'Keterangan' => 'Hasil Barang Jadi',
+					// 	'Status' => 'O',
+					// 	'TotalTransaksi' => $HargaPokokPenjualan,
+					// 	'JenisTransaksi' =>2,
+					// 	'Detail' => $FG
+					// ]);
+
+					$RFP = array(
+						'TglTransaksi' => $currentDate->format('Y-m-d'),
+						'NoReff' => $jsonData['NoTransaksi'],
+						'Keterangan' => 'Hasil Barang Jadi',
 						'Status' => 'O',
-						'TotalTransaksi' => $jsonData['TotalPembelian'],
-						'Detail' => $RM
-					]);
+						'TotalTransaksi' => $HargaPokokPenjualan,
+						'JenisTransaksi' =>2,
+						'Detail' => $FG
+					);
 
-					$RFP->headers->set('Content-Type', 'application/json');
-					$PengakuanBarangController = new PengakuanBarangController();
-					$responseRFP = $PengakuanBarangController->storeJson($IFP);
-					$responseDataRFP = json_decode($responseRFP->getContent(), true);
-
-					if (isset($responseDataRFP['success']) && $responseDataRFP['success'] === false) {
+					$oRFPRet = $this->CreatePengakuanBarang($RFP);
+					if (isset($oRFPRet['success']) && $oRFPRet['success'] === false) {
 						$data['success'] = false;
-						$data['message'] = $responseDataRFP['message'];
-
+						$data['message'] = $oRFPRet['message'];
+	
 						$errorCount +=1;
 						goto jump;
 					}
-					// Penerimaan Hasil
+					// Reciept From Production
 				}
 			}
-           $model = FakturPenjualanHeader::where('NoTransaksi','=',$jsonData['NoTransaksi'])
+			
+		}
+        	$model = FakturPenjualanHeader::where('NoTransaksi','=',$jsonData['NoTransaksi'])
            				->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
-   
-           if ($model) {
-               $update = DB::table('fakturpenjualanheader')
+            if ($model) {
+                $update = DB::table('fakturpenjualanheader')
                            ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                            ->update(
@@ -2818,7 +2860,7 @@ class FakturPenjualanController extends Controller
 									'TglJatuhTempo' => $jsonData['TglJatuhTempo'],
 									'NoReff' => $jsonData['NoReff'],
 									'KodePelanggan' => $jsonData['KodePelanggan'],
-									'KodeTermin' => $jsonData['KodeTermin'],
+									'KodeTermin' => empty($jsonData['KodeTermin']) ? "" : $jsonData['KodeTermin'],
 									'Termin' => $jsonData['Termin'],
 									'TotalTransaksi' => $jsonData['TotalTransaksi'],
 									'Potongan' => $jsonData['Potongan'],
@@ -2831,6 +2873,8 @@ class FakturPenjualanController extends Controller
 									'UpdatedBy' => Auth::user()->name
                                ]
                            );
+				$oKembalian = floatval($jsonData['TotalPembayaran']) - floatval($jsonData['TotalPembelian']);
+				$data['Kembalian'] = $oKembalian;
 
                 if (count($jsonData['Detail']) > 0) {
                 	$delete = DB::table('fakturpenjualandetail')
@@ -2873,13 +2917,17 @@ class FakturPenjualanController extends Controller
 							goto jump;
 						}
 
+						$oItemMaster = ItemMaster::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('itemmaster.KodeItem', $key['KodeItem'])
+								->first();
+
 						$modelDetail = new FakturPenjualanDetail;
 		           		$modelDetail->NoTransaksi = $jsonData['NoTransaksi'];
 						$modelDetail->NoUrut = $key['NoUrut'];
 						$modelDetail->KodeItem = $key['KodeItem'];
 						$modelDetail->Qty = $key['Qty'];
 						$modelDetail->QtyKonversi = $key['QtyKonversi'];
-						$modelDetail->Satuan = $key['Satuan'];
+						$modelDetail->Satuan = $oItemMaster->Satuan;
 						$modelDetail->Harga = $key['Harga'];
 						$modelDetail->VatPercent = $key['VatPercent'];
 						$modelDetail->Discount = $key['Discount'];
@@ -2888,7 +2936,7 @@ class FakturPenjualanController extends Controller
 						$modelDetail->BaseLine = $key['BaseLine'];
 						$modelDetail->KodeGudang = $key['KodeGudang'];
 						$modelDetail->VatPercent = $key['VatPercent'];
-						$modelDetail->HargaPokokPenjualan = $key['HargaPokokPenjualan'];
+						$modelDetail->HargaPokokPenjualan = $oItemMaster->HargaPokokPenjualan;
 
 						$HargaGros = $key['Qty'] * $key['Harga'];
 						$modelDetail->HargaNet = $HargaGros - floatval($key['Discount']);
@@ -2921,6 +2969,50 @@ class FakturPenjualanController extends Controller
 						skip:
 		            }
 
+					$totalVariant = 0;
+
+					if (count($jsonData['Variant']) > 0) {
+						$delete = DB::table('fakturpenjualanvariant')
+		                        ->where('NoTransaksi','=', $jsonData['NoTransaksi'])
+		                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+		                        ->delete();
+					}
+					foreach ($jsonData['Variant'] as $key) {
+						$modelvariant = new FakturPenjualanVariant;
+						$modelvariant->NoTransaksi = $jsonData['NoTransaksi'];
+						$modelvariant->KodeItem = $key['KodeItem'];
+						$modelvariant->NoUrut = $key['NoUrut'];
+						$modelvariant->VariantGrupID = $key['VariantGrupID'];
+						$modelvariant->VariantID = $key['VariantID'];
+						$modelvariant->AddonMenuID = $key['AddonMenuID'];
+						$modelvariant->NamaGroupVariant = $key['NamaGroupVariant'];
+						$modelvariant->NamaVariant = $key['NamaVariant'];
+						$modelvariant->ExtraQty = $key['ExtraQty'];
+						$modelvariant->ExtraPrice = $key['ExtraPrice'];
+						$modelvariant->RecordOwnerID = Auth::user()->RecordOwnerID;
+						$modelvariant->updated_at = now();
+						$modelvariant->created_at = now();
+
+						$save = $modelvariant->save();
+
+						if (!$save) {
+							$data['message'] = "Gagal Menyimpan Data Variant di Row ".$key->NoUrut;
+							$errorCount += 1;
+							goto jump;
+						}
+						$totalVariant += $key['ExtraQty'] * $key['ExtraPrice'];
+					}
+
+					if ($totalVariant > 0) {
+						$UpdateFaktur = DB::table('fakturpenjualanheader')
+									->where('NoTransaksi','=', $jsonData['NoTransaksi'])
+									->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+									->update(
+										[
+											'TotalTransaksi' => $jsonData['TotalTransaksi'] + $totalVariant,
+										]
+									);
+					}
 		            // Auto Journal
 
 					// Generate Header :

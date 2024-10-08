@@ -191,7 +191,7 @@ License: You must have a valid license purchased only from themeforest(the above
 					<div class="topbar-item folder-data">
 					 <div class="btn btn-icon  w-auto h-auto btn-clean d-flex align-items-center py-0 me-3"  data-bs-toggle="modal" data-bs-target="#folderpop"
 					 >
-						 <span class="badge badge-pill badge-primary" id="_draftCount">5</span>
+						 <span class="badge badge-pill badge-primary" id="_draftCount">0</span>
 						 <span class="symbol symbol-35  symbol-light-success">
 							 <span class="symbol-label bg-warning font-size-h5 ">
 								 <svg width="20px" height="20px" xmlns="http://www.w3.org/2000/svg" fill="#ffff"  viewBox="0 0 16 16">
@@ -1480,40 +1480,40 @@ License: You must have a valid license purchased only from themeforest(the above
 			SetEnableCommand();
 		});
 
-		jQuery('#KodePelanggan').change(function () {
-			$.ajax({
-	            async:false,
-	            type: 'post',
-	            url: "{{route('pelanggan-viewJson')}}",
-	            headers: {
-	                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
-	            },
-	            data: {
-	                'KodePelanggan' : $('#KodePelanggan').val(),
-	                'GrupPelanggan' : ''
-	            },
-	            dataType: 'json',
-	            success: function(response) {
-	            	var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
-      				var allRowsData  = dataGridInstance.getDataSource().items();
+		// jQuery('#KodePelanggan').change(function () {
+		// 	$.ajax({
+	    //         async:false,
+	    //         type: 'post',
+	    //         url: "{{route('pelanggan-viewJson')}}",
+	    //         headers: {
+	    //             'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+	    //         },
+	    //         data: {
+	    //             'KodePelanggan' : $('#KodePelanggan').val(),
+	    //             'GrupPelanggan' : ''
+	    //         },
+	    //         dataType: 'json',
+	    //         success: function(response) {
+	    //         	var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
+      	// 			var allRowsData  = dataGridInstance.getDataSource().items();
 
-	            	if (response.data.length > 0) {
-	            		_DiskonGrupCustomer = response.data[0]['DiskonPersen'];
-	            		_TerminPelanggan = response.data[0]['DiskonPersen'];
-	            		// console.log(response.data[0]);
+	    //         	if (response.data.length > 0) {
+	    //         		_DiskonGrupCustomer = response.data[0]['DiskonPersen'];
+	    //         		_TerminPelanggan = response.data[0]['DiskonPersen'];
+	    //         		// console.log(response.data[0]);
 
-	            		if (allRowsData.length > 0) {
-	            			for (var i = 0; i < allRowsData.length; i++) {
-	            				allRowsData[i]["DiskonPersen"] = _DiskonGrupCustomer;
-	            			}
+	    //         		if (allRowsData.length > 0) {
+	    //         			for (var i = 0; i < allRowsData.length; i++) {
+	    //         				allRowsData[i]["DiskonPersen"] = _DiskonGrupCustomer;
+	    //         			}
 
-	            			bindGrid(allRowsData);
-	            			CalculateTotal();
-	            		}
-	            	}
-	            }
-	        });
-		});
+	    //         			bindGrid(allRowsData);
+	    //         			CalculateTotal();
+	    //         		}
+	    //         	}
+	    //         }
+	    //     });
+		// });
 
 		$('#btDraft').click(function () {
 			SaveData('T',$('#btDraft'),'Simpan Sementara');
@@ -1906,182 +1906,367 @@ License: You must have a valid license purchased only from themeforest(the above
 		});
 	}
 	
-	function AddAddonVariantMenu(KodeItem) {
-		var RandomID = generateRandomText(10);
-        var newRow = document.createElement('tr');
-        newRow.className = KodeItem;
-        newRow.id = "VariantSectionData"
+	function AddAddonVariantMenu(KodeItem, oDraftData = []) {
+		console.log(oDraftData);
+		if (oDraftData.length > 0) {
+			for (let index = 0; index < oDraftData.length; index++) {
+				var RandomID = generateRandomText(10);
+				var newRow = document.createElement('tr');
+				newRow.className = KodeItem;
+				newRow.id = "VariantSectionData"
 
-		var tbody = document.querySelectorAll('#VariantSectionData');
-		// console.log(tbody);
-        var index = 0;
+				var tbody = document.querySelectorAll('#VariantSectionData');
+				// console.log(tbody);
+				var indexInternal = 0;
 
-		if (tbody.length > 0) {
-			index = tbody.length + 1;
+				if (tbody.length > 0) {
+					indexInternal = tbody.length + 1;
+				}
+
+				var nomorCol = document.createElement('td');
+				var NamaVariant = document.createElement('td');
+				NamaVariant.setAttribute("colspan",3)
+				var ExtraQty = document.createElement('td');
+				var ExtraPrice = document.createElement('td');
+
+				var GrupVariantID = document.createElement('input');
+				var VariantID = document.createElement('input');
+				var txtNamaVariant = document.createElement("input");
+				var txtExtraPrice = document.createElement("input");
+				var txtExtraQty = document.createElement("input");
+				var txtKodeItem = document.createElement("input");
+
+				GrupVariantID.type  = 'hidden';
+				GrupVariantID.id = "txtGrupVariantID";
+				GrupVariantID.name = 'VariantParameter['+indexInternal+'][GrupVariantID]';
+				GrupVariantID.placeholder = "Tambah Nama Item";
+				GrupVariantID.className = 'form-control';
+				GrupVariantID.required = true;
+				GrupVariantID.value = oDraftData[index]["VariantGrupID"]
+				GrupVariantID.readOnly = true;
+				NamaVariant.appendChild(GrupVariantID);
+
+				VariantID.type  = 'hidden';
+				VariantID.id = "txtVariantID";
+				VariantID.name = 'VariantParameter['+indexInternal+'][VariantID]';
+				VariantID.placeholder = "Tambah Nama Item";
+				VariantID.className = 'form-control';
+				VariantID.required = true;
+				VariantID.value = oDraftData[index]["VariantID"];
+				VariantID.readOnly = true;
+				NamaVariant.appendChild(VariantID);
+
+				txtKodeItem.type  = 'hidden';
+				txtKodeItem.id = "txtKodeItem";
+				txtKodeItem.name = 'VariantParameter['+indexInternal+'][KodeItem]';
+				txtKodeItem.placeholder = "Tambah Nama Item";
+				txtKodeItem.className = 'form-control';
+				txtKodeItem.required = true;
+				txtKodeItem.value = KodeItem
+				txtKodeItem.readOnly = true;
+				NamaVariant.appendChild(txtKodeItem);
+
+				txtNamaVariant.type  = 'text';
+				txtNamaVariant.id = "txtNamaItem";
+				txtNamaVariant.name = 'VariantParameter['+indexInternal+'][NamaVariant]';
+				txtNamaVariant.placeholder = "Tambah Nama Item";
+				txtNamaVariant.className = 'form-control';
+				txtNamaVariant.required = true;
+				txtNamaVariant.value = oDraftData[index]["NamaVariant"]
+				txtNamaVariant.readOnly = true;
+				NamaVariant.appendChild(txtNamaVariant);
+
+				txtExtraPrice.type  = 'text';
+				txtExtraPrice.id = "txtExtraPrice";
+				txtExtraPrice.name = 'VariantParameter['+indexInternal+'][ExtraPrice]';
+				txtExtraPrice.placeholder = "Tambah Nama Item";
+				txtExtraPrice.className = 'form-control';
+				txtExtraPrice.required = true;
+				txtExtraPrice.value = oDraftData[index]["ExtraPrice"]
+				txtExtraPrice.readOnly = true;
+				ExtraPrice.appendChild(txtExtraPrice);
+
+				txtExtraQty.type  = 'text';
+				txtExtraQty.id = "txtExtraQty";
+				txtExtraQty.name = 'VariantParameter['+indexInternal+'][ExtraQty]';
+				txtExtraQty.placeholder = "Tambah Nama Item";
+				txtExtraQty.className = 'form-control';
+				txtExtraQty.required = true;
+				txtExtraQty.value = 1
+				txtExtraQty.readOnly = true;
+				ExtraQty.appendChild(txtExtraQty);
+
+				newRow.appendChild(nomorCol);
+				newRow.appendChild(NamaVariant);
+				newRow.appendChild(ExtraQty);
+				newRow.appendChild(ExtraPrice);
+				document.getElementById('AppendArea').appendChild(newRow);	
+			}
 		}
+		else{
+			var RandomID = generateRandomText(10);
+			var newRow = document.createElement('tr');
+			newRow.className = KodeItem;
+			newRow.id = "VariantSectionData"
 
-		var nomorCol = document.createElement('td');
-		var NamaVariant = document.createElement('td');
-		NamaVariant.setAttribute("colspan",3)
-		var ExtraQty = document.createElement('td');
-		var ExtraPrice = document.createElement('td');
+			var tbody = document.querySelectorAll('#VariantSectionData');
+			// console.log(tbody);
+			var index = 0;
 
-		var GrupVariantID = document.createElement('input');
-		var VariantID = document.createElement('input');
-		var txtNamaVariant = document.createElement("input");
-		var txtExtraPrice = document.createElement("input");
-		var txtExtraQty = document.createElement("input");
-		var txtKodeItem = document.createElement("input");
+			if (tbody.length > 0) {
+				index = tbody.length + 1;
+			}
 
-		GrupVariantID.type  = 'hidden';
-		GrupVariantID.id = "txtGrupVariantID";
-		GrupVariantID.name = 'VariantParameter['+index+'][GrupVariantID]';
-		GrupVariantID.placeholder = "Tambah Nama Item";
-		GrupVariantID.className = 'form-control';
-		GrupVariantID.required = true;
-		GrupVariantID.value = _oSelectedVariant["VariantGrupID"]
-		GrupVariantID.readOnly = true;
-		NamaVariant.appendChild(GrupVariantID);
+			var nomorCol = document.createElement('td');
+			var NamaVariant = document.createElement('td');
+			NamaVariant.setAttribute("colspan",3)
+			var ExtraQty = document.createElement('td');
+			var ExtraPrice = document.createElement('td');
 
-		VariantID.type  = 'hidden';
-		VariantID.id = "txtVariantID";
-		VariantID.name = 'VariantParameter['+index+'][VariantID]';
-		VariantID.placeholder = "Tambah Nama Item";
-		VariantID.className = 'form-control';
-		VariantID.required = true;
-		VariantID.value = _oSelectedVariant["id"].replace("variant","")
-		VariantID.readOnly = true;
-		NamaVariant.appendChild(VariantID);
+			var GrupVariantID = document.createElement('input');
+			var VariantID = document.createElement('input');
+			var txtNamaVariant = document.createElement("input");
+			var txtExtraPrice = document.createElement("input");
+			var txtExtraQty = document.createElement("input");
+			var txtKodeItem = document.createElement("input");
 
-		txtKodeItem.type  = 'text';
-		txtKodeItem.id = "txtKodeItem";
-		txtKodeItem.name = 'VariantParameter['+index+'][KodeItem]';
-		txtKodeItem.placeholder = "Tambah Nama Item";
-		txtKodeItem.className = 'form-control';
-		txtKodeItem.required = true;
-		txtKodeItem.value = KodeItem
-		txtKodeItem.readOnly = true;
-		NamaVariant.appendChild(txtKodeItem);
+			GrupVariantID.type  = 'hidden';
+			GrupVariantID.id = "txtGrupVariantID";
+			GrupVariantID.name = 'VariantParameter['+index+'][GrupVariantID]';
+			GrupVariantID.placeholder = "Tambah Nama Item";
+			GrupVariantID.className = 'form-control';
+			GrupVariantID.required = true;
+			GrupVariantID.value = _oSelectedVariant["VariantGrupID"]
+			GrupVariantID.readOnly = true;
+			NamaVariant.appendChild(GrupVariantID);
 
-		txtNamaVariant.type  = 'text';
-		txtNamaVariant.id = "txtNamaItem";
-		txtNamaVariant.name = 'VariantParameter['+index+'][NamaVariant]';
-		txtNamaVariant.placeholder = "Tambah Nama Item";
-		txtNamaVariant.className = 'form-control';
-		txtNamaVariant.required = true;
-		txtNamaVariant.value = _oSelectedVariant["NamaVariant"]
-		txtNamaVariant.readOnly = true;
-		NamaVariant.appendChild(txtNamaVariant);
+			VariantID.type  = 'hidden';
+			VariantID.id = "txtVariantID";
+			VariantID.name = 'VariantParameter['+index+'][VariantID]';
+			VariantID.placeholder = "Tambah Nama Item";
+			VariantID.className = 'form-control';
+			VariantID.required = true;
+			VariantID.value = _oSelectedVariant["id"].replace("variant","")
+			VariantID.readOnly = true;
+			NamaVariant.appendChild(VariantID);
 
-		txtExtraPrice.type  = 'text';
-		txtExtraPrice.id = "txtExtraPrice";
-		txtExtraPrice.name = 'VariantParameter['+index+'][ExtraPrice]';
-		txtExtraPrice.placeholder = "Tambah Nama Item";
-		txtExtraPrice.className = 'form-control';
-		txtExtraPrice.required = true;
-		txtExtraPrice.value = _oSelectedVariant["ExtraPrice"]
-		txtExtraPrice.readOnly = true;
-		ExtraPrice.appendChild(txtExtraPrice);
+			txtKodeItem.type  = 'text';
+			txtKodeItem.id = "txtKodeItem";
+			txtKodeItem.name = 'VariantParameter['+index+'][KodeItem]';
+			txtKodeItem.placeholder = "Tambah Nama Item";
+			txtKodeItem.className = 'form-control';
+			txtKodeItem.required = true;
+			txtKodeItem.value = KodeItem
+			txtKodeItem.readOnly = true;
+			NamaVariant.appendChild(txtKodeItem);
 
-		txtExtraQty.type  = 'text';
-		txtExtraQty.id = "txtExtraQty";
-		txtExtraQty.name = 'VariantParameter['+index+'][ExtraQty]';
-		txtExtraQty.placeholder = "Tambah Nama Item";
-		txtExtraQty.className = 'form-control';
-		txtExtraQty.required = true;
-		txtExtraQty.value = 1
-		txtExtraQty.readOnly = true;
-		ExtraQty.appendChild(txtExtraQty);
+			txtNamaVariant.type  = 'text';
+			txtNamaVariant.id = "txtNamaItem";
+			txtNamaVariant.name = 'VariantParameter['+index+'][NamaVariant]';
+			txtNamaVariant.placeholder = "Tambah Nama Item";
+			txtNamaVariant.className = 'form-control';
+			txtNamaVariant.required = true;
+			txtNamaVariant.value = _oSelectedVariant["NamaVariant"]
+			txtNamaVariant.readOnly = true;
+			NamaVariant.appendChild(txtNamaVariant);
 
-		newRow.appendChild(nomorCol);
-        newRow.appendChild(NamaVariant);
-		newRow.appendChild(ExtraQty);
-        newRow.appendChild(ExtraPrice);
-        document.getElementById('AppendArea').appendChild(newRow);
+			txtExtraPrice.type  = 'text';
+			txtExtraPrice.id = "txtExtraPrice";
+			txtExtraPrice.name = 'VariantParameter['+index+'][ExtraPrice]';
+			txtExtraPrice.placeholder = "Tambah Nama Item";
+			txtExtraPrice.className = 'form-control';
+			txtExtraPrice.required = true;
+			txtExtraPrice.value = _oSelectedVariant["ExtraPrice"]
+			txtExtraPrice.readOnly = true;
+			ExtraPrice.appendChild(txtExtraPrice);
+
+			txtExtraQty.type  = 'text';
+			txtExtraQty.id = "txtExtraQty";
+			txtExtraQty.name = 'VariantParameter['+index+'][ExtraQty]';
+			txtExtraQty.placeholder = "Tambah Nama Item";
+			txtExtraQty.className = 'form-control';
+			txtExtraQty.required = true;
+			txtExtraQty.value = 1
+			txtExtraQty.readOnly = true;
+			ExtraQty.appendChild(txtExtraQty);
+
+			newRow.appendChild(nomorCol);
+			newRow.appendChild(NamaVariant);
+			newRow.appendChild(ExtraQty);
+			newRow.appendChild(ExtraPrice);
+			document.getElementById('AppendArea').appendChild(newRow);
+		}
 	}
 
-	function AddAddonMenu(KodeItem, oData) {
-		console.log(oData);
-		var RandomID = generateRandomText(10);
-        var newRow = document.createElement('tr');
-        newRow.className = KodeItem;
-        newRow.id = "AddonSectionData"
+	function AddAddonMenu(KodeItem, oData, oDraftData = []) {
+		if (oDraftData.length > 0) {
+			for (let index = 0; index < oDraftData.length; index++) {
+				console.log(oData);
+				var RandomID = generateRandomText(10);
+				var newRow = document.createElement('tr');
+				newRow.className = KodeItem;
+				newRow.id = "AddonSectionData"
 
-		var tbody = document.querySelectorAll('#AddonSectionData');
-		// console.log(tbody);
-        var index = 0;
+				var tbody = document.querySelectorAll('#AddonSectionData');
+				// console.log(tbody);
+				var AddAddonMenu = 0;
 
-		if (tbody.length > 0) {
-			index = tbody.length + 1;
+				if (tbody.length > 0) {
+					AddAddonMenu = tbody.length + 1;
+				}
+
+				var nomorCol = document.createElement('td');
+				var NamaVariant = document.createElement('td');
+				NamaVariant.setAttribute("colspan",3)
+				var ExtraQty = document.createElement('td');
+				var ExtraPrice = document.createElement('td');
+
+				var MenuAddonID = document.createElement('input');
+				var txtNamaVariant = document.createElement("input");
+				var txtExtraPrice = document.createElement("input");
+				var txtExtraQty = document.createElement("input");
+				var txtKodeItem = document.createElement("input");
+
+				MenuAddonID.type  = 'hidden';
+				MenuAddonID.id = "txtMenuAddonID";
+				MenuAddonID.name = 'AddonParameter['+AddAddonMenu+'][MenuAddonID]';
+				MenuAddonID.placeholder = "Tambah Nama Item";
+				MenuAddonID.className = 'form-control';
+				MenuAddonID.required = true;
+				MenuAddonID.value = oDraftData[index]["AddonMenuID"]
+				MenuAddonID.readOnly = true;
+				NamaVariant.appendChild(MenuAddonID);
+
+				txtKodeItem.type  = 'hidden';
+				txtKodeItem.id = "txtKodeItem";
+				txtKodeItem.name = 'AddonParameter['+AddAddonMenu+'][KodeItem]';
+				txtKodeItem.placeholder = "Tambah Nama Item";
+				txtKodeItem.className = 'form-control';
+				txtKodeItem.required = true;
+				txtKodeItem.value = KodeItem;
+				txtKodeItem.readOnly = true;
+				NamaVariant.appendChild(txtKodeItem);
+
+				txtNamaVariant.type  = 'text';
+				txtNamaVariant.id = "txtNamaItem";
+				txtNamaVariant.name = 'AddonParameter['+AddAddonMenu+'][NamaAddon]';
+				txtNamaVariant.placeholder = "Tambah Nama Item";
+				txtNamaVariant.className = 'form-control';
+				txtNamaVariant.required = true;
+				txtNamaVariant.value = oDraftData[index]["NamaAddon"]
+				txtNamaVariant.readOnly = true;
+				NamaVariant.appendChild(txtNamaVariant);
+
+				txtExtraPrice.type  = 'text';
+				txtExtraPrice.id = "txtExtraPrice";
+				txtExtraPrice.name = 'AddonParameter['+AddAddonMenu+'][HargaAddon]';
+				txtExtraPrice.placeholder = "Tambah Nama Item";
+				txtExtraPrice.className = 'form-control';
+				txtExtraPrice.required = true;
+				txtExtraPrice.value = oDraftData[index]["HargaAddon"]
+				txtExtraPrice.readOnly = true;
+				ExtraPrice.appendChild(txtExtraPrice);
+
+				txtExtraQty.type  = 'text';
+				txtExtraQty.id = "txtExtraQty";
+				txtExtraQty.name = 'AddonParameter['+AddAddonMenu+'][Qty]';
+				txtExtraQty.placeholder = "Tambah Nama Item";
+				txtExtraQty.className = 'form-control';
+				txtExtraQty.required = true;
+				txtExtraQty.value = oDraftData[index]["ExtraQty"]
+				txtExtraQty.readOnly = true;
+				ExtraQty.appendChild(txtExtraQty);
+
+				newRow.appendChild(nomorCol);
+				newRow.appendChild(NamaVariant);
+				newRow.appendChild(ExtraQty);
+				newRow.appendChild(ExtraPrice);
+				document.getElementById('AppendArea').appendChild(newRow);	
+			}
 		}
+		else{
+			console.log(oData);
+			var RandomID = generateRandomText(10);
+			var newRow = document.createElement('tr');
+			newRow.className = KodeItem;
+			newRow.id = "AddonSectionData"
 
-		var nomorCol = document.createElement('td');
-		var NamaVariant = document.createElement('td');
-		NamaVariant.setAttribute("colspan",3)
-		var ExtraQty = document.createElement('td');
-		var ExtraPrice = document.createElement('td');
+			var tbody = document.querySelectorAll('#AddonSectionData');
+			// console.log(tbody);
+			var index = 0;
 
-		var MenuAddonID = document.createElement('input');
-		var txtNamaVariant = document.createElement("input");
-		var txtExtraPrice = document.createElement("input");
-		var txtExtraQty = document.createElement("input");
-		var txtKodeItem = document.createElement("input");
+			if (tbody.length > 0) {
+				index = tbody.length + 1;
+			}
 
-		MenuAddonID.type  = 'hidden';
-		MenuAddonID.id = "txtMenuAddonID";
-		MenuAddonID.name = 'AddonParameter['+index+'][MenuAddonID]';
-		MenuAddonID.placeholder = "Tambah Nama Item";
-		MenuAddonID.className = 'form-control';
-		MenuAddonID.required = true;
-		MenuAddonID.value = oData["AddonMenuID"]
-		MenuAddonID.readOnly = true;
-		NamaVariant.appendChild(MenuAddonID);
+			var nomorCol = document.createElement('td');
+			var NamaVariant = document.createElement('td');
+			NamaVariant.setAttribute("colspan",3)
+			var ExtraQty = document.createElement('td');
+			var ExtraPrice = document.createElement('td');
 
-		txtKodeItem.type  = 'text';
-		txtKodeItem.id = "txtKodeItem";
-		txtKodeItem.name = 'AddonParameter['+index+'][KodeItem]';
-		txtKodeItem.placeholder = "Tambah Nama Item";
-		txtKodeItem.className = 'form-control';
-		txtKodeItem.required = true;
-		txtKodeItem.value = KodeItem;
-		txtKodeItem.readOnly = true;
-		NamaVariant.appendChild(txtKodeItem);
+			var MenuAddonID = document.createElement('input');
+			var txtNamaVariant = document.createElement("input");
+			var txtExtraPrice = document.createElement("input");
+			var txtExtraQty = document.createElement("input");
+			var txtKodeItem = document.createElement("input");
 
-		txtNamaVariant.type  = 'text';
-		txtNamaVariant.id = "txtNamaItem";
-		txtNamaVariant.name = 'AddonParameter['+index+'][NamaAddon]';
-		txtNamaVariant.placeholder = "Tambah Nama Item";
-		txtNamaVariant.className = 'form-control';
-		txtNamaVariant.required = true;
-		txtNamaVariant.value = oData["NamaAddon"]
-		txtNamaVariant.readOnly = true;
-		NamaVariant.appendChild(txtNamaVariant);
+			MenuAddonID.type  = 'hidden';
+			MenuAddonID.id = "txtMenuAddonID";
+			MenuAddonID.name = 'AddonParameter['+index+'][MenuAddonID]';
+			MenuAddonID.placeholder = "Tambah Nama Item";
+			MenuAddonID.className = 'form-control';
+			MenuAddonID.required = true;
+			MenuAddonID.value = oData["AddonMenuID"]
+			MenuAddonID.readOnly = true;
+			NamaVariant.appendChild(MenuAddonID);
 
-		txtExtraPrice.type  = 'text';
-		txtExtraPrice.id = "txtExtraPrice";
-		txtExtraPrice.name = 'AddonParameter['+index+'][HargaAddon]';
-		txtExtraPrice.placeholder = "Tambah Nama Item";
-		txtExtraPrice.className = 'form-control';
-		txtExtraPrice.required = true;
-		txtExtraPrice.value = oData["HargaAddon"]
-		txtExtraPrice.readOnly = true;
-		ExtraPrice.appendChild(txtExtraPrice);
+			txtKodeItem.type  = 'text';
+			txtKodeItem.id = "txtKodeItem";
+			txtKodeItem.name = 'AddonParameter['+index+'][KodeItem]';
+			txtKodeItem.placeholder = "Tambah Nama Item";
+			txtKodeItem.className = 'form-control';
+			txtKodeItem.required = true;
+			txtKodeItem.value = KodeItem;
+			txtKodeItem.readOnly = true;
+			NamaVariant.appendChild(txtKodeItem);
 
-		txtExtraQty.type  = 'text';
-		txtExtraQty.id = "txtExtraQty";
-		txtExtraQty.name = 'AddonParameter['+index+'][Qty]';
-		txtExtraQty.placeholder = "Tambah Nama Item";
-		txtExtraQty.className = 'form-control';
-		txtExtraQty.required = true;
-		txtExtraQty.value = 1
-		txtExtraQty.readOnly = true;
-		ExtraQty.appendChild(txtExtraQty);
+			txtNamaVariant.type  = 'text';
+			txtNamaVariant.id = "txtNamaItem";
+			txtNamaVariant.name = 'AddonParameter['+index+'][NamaAddon]';
+			txtNamaVariant.placeholder = "Tambah Nama Item";
+			txtNamaVariant.className = 'form-control';
+			txtNamaVariant.required = true;
+			txtNamaVariant.value = oData["NamaAddon"]
+			txtNamaVariant.readOnly = true;
+			NamaVariant.appendChild(txtNamaVariant);
 
-		newRow.appendChild(nomorCol);
-        newRow.appendChild(NamaVariant);
-		newRow.appendChild(ExtraQty);
-        newRow.appendChild(ExtraPrice);
-        document.getElementById('AppendArea').appendChild(newRow);
+			txtExtraPrice.type  = 'text';
+			txtExtraPrice.id = "txtExtraPrice";
+			txtExtraPrice.name = 'AddonParameter['+index+'][HargaAddon]';
+			txtExtraPrice.placeholder = "Tambah Nama Item";
+			txtExtraPrice.className = 'form-control';
+			txtExtraPrice.required = true;
+			txtExtraPrice.value = oData["HargaAddon"]
+			txtExtraPrice.readOnly = true;
+			ExtraPrice.appendChild(txtExtraPrice);
+
+			txtExtraQty.type  = 'text';
+			txtExtraQty.id = "txtExtraQty";
+			txtExtraQty.name = 'AddonParameter['+index+'][Qty]';
+			txtExtraQty.placeholder = "Tambah Nama Item";
+			txtExtraQty.className = 'form-control';
+			txtExtraQty.required = true;
+			txtExtraQty.value = 1
+			txtExtraQty.readOnly = true;
+			ExtraQty.appendChild(txtExtraQty);
+
+			newRow.appendChild(nomorCol);
+			newRow.appendChild(NamaVariant);
+			newRow.appendChild(ExtraQty);
+			newRow.appendChild(ExtraPrice);
+			document.getElementById('AppendArea').appendChild(newRow);
+		}
 	}
 
 	function CalculateRowTotal(qty, harga, diskon) {
@@ -3050,9 +3235,9 @@ License: You must have a valid license purchased only from themeforest(the above
     }
     function editDraft(NoTransaksi) {
     	jQuery('#_NoTransaksi').text(NoTransaksi)
-    	var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
-        var dataSource = dataGridInstance.getDataSource();
-        dataGridInstance.option("dataSource", []);
+    	// var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
+        // var dataSource = dataGridInstance.getDataSource();
+        // dataGridInstance.option("dataSource", []);
     	// Load Header
     	$.ajax({
 			async:false,
@@ -3068,9 +3253,44 @@ License: You must have a valid license purchased only from themeforest(the above
             	if (response.data.length > 0) {
             		jQuery('#KodePelanggan').val(response.data[0]['KodePelanggan']).trigger('change');
             		jQuery('#KodeSales').val(response.data[0]['KodeSales']).trigger('change');
-            	}
-            	else{
+					// Jenis Order
+					_idJenisOrder = response.data[0]['TipeOrder']
+					_JenisOrder = response.data[0]['NamaJenisOrder']
+					_DineIn = response.data[0]['DineIn']
+					
+					// _KodeMeja = response.data[0]['DineIn']
+					_NamaMeja = response.data[0]['NomorMeja']
 
+					var xHTML = "";
+
+					if (_idJenisOrder > -1) {
+						xHTML += '<center>';
+						xHTML += '	<p class="white">Tipe Order</p>';
+						xHTML += '	<h4 class="mb-0 white">'+ _JenisOrder +'</h4>';
+						xHTML += '</center>';
+					}
+
+					if (_DineIn == "Y") {
+						$("#btNomorMeja").css("pointer-events", "auto");
+					}
+					else{
+						$("#btNomorMeja").css("pointer-events", "none");
+					}
+
+					// console.log(xHTML);
+
+					jQuery('#txtTipeOrder').html(xHTML);
+
+					xHTML = "";
+					// Meja
+					if (_idJenisOrder > -1) {
+						xHTML += '<center>';
+						xHTML += '	<p class="white">Nomor Meja</p>';
+						xHTML += '	<h4 class="mb-0 white">'+ _NamaMeja +'</h4>';
+						xHTML += '</center>';
+					}
+					jQuery('#txtNomorMeja').html(xHTML);
+					// SetEnableCommand();
             	}
             }
 		});
@@ -3092,25 +3312,36 @@ License: You must have a valid license purchased only from themeforest(the above
 
             	var xLine = 0;
             	$.each(response.data,function (k,v) {
-            		var item = {
-	        			'LineNumber' 	: xLine,
-	        			'KodeItem' 	 	: v.KodeItem,
-	        			'NamaItem'	 	: v.NamaItem,
-	        			'Qty'	 	 	: v.Qty,
-	        			'QtyKonversi'	: v.QtyKonversi,
-	        			'Satuan'		: v.Satuan,
-	        			'Harga' 	 	: v.Harga,
-	        			'DiskonPersen' 	: 0,
-	        			'DiskonRp' 	 	: 0,
-	        			'Total' 	 	: 0
-	        		}
+					AddNewRow(v.KodeItem);
+					if (v.Variant.length > 0) {
+						AddAddonVariantMenu(v.KodeItem, v.Variant);	
+					}
+					if (v.Addon.length > 0) {
+						AddAddonMenu(v.KodeItem, [], v.Addon)
+					}
+					
+            		// var item = {
+	        		// 	'LineNumber' 	: xLine,
+	        		// 	'KodeItem' 	 	: v.KodeItem,
+	        		// 	'NamaItem'	 	: v.NamaItem,
+	        		// 	'Qty'	 	 	: v.Qty,
+	        		// 	'QtyKonversi'	: v.QtyKonversi,
+	        		// 	'Satuan'		: v.Satuan,
+	        		// 	'Harga' 	 	: v.Harga,
+	        		// 	'DiskonPersen' 	: 0,
+	        		// 	'DiskonRp' 	 	: 0,
+	        		// 	'Total' 	 	: 0
+	        		// }
 
-	        		dataSource.store().insert(item).then(function() {
-				        dataSource.reload();
-				    })
-				    xLine +=1;
+	        		// dataSource.store().insert(item).then(function() {
+				    //     dataSource.reload();
+				    // })
+				    // xLine +=1;
             	});
-            	CalculateTotal()
+            	AsignRowNumber();
+				FirstRowHandling();
+				CalculateTotal();
+				SetEnableCommand();
 
             	jQuery('#folderpop').modal('hide');
             }

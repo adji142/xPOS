@@ -259,26 +259,6 @@ class FlutterWebAppsController extends Controller
 					goto skip;
 				}
 
-				if ($oCompany) {
-					if ($oCompany->AllowNegativeInventory == NULL || $oCompany->AllowNegativeInventory == 'N') {
-						$oItem = ItemMaster::where('RecordOwnerID',$jsonData['RecordOwnerID'])
-									->where('KodeItem',$key['KodeItem'])
-									->where('Stock','>',0)
-									->get();
-
-						if (count($oItem) == 0) {
-							$data['message'] = "Stock Item ".$key['KodeItem'].' Tidak Cukup';
-							$errorCount += 1;
-							goto jump;		
-						}
-					}
-				}
-				else{
-					$data['message'] = "Partner Tidak ditemukan";
-					$errorCount += 1;
-					goto jump;
-				}
-
 				$oItemMaster = ItemMaster::where('RecordOwnerID', $jsonData['RecordOwnerID'])
 								->where('itemmaster.KodeItem', $key['KodeItem'])
 								->first();
