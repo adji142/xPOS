@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Session {
-  String? Server = "http://localhost:8000/api/";
+  String? Server = "http://dspos.dstechsmart.com/api/";
   String? RecordOwnerID;
   String? PartnerName;
   String? KodeMeja;
