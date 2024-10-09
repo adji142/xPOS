@@ -29,7 +29,7 @@
 								</div>
 							    <div class="icons d-flex">
 									<a href="{{ url('itemmaster/form/-') }}" class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1">Tambah Data</a>
-								
+									<a href="{{ url('companysetting#bulkaction') }}" class="btn btn-outline-warning rounded-pill font-weight-bold me-1 mb-1">Import Data</a>
 								</div>
 							</div>
 						

@@ -27,6 +27,9 @@
 									<h3 class="card-label mb-0 font-weight-bold text-body">Harga Jual 
 									</h3>
 								</div>
+								<div class="icons d-flex">
+									<a href="{{ url('companysetting#bulkaction') }}" class="btn btn-outline-warning rounded-pill font-weight-bold me-1 mb-1">Import Data</a>
+								</div>
 							</div>
 						
 						</div>

@@ -30,6 +30,7 @@
 							    <div class="icons d-flex">
 									<a href="{{ url('pelanggan/form/-') }}" class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1">Tambah Data</a>
 									<a href="{{ url('pelanggan/export') }}" class="btn btn-outline-success rounded-pill font-weight-bold me-1 mb-1">Download Excel</a>
+									<a href="{{ url('companysetting#bulkaction') }}" class="btn btn-outline-warning rounded-pill font-weight-bold me-1 mb-1">Import Data</a>
 								</div>
 							</div>
 						

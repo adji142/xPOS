@@ -540,7 +540,11 @@
 					                            			</fieldset>
 														</div>
 														<div class="col-md-12">
+															@if ($company[0]['JenisUsaha'] == "Retail")
 															<a href="{{ url('cat/').'/'.$company[0]['KodePartner'].'#home-basic' }}" target="_blank" class="btn btn-warning text-white font-weight-bold me-1 mb-1">Lihat Website</a>
+															@else
+															<a href="http://dspos.digimenu.dstechsmart.com" target="_blank" class="btn btn-warning text-white font-weight-bold me-1 mb-1">Lihat Website</a>
+															@endif
 														</div>
 														{{-- E-Catalog --}}
 													</div>
