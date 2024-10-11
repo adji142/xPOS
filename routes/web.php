@@ -738,6 +738,8 @@ Route::post('/invpengguna/storeJson', [InvoicePenggunaController::class, 'storeJ
 Route::post('/invpengguna/bayar', [InvoicePenggunaController::class, 'SimpanPembayaran'])->name('invpengguna-bayar')->middleware('auth');
 Route::post('/invpengguna/viewheader', [InvoicePenggunaController::class, 'GetHeader'])->name('invpengguna-viewheader')->middleware('auth');
 Route::get('/tagihanpengguna', [InvoicePenggunaController::class, 'View'])->name('invpengguna-tagihanpengguna')->middleware('auth');
+// GetPerCompany
+Route::post('/invpengguna/viewpercom', [InvoicePenggunaController::class, 'GetPerCompany'])->name('invpengguna-viewpercom')->middleware('auth');
 
 Route::get('/testseed', [CompanyController::class, 'GenerateInitialData'])->name('testseed');
 

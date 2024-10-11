@@ -115,6 +115,9 @@
 												<li class="nav-item" >
 													<a class="nav-link" id="bulkaction-tab" data-bs-toggle="pill" href="#bulkaction" role="tab" aria-controls="bulkaction" aria-selected="false">Import Data</a>
 												</li>
+												<li class="nav-item" >
+													<a class="nav-link" id="invoice-tab" data-bs-toggle="pill" href="#invoice" role="tab" aria-controls="invoice" aria-selected="false">Tagihan</a>
+												</li>
 											</ul>
 										</div>
 										<div class="col-md-9">
@@ -610,6 +613,37 @@
 													</div>
 												</div>
 
+												<div class="tab-pane fade " id="invoice" role="tabpanel" aria-labelledby="printer-tab">
+													<div class="row">
+														<div class="col-md-3">
+															<label  class="text-body">Tanggal Awal</label>
+															<input type="date" name="TglAwal" id="TglAwal" class="form-control">
+														</div>
+														<div class="col-md-3">
+															<label  class="text-body">Tanggal Akhir</label>
+															<input type="date" name="TglAkhir" id="TglAkhir" class="form-control">
+														</div>
+													</div>
+													<hr>
+													<div class="form-group row">
+														<div class="col-md-12">
+					                            			<div class="table-responsive" id="printableTable">
+																<table id="invoiceTable" class="display" style="width:100%">
+																	<thead>
+																		<tr>
+																			<th>Nama Paket</th>
+																			<th>Total</th>
+																			<th>Tgl Jatuh Tempo</th>
+																			<th>Status</th>
+																		</tr>
+																	</thead>
+																</table>
+															</div>
+
+					                            		</div>
+													</div>
+												</div>
+
 											</div>
 										</div>
 									</div>
@@ -639,6 +673,16 @@ var _URLePub = window.URL || window.webkitURL;
 var oCompany;
 	$(function () {
 		jQuery(document).ready(function () {
+
+			var now = new Date();
+			var day = ("0" + now.getDate()).slice(-2);
+			var month = ("0" + (now.getMonth() + 1)).slice(-2);
+			var firstDay = now.getFullYear()+"-"+month+"-01";
+			var NowDay = now.getFullYear()+"-"+month+"-"+day;
+
+			jQuery('#TglAwal').val(firstDay);
+			jQuery('#TglAkhir').val(NowDay);
+
 			var slip = "{{ count($company) > 0 ? $company[0]['DefaultSlip'] : 'slip1' }}"
 			jQuery('#LevelHarga').select2();
 			jQuery('#DefaultSlip').val(slip).trigger('change');
@@ -676,6 +720,32 @@ var oCompany;
 			if (oCompany[0]['AllowKatalogOnline'] == 0) {
 				jQuery('#ecatalog-tab').hide();
 			}
+
+			// Generate Table
+			// invoiceTable
+			jQuery('#invoiceTable').DataTable({
+				"ajax": {
+					"url": "{{route('invpengguna-viewpercom')}}", // Replace with your API endpoint
+					"type": "POST",
+					"contentType": "application/json",
+					headers: {
+						'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+					},
+					"data": function(d) {
+						d.TglAwal = jQuery('#TglAwal').val();
+                		d.TglAkhir = jQuery('#TglAkhir').val();
+						d.Status = "";
+						return JSON.stringify(d); // Send as JSON if required by the API
+					},
+					"dataSrc": "" // Adjust based on your API response structure (e.g., "data" if your data is nested)
+				},
+				"columns": [
+					{ "data": "NamaSubscription" },
+					{ "data": "TotalTagihan" },
+					{ "data": "TglJatuhTempo" },
+					{ "data": "StatusPembayaran" }
+				]
+			});
 		});
 
 		jQuery('#isPostingAkutansi').on('mousedown', function(event) {

@@ -1,0 +1,10 @@
+C:\xampp74\htdocs\xpos\server\directprintdekstop\WindowsApplication1\WindowsApplication1\bin\Debug\WindowsApplication1.exe.config
+C:\xampp74\htdocs\xpos\server\directprintdekstop\WindowsApplication1\WindowsApplication1\bin\Debug\WindowsApplication1.exe
+C:\xampp74\htdocs\xpos\server\directprintdekstop\WindowsApplication1\WindowsApplication1\bin\Debug\WindowsApplication1.pdb
+C:\xampp74\htdocs\xpos\server\directprintdekstop\WindowsApplication1\WindowsApplication1\bin\Debug\WindowsApplication1.xml
+C:\xampp74\htdocs\xpos\server\directprintdekstop\WindowsApplication1\WindowsApplication1\obj\Debug\WindowsApplication1.Resources.resources
+C:\xampp74\htdocs\xpos\server\directprintdekstop\WindowsApplication1\WindowsApplication1\obj\Debug\WindowsApplication1.vbproj.GenerateResource.Cache
+C:\xampp74\htdocs\xpos\server\directprintdekstop\WindowsApplication1\WindowsApplication1\obj\Debug\WindowsApplication1.exe
+C:\xampp74\htdocs\xpos\server\directprintdekstop\WindowsApplication1\WindowsApplication1\obj\Debug\WindowsApplication1.xml
+C:\xampp74\htdocs\xpos\server\directprintdekstop\WindowsApplication1\WindowsApplication1\obj\Debug\WindowsApplication1.pdb
+C:\xampp74\htdocs\xpos\server\directprintdekstop\WindowsApplication1\WindowsApplication1\obj\Debug\WindowsApplication1.Form1.resources

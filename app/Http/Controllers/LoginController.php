@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\SubscriptionHeader;
 use App\Models\SubscriptionDetail;
 use App\Models\SubscriptionImage;
+use App\Http\Controllers\InvoicePenggunaController;
 
 use App\Models\Provinsi;
 use App\Models\Kota;
@@ -90,13 +91,13 @@ class LoginController extends Controller
             // $oPartner = DB::tables('company')
             //                 ->whereDate('EndSubs','>',$DueDate)
             //                 ->get();
-            $oPartner = Company::where('EndSubs','<',$DueDate)
-                            ->where('KodePartner', $RecordOwnerID);
+            // $oPartner = Company::where('EndSubs','<',$DueDate)
+                            // ->where('KodePartner', $RecordOwnerID);
 
-            if ($oPartner->count() > 0 && $RecordOwnerID != "999999") {
-                throw new \Exception('Langganan Telah Habis, Silahkan Melakukan Perpanjangan Langganan');
-                goto jump;
-            }
+            // if ($oPartner->count() > 0 && $RecordOwnerID != "999999") {
+            //     throw new \Exception('Langganan Telah Habis, Silahkan Melakukan Perpanjangan Langganan');
+            //     goto jump;
+            // }
 
             // $oValidation = $oPartner->first();
             $oValidation = Company::where('KodePartner','=',$RecordOwnerID)->first();
@@ -331,7 +332,41 @@ class LoginController extends Controller
                 // throw new \Exception('Penambahan Data Gagal');
                 $errorCount +=1;
                 $errorMessage = "Gagal menyimpan data User";
+                goto jump;
                 // DB::rollback();
+            }
+
+
+            // Save Invoice
+            $oSubs = SubscriptionHeader::where('NoTransaksi',$request->input('ProductSelected'))->first();
+            $oDetail = array(
+                'NoTransaksi' => '',
+                'NoUrut' => -1,
+                'Harga' => floatval($oSubs->Harga) - floatval($oSubs->Potongan),
+                'Catatan' => "Langganan Perdana",
+                'KodePelanggan' => $KodePartner,
+            );
+            $oObject = array(
+                'NoTransaksi' => '',
+                'TglTransaksi' => Carbon::now()->format('Y-m-d'),
+                'TglJatuhTempo' => Carbon::now()->addDays(7)->format('Y-m-d'),
+                'KodePaketLangganan' => $request->input('ProductSelected'),
+                'Catatan' => 'Langganan Perdana',
+                'KodePelanggan' => $KodePartner,
+                'TotalTagihan' => $oSubs->Harga - $oSubs->Potongan,
+                'TotalBayar' => 0,
+                'Status' => 'O',
+                'StartSubs' => Carbon::now()->format('Y-m-d'),
+                'EndSubs' => Carbon::now()->format('Y-m-d'),
+                'Detail' => $oDetail
+            );
+
+            $oInv = new InvoicePenggunaController();
+            $oSaveINV = $oInv->SaveInvoice($oObject);
+            if (!$oSaveINV) {
+                $errorCount +=1;
+                $errorMessage = "Gagal Menimpan Tagihan ";
+                goto jump;
             }
         } catch (\Exception $e) {
             $errorCount +=1;
@@ -342,8 +377,8 @@ class LoginController extends Controller
         if ($errorCount > 0) {
             DB::rollback();
             // throw new \Exception('Proses Gagal');
-            // alert()->success('Success','Proses Data Gagal '.$errorMessage);
-            var_dump($errorMessage);
+            alert()->success('Error','Proses Data Gagal '.$errorMessage);
+            // var_dump($errorMessage);
         }
         else{
             DB::commit();
