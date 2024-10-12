@@ -13,6 +13,8 @@ use App\Models\InvoicePenggunaHeader;
 use App\Models\InvoicePenggunaDetail;
 use App\Models\PembayaranLangganan;
 
+use Midtrans\Config;
+use Midtrans\Snap;
 class InvoicePenggunaController extends Controller
 {
     public function View(Request $request){
@@ -214,6 +216,41 @@ class InvoicePenggunaController extends Controller
         return response()->json($data);
     }
 
+    public function createMidTransTransaction(Request $request)
+    {
+		$jsonData = $request->json()->all();
+
+		$TotalPembelian = $jsonData['TotalPembelian'];
+		$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
+		
+		Config::$serverKey = config('midtrans.server_key');
+        Config::$isProduction = config('midtrans.is_production');
+        Config::$isSanitized = config('midtrans.is_sanitized');
+        Config::$is3ds = config('midtrans.is_3ds');
+
+        // Data transaksi yang akan dikirimkan ke Midtrans
+        $transaction_details = [
+            'order_id' => uniqid(),
+            'gross_amount' => floatval($TotalPembelian), // Jumlah total transaksi
+        ];
+
+        $customer_details = [
+            'first_name' => $oCompany->NamaPartner,
+        ];
+
+        $transaction = [
+            'transaction_details' => $transaction_details,
+            'customer_details' => $customer_details,
+        ];
+
+        try {
+            $snapToken = Snap::getSnapToken($transaction);
+            return response()->json(['snap_token' => $snapToken]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
+        }
+    }
+
     function SimpanPembayaran(Request $request) {
         Log::debug($request->all());
         try {
@@ -247,5 +284,41 @@ class InvoicePenggunaController extends Controller
             alert()->error('Error',$e->getMessage());
             return redirect()->back();
         }
+    }
+
+    function SimpanPembayaranJson(Request $request) {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        $jsonData = $request->json()->all();
+        try {
+            $NoTransaksi = "";
+            $prefix = "PMB";
+            $lastNoTrx = PembayaranLangganan::where(DB::raw('LEFT(NoTransaksi,3)'),'=',$prefix)->count()+1;
+            $NoTransaksi = $prefix.str_pad($lastNoTrx, 4, '0', STR_PAD_LEFT);
+
+            $model = new PembayaranLangganan;
+            
+            $model->NoTransaksi = $NoTransaksi;
+            $model->TglTransaksi = Carbon::now()->format('Y-m-d');
+            $model->BaseReff = $jsonData['BaseReff'];
+            $model->MetodePembayaran = $jsonData['MetodePembayaran'];
+            $model->NoReff = $jsonData['NoReff'];
+            $model->Keterangan = $jsonData['Keterangan'];
+            $model->TotalBayar = $jsonData['TotalBayar'];
+
+            $save = $model->save();
+
+            if ($save) {
+                $data['success'] =true;
+            }else{
+                $data['success'] =false;
+                $data['message'] = 'Penambahan Data Pembayaran Gagal';
+            }
+        } catch (\Exception $e) {
+            $data['success'] =false;
+            $data['message'] = $e->getMessage();
+        }
+
+        return response()->json($data);
     }
 }

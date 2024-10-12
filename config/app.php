@@ -234,5 +234,7 @@ return [
         'Alert' => RealRashid\SweetAlert\Facades\Alert::class,
         // 'Excel' => Maatwebsite\Excel\Facades\Excel::class,
     ],
-
+    'MidtransServerKEY' => env('MIDTRANS_SERVER_KEY', ''),
+    'MidtransClientKEY' => env('MIDTRANS_CLIENT_KEY', ''),
+    'MidtransMerchantID' => env('MIDTRANS_MERCHAT_ID', ''),
 ];

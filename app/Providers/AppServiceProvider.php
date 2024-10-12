@@ -43,7 +43,10 @@ class AppServiceProvider extends ServiceProvider
             
             if (Auth::check()) {
                 $oCompany = Company::where('KodePartner', Auth::user()->RecordOwnerID)->get();
-
+                $PermissionID = [];
+                if ($oCompany[0]['isActive'] == 0) {
+                    $PermissionID = [1, 16, 17];
+                }
 
                 $oMenu = array();
 
@@ -67,10 +70,12 @@ class AppServiceProvider extends ServiceProvider
                             ->where("users.RecordOwnerID","=",Auth::user()->RecordOwnerID)
                             // ->where("permission.MenuInduk","=","0")
                             ->where("permission.Status","=","1")
-                            ->where("permission.Level","=","1")
-                            ->orderBy("permission.Order","asc")
-                            ->get();
-
+                            ->where("permission.Level","=","1");
+                if (count($PermissionID) > 0) {
+                    $oObject->whereIn("permission.id", $PermissionID);
+                }
+                $oObject = $oObject->orderBy("permission.Order","asc")->get();
+                            
                 foreach ($oObject as $item) {
                     $temp = array();
 
@@ -101,9 +106,11 @@ class AppServiceProvider extends ServiceProvider
                             // ->where("permission.MenuInduk","=","0")
                             ->where("permission.Status","=","1")
                             ->where("permission.Level","=","2")
-                            ->where("permission.MenuInduk","=",$item->id)
-                            ->orderBy("permission.Order","asc")
-                            ->get();
+                            ->where("permission.MenuInduk","=",$item->id);
+                    if (count($PermissionID) > 0) {
+                        $dt2->whereIn("permission.id", $PermissionID);
+                    }
+                    $dt2 = $dt2->orderBy("permission.Order","asc")->get();
 
                     $array2 = array();
                     foreach ($dt2 as $key2) {
@@ -137,9 +144,11 @@ class AppServiceProvider extends ServiceProvider
                                 // ->where("permission.MenuInduk","=","0")
                                 ->where("permission.Status","=","1")
                                 ->where("permission.Level","=","3")
-                                ->where("permission.MenuInduk","=",$key2->id)
-                                ->orderBy("permission.Order","asc")
-                                ->get();
+                                ->where("permission.MenuInduk","=",$key2->id);
+                        if (count($PermissionID) > 0) {
+                            $dt3->whereIn("permission.id", $PermissionID);
+                        }
+                        $dt3 = $dt3->orderBy("permission.Order","asc")->get();
 
                         $array3 = array();
                         foreach ($dt3 as $key3) {

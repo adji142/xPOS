@@ -100,11 +100,11 @@ class LoginController extends Controller
             // }
 
             // $oValidation = $oPartner->first();
-            $oValidation = Company::where('KodePartner','=',$RecordOwnerID)->first();
+            // $oValidation = Company::where('KodePartner','=',$RecordOwnerID)->first();
             // var_dump($oPartner->first());
 
-            if ($oValidation->isSuspended == 1) {
-                throw new \Exception('Akun And Kena Suspend Dengan Alasan '.$oValidation->SuspendReason.'. Silahkan Hubungi Administrator');
+            if ($oPartner->isSuspended == 1) {
+                throw new \Exception('Akun And Kena Suspend Dengan Alasan '.$oPartner->SuspendReason.'. Silahkan Hubungi Administrator');
                 goto jump;
             }
 
@@ -126,7 +126,12 @@ class LoginController extends Controller
                         return redirect('dashboardadmin');
                     }
                     else{
-                        return redirect('dashboard');
+                        if ($oPartner->isActive == 1) {
+                            return redirect('dashboard');
+                        }
+                        else{
+                            return redirect('companysetting#invoice');
+                        }
                     }
                 } else{
                     throw new \Exception('Email atau Password Salah');

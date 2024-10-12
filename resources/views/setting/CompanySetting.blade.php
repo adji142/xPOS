@@ -51,6 +51,12 @@
 		background-color: #e9ecef;
 		color: #495057;
 	}
+	.disabled {
+		pointer-events: none;
+		color: gray;
+		cursor: default;
+		text-decoration: none;
+	}
   </style>
 <!--begin::Subheader-->
 <div class="subheader py-2 py-lg-6 subheader-solid">
@@ -78,9 +84,6 @@
 								<div class="card-title mb-0">
 									<h3 class="card-label mb-0 font-weight-bold text-body">
 										Setting Data perusahaan
-										<div class="col-md-12">
-	                            			<button type="button" class="btn btn-success text-white font-weight-bold me-1 mb-1" id="btTestPrint">Test Print</button>
-	                            		</div>
 									</h3>
 								</div>
 							</div>
@@ -100,24 +103,45 @@
 									<div class="row">
 										<div class="col-md-3">
 											<ul class="nav flex-column nav-pills mb-3" id="v-pills-tab1" role="tablist" aria-orientation="vertical">
-												<li class="nav-item" >
-													<a class="nav-link active" id="general-tab2" data-bs-toggle="pill" href="#general" role="tab" aria-controls="general" aria-selected="true">General</a>
-												</li>
-												<li class="nav-item" >
-													<a class="nav-link" id="inv-tab" data-bs-toggle="pill" href="#inv" role="tab" aria-controls="inv" aria-selected="false">Inventory</a>
-												</li>
-												<li class="nav-item" >
-													<a class="nav-link" id="printer-tab" data-bs-toggle="pill" href="#printer" role="tab" aria-controls="printer" aria-selected="false">Printer</a>
-												</li>
-												<li class="nav-item" >
-													<a class="nav-link" id="ecatalog-tab" data-bs-toggle="pill" href="#ecatalog" role="tab" aria-controls="ecatalog" aria-selected="false">E-Catalog</a>
-												</li>
-												<li class="nav-item" >
-													<a class="nav-link" id="bulkaction-tab" data-bs-toggle="pill" href="#bulkaction" role="tab" aria-controls="bulkaction" aria-selected="false">Import Data</a>
-												</li>
-												<li class="nav-item" >
-													<a class="nav-link" id="invoice-tab" data-bs-toggle="pill" href="#invoice" role="tab" aria-controls="invoice" aria-selected="false">Tagihan</a>
-												</li>
+												@if ($company[0]['isActive'] == 0)
+													<li class="nav-item" >
+														<a class="nav-link active" id="general-tab2" data-bs-toggle="pill" href="#general" role="tab" aria-controls="general" aria-selected="true">General</a>
+													</li>
+													<li class="nav-item" >
+														<a class="nav-link disabled" id="inv-tab" data-bs-toggle="pill" href="#inv" role="tab" aria-controls="inv" aria-selected="false">Inventory</a>
+													</li>
+													<li class="nav-item" >
+														<a class="nav-link disabled" id="printer-tab" data-bs-toggle="pill" href="#printer" role="tab" aria-controls="printer" aria-selected="false">Printer</a>
+													</li>
+													<li class="nav-item" >
+														<a class="nav-link disabled" id="ecatalog-tab" data-bs-toggle="pill" href="#ecatalog" role="tab" aria-controls="ecatalog" aria-selected="false">E-Catalog</a>
+													</li>
+													<li class="nav-item" >
+														<a class="nav-link disabled" id="bulkaction-tab" data-bs-toggle="pill" href="#bulkaction" role="tab" aria-controls="bulkaction" aria-selected="false">Import Data</a>
+													</li>
+													<li class="nav-item" >
+														<a class="nav-link" id="invoice-tab" data-bs-toggle="pill" href="#invoice" role="tab" aria-controls="invoice" aria-selected="false">Tagihan</a>
+													</li>
+												@else
+													<li class="nav-item" >
+														<a class="nav-link active" id="general-tab2" data-bs-toggle="pill" href=" #general" role="tab" aria-controls="general" aria-selected="true">General</a>
+													</li>
+													<li class="nav-item" >
+														<a class="nav-link" id="inv-tab" data-bs-toggle="pill" href="#inv" role="tab" aria-controls="inv" aria-selected="false">Inventory</a>
+													</li>
+													<li class="nav-item" >
+														<a class="nav-link" id="printer-tab" data-bs-toggle="pill" href="#printer" role="tab" aria-controls="printer" aria-selected="false">Printer</a>
+													</li>
+													<li class="nav-item" >
+														<a class="nav-link" id="ecatalog-tab" data-bs-toggle="pill" href="#ecatalog" role="tab" aria-controls="ecatalog" aria-selected="false">E-Catalog</a>
+													</li>
+													<li class="nav-item" >
+														<a class="nav-link" id="bulkaction-tab" data-bs-toggle="pill" href="#bulkaction" role="tab" aria-controls="bulkaction" aria-selected="false">Import Data</a>
+													</li>
+													<li class="nav-item" >
+														<a class="nav-link" id="invoice-tab" data-bs-toggle="pill" href="#invoice" role="tab" aria-controls="invoice" aria-selected="false">Tagihan</a>
+													</li>
+												@endif
 											</ul>
 										</div>
 										<div class="col-md-9">
@@ -635,6 +659,7 @@
 																			<th>Total</th>
 																			<th>Tgl Jatuh Tempo</th>
 																			<th>Status</th>
+																			<th>Action</th>
 																		</tr>
 																	</thead>
 																</table>
@@ -667,6 +692,7 @@
 @endsection
 
 @push('scripts')
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script type="text/javascript">
 var _URL = window.URL || window.webkitURL;
 var _URLePub = window.URL || window.webkitURL;
@@ -743,11 +769,30 @@ var oCompany;
 					{ "data": "NamaSubscription" },
 					{ "data": "TotalTagihan" },
 					{ "data": "TglJatuhTempo" },
-					{ "data": "StatusPembayaran" }
+					{ "data": "StatusPembayaran" },
+					{
+						"data": null, // No data source for this column
+						"orderable": false, // Disable sorting for this column
+						"render": function(data, type, row) {
+							// console.log(row)
+							if (row.StatusPembayaran != "LUNAS") {
+								return '<button type="button" class="btn btn-warning btn-bayar" data-id="' + row.NoTransaksi + '" data-TotalBayar="' + row.TotalTagihan + '">Bayar</button>';
+							}
+							else{
+								return '<button type="button" class="btn btn-warning btn-bayar" data-id="' + row.NoTransaksi + '" data-TotalBayar="' + row.TotalTagihan + '" disabled>Bayar</button>';
+							}
+						}
+					}
 				]
 			});
 		});
 
+		jQuery('#invoiceTable').on('click', '.btn-bayar', function() {
+			var NoTransaksi = jQuery(this).data('id');
+			var TotalPembayaran = jQuery(this).data('totalbayar');
+			// console.log(TotalPembayaran)
+			PaymentGateWay(jQuery(".btn-bayar"), "Bayar", NoTransaksi, TotalPembayaran)
+		});
 		jQuery('#isPostingAkutansi').on('mousedown', function(event) {
 			if (jQuery(this).attr('readonly')) {
 				event.preventDefault();
@@ -1053,6 +1098,124 @@ var oCompany;
 			}
 			reader.readAsDataURL(file);
 		}
+
+		function PaymentGateWay(ButtonObject, ButtonDefaultText, NoTransaksi, TotalPembelian) {
+			ButtonObject.text('Tunggu Sebentar.....');
+			ButtonObject.attr('disabled',true);
+
+			var oData = {
+				'NoTransaksi' : NoTransaksi,
+				'TotalPembelian' : TotalPembelian,
+			}
+
+			fetch( "{{route('invpengguna-create-gateway')}}", {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRF-TOKEN': '{{ csrf_token() }}'
+				},
+				body: JSON.stringify(oData)
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.snap_token) {
+					snap.pay(data.snap_token, {
+						onSuccess: function(result){
+							// console.log(result);
+							if(result.transaction_status == "cancel"){
+								ButtonObject.text('Bayar');
+  								ButtonObject.attr('disabled',false);
+
+								Swal.fire({
+									icon: "error",
+									title: "Opps...",
+									text: "Pembayaran Dibatalkan",
+								});
+							}
+							else{
+								// order_id
+								// $('#NomorRefrensiPembayaran').val(result.order_id)
+								console.log(result);
+								var xData = {
+									"BaseReff" : NoTransaksi,
+									"MetodePembayaran" : result.payment_type+"#"+result.va_numbers[0]["bank"]+"#"+result.va_numbers[0]["va_number"],
+									"NoReff" : result.order_id,
+									"Keterangan" : result.transaction_id,
+									"TotalBayar" : TotalPembelian
+								}
+								// SaveData(Status, ButonObject, ButtonDefaultText)
+								$.ajax({
+									async:false,
+									type: 'post',
+									url: "{{route('invpengguna-pay-gateway')}}",
+									headers: {
+										'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+									},
+									data: JSON.stringify(xData),
+									processData: false,
+									contentType: false,
+									success: function(response) {
+										// bindGridDetail(response.data)
+										// console.log(response);
+										if (response.success) {
+											Swal.fire({
+												icon: "success",
+												title: 'Horay',
+												text: 'Data Berhasil Disimpan',
+												// footer: '<a href>Why do I have this issue?</a>'
+											}).then((result)=>{
+												location.reload();
+											});
+										}
+										else{
+											ButtonObject.text('Bayar');
+  											ButtonObject.attr('disabled',false);
+											Swal.fire({
+												icon: "error",
+												title: 'Error',
+												text: response.message,
+												// footer: '<a href>Why do I have this issue?</a>'
+											});
+										}
+									}
+								});
+							}
+							// Proses pembayaran sukses
+						},
+						onPending: function(result){
+							// console.log(result);
+							// Pembayaran tertunda
+						},
+						onError: function(result){
+							// console.log(result);
+							ButtonObject.text('Bayar');
+  							ButtonObject.attr('disabled',false);
+							Swal.fire({
+								icon: "error",
+								title: "Opps...",
+								text: result,
+							})
+							// Pembayaran gagal
+						},
+						onClose: function(){
+							ButtonObject.text('Bayar');
+  							ButtonObject.attr('disabled',false);
+							console.log('customer closed the popup without finishing the payment');
+						}
+					});
+				} else {
+					ButtonObject.text('Bayar');
+  					ButtonObject.attr('disabled',false);
+					// alert('Error: ' + data.error);
+					Swal.fire({
+						icon: "error",
+						title: "Opps...",
+						text: data.error,
+					})
+				}
+			})
+			.catch(error => console.error('Error:', error));
+			}
 	})
 </script>
 @endpush

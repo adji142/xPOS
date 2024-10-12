@@ -735,10 +735,12 @@ Route::post('/penggunaaplikasi/suspend', [CompanyController::class, 'UpdateSuspe
 |
 */
 Route::post('/invpengguna/storeJson', [InvoicePenggunaController::class, 'storeJson'])->name('invpengguna-storeJson')->middleware('auth');
+Route::post('/invpengguna/pay-gateway', [InvoicePenggunaController::class, 'SimpanPembayaranJson'])->name('invpengguna-pay-gateway')->middleware('auth');
+Route::post('/invpengguna/create-gateway', [InvoicePenggunaController::class, 'createMidTransTransaction'])->name('invpengguna-create-gateway')->middleware('auth');
 Route::post('/invpengguna/bayar', [InvoicePenggunaController::class, 'SimpanPembayaran'])->name('invpengguna-bayar')->middleware('auth');
 Route::post('/invpengguna/viewheader', [InvoicePenggunaController::class, 'GetHeader'])->name('invpengguna-viewheader')->middleware('auth');
 Route::get('/tagihanpengguna', [InvoicePenggunaController::class, 'View'])->name('invpengguna-tagihanpengguna')->middleware('auth');
-// GetPerCompany
+// GetPerCompany SimpanPembayaranJson
 Route::post('/invpengguna/viewpercom', [InvoicePenggunaController::class, 'GetPerCompany'])->name('invpengguna-viewpercom')->middleware('auth');
 
 Route::get('/testseed', [CompanyController::class, 'GenerateInitialData'])->name('testseed');

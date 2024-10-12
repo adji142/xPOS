@@ -2,3 +2,16 @@ ALTER TABLE xpos.users ADD KonfirmasiID varchar(255) NULL;
 ALTER TABLE xpos.users CHANGE KonfirmasiID KonfirmasiID varchar(255) NULL AFTER remember_token;
 ALTER TABLE xpos.users ADD isConfirmed INT DEFAULT 0 NULL;
 ALTER TABLE xpos.users CHANGE isConfirmed isConfirmed INT DEFAULT 0 NULL AFTER KonfirmasiID;
+
+ALTER TABLE `xpos`.`company` 
+ADD COLUMN `isActive` int(1) NULL DEFAULT 0 AFTER `updated_at`;
+
+DROP TRIGGER `tglEditSubscription`;
+
+CREATE DEFINER = `root`@`localhost` TRIGGER `tglEditSubscription` AFTER INSERT ON `pembayarantagihan` FOR EACH ROW BEGIN 
+	SET @KodePartner = '';
+	SET @EndSubs = NOW();
+	SELECT KodePelanggan, EndSubs INTO @KodePartner, @EndSubs FROM tagihanpenggunaheader WHERE NoTransaksi = NEW.BaseReff;
+	
+	UPDATE company SET StartSubs = NOW(),EndSubs = @EndSubs, isActive = 1 WHERE KodePartner = @KodePartner;
+END;
