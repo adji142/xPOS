@@ -75,6 +75,7 @@ Route::post('/action-daftar', [LoginController::class, 'actionRegister'])->name(
 Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard')->middleware('auth');
 Route::get('/dashboardadmin', [DashboardController::class, 'dashboardAdmin'])->name('dashboardadmin')->middleware('auth');
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
+Route::get('/testemail', [LoginController::class, 'Konfirmasi'])->name('testemail');
 
 /*
 |--------------------------------------------------------------------------

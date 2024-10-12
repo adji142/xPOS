@@ -25,6 +25,9 @@ use App\Models\PermissionRole;
 use App\Models\UserRole;
 use App\Models\Permission;
 
+use App\Mail\SendMail;
+use Illuminate\Support\Facades\Mail;
+
 class LoginController extends Controller
 {
     public function __construct()
@@ -310,14 +313,17 @@ class LoginController extends Controller
 
             // $KelompokAkses = $request->input('KelompokAkses');
 
-
+            // uniqid()
+            $KonfirmasiID = uniqid();
             $saveUser = User::insertGetId([
                 'name' => $request->input('NamaPIC'),
                 'email' => $request->input('email'),
                 'password' => Hash::make($request->input('password')),
                 'Active' => 'N',
                 'RecordOwnerID' => $KodePartner,
-                'BranchID' => ''
+                'BranchID' => '',
+                'isConfirmed' => 0,
+                'KonfirmasiID' => $KonfirmasiID
             ]);
 
             if ($saveUser) {
@@ -365,7 +371,7 @@ class LoginController extends Controller
                 'EndSubs' => Carbon::now()->format('Y-m-d'),
                 'Detail' => $oDetail
             );
-
+            
             $oInv = new InvoicePenggunaController();
             $oSaveINV = $oInv->SaveInvoice($oObject);
             if (!$oSaveINV) {
@@ -373,6 +379,14 @@ class LoginController extends Controller
                 $errorMessage = "Gagal Menimpan Tagihan ";
                 goto jump;
             }
+
+            // Send Email
+            $data = [
+                'title' => 'Email Konfirmasi',
+                'message' => 'Terimakasih telah melakukan pendaftaran di DSTechSmart PoS, Silahkan melakukan konfirmasi Melalui link berikut untuk mulai menggunakan Aplikasi : '. url('/')."konfirmasi/".$KonfirmasiID
+            ];
+        
+            Mail::to('prasetyoajiw@gmail.com')->send(new SendMail($data,"Test Kirim Email"));
         } catch (\Exception $e) {
             $errorCount +=1;
             $errorMessage = "Internal Error: ".$e->getMessage();
@@ -400,6 +414,13 @@ class LoginController extends Controller
     }
     
     function Konfirmasi() {
-        
+        $data = [
+            'title' => 'Hello World',
+            'message' => 'This is a test email message.'
+        ];
+    
+        Mail::to('prasetyoajiw@gmail.com')->send(new SendMail($data,"Test Kirim Email"));
+    
+        return 'Email sent successfully!';
     }
 }
