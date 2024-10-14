@@ -411,5 +411,88 @@ License: You must have a valid license purchased only from themeforest(the above
 <script src="{{asset('api/select2/select2.min.js')}}"></script>
 </body>
 <!--end::Body-->
+<script>
+    var oProvinsi;
+    var oKota;
+    var oKelurahan;
+    var oKecamatan;
+
+    var ProductSelected = "";
+    var ProductPrice = 0;
+
+	jQuery(document).ready(function() {
+        jQuery('.js-example-basic-single').select2();
+
+        oProvinsi = <?php echo $provinsi; ?>;
+        oKota = <?php echo $kota; ?>;
+        oKelurahan = <?php echo $kelurahan; ?>;
+        oKecamatan = <?php echo $kecamatan; ?>;
+    });
+
+    jQuery('#ProvID').change(function () {
+        const filterKota = oKota.filter(kota => kota.prov_id == jQuery('#ProvID').val());
+        $('#KotaID').empty();
+        var newOption = $('<option>', {
+            value: -1,
+            text: "Pilih Kota"
+        });
+        $('#KotaID').append(newOption);
+
+        $.each(filterKota,function (k,v) {
+            var newOption = $('<option>', {
+                value: v.city_id,
+                text: v.city_name
+            });
+
+            $('#KotaID').append(newOption);
+        });
+    });
+
+    jQuery('#KotaID').change(function () {
+        const filterkec = oKecamatan.filter(kec => kec.kota_id == jQuery('#KotaID').val());
+
+        $('#KecID').empty();
+        var newOption = $('<option>', {
+            value: -1,
+            text: "Pilih Kecamatan"
+        });
+        $('#KecID').append(newOption); 
+        $.each(filterkec,function (k,v) {
+            var newOption = $('<option>', {
+                value: v.dis_id,
+                text: v.dis_name
+            });
+
+            $('#KecID').append(newOption);
+        });
+    });
+
+    jQuery('#KecID').change(function () {
+        const filterkel = oKelurahan.filter(kel => kel.kec_id == jQuery('#KecID').val());
+
+        $('#KelID').empty();
+        var newOption = $('<option>', {
+            value: -1,
+            text: "Pilih Kelurahan"
+        });
+        $('#KelID').append(newOption); 
+        $.each(filterkel,function (k,v) {
+            var newOption = $('<option>', {
+                value: v.subdis_id,
+                text: v.subdis_name
+            });
+
+            $('#KelID').append(newOption);
+        });
+    });
+
+    jQuery('.product-card').click(function() {
+        jQuery('.product-card').removeClass('clicked');
+        jQuery(this).addClass('clicked');
+
+        ProductSelected = jQuery('.product-card').attr("attr-productselected");
+        ProductPrice = jQuery('.product-card').attr("attr-productprice");
+    });
+</script>
 
 </html>
