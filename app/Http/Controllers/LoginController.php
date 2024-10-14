@@ -48,7 +48,7 @@ class LoginController extends Controller
         $kota = Kota::all();
         $kelurahan = Kelurahan::all();
         $kecamatan = Kecamatan::all();
-        dd($kelurahan);
+        dd($kota);
         return view("auth.register",[
             'subscriptionheader' => $subscriptionheader,
             'provinsi' => $provinsi,
