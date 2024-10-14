@@ -48,13 +48,13 @@ class LoginController extends Controller
         $kota = Kota::all();
         $kelurahan = Kelurahan::all();
         $kecamatan = Kecamatan::all();
-        // return view("auth.register",[
-        //     'subscriptionheader' => $subscriptionheader,
-        //     'provinsi' => $provinsi,
-        //     'kota' => $kota,
-        //     'kelurahan' => $kelurahan,
-        //     'kecamatan' => $kecamatan 
-        // ]);
+        return view("auth.register",[
+            'subscriptionheader' => $subscriptionheader,
+            'provinsi' => $provinsi,
+            'kota' => $kota,
+            'kelurahan' => $kelurahan,
+            'kecamatan' => $kecamatan 
+        ]);
     }
 
     public function action_login(Request $request)
