@@ -493,6 +493,34 @@ License: You must have a valid license purchased only from themeforest(the above
         ProductSelected = jQuery('.product-card').attr("attr-productselected");
         ProductPrice = jQuery('.product-card').attr("attr-productprice");
     });
+
+    jQuery('#DaftarLangganan').submit(function (event) {
+        event.preventDefault();
+        var form = $(this);
+        var formData = form.serializeArray();
+        formData.push({ name: 'ProductSelected', value: ProductSelected });
+        $.post(form.attr('action'), formData, function(response) {
+            // Handle the server response here
+            console.log(response);
+            Swal.fire({
+                html: "Data Langganan Berhasil disimpan, Silahkan Menghubungi Administrator untuk konfirmasi",
+                icon: "success",
+                title: "Horray...",
+                // text: "Data berhasil disimpan! <br> " + response.Kembalian,
+            }).then((result)=>{
+                window.location.href = '{{url("/")}}';
+            });
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            // Handle any errors here
+            console.error("Submission failed: ", textStatus, errorThrown);
+            Swal.fire({
+                html: "Gagal Melakukan registrasi : ",
+                icon: "error",
+                title: "Horray...",
+                // text: "Data berhasil disimpan! <br> " + response.Kembalian,
+            });
+        });
+    });
 </script>
 
 </html>
