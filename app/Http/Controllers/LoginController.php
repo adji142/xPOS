@@ -42,12 +42,12 @@ class LoginController extends Controller
     }
 
     public function Register() {
-        dd("Masuk");
-        // $subscriptionheader = SubscriptionHeader::all();
-        // $provinsi = Provinsi::all();
-        // $kota = Kota::all();
-        // $kelurahan = Kelurahan::all();
-        // $kecamatan = Kecamatan::all();
+        // dd("Masuk");
+        $subscriptionheader = SubscriptionHeader::all();
+        $provinsi = Provinsi::all();
+        $kota = Kota::all();
+        $kelurahan = Kelurahan::all();
+        $kecamatan = Kecamatan::all();
         // return view("auth.register",[
         //     'subscriptionheader' => $subscriptionheader,
         //     'provinsi' => $provinsi,
