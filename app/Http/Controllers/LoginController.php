@@ -401,7 +401,7 @@ class LoginController extends Controller
         }
         else{
             DB::commit();
-            alert()->success('Success','Data Langganan Berhasil disimpan, Silahkan Melakukan Konfirmasi Email dengan klik link yang dikirim di email');
+            alert()->success('Success','Data Langganan Berhasil disimpan, Silahkan Melakukan Konfirmasi Email dengan klik link yang dikirim di email, Periksa Inbox dan folder Spam / junk');
             return redirect('/');
         }
     }
