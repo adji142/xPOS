@@ -411,113 +411,115 @@ License: You must have a valid license purchased only from themeforest(the above
 <script src="{{asset('api/select2/select2.min.js')}}"></script>
 </body>
 <!--end::Body-->
-<script>
-    var oProvinsi;
-    var oKota;
-    var oKelurahan;
-    var oKecamatan;
+<script type="text/javascript">
+    jQuery(function () {
+        var oProvinsi;
+        var oKota;
+        var oKelurahan;
+        var oKecamatan;
 
-    var ProductSelected = "";
-    var ProductPrice = 0;
+        var ProductSelected = "";
+        var ProductPrice = 0;
 
-	jQuery(document).ready(function() {
-        jQuery('.js-example-basic-single').select2();
+        jQuery(document).ready(function() {
+            jQuery('.js-example-basic-single').select2();
 
-        oProvinsi = <?php echo $provinsi; ?>;
-        oKota = <?php echo $kota; ?>;
-        oKelurahan = <?php echo $kelurahan; ?>;
-        oKecamatan = <?php echo $kecamatan; ?>;
-    });
-
-    jQuery('#ProvID').change(function () {
-        const filterKota = oKota.filter(kota => kota.prov_id == jQuery('#ProvID').val());
-        $('#KotaID').empty();
-        var newOption = $('<option>', {
-            value: -1,
-            text: "Pilih Kota"
+            oProvinsi = <?php echo $provinsi; ?>;
+            oKota = <?php echo $kota; ?>;
+            oKelurahan = <?php echo $kelurahan; ?>;
+            oKecamatan = <?php echo $kecamatan; ?>;
         });
-        $('#KotaID').append(newOption);
 
-        $.each(filterKota,function (k,v) {
+        jQuery('#ProvID').change(function () {
+            const filterKota = oKota.filter(kota => kota.prov_id == jQuery('#ProvID').val());
+            $('#KotaID').empty();
             var newOption = $('<option>', {
-                value: v.city_id,
-                text: v.city_name
+                value: -1,
+                text: "Pilih Kota"
             });
-
             $('#KotaID').append(newOption);
-        });
-    });
 
-    jQuery('#KotaID').change(function () {
-        const filterkec = oKecamatan.filter(kec => kec.kota_id == jQuery('#KotaID').val());
+            $.each(filterKota,function (k,v) {
+                var newOption = $('<option>', {
+                    value: v.city_id,
+                    text: v.city_name
+                });
 
-        $('#KecID').empty();
-        var newOption = $('<option>', {
-            value: -1,
-            text: "Pilih Kecamatan"
+                $('#KotaID').append(newOption);
+            });
         });
-        $('#KecID').append(newOption); 
-        $.each(filterkec,function (k,v) {
+
+        jQuery('#KotaID').change(function () {
+            const filterkec = oKecamatan.filter(kec => kec.kota_id == jQuery('#KotaID').val());
+
+            $('#KecID').empty();
             var newOption = $('<option>', {
-                value: v.dis_id,
-                text: v.dis_name
+                value: -1,
+                text: "Pilih Kecamatan"
             });
+            $('#KecID').append(newOption); 
+            $.each(filterkec,function (k,v) {
+                var newOption = $('<option>', {
+                    value: v.dis_id,
+                    text: v.dis_name
+                });
 
-            $('#KecID').append(newOption);
+                $('#KecID').append(newOption);
+            });
         });
-    });
 
-    jQuery('#KecID').change(function () {
-        const filterkel = oKelurahan.filter(kel => kel.kec_id == jQuery('#KecID').val());
+        jQuery('#KecID').change(function () {
+            const filterkel = oKelurahan.filter(kel => kel.kec_id == jQuery('#KecID').val());
 
-        $('#KelID').empty();
-        var newOption = $('<option>', {
-            value: -1,
-            text: "Pilih Kelurahan"
-        });
-        $('#KelID').append(newOption); 
-        $.each(filterkel,function (k,v) {
+            $('#KelID').empty();
             var newOption = $('<option>', {
-                value: v.subdis_id,
-                text: v.subdis_name
+                value: -1,
+                text: "Pilih Kelurahan"
             });
+            $('#KelID').append(newOption); 
+            $.each(filterkel,function (k,v) {
+                var newOption = $('<option>', {
+                    value: v.subdis_id,
+                    text: v.subdis_name
+                });
 
-            $('#KelID').append(newOption);
+                $('#KelID').append(newOption);
+            });
         });
-    });
 
-    jQuery('.product-card').click(function() {
-        jQuery('.product-card').removeClass('clicked');
-        jQuery(this).addClass('clicked');
+        jQuery('.product-card').click(function() {
+            jQuery('.product-card').removeClass('clicked');
+            jQuery(this).addClass('clicked');
 
-        ProductSelected = jQuery('.product-card').attr("attr-productselected");
-        ProductPrice = jQuery('.product-card').attr("attr-productprice");
-    });
+            ProductSelected = jQuery('.product-card').attr("attr-productselected");
+            ProductPrice = jQuery('.product-card').attr("attr-productprice");
+        });
 
-    jQuery('#DaftarLangganan').submit(function (event) {
-        event.preventDefault();
-        var form = $(this);
-        var formData = form.serializeArray();
-        formData.push({ name: 'ProductSelected', value: ProductSelected });
-        $.post(form.attr('action'), formData, function(response) {
-            // Handle the server response here
-            console.log(response);
-            Swal.fire({
-                html: "Data Langganan Berhasil disimpan, Silahkan Menghubungi Administrator untuk konfirmasi",
-                icon: "success",
-                title: "Horray...",
-                // text: "Data berhasil disimpan! <br> " + response.Kembalian,
-            }).then((result)=>{
-                window.location.href = '{{url("/")}}';
-            });
-        }).fail(function(jqXHR, textStatus, errorThrown) {
-            // Handle any errors here
-            console.error("Submission failed: ", textStatus, errorThrown);
-            Swal.fire({
-                html: "Gagal Melakukan registrasi : ",
-                icon: "error",
-                title: "Horray...",
-                // text: "Data berhasil disimpan! <br> " + response.Kembalian,
+        jQuery('#DaftarLangganan').submit(function (event) {
+            event.preventDefault();
+            var form = $(this);
+            var formData = form.serializeArray();
+            formData.push({ name: 'ProductSelected', value: ProductSelected });
+            $.post(form.attr('action'), formData, function(response) {
+                // Handle the server response here
+                console.log(response);
+                Swal.fire({
+                    html: "Data Langganan Berhasil disimpan, Silahkan Menghubungi Administrator untuk konfirmasi",
+                    icon: "success",
+                    title: "Horray...",
+                    // text: "Data berhasil disimpan! <br> " + response.Kembalian,
+                }).then((result)=>{
+                    window.location.href = '{{url("/")}}';
+                });
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                // Handle any errors here
+                console.error("Submission failed: ", textStatus, errorThrown);
+                Swal.fire({
+                    html: "Gagal Melakukan registrasi : ",
+                    icon: "error",
+                    title: "Horray...",
+                    // text: "Data berhasil disimpan! <br> " + response.Kembalian,
+                });
             });
         });
     });
