@@ -102,11 +102,6 @@ License: You must have a valid license purchased only from themeforest(the above
 						Daftar
 					</a>
 				</div>
-				<div class="col-6">
-					<a href="{{ url('testemail')}}" class="btn btn-success text-white font-weight-bold w-100 py-3 mt-3">
-						Test Send Email
-					</a>
-				</div>
 			</div>
 	</form>
 </div>

@@ -119,10 +119,10 @@ class LoginController extends Controller
                     throw new \Exception('User tidak aktif !');
                     goto jump;
                 }
-                // if ($user->isConfirmed == 0) {
-                //     throw new \Exception('User Belum Konfirmasi Email !');
-                //     goto jump;
-                // }
+                if ($user->isConfirmed == 0) {
+                    throw new \Exception('User Belum Konfirmasi Email !');
+                    goto jump;
+                }
 
                 if (Auth::Attempt($data)) {
                     if ($RecordOwnerID == "999999") {
@@ -383,10 +383,10 @@ class LoginController extends Controller
             // Send Email
             $data = [
                 'title' => 'Email Konfirmasi',
-                'message' => 'Terimakasih telah melakukan pendaftaran di DSTechSmart PoS, Silahkan melakukan konfirmasi Melalui link berikut untuk mulai menggunakan Aplikasi : '. url('/')."konfirmasi/".$KonfirmasiID
+                'message' => 'Terimakasih telah melakukan pendaftaran di DSTechSmart PoS, Silahkan melakukan konfirmasi Melalui link berikut untuk mulai menggunakan Aplikasi : '. url('/')."/konfirmasi/".$KonfirmasiID
             ];
         
-            Mail::to('prasetyoajiw@gmail.com')->send(new SendMail($data,"Test Kirim Email"));
+            Mail::to($request->input('email'))->send(new SendMail($data,"Email Konfirmasi"));
         } catch (\Exception $e) {
             $errorCount +=1;
             $errorMessage = "Internal Error: ".$e->getMessage();
@@ -401,7 +401,7 @@ class LoginController extends Controller
         }
         else{
             DB::commit();
-            alert()->success('Success','Data Langganan Berhasil disimpan, Silahkan Menghubungi Administrator untuk konfirmasi');
+            alert()->success('Success','Data Langganan Berhasil disimpan, Silahkan Melakukan Konfirmasi Email dengan klik link yang dikirim di email');
             return redirect('/');
         }
     }
@@ -413,14 +413,38 @@ class LoginController extends Controller
         return redirect('/');
     }
     
-    function Konfirmasi() {
-        $data = [
-            'title' => 'Hello World',
-            'message' => 'This is a test email message.'
-        ];
-    
-        Mail::to('prasetyoajiw@gmail.com')->send(new SendMail($data,"Test Kirim Email"));
-    
-        return 'Email sent successfully!';
+    function Konfirmasi($id) {
+        $ErrorMessage = "";
+        $user = User::where('KonfirmasiID', $id)->first();
+
+        if ($user) {
+            if ($user->isConfirmed == 1) {
+                $ErrorMessage = "User sudah dikonfirmasi, Link Expired";
+                goto jump;
+            }
+
+            DB::table('users')
+                ->where('email','=',$user->email)
+                ->update(
+                    [
+                        'Active' => 'Y',
+                        'isConfirmed' => 1,
+                        'email_verified_at' => Carbon::now()
+                    ]
+                );
+        }
+        else{
+            $ErrorMessage = "Link Expired";
+            goto jump;
+        }
+        
+        jump:
+        if ($ErrorMessage <> "") {
+            alert()->error('Error','Proses Data Gagal '.$ErrorMessage);
+        }
+        else{
+            alert()->success('Success','Email Berhasil dikonfirmasi, silahkan login menggunakan email yang terdaftar');
+            return redirect('/');
+        }
     }
 }

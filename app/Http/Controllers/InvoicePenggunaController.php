@@ -51,7 +51,7 @@ class InvoicePenggunaController extends Controller
                     ->leftJoin('subscriptionheader', 'subscriptionheader.NoTransaksi', 'tagihanpenggunaheader.KodePaketLangganan')
                     ->leftJoin('company', 'company.KodePartner', 'tagihanpenggunaheader.KodePelanggan')
                     ->whereBetween('tagihanpenggunaheader.TglTransaksi', [$TglAwal, $TglAkhir])
-                    ->where('KodePelanggan', Auth::user()->RecordOwnerID);
+                    ->where('KodePelangga n', Auth::user()->RecordOwnerID);
         if ($Status != "") {
             $tagihan->where('tagihanpenggunaheader.Status', $Status);
         }

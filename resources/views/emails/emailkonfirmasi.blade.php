@@ -5,6 +5,6 @@
 </head>
 <body>
     <h1>{{ $data['title'] }}</h1>
-    <p>{{ $data['body'] }}</p>
+    <p>{{ $data['message'] }}</p>
 </body>
 </html>
