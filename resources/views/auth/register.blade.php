@@ -426,6 +426,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
             oProvinsi = <?php echo $provinsi; ?>;
             oKota = <?php echo $kota; ?>;
+            oKelurahan = <?php echo $kelurahan; ?>;
         });
 
         jQuery('#ProvID').change(function () {
