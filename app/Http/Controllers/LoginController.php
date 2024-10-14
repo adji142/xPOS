@@ -42,18 +42,19 @@ class LoginController extends Controller
     }
 
     public function Register() {
-        $subscriptionheader = SubscriptionHeader::all();
-        $provinsi = Provinsi::all();
-        $kota = Kota::all();
-        $kelurahan = Kelurahan::all();
-        $kecamatan = Kecamatan::all();
-        return view("auth.register",[
-            'subscriptionheader' => $subscriptionheader,
-            'provinsi' => $provinsi,
-            'kota' => $kota,
-            'kelurahan' => $kelurahan,
-            'kecamatan' => $kecamatan 
-        ]);
+        dd("Masuk");
+        // $subscriptionheader = SubscriptionHeader::all();
+        // $provinsi = Provinsi::all();
+        // $kota = Kota::all();
+        // $kelurahan = Kelurahan::all();
+        // $kecamatan = Kecamatan::all();
+        // return view("auth.register",[
+        //     'subscriptionheader' => $subscriptionheader,
+        //     'provinsi' => $provinsi,
+        //     'kota' => $kota,
+        //     'kelurahan' => $kelurahan,
+        //     'kecamatan' => $kecamatan 
+        // ]);
     }
 
     public function action_login(Request $request)
