@@ -495,7 +495,7 @@ License: You must have a valid license purchased only from themeforest(the above
             ProductPrice = jQuery('.product-card').attr("attr-productprice");
         });
 
-        jQuery('#DaftarLangganan').submit(function (event) {
+        // jQuery('#DaftarLangganan').submit(function (event) {
             // event.preventDefault();
             // var form = $(this);
             // var formData = form.serializeArray();
@@ -521,7 +521,7 @@ License: You must have a valid license purchased only from themeforest(the above
             //         // text: "Data berhasil disimpan! <br> " + response.Kembalian,
             //     });
             // });
-        });
+        // });
     });
 </script>
 
