@@ -496,10 +496,10 @@ License: You must have a valid license purchased only from themeforest(the above
         });
 
         jQuery('#DaftarLangganan').submit(function (event) {
-            event.preventDefault();
-            var form = $(this);
-            var formData = form.serializeArray();
-            formData.push({ name: 'ProductSelected', value: ProductSelected });
+            // event.preventDefault();
+            // var form = $(this);
+            // var formData = form.serializeArray();
+            // formData.push({ name: 'ProductSelected', value: ProductSelected });
             // $.post(form.attr('action'), formData, function(response) {
             //     // Handle the server response here
             //     console.log(response);
