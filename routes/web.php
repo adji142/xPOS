@@ -83,6 +83,12 @@ Route::get('/konfirmasi/{id}', [LoginController::class, 'Konfirmasi'])->name('ko
 |--------------------------------------------------------------------------
 |
 */
+/*
+|--------------------------------------------------------------------------
+| Grup Pelanggan
+|--------------------------------------------------------------------------
+|
+*/
 Route::get('/gruppelanggan', [GrupPelangganController::class,'View'])->name('gruppelanggan')->middleware('auth');
 Route::get('/gruppelanggan/form/{id}', [GrupPelangganController::class,'Form'])->name('gruppelanggan-form')->middleware('auth');
 Route::post('/gruppelanggan/store', [GrupPelangganController::class, 'store'])->name('gruppelanggan-store')->middleware('auth');
@@ -101,7 +107,7 @@ Route::post('/pelanggan/store', [PelangganController::class, 'store'])->name('pe
 Route::post('/pelanggan/storejson', [PelangganController::class, 'storeJson'])->name('pelanggan-storeJson')->middleware('auth');
 Route::post('/pelanggan/edit', [PelangganController::class, 'edit'])->name('pelanggan-edit')->middleware('auth');
 Route::delete('/pelanggan/delete/{id}', [PelangganController::class, 'deletedata'])->name('pelanggan-delete')->middleware('auth');
-Route::post('/pelanggan/demografi', [PelangganController::class, 'ReadDemografi'])->name('demografipelanggan')->middleware('auth');
+Route::post('/pelanggan/demografi', [PelangganController::class, 'ReadDemografi'])->name('demografipelanggan');
 Route::get('/pelanggan/export', [PelangganController::class,'Export'])->name('pelanggan-export')->middleware('auth');
 Route::post('/pelanggan/viewJson', [PelangganController::class, 'ReadPelangganJson'])->name('pelanggan-viewJson')->middleware('auth');
 /*
