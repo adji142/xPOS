@@ -452,11 +452,16 @@ class LoginController extends Controller
 
     function TestSendEmail()  {
          // Send Email
-         $data = [
-            'title' => 'Email Konfirmasi',
-            'message' => 'Terimakasih telah melakukan pendaftaran di DSTechSmart PoS, Silahkan melakukan konfirmasi Melalui link berikut untuk mulai menggunakan Aplikasi : '
-        ];
-    
-        Mail::to('prasetyoajiw@gmail.com')->send(new SendMail($data,"Email Konfirmasi"));
+         try {
+            $data = [
+                'title' => 'Email Konfirmasi',
+                'message' => 'Terimakasih telah melakukan pendaftaran di DSTechSmart PoS, Silahkan melakukan konfirmasi Melalui link berikut untuk mulai menggunakan Aplikasi : '
+            ];
+        
+            Mail::to('prasetyoajiw@gmail.com')->send(new SendMail($data,"Email Konfirmasi"));
+            return 'Email sent successfully!';
+         } catch (\Throwable $th) {
+            return $th->getMessage();
+         }
     }
 }
