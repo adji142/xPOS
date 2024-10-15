@@ -77,6 +77,7 @@ Route::get('/dashboardadmin', [DashboardController::class, 'dashboardAdmin'])->n
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 Route::get('/konfirmasi/{id}', [LoginController::class, 'Konfirmasi'])->name('konfirmasi');
 
+Route::get('/testemail', [LoginController::class, 'TestSendEmail'])->name('testemail');
 /*
 |--------------------------------------------------------------------------
 | Grup Pelanggan

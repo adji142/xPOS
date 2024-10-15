@@ -449,4 +449,14 @@ class LoginController extends Controller
             return redirect('/');
         }
     }
+
+    function TestSendEmail()  {
+         // Send Email
+         $data = [
+            'title' => 'Email Konfirmasi',
+            'message' => 'Terimakasih telah melakukan pendaftaran di DSTechSmart PoS, Silahkan melakukan konfirmasi Melalui link berikut untuk mulai menggunakan Aplikasi : '
+        ];
+    
+        Mail::to('prasetyoajiw@gmail.com')->send(new SendMail($data,"Email Konfirmasi"));
+    }
 }
