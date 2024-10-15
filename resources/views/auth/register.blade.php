@@ -391,7 +391,7 @@ License: You must have a valid license purchased only from themeforest(the above
                 </div>
                 <div class="form-group row ">
                     <div class="col-12">
-                        <button type="submit" class="btn btn-primary text-white font-weight-bold w-100 py-3 mt-3">
+                        <button type="submit" class="btn btn-primary text-white font-weight-bold w-100 py-3 mt-3" id="btRegister">
                             Daftar
                         </button>
                     </div>
@@ -540,6 +540,9 @@ License: You must have a valid license purchased only from themeforest(the above
         });
 
         jQuery('#DaftarLangganan').submit(function (event) {
+            jQuery('#btRegister').text('Tunggu Sebentar.....');
+      		jQuery('#btRegister').attr('disabled',true);
+
             event.preventDefault();
             var form = $(this);
             var formData = form.serializeArray();
@@ -548,7 +551,7 @@ License: You must have a valid license purchased only from themeforest(the above
                 // Handle the server response here
                 console.log(response);
                 Swal.fire({
-                    html: "Data Langganan Berhasil disimpan, Silahkan Menghubungi Administrator untuk konfirmasi",
+                    html: "Registrasi Berhasil dilakukan, silahkan konfirmasi melalui link yang dikirimkan, silahkan cek folder inbox / spam / junk di email anda",
                     icon: "success",
                     title: "Horray...",
                     // text: "Data berhasil disimpan! <br> " + response.Kembalian,
@@ -561,8 +564,11 @@ License: You must have a valid license purchased only from themeforest(the above
                 Swal.fire({
                     html: "Gagal Melakukan registrasi : ",
                     icon: "error",
-                    title: "Horray...",
+                    title: "whoops...",
                     // text: "Data berhasil disimpan! <br> " + response.Kembalian,
+                }).then((result)=>{
+                    jQuery('#btRegister').text('Daftar');
+      		        jQuery('#btRegister').attr('disabled',false);
                 });
             });
         });
