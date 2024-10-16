@@ -84,7 +84,7 @@ class CompanyController extends Controller
             // dd($clientOS);
             if ($clientOS == "Windows") {
                 $tempArray = [];
-                exec('wmic printer list brief', $printers_arr);
+                exec('wmic printer list brief', $tempArray);
                 dd($tempArray);
                 $printers = shell_exec('wmic printer get name');
                 $printerList = explode("\n", $printers);
