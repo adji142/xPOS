@@ -83,13 +83,13 @@ class CompanyController extends Controller
             $clientOS = $request->input('client_os');
             // dd($clientOS);
             if ($clientOS == "Windows") {
-                
-
+                $tempArray = [];
+                exec('wmic printer list brief', $printers_arr);
+                dd($tempArray);
                 $printers = shell_exec('wmic printer get name');
                 $printerList = explode("\n", $printers);
                 $printerList = array_filter(array_map('trim', $printerList));
                 array_shift($printerList);
-                dd($printers);
 
                 foreach ($printerList as $printername) {
                     $exist = Printer::where('DeviceName','=',$printername)
