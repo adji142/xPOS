@@ -89,6 +89,7 @@ class CompanyController extends Controller
                 $printerList = explode("\n", $printers);
                 $printerList = array_filter(array_map('trim', $printerList));
                 array_shift($printerList);
+                dd($printerList);
 
                 foreach ($printerList as $printername) {
                     $exist = Printer::where('DeviceName','=',$printername)
