@@ -1,0 +1,50 @@
+{
+    "name": "php-http/socket-client",
+    "description": "Socket client for PHP-HTTP",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Joel Wurtz",
+            "email": "jwurtz@jolicode.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "nyholm/psr7": "^1.8.1",
+        "php-http/httplug": "^2.4",
+        "psr/http-client": "^1.0",
+        "psr/http-message": "^1.0 || ^2.0",
+        "symfony/options-resolver": "^2.6 || ^3.4 || ^4.4 || ^5.0 || ^6.0 || ^7.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.51",
+        "php-http/client-integration-tests": "^3.1.1",
+        "php-http/message": "^1.16",
+        "php-http/client-common": "^2.7",
+        "phpunit/phpunit": "^8.5.23 || ~9.5",
+        "php-http/message-factory": "^1.1"
+    },
+    "provide": {
+        "php-http/client-implementation": "1.0",
+        "psr/http-client-implementation": "1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Http\\Client\\Socket\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Http\\Client\\Socket\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "cs-check": "vendor/bin/php-cs-fixer fix --dry-run",
+        "cs-fix": "vendor/bin/php-cs-fixer fix",
+        "test": "vendor/bin/phpunit",
+        "test-ci": "vendor/bin/phpunit --coverage-clover build/coverage.xml",
+        "gen-ssl": "tests/server/ssl/generate.sh"
+    },
+    "prefer-stable": true,
+    "minimum-stability": "dev"
+}

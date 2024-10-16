@@ -1,0 +1,75 @@
+{
+    "name": "rawilk/laravel-printing",
+    "description": "Direct printing for Laravel apps",
+    "keywords": [
+        "rawilk",
+        "laravel-printing",
+        "PrintNode",
+        "CUPS",
+        "ipp",
+        "Receipt printing",
+        "Direct printing",
+        "Raw printing"
+    ],
+    "homepage": "https://github.com/rawilk/laravel-printing",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Randall Wilk",
+            "email": "randall@randallwilk.dev",
+            "homepage": "https://randallwilk.dev",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "illuminate/support": "^8.0",
+        "mike42/escpos-php": "^3.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^2.16",
+        "mockery/mockery": ">=1.4",
+        "orchestra/testbench": "^6.0",
+        "phpunit/phpunit": "^9.0",
+        "printnode/printnode-php": "^2.0@RC",
+        "psalm/plugin-laravel": "^1.4",
+        "smalot/cups-ipp": "^0.5.0",
+        "symfony/options-resolver": ">=4.4",
+        "vimeo/psalm": "^4.3.2"
+    },
+    "suggest": {
+        "printnode/printnode-php": "Required when using the PrintNode driver",
+        "smalot/cups-ipp": "Required when using the CUPS driver"
+    },
+    "autoload": {
+        "psr-4": {
+            "Rawilk\\Printing\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Rawilk\\Printing\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "psalm": "vendor/bin/psalm",
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
+        "format": "vendor/bin/php-cs-fixer fix --allow-risky=yes"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Rawilk\\Printing\\PrintingServiceProvider"
+            ],
+            "aliases": {
+                "Printing": "Rawilk\\Printing\\Facades\\Printing"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

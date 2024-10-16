@@ -37,6 +37,7 @@ use Database\Seeders\KelompokRekeningSeeder;
 use Database\Seeders\GudangSeeder;
 use Database\Seeders\SatuanSeeder;
 
+use Rawilk\Printing\Facades\Printing;
 class CompanyController extends Controller
 {
 
@@ -80,12 +81,13 @@ class CompanyController extends Controller
 
     	// exec("print /d:USB001: D:\testprinting.txt");
         try {
+            
             $clientOS = $request->input('client_os');
             // dd($clientOS);
+            
             if ($clientOS == "Windows") {
-                $tempArray = [];
-                exec('wmic printer list brief', $tempArray);
-                dd($tempArray);
+                $xprinters = Printing::printers();
+                dd($xprinters);
                 $printers = shell_exec('wmic printer get name');
                 $printerList = explode("\n", $printers);
                 $printerList = array_filter(array_map('trim', $printerList));
@@ -119,7 +121,7 @@ class CompanyController extends Controller
             alert()->error('Error',$e->getMessage());
         }
         catch (\Throwable $th) {
-            alert()->error('Error',"Server tidak support shell_exec");
+            alert()->error('Error',"Server tidak support shell_exec ". $th->getMessage());
         }
 
         $company = Company::Where('KodePartner','=',Auth::user()->RecordOwnerID)
