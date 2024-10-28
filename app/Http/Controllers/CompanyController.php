@@ -38,7 +38,7 @@ use Database\Seeders\GudangSeeder;
 use Database\Seeders\SatuanSeeder;
 use App\Exports\PenggunaAplikasiExport;
 
-use Rawilk\Printing\Facades\Printing;
+// use Rawilk\Printing\Facades\Printing;
 class CompanyController extends Controller
 {
 
@@ -86,38 +86,38 @@ class CompanyController extends Controller
             $clientOS = $request->input('client_os');
             // dd($clientOS);
             
-            if ($clientOS == "Windows") {
-                $xprinters = Printing::printers();
-                dd($xprinters);
-                $printers = shell_exec('wmic printer get name');
-                $printerList = explode("\n", $printers);
-                $printerList = array_filter(array_map('trim', $printerList));
-                array_shift($printerList);
+            // if ($clientOS == "Windows") {
+            //     $xprinters = Printing::printers();
+            //     dd($xprinters);
+            //     $printers = shell_exec('wmic printer get name');
+            //     $printerList = explode("\n", $printers);
+            //     $printerList = array_filter(array_map('trim', $printerList));
+            //     array_shift($printerList);
 
-                foreach ($printerList as $printername) {
-                    $exist = Printer::where('DeviceName','=',$printername)
-                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+            //     foreach ($printerList as $printername) {
+            //         $exist = Printer::where('DeviceName','=',$printername)
+            //             ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
-                    if (count($exist) > 0) {
-                        goto skip;
-                    }
-                    // echo $printer . "<br>";
-                    $model = new Printer;
-                    $model->NamaPrinter = $printername;
-                    $model->PrinterInterface = 'USB';
-                    $model->DeviceName = $printername;
-                    $model->DeviceAddress = $printername;
-                    $model->PrinterToken = '-';
-                    $model->Used = 0;
-                    $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+            //         if (count($exist) > 0) {
+            //             goto skip;
+            //         }
+            //         // echo $printer . "<br>";
+            //         $model = new Printer;
+            //         $model->NamaPrinter = $printername;
+            //         $model->PrinterInterface = 'USB';
+            //         $model->DeviceName = $printername;
+            //         $model->DeviceAddress = $printername;
+            //         $model->PrinterToken = '-';
+            //         $model->Used = 0;
+            //         $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
-                    $save = $model->save();
-                    skip:
-                }
-                // var_dump($printerList);
-                // echo $printerList[0];
+            //         $save = $model->save();
+            //         skip:
+            //     }
+            //     // var_dump($printerList);
+            //     // echo $printerList[0];
             
-            }
+            // }
         } catch (\Exception $e) {
             alert()->error('Error',$e->getMessage());
         }
