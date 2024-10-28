@@ -36,6 +36,7 @@ use Database\Seeders\RekeningSeeder;
 use Database\Seeders\KelompokRekeningSeeder;
 use Database\Seeders\GudangSeeder;
 use Database\Seeders\SatuanSeeder;
+use App\Exports\PenggunaAplikasiExport;
 
 use Rawilk\Printing\Facades\Printing;
 class CompanyController extends Controller
@@ -459,5 +460,10 @@ class CompanyController extends Controller
 
         // Print receipt
         $printer->printReceipt();
+    }
+
+    public function Export()
+    {
+        return Excel::download(new PenggunaAplikasiExport(), 'Daftar Pengguna Aplikasi.xlsx');
     }
 }

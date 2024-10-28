@@ -31,6 +31,10 @@
 									<h3 class="card-label mb-0 font-weight-bold text-body">Tagihan Pelanggan 
 									</h3>
 								</div>
+                                <div class="icons d-flex">
+									<button type="button" id="btDownloadExel" class="btn btn-outline-success rounded-pill font-weight-bold me-1 mb-1">Download Excel</button>
+								
+								</div>
 							</div>
 						
 						</div>
@@ -196,6 +200,12 @@
     jQuery('#btSearch').click(function () {
         GetHeader();
     });
+    jQuery('#btDownloadExel').click(function () {
+        var baseUrl = "{{ url('/tagihanpengguna/export') }}";
+        var url = `${baseUrl}/${jQuery('#TglAwal').val()}/${jQuery('#TglAkhir').val()}`;
+        // console.log(url);
+        window.location.href = url;
+    });
 
     function GetHeader() {
         $.ajax({
@@ -291,6 +301,21 @@
                     caption: "Dibayar",
                     allowEditing:false,
                     format: { type: 'fixedPoint', precision: 2 }
+                },
+                {
+                    dataField: "TglBayar",
+                    caption: "Tanggal Bayar",
+                    allowEditing:false,
+                },
+                {
+                    dataField: "MetodePembayaran",
+                    caption: "Cara Bayar",
+                    allowEditing:false,
+                },
+                {
+                    dataField: "PaymentNote",
+                    caption: "Payment Note",
+                    allowEditing:false,
                 },
                 {
                     caption: "Action",

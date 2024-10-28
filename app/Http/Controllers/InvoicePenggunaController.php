@@ -12,6 +12,8 @@ use App\Models\Company;
 use App\Models\InvoicePenggunaHeader;
 use App\Models\InvoicePenggunaDetail;
 use App\Models\PembayaranLangganan;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TagihanPelangganExport;
 
 use Midtrans\Config;
 use Midtrans\Snap;
@@ -33,9 +35,12 @@ class InvoicePenggunaController extends Controller
         $TglAwal = $request->input('TglAwal');
         $TglAkhir = $request->input('TglAkhir');
 
-        $tagihan = InvoicePenggunaHeader::selectRaw("tagihanpenggunaheader.*, subscriptionheader.NamaSubscription, company.NamaPartner ")
+        $tagihan = InvoicePenggunaHeader::selectRaw("tagihanpenggunaheader.*, subscriptionheader.NamaSubscription, company.NamaPartner ,
+                    pembayarantagihan.TglTransaksi AS TglBayar, pembayarantagihan.MetodePembayaran, pembayarantagihan.NoReff ReffPembayaran, 
+                    pembayarantagihan.Keterangan PaymentNote ")
                     ->leftJoin('subscriptionheader', 'subscriptionheader.NoTransaksi', 'tagihanpenggunaheader.KodePaketLangganan')
                     ->leftJoin('company', 'company.KodePartner', 'tagihanpenggunaheader.KodePelanggan')
+                    ->leftJoin('pembayarantagihan', 'pembayarantagihan.BaseReff','tagihanpenggunaheader.NoTransaksi')
                     ->whereBetween('tagihanpenggunaheader.TglTransaksi', [$TglAwal, $TglAkhir])
                     ->get();
         $data['data'] = $tagihan;
@@ -320,5 +325,10 @@ class InvoicePenggunaController extends Controller
         }
 
         return response()->json($data);
+    }
+
+    public function Export($TglAwal, $TglAkhir)
+    {
+        return Excel::download(new TagihanPelangganExport($TglAwal, $TglAkhir), 'Daftar Tagihan Pengguna Aplikasi.xlsx');
     }
 }

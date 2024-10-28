@@ -26,6 +26,9 @@
 									<h3 class="card-label mb-0 font-weight-bold text-body">Daftar Pengguna Aplikasi 
 									</h3>
 								</div>
+                                <div class="icons d-flex">
+									<a href="{{ url('penggunaaplikasi/export/') }}" class="btn btn-outline-success rounded-pill font-weight-bold me-1 mb-1">Download Excel</a>
+								</div>
 							</div>
 						
 						</div>

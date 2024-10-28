@@ -735,7 +735,7 @@ Route::post('/subs/editJson', [SubscriptionController::class, 'editJson'])->name
 */
 Route::get('/penggunaaplikasi', [CompanyController::class,'AdminPelanggan'])->name('penggunaaplikasi')->middleware('auth');
 Route::post('/penggunaaplikasi/suspend', [CompanyController::class, 'UpdateSuspend'])->name('penggunaaplikasi-suspend')->middleware('auth');
-
+Route::get('/penggunaaplikasi/export', [CompanyController::class,'Export'])->name('penggunaaplikasi-export')->middleware('auth');
 /*
 |--------------------------------------------------------------------------
 | Invoice Pengguna - Admin
@@ -748,6 +748,8 @@ Route::post('/invpengguna/create-gateway', [InvoicePenggunaController::class, 'c
 Route::post('/invpengguna/bayar', [InvoicePenggunaController::class, 'SimpanPembayaran'])->name('invpengguna-bayar')->middleware('auth');
 Route::post('/invpengguna/viewheader', [InvoicePenggunaController::class, 'GetHeader'])->name('invpengguna-viewheader')->middleware('auth');
 Route::get('/tagihanpengguna', [InvoicePenggunaController::class, 'View'])->name('invpengguna-tagihanpengguna')->middleware('auth');
+Route::get('/tagihanpengguna/export/{TglAwal}/{TglAkhir}', [InvoicePenggunaController::class,'Export'])->name('tagihanpengguna-export')->middleware('auth');
+
 // GetPerCompany SimpanPembayaranJson
 Route::post('/invpengguna/viewpercom', [InvoicePenggunaController::class, 'GetPerCompany'])->name('invpengguna-viewpercom')->middleware('auth');
 
