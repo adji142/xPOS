@@ -535,8 +535,9 @@ License: You must have a valid license purchased only from themeforest(the above
             jQuery('.product-card').removeClass('clicked');
             jQuery(this).addClass('clicked');
 
-            ProductSelected = jQuery('.product-card').attr("attr-productselected");
+            ProductSelected = jQuery('.product-card.clicked').attr("attr-productselected");
             ProductPrice = jQuery('.product-card').attr("attr-productprice");
+            console.log(ProductSelected);
         });
 
         jQuery('#DaftarLangganan').submit(function (event) {
