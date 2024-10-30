@@ -345,19 +345,17 @@
 					                            				</select>
 					                            			</fieldset>
 					                            		</div>
-
+														<!--
 					                            		<div class="col-md-3">
-					                            			<!-- <label  class="text-body">Lebar Printer</label> -->
 					                            			<fieldset class="form-group mb-3">
 					                            				<button type="button" class="btn btn-warning">Test Print</button>
 					                            			</fieldset>
 					                            		</div>
 					                            		<div class="col-md-3">
-					                            			<!-- <label  class="text-body">Lebar Printer</label> -->
 					                            			<fieldset class="form-group mb-3">
 					                            				<button type="button" class="btn btn-warning" id="testPrintUSB">Test Print Usb</button>
 					                            			</fieldset>
-					                            		</div>
+					                            		</div> -->
 
 					                            		<!-- <a href="{{ url('companysetting/testprint') }}">Test Print</a> -->
 					                            		<div class="col-md-12">

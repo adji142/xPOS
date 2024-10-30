@@ -1,0 +1,5 @@
+ALTER TABLE `xpos`.`kelompokrekening` 
+ADD COLUMN `TempKelompok` int(6) NULL AFTER `updated_at`;
+
+ALTER TABLE `xpos`.`company` 
+ADD COLUMN `isInitialSetting` int(1) NULL DEFAULT 1 AFTER `isActive`;

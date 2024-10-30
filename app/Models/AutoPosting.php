@@ -176,6 +176,9 @@ class AutoPosting extends Model
 				$sError ="OK";
 			}
     	}
+		else{
+			$sError ="OK";
+		}
 		
 		return $sError;
     }
