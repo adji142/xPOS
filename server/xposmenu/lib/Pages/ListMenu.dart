@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:xposmenu/Config/Session.dart';
 import 'package:xposmenu/Models/initialModel.dart';
 import 'package:xposmenu/Pages/checkout.dart';
+import 'package:xposmenu/Pages/finishcheckout.dart';
 
 class ListMenu extends StatefulWidget {
   final Session sess;

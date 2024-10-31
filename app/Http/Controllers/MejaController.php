@@ -36,11 +36,16 @@ class MejaController extends Controller
 
         // $meja = $meja->paginate(4);
 
+        $oCompany = Company::selectRaw("*")
+                        ->leftJoin('subscriptionheader','subscriptionheader.NoTransaksi','company.KodePaketLangganan')
+                        ->where('company.KodePartner', Auth::user()->RecordOwnerID)
+                        ->first();
         $title = 'Delete Meja !';
         $text = "Are you sure you want to delete ?";
         confirmDelete($title, $text);
         return view("Resto.Meja",[
             'meja' => $meja, 
+            'AllowPesananMeja' => $oCompany->AllowPesananMeja
         ]);
     }
 

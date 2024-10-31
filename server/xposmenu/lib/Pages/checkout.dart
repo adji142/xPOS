@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:xposmenu/Config/Session.dart';
 import 'package:xposmenu/Models/initialModel.dart';
+import 'package:xposmenu/Pages/finishcheckout.dart';
 import 'package:xposmenu/Shared/Lookup.dart';
 import 'package:xposmenu/Shared/dialog.dart';
 
@@ -501,7 +502,7 @@ class _checkoutState extends State<CheckoutPage> {
                       var xSave = await initialModel(this.widget.sess, oFullParam()).SaveOrder().then((value) async{
                         if (value["success"]) {
                           Navigator.of(context, rootNavigator: true).pop();
-                          Navigator.of(context).pop();
+                          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => FinishCheckout(this.widget.sess,_calculateTotal(),)));
                         } else {
                           Navigator.of(context, rootNavigator: true).pop();
                           await messageBox(context: context,title: "Infomasi",message: value["message"]);
