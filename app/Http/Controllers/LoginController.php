@@ -27,6 +27,7 @@ use App\Models\Permission;
 
 use App\Mail\SendMail;
 use Illuminate\Support\Facades\Mail;
+use App\Models\TnCModel;
 
 class LoginController extends Controller
 {
@@ -48,13 +49,15 @@ class LoginController extends Controller
         $kota = Kota::all();
         $kelurahan = Kelurahan::all();
         $kecamatan = Kecamatan::all();
+        $tnc = TnCModel::first();
         // dd($kota);
         return view("auth.register",[
             'subscriptionheader' => $subscriptionheader,
             'provinsi' => $provinsi,
             'kota' => $kota,
             'kelurahan' => $kelurahan,
-            'kecamatan' => $kecamatan 
+            'kecamatan' => $kecamatan,
+            'tnc' => $tnc
         ]);
     }
 

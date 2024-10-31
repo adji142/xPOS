@@ -390,6 +390,9 @@ License: You must have a valid license purchased only from themeforest(the above
                 
                 </div>
                 <div class="form-group row ">
+                    <small><input id="chkApprove" type="checkbox"> Saya telah Membaca dan Menyetuji <a href="#" data-bs-toggle="modal" data-bs-target="#TnCModal">Syarat dan Ketentuan</a></small>
+                </div>
+                <div class="form-group row ">
                     <div class="col-12">
                         <button type="submit" class="btn btn-primary text-white font-weight-bold w-100 py-3 mt-3" id="btRegister">
                             Daftar
@@ -400,6 +403,28 @@ License: You must have a valid license purchased only from themeforest(the above
     </div>
 </div>
 
+<div class="modal fade" id="TnCModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalScrollableTitle" aria-hidden="true" data-backdrop="static" data-keyboard="false" >
+	<div class="modal-dialog modal-dialog-scrollable" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+			  <h5 class="modal-title" id="exampleModalScrollableTitle">Tambah Jenis Item</h5>
+			  <button type="button" class="close rounded-pill btn btn-sm btn-icon btn-light btn-hover-primary m-0" data-bs-dismiss="modal" aria-label="Close">
+				<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+					<path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+				</svg>
+			  </button>
+			</div>
+			<div class="modal-body">
+				{!! $tnc->termcondition !!}
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-light" data-bs-dismiss="modal"> 
+					<span class="">Tutup</span>
+				</button>
+			</div> 		
+		</div>
+	</div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @include('sweetalert::alert')
 
@@ -426,6 +451,8 @@ License: You must have a valid license purchased only from themeforest(the above
 
             oProvinsi = <?php echo $provinsi; ?>;
             oKota = <?php echo $kota; ?>;
+
+            jQuery('#btRegister').attr('disabled',true);
         });
 
         jQuery('#ProvID').change(function () {
@@ -538,6 +565,14 @@ License: You must have a valid license purchased only from themeforest(the above
             ProductSelected = jQuery('.product-card.clicked').attr("attr-productselected");
             ProductPrice = jQuery('.product-card').attr("attr-productprice");
             console.log(ProductSelected);
+        });
+
+        jQuery('#chkApprove').on('change', function() {
+            if (jQuery(this).is(':checked')) {
+                jQuery('#btRegister').prop('disabled', false);
+            } else {
+                jQuery('#btRegister').prop('disabled', true);
+            }
         });
 
         jQuery('#DaftarLangganan').submit(function (event) {

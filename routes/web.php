@@ -57,6 +57,7 @@ use App\Http\Controllers\MenuAddonController;
 use App\Http\Controllers\TipeOrderRestoController;
 use App\Http\Controllers\MenuRestoAddonController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\TnCController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -839,3 +840,7 @@ Route::get('/menu/export', [MenuRestoAddonController::class,'Export'])->name('me
 
 // Sending Email
 Route::get('/send/auth', [EmailController::class,'InitMail'])->name('send-auth');
+
+// TnC TnCController
+Route::get('/tnc', [TnCController::class,'View'])->name('tnc')->middleware('auth');
+Route::post('/tnc/edit', [TnCController::class, 'edit'])->name('tnc-edit')->middleware('auth');

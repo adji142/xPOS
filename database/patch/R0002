@@ -3,3 +3,12 @@ ADD COLUMN `TempKelompok` int(6) NULL AFTER `updated_at`;
 
 ALTER TABLE `xpos`.`company` 
 ADD COLUMN `isInitialSetting` int(1) NULL DEFAULT 1 AFTER `isActive`;
+
+
+-- xpos.termandcondition definition
+
+CREATE TABLE `termandcondition` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `termcondition` text DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci; 
