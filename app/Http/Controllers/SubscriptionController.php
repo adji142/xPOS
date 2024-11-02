@@ -112,6 +112,7 @@ class SubscriptionController extends Controller
 
         }
 
+        // dd($subscriptionheader[0]["JenisUsaha"]);
         return view("Admin.Subscription-Input",[
             'permissionrole' => $oMenu,
             'permission' => $permission,
@@ -141,6 +142,7 @@ class SubscriptionController extends Controller
             $model->AllowPesananMeja = $jsonData['AllowPesananMeja'];
             $model->AllowPaymentGateway = $jsonData['AllowPaymentGateway'];
             $model->AllowKatalogOnline = $jsonData['AllowKatalogOnline'];
+            $model->JenisUsaha = $jsonData['JenisUsaha'];
 
             $save = $model->save();
 
@@ -206,6 +208,7 @@ class SubscriptionController extends Controller
 									'AllowAccounting' => $jsonData['AllowAccounting'],
 									'AllowPesananMeja' => $jsonData['AllowPesananMeja'],
 									'AllowPaymentGateway' => $jsonData['AllowPaymentGateway'],
+                                    'JenisUsaha' => $jsonData['JenisUsaha']
                                ]
                            );
 

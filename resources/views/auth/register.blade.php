@@ -335,30 +335,6 @@ License: You must have a valid license purchased only from themeforest(the above
                         <label  class="text-body">Pilih Paket Berlangganan</label>
                     </center>
                     <div class="product-card-container">
-
-                        @foreach ($subscriptionheader as $item)
-                        <div class="product-card" attr-productselected="{{ $item['NoTransaksi'] }}" attr-productprice="{{ $item['Harga'] - $item['Potongan'] }}">
-                            <img src="{{ asset('images/custom/subscription.png') }}" alt="Product 1">
-                            <div class="product-details">
-                                <center>
-                                    <h5>{{ $item['NamaSubscription'] }}</h5>
-                                </center>
-                                @php
-                                    echo "<div class='deskripsi'>".$item['DeskripsiSubscription']."</div>";
-                                @endphp
-                                <center>
-                                    @if ($item['Potongan'] > 0)
-                                        <div class='original-price'>{{ number_format($item['Harga']) }}</div>
-                                        <div class='discount-price'>{{ number_format(($item['Harga'] - $item['Potongan'])) }}</div>
-                                    @else
-                                        <div class='price'>{{ number_format($item['Harga']) }}</div>
-                                    @endif
-                                    
-                                </center>
-                            </div>
-                        </div>
-                        @endforeach
-                        <!-- Add more product cards as needed -->
                     </div>
                 </div>
     
@@ -453,6 +429,7 @@ License: You must have a valid license purchased only from themeforest(the above
             oKota = <?php echo $kota; ?>;
 
             jQuery('#btRegister').attr('disabled',true);
+            // CreateProduct();
         });
 
         jQuery('#ProvID').change(function () {
@@ -558,12 +535,27 @@ License: You must have a valid license purchased only from themeforest(the above
             // });
         });
 
-        jQuery('.product-card').click(function() {
+        jQuery('#JenisUsaha').change(function () {
+            CreateProduct(jQuery('#JenisUsaha').val());
+        })
+
+        // jQuery('.product-card').click(function() {
+        //     console.log('asdassdsasd');
+        //     jQuery('.product-card').removeClass('clicked');
+        //     jQuery(this).addClass('clicked');
+
+        //     ProductSelected = jQuery('.product-card.clicked').attr("attr-productselected");
+        //     ProductPrice = jQuery('.product-card').attr("attr-productprice");
+        //     console.log(ProductSelected);
+        // });
+
+        jQuery('.product-card-container').on('click', '.product-card', function() {
+            console.log('asdassdsasd');
             jQuery('.product-card').removeClass('clicked');
             jQuery(this).addClass('clicked');
 
-            ProductSelected = jQuery('.product-card.clicked').attr("attr-productselected");
-            ProductPrice = jQuery('.product-card').attr("attr-productprice");
+            ProductSelected = jQuery(this).attr("attr-productselected");
+            ProductPrice = jQuery(this).attr("attr-productprice");
             console.log(ProductSelected);
         });
 
@@ -608,6 +600,37 @@ License: You must have a valid license purchased only from themeforest(the above
                 });
             });
         });
+
+        function CreateProduct(JenisUsaha) {
+            var oData = <?php echo json_encode($subscriptionheader); ?>;
+            // console.log(oData);
+            let filteredProducts = oData.filter(function(product) {
+                return product.JenisUsaha == JenisUsaha;
+            });
+            jQuery(".product-card-container").empty();
+            $.each(filteredProducts,function (k,v) {
+                var xHTML = '<div class="product-card" attr-productselected="'+v.NoTransaksi+'" attr-productprice="'+(v.Harga - v.Potongan)+'">';
+                        xHTML += '<img src="{{ asset('images/custom/subscription.png') }}" alt="Product 1">';
+                        xHTML += '<div class="product-details">';
+                            xHTML += '<center><h5>'+v.NamaSubscription+'</h5></center>';
+                            xHTML += '<div class="deskripsi">'+v.DeskripsiSubscription+'</div>'
+                            xHTML += '<center>';
+                                if (v.Potongan > 0) {
+                                    xHTML += '<div class="original-price">'+v.Harga+'</div>';
+                                    xHTML += '<div class=discount-price>'+(v.Harga - v.Potongan)+'</div>';
+                                }
+                                else{
+                                    xHTML += '<div class="price">'+v.Harga+'</div>';
+                                }
+                            xHTML += '</center>';
+                        xHTML += '</div>';
+                    xHTML += "</div>";
+
+                    // console.log(xHTML);
+                    jQuery(".product-card-container").append(xHTML);
+            });
+
+        }
     });
 </script>
 

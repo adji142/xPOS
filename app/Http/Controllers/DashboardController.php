@@ -11,6 +11,7 @@ use Log;
 use App\Models\FakturPenjualanHeader;
 use App\Models\FakturPenjualanDetail;
 use App\Models\ItemMaster;
+use App\Models\InvoicePenggunaHeader;
 
 class DashboardController extends Controller
 {
@@ -63,6 +64,31 @@ class DashboardController extends Controller
     }
 
     function dashboardAdmin() {
-        return view("dashboardadmin");
+        $awalTahun = Carbon::now()->startOfYear()->toDateString();;
+        $TglAwal = Carbon::now()->startOfMonth()->toDateString();
+        $TglAkhir = Carbon::now();
+
+        $daybyday = InvoicePenggunaHeader::selectRaw("SUM(TotalBayar) Total")
+                        ->whereBetween(DB::raw('DATE(tagihanpenggunaheader.TglTransaksi)'),[DB::raw("DATE('".$TglAkhir."')"), DB::raw("DATE('".$TglAkhir."')")])
+                        ->get();
+        
+        $mtd = InvoicePenggunaHeader::selectRaw("SUM(TotalBayar) Total")
+                        ->whereBetween(DB::raw('DATE(tagihanpenggunaheader.TglTransaksi)'),[$TglAwal, $TglAkhir])
+                        ->get();
+        $ytd = InvoicePenggunaHeader::selectRaw("SUM(TotalBayar) Total")
+                        ->whereBetween(DB::raw('DATE(tagihanpenggunaheader.TglTransaksi)'),[$awalTahun, $TglAkhir])
+                        ->get();
+        
+        $grafikpenjualan = InvoicePenggunaHeader::selectRaw("DATE(tagihanpenggunaheader.TglTransaksi) Tanggal ,SUM(TotalBayar) Total")
+                        ->whereBetween(DB::raw('DATE(tagihanpenggunaheader.TglTransaksi)'),[$TglAwal, $TglAkhir])
+                        ->groupBy(DB::raw('DATE(tagihanpenggunaheader.TglTransaksi)'))
+                        ->orderBy(DB::raw('DATE(tagihanpenggunaheader.TglTransaksi)'))
+                        ->get();
+        return view("dashboardadmin",[
+            'daybyday' => $daybyday[0]['Total'],
+            'mtd' => $mtd[0]['Total'],
+            'ytd' => $ytd[0]['Total'],
+            'grafikpenjualan' => $grafikpenjualan,
+        ]);
     }
 }
