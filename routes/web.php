@@ -58,6 +58,7 @@ use App\Http\Controllers\TipeOrderRestoController;
 use App\Http\Controllers\MenuRestoAddonController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\TnCController;
+use App\Http\Controllers\KasKeluarController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -844,3 +845,16 @@ Route::get('/send/auth', [EmailController::class,'InitMail'])->name('send-auth')
 // TnC TnCController
 Route::get('/tnc', [TnCController::class,'View'])->name('tnc')->middleware('auth');
 Route::post('/tnc/edit', [TnCController::class, 'edit'])->name('tnc-edit')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Kas Keluar
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/kaskeluar', [KasKeluarController::class,'View'])->name('kaskeluar')->middleware('auth');
+Route::get('/kaskeluar/form/{id}', [KasKeluarController::class,'Form'])->name('kaskeluar-form')->middleware('auth');
+Route::post('/kaskeluar/store', [KasKeluarController::class, 'store'])->name('kaskeluar-store')->middleware('auth');
+Route::post('/kaskeluar/edit', [KasKeluarController::class, 'edit'])->name('kaskeluar-edit')->middleware('auth');
+Route::post('/kaskeluar/readheader', [KasKeluarController::class, 'ViewHeader'])->name('kaskeluar-readheader')->middleware('auth');
+Route::post('/kaskeluar/readdetail', [KasKeluarController::class, 'ViewDetail'])->name('kaskeluar-readdetail')->middleware('auth');

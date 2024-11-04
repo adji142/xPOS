@@ -1,0 +1,6 @@
+INSERT INTO `permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Kas Keluar', 'kaskeluar', '', 2, 39, 2, 40.2, 1, NOW(), NOW());
+
+INSERT INTO `permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Kas Masuk', 'kaskeluar', '', 2, 39, 2, 40.1, 1, NOW(), NOW());
+
+INSERT INTO `permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Transfer Kas', 'kaskeluar', '', 2, 39, 2, 40.3, 1, NOW(), NOW());
+
