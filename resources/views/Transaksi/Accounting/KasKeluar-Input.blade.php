@@ -11,6 +11,9 @@
 .dx-dropdowneditor-overlay {
     z-index: 10000!important ; /* Adjust the z-index value as needed */
 }
+#tblkaskeluardetail thead th {
+    pointer-events: none;
+}
 
 </style>
 <div class="subheader py-2 py-lg-6 subheader-solid">
@@ -112,24 +115,40 @@
                                             <table id="tblkaskeluardetail" class="display" style="width:100%">
                                                 <thead>
                                                     <tr>
-                                                        <th>#</th>
-                                                        <th>Akun</th>
-                                                        <th>Keterangan</th>
-                                                        <th>Jumlah</th>
-                                                        <th class=" no-sort text-end">Action</th>
+                                                        <th width="20px" class="no-sort">#</th>
+                                                        <th width="250px" class="no-sort">Akun</th>
+                                                        <th class="no-sort">Keterangan</th>
+                                                        <th class="no-sort">Jumlah</th>
+                                                        <th width="70px" class="no-sort text-end">Action</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="AppendArea">
-                                                    <tr>
-                                                        <td colspan="5" id="btAddRow">
-                                                            <center><i class="fas fa-plus" style="color: red"></i> <font style="color: red"> Tambah Data</font> </center>
-                                                        </td>
-                                                    </tr>
+                                                    
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
 
+									<div class="col-md-12">
+										<div class="row">
+											<div class="col-md-7"></div>
+											<div class="col-md-5">
+												<table class="table right-table">
+													<tbody>
+														<tr class="d-flex align-items-center justify-content-between">
+															<th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">
+																Total Transaksi
+															</th>
+															<td class="border-0 justify-content-end d-flex text-dark font-size-base">
+																<input type="text" name="_TotalTransaksi" id="_TotalTransaksi" value="0" class="form-control TotalText">
+															</td>
+															
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
                             		<div class="col-md-12">
                             			<button type="button" id="btSave" class="btn btn-success text-white font-weight-bold me-1 mb-1">Simpan</button>
                             		</div>
@@ -186,6 +205,8 @@
 
     var oKasKeluarDetail = [];
     var oListAccount = [];
+	var LastLineNumber = 0;
+	var _TotalTransaksi = 0;
 	jQuery(function () {
 		jQuery(document).ready(function() {
 			var now = new Date();
@@ -221,59 +242,23 @@
 				// BindGridDetail([])	
 			}
 
-            jQuery('#tblkaskeluardetail').DataTable();
+            jQuery('#tblkaskeluardetail').DataTable({
+				colReorder: false,
+			});
+			addNewLine([],0);
+			jQuery(".dynamiCombo").select2();
+			AsignRowNumber();
+			jQuery('.dataTables_empty').first().remove();
 			SetEnableCommand();
 		});
 
-        jQuery('#btAddRow').click(function () {
-            jQuery('#modallookupItem').modal({backdrop: 'static', keyboard: false})
-            jQuery('#modallookupItem').modal('show');
-            // console.log(orderHeader)
-            var ColumnData = [
-                {
-                    dataField: "KodeRekening",
-                    caption: "Kode Akun",
-                    allowSorting: true,
-                    allowEditing : false
-                },
-                {
-                    dataField: "NamaRekening",
-                    caption: "Nama Rekening",
-                    allowSorting: true,
-                    allowEditing : false
-                }
-            ];
-            BindLookupServices("gridLookupitem", "KodeRekening", oListAccount, ColumnData,"multiple");
-        });
-
-        jQuery('#btSelectItem').click(function () {
-            var dataGridInstance = jQuery('#gridLookupitem').dxDataGrid('instance');
-            var dataGridDetailInstance = jQuery('#gridContainerRakitan').dxDataGrid('instance');
-
-            var selectedRows = dataGridInstance.getSelectedRowsData();
-
-            // console.log(selectedRows[0]["KodeItem"]);
-            if (selectedRows.length > 0) {
-                for (let index = 0; index < selectedRows.length; index++) {
-                    // console.log("Add Row : " + index)
-                    // console.log(CheckifExist(selectedRows[index]["KodeItem"]));
-                    if (!CheckifExist(selectedRows[index]["KodeRekening"])) {
-                        addNewLine(selectedRows[index], index +1);   
-                    }
-                }
-            }
-
-            dataGridInstance.deselectAll();
-            // AsignRowNumber();
-        });
-
 
         function addNewLine(oData, index) {
-        console.log(oData)
             var RandomID = generateRandomText(10);
             var newRow = document.createElement('tr');
             newRow.className = RandomID;
             newRow.id = "InputSectionData"
+
 
             var nomorCol = document.createElement('td');
             var KodeAkunCol = document.createElement('td');
@@ -285,14 +270,47 @@
             // nomorObj.innerText   = index;
             // nomorCol.appendChild(nomorObj);
 
-            var KodeAkunText = document.createElement('input');
-            KodeAkunText.type  = 'text';
+			// console.log(oData['KodeRekening']);
+            var KodeAkunText = document.createElement('select');
             KodeAkunText.name = 'DetailParameter['+index+'][KodeAkun]';
-            KodeAkunText.className = 'form-control';
+            KodeAkunText.className = 'dynamiCombo js-states form-control bg-transparent';
             KodeAkunText.required = true;
-            KodeAkunText.value = oData['NamaRekening'];
+            KodeAkunText.value = oData['KodeRekening'];
+			KodeAkunText.id = "cboKodeAkun";
             KodeAkunText.setAttribute('KodeAkun', oData['KodeRekening']);
-            KodeAkunText.readOnly = true;
+
+			const option = document.createElement('option');
+			option.value = "";
+			option.text = "PILIH REKENING";
+			KodeAkunText.appendChild(option);
+
+			oListAccount.forEach(optionData => {
+				const option = document.createElement('option');
+				option.value = optionData.KodeRekening;
+				option.text = optionData.NamaRekening;
+				KodeAkunText.appendChild(option);
+			});
+
+			jQuery(KodeAkunText).on('change', function () {
+				// console.log(LastLineNumber);
+				var comboBoxes = document.getElementsByClassName('dynamiCombo');
+				var isAddNewRow = true;
+				for (var i = 0; i < comboBoxes.length; i++) {
+					var value = comboBoxes[i].value;
+					console.log(value);
+					if (value == "") {
+						isAddNewRow = false;
+						break;
+					}
+				}
+
+				if (isAddNewRow) {
+					addNewLine([], index+1)	
+				}
+				jQuery(".dynamiCombo").select2();
+				AsignRowNumber();
+				SetEnableCommand();
+			});
             KodeAkunCol.appendChild(KodeAkunText);
             
 
@@ -302,21 +320,44 @@
             KeteranganText.placeholder = "Keterangan";
             KeteranganText.className = 'form-control';
             KeteranganText.value = "";
-            KeteranganText.required = true;
             KeteranganText.id = "RowKeterangan";
             KeteranganCol.appendChild(KeteranganText);
 
             var JumlahTransaksiText = document.createElement('input');
-            JumlahTransaksiText.type  = 'number';
+            JumlahTransaksiText.type  = 'text';
             JumlahTransaksiText.name = 'DetailParameter['+index+'][TotalTransaksi]';
-            JumlahTransaksiText.placeholder = "Jumlah Transaksi";
-            JumlahTransaksiText.className = 'form-control';
-            JumlahTransaksiText.value = oData['TotalTransaksi'];
+            JumlahTransaksiText.placeholder = "0.0";
+            JumlahTransaksiText.className = 'txtTotalTransaksi form-control';
+            JumlahTransaksiText.value = "";
             JumlahTransaksiText.required = true;
-            TotalTransaksiCol.appendChild(JumlahTransaksiText);
+
+			jQuery(JumlahTransaksiText).on('focusout', function (e) {
+
+				let caretPosition = this.selectionStart;
+				let formattedValue = formatNumber(this.value);
+				this.value = formattedValue;
+
+				this.selectionStart = caretPosition;
+				this.selectionEnd = caretPosition +1;
+				JumlahTransaksiText.setAttribute('TrxTotal', this.value.replace(/,/g, ""));
+
+				updateTotalDisplay(); 
+			});
+
+			jQuery(JumlahTransaksiText).on('focusin', function (e) {
+
+				var TextOri = this.value.length;
+				let caretPosition = this.selectionStart;
+				this.value = this.value.replace(/,/g, "");
+
+				this.selectionStart = caretPosition;
+				this.selectionEnd = TextOri;
+			});
+
+			TotalTransaksiCol.appendChild(JumlahTransaksiText);
 
             var RemoveText = document.createElement('button');
-            RemoveText.innerText   = 'Delete Data';
+            RemoveText.innerText   = 'Delete';
             RemoveText.type   = 'button';
             // RemoveText.style.color = "red";
             // RemoveText.href = "#"+RandomID;
@@ -329,6 +370,7 @@
                 elements.forEach(function(element) {
                     element.remove();
                 });
+				updateTotalDisplay(); 
                 AsignRowNumber();
                 // console.log(elements)
             };
@@ -385,10 +427,41 @@
                 var firstCell = row.querySelector('td:first-child');
                 if (firstCell) {
                     firstCell.textContent = index + 1;
+					LastLineNumber = index+1;
                 }
             });
         }
+		function formatNumber(value) {
+			value = value.replace(/[^0-9.]/g, '');
+			let parts = value.split('.');
+			parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+			if (parts[1]) {
+				parts[1] = parts[1].substring(0, 2); // Take only first two decimal digits
+			}
+			return parts.join('.');
+		}
 
+		function updateTotalDisplay() {
+			// document.getElementById('_TotalTransaksi').innerText = _TotalTransaksi.toFixed(2);
+			var txttotal = document.getElementsByClassName('txtTotalTransaksi');
+			var totalRow = 0;
+			for (var i = 0; i < txttotal.length; i++) {
+				var value = txttotal[i].value.toString().replace(/,/g, "");
+				// console.log(value);
+				if (value != "") {
+					totalRow += parseFloat(value);	
+				}
+			}
+
+			formatCurrency(jQuery('#_TotalTransaksi'), totalRow);
+			SetEnableCommand();
+		}
+
+		jQuery("#TotalTransaksi").on('focusout', function () {
+			formatCurrency(jQuery('#TotalTransaksi'), jQuery("#TotalTransaksi").val());
+			SetEnableCommand();
+		});
+			
 		jQuery('#btSave').click(function () {
 			// formatCurrency(jQuery('#TotalTransaksi'));
 
@@ -513,32 +586,45 @@
 		})
 
 		function SetEnableCommand() {
-			var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
-      		var allRowsData  = dataGridInstance.getDataSource().items();
-
-			var TotalDebit = 0;
-			var TotalKredit = 0;
-
 			var nError = 0;
-			if(jQuery('#KodeTransaksi').val() == ""){
+			var comboBoxes = document.getElementsByClassName('dynamiCombo');
+			var txttotal = document.getElementsByClassName('txtTotalTransaksi');
+
+			var allString = "";
+			var totalValue = 0;
+
+			for (var i = 0; i < comboBoxes.length; i++) {
+				var value = comboBoxes[i].value;
+				allString += value;
+			}
+
+			for (var i = 0; i < txttotal.length; i++) {
+				var value = txttotal[i].value.toString().replace(/,/g, "");
+				// console.log(value);
+				if (value != "") {
+					totalValue += parseFloat(value);	
+				}
+			}
+
+			if (allString == "") {
+				nError +=1;
+			}
+			if (totalValue == 0) {
 				nError +=1;
 			}
 
-			for (let index = 0; index < allRowsData.length; index++) {
-				// const element = array[index];
-				TotalDebit += allRowsData[index]["Debit"];
-				TotalKredit += allRowsData[index]["Kredit"];
-			}
-
-			if(TotalDebit != TotalKredit){
+			if (jQuery('#KodeAkun').val() == "") {
 				nError +=1;
 			}
 
-			if (allRowsData.length == 0) {
+			if (jQuery("#TotalTransaksi").attr("originalvalue") == 0) {
 				nError +=1;
 			}
 
-			console.log(allRowsData);
+			if (jQuery("#TotalTransaksi").attr("originalvalue") != jQuery("#_TotalTransaksi").attr("originalvalue")) {
+				nError +=1;
+			}
+
 
 			if(nError > 0){
 				jQuery('#btSave').attr("disabled", true);
