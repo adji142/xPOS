@@ -211,7 +211,7 @@
                         var link = "kaskeluar/form/"+cellInfo.data.NoTransaksi;
                         var LinkAccess = "";
 
-                        LinkAccess += "<button class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit' >Edit</button>";
+                        LinkAccess += `<a href="{{ url('kaskeluar/form') }}/${cellInfo.data.NoTransaksi}" class="btn btn-outline-warning font-weight-bold me-1 mb-1" id="btEdit">Edit</a>`;
                         LinkAccess += "<button class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btDelete' >Delete</button>";
 
                         cellElement.append(LinkAccess);
@@ -233,7 +233,7 @@
 		var dataGridInstance = jQuery("#gridContainerDetail").dxDataGrid({
 			allowColumnResizing: true,
 			dataSource: data,
-			keyExpr: "NoUrut",
+			keyExpr: "LineNumber",
 			showBorders: true,
             allowColumnReordering: true,
             allowColumnResizing: true,
@@ -251,7 +251,7 @@
             },
             columns: [
                 {
-                    dataField: "NoUrut",
+                    dataField: "LineNumber",
                     caption: "#",
                     allowEditing:false
                 },

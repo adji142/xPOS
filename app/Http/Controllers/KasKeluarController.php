@@ -110,6 +110,7 @@ class KasKeluarController extends Controller
 	}
 
     function store(Request $request) {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'LastTRX' => '' ,'Kembalian' => "");
         $errorCount = 0;
         $errorMessage = "";
 
@@ -140,9 +141,7 @@ class KasKeluarController extends Controller
                 $index = 0;
                 foreach ($DetailParameter as $dt) {
                     if ($dt["TotalTransaksi"] == 0) {
-                        $errorMessage = "Total Kas Keluar Akun ". $dt["KodeAkun"]." Tidak Boleh Kosong";
-                        $errorCount +=1;
-                        goto jump;
+                        goto skip;
                     }
 
                     $detail = new KasKeluarDetail();
@@ -161,6 +160,7 @@ class KasKeluarController extends Controller
                         goto jump;
                     }
                     $index +=1;
+                    skip:
                 }
             }
             else{
@@ -171,22 +171,30 @@ class KasKeluarController extends Controller
 jump:
             if ($errorCount > 0) {
                 DB::rollback();
-                alert()->error('Error',$errorMessage);
+                // alert()->error('Error',$errorMessage);
+                $data['success'] = false;
+                $data['message'] = $errorMessage;
                 // $data['success'] = false;
-                return redirect()->back();
+                // return redirect()->back();
             }
             else{
                 DB::commit();
-                alert()->success('Success','Data Kas Keluar Berhasil disimpan.');
-                return redirect('kaskeluar');
+                $data['success'] = true;
+                $data['message'] = "";
+                // alert()->success('Success','Data Kas Keluar Berhasil disimpan.');
+                // return redirect('kaskeluar');
             }
         } catch (\Exception $e) {
-            alert()->error('Error',$e->getMessage());
-            return redirect()->back();
+            // alert()->error('Error',$e->getMessage());
+            // return redirect()->back();
+            $data['success'] = false;
+            $data['message'] = $e->getMessage();
         }
+        return response()->json($data);
     }
 
     function edit(Request $request) {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'LastTRX' => '' ,'Kembalian' => "");
         $errorCount = 0;
         $errorMessage = "";
 
@@ -199,7 +207,6 @@ jump:
                         ->update(
                             [
                                 'TglTransaksi' => $request->input('TglTransaksi'),
-                                'TglPencatatan' => $currentDate->format('Y-m-d H:i:s'),
                                 'KodeAkun' => $request->input('KodeAkun'),
                                 'Keterangan' => $request->input('Keterangan'),
                                 'TotalTransaksi' => $request->input('TotalTransaksi')
@@ -210,19 +217,17 @@ jump:
 
             if ($DetailParameter) {
                 $delete = DB::table('kaskeluardetail')
-		                ->where('NoTransaksi','=', $NoTransaksi)
+		                ->where('NoTransaksi','=', $request->input('NoTransaksi'))
 		                ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
 		                ->delete();
                 $index = 0;
                 foreach ($DetailParameter as $dt) {
                     if ($dt["TotalTransaksi"] == 0) {
-                        $errorMessage = "Total Kas Keluar Akun ". $dt["KodeAkun"]." Tidak Boleh Kosong";
-                        $errorCount +=1;
-                        goto jump;
+                        goto skip;
                     }
 
                     $detail = new KasKeluarDetail();
-                    $detail->NoTransaksi = $NoTransaksi;
+                    $detail->NoTransaksi = $request->input('NoTransaksi');
                     $detail->LineNumber = $index;
                     $detail->KodeAkun = $dt['KodeAkun'];
                     $detail->Keterangan = $dt['Keterangan'];
@@ -232,34 +237,37 @@ jump:
                     $detail->save();
     
                     if (!$detail) {
-                        $errorMessage = "Menyimpan Kas Keluar Detail Row Number " . ($index +1) . " Gagal dilakukan";
+                        $data['success'] = false;
+                        $data['message'] = "Menyimpan Kas Keluar Detail Row Number " . ($index +1) . " Gagal dilakukan";
                         $errorCount +=1;
                         goto jump;
                     }
                     $index +=1;
+                    skip:
                 }
             }
             else{
-                $errorMessage = "Data Detail Harus diisi";
+                $data['success'] = false;
+                $data['message'] = "Data Detail Harus diisi";
                 $errorCount +=1;
                 goto jump;
             }
 jump:
             if ($errorCount > 0) {
                 DB::rollback();
-                alert()->error('Error',$errorMessage);
-                // $data['success'] = false;
-                return redirect()->back();
+                $data['success'] = false;
+                $data['message'] = $errorMessage;
             }
             else{
                 DB::commit();
-                alert()->success('Success','Data Kas Keluar Berhasil disimpan.');
-                return redirect('kaskeluar');
+                $data['success'] = true;
+                $data['message'] = "";
             }
         } catch (\Exception $e) {
-            alert()->error('Error',$e->getMessage());
-            return redirect()->back();
+            $data['success'] = false;
+            $data['message'] = $e->getMessage();
         }
+        return response()->json($data);
     }
 
     function deletedata(Request $request) {

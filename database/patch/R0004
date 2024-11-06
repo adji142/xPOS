@@ -2,3 +2,69 @@ INSERT INTO `permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`,
 INSERT INTO `permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Kas Masuk', 'kaskeluar', '', 2, 39, 2, 40.1, 1, NOW(), NOW());
 INSERT INTO `permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Transfer Kas', 'kaskeluar', '', 2, 39, 2, 40.3, 1, NOW(), NOW());
 
+ALTER TABLE `xpos`.`kaskeluarheader` 
+MODIFY COLUMN `Keterangan` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL AFTER `KodeAkun`;
+
+ALTER TABLE `xpos`.`kaskeluarheader` 
+DROP INDEX `kaskeluarheader_recordownerid_unique`;
+
+ALTER TABLE `xpos`.`kaskeluarheader` 
+DROP PRIMARY KEY,
+ADD PRIMARY KEY (`NoTransaksi`, `RecordOwnerID`) USING BTREE;
+
+ALTER TABLE `xpos`.`kaskeluardetail` 
+MODIFY COLUMN `Keterangan` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL AFTER `KodeAkun`;
+
+DROP TRIGGER `trg_add_jurnaldetail`;
+
+CREATE DEFINER = `root`@`localhost` TRIGGER `trg_add_jurnaldetail` AFTER INSERT ON `kaskeluardetail` FOR EACH ROW BEGIN
+	SET @PostAcct = 0;
+	SET @NoTransaksi = '';
+	SET @StatusDocument = '';
+	SET @KeteranganHeader = '';
+	SET @TotalTransaksi = 0;
+	SET @AkunHeader = '';
+	
+	SET @MaxID = -1;
+	
+	SELECT isPostingAkutansi INTO @PostAcct FROM company WHERE KodePartner = NEW.RecordOwnerID;
+	SELECT StatusDocument, Keterangan, KodeAkun, TotalTransaksi INTO @StatusDocument, @KeteranganHeader, @AkunHeader, @TotalTransaksi FROM kaskeluarheader WHERE NoTransaksi = NEW.NoTransaksi and RecordOwnerID = NEW.RecordOwnerID;
+	SELECT MAX(id) INTO @MaxID FROM kaskeluardetail WHERE NoTransaksi = NEW.NoTransaksi and RecordOwnerID = NEW.RecordOwnerID;
+	
+	-- Jika Posting Accounting 
+	IF @PostAcct = 1 THEN 
+		SELECT NoTransaksi INTO @NoTransaksi FROM headerjurnal WHERE NoReff = NEW.NoTransaksi and KodeTransaksi = 'KOUT';
+		
+		INSERT INTO detailjurnal VALUES
+		('KOUT',@NoTransaksi, NEW.LineNumber, NEW.KodeAkun, '', CASE WHEN @StatusDocument = 'D' THEN 2 ELSE 1 END,'',0,0,NEW.TotalTransaksi, @KeteranganHeader, @KeteranganHeader, NEW.RecordOwnerID, NOW(), NOW());
+		
+		
+	END IF;
+END;
+
+
+DROP TRIGGER `trg_add_jurnalheader`;
+
+CREATE DEFINER = `root`@`localhost` TRIGGER `trg_add_jurnalheader` AFTER INSERT ON `kaskeluarheader` FOR EACH ROW BEGIN 
+	SET @Period = DATE_FORMAT(NOW(), '%Y%m');
+	SET @PostAcct = 0;
+	SET @Prefix = '';
+	SET @NumberLength = 6;
+	SET @RunningNumber = 0;
+	
+	SELECT isPostingAkutansi INTO @PostAcct FROM company WHERE KodePartner = NEW.RecordOwnerID;
+	SELECT prefix, NumberLength INTO @Prefix, @NumberLength FROM documentnumbering WHERE RecordOwnerID = NEW.RecordOwnerID and DocumentID = 'KOUT';
+	
+	SELECT COUNT(*) INTO @RunningNumber FROM headerjurnal WHERE RecordOwnerID collate utf8mb4_general_ci = NEW.RecordOwnerID and LEFT(NoTransaksi collate utf8mb4_general_ci,LENGTH(CONCAT(@Period,@Prefix))) = CONCAT(@Period,@Prefix);
+	
+	SET @NomorTransaksi = CONCAT(CONCAT(@Period,@Prefix), LPAD(@RunningNumber +1, @NumberLength, '0'));
+	
+	IF @PostAcct = 1 THEN 
+		INSERT INTO headerjurnal
+		VALUES(@Period, 'KOUT', @NomorTransaksi, NEW.TglTransaksi, NEW.NoTransaksi, 'O',NEW.RecordOwnerID, NULL, NOW(), NOW());
+		
+		-- insert lawan jurnal
+		INSERT INTO detailjurnal VALUES
+		('KOUT',@NomorTransaksi, -1, NEW.KodeAkun, '', CASE WHEN NEW.StatusDocument = 'D' THEN 1 ELSE 2 END,'',0,0,NEW.TotalTransaksi, NEW.Keterangan, NEW.Keterangan, NEW.RecordOwnerID, NOW(), NOW());
+	END IF;
+END;

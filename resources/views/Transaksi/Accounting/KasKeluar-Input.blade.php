@@ -62,97 +62,111 @@
 					<div class="col-12  px-4">
 						<div class="card card-custom gutter-b bg-white border-0" >
 							<div class="card-body" >
-                            	<div class="form-group row">
-                            		<div class="col-md-4">
-                            			<label  class="text-body">No Transaksi (*)</label>
-                            			<fieldset class="form-group mb-3">
-                            				<input type="text" class="form-control" id="NoTransaksi" name="NoTransaksi" placeholder="<Auto>" value="{{ count($kaskeluarheader) > 0 ? $kaskeluarheader[0]['NoTransaksi'] : '' }}" required="">
-                            			</fieldset>
-                            			
-                            		</div>
+								@if (count($kaskeluarheader) > 0)
+                            		<form action="#" method="post" id="frmSaveKasKeluar">
+                            	@else
+                                	<form action="#" method="post" id="frmSaveKasKeluar">
+                            	@endif
+                            		@csrf
+									<div class="form-group row">
+										<div class="col-md-4">
+											<label  class="text-body">No Transaksi (*)</label>
+											<fieldset class="form-group mb-3">
+												<input type="text" class="form-control" id="NoTransaksi" name="NoTransaksi" placeholder="<Auto>" value="{{ count($kaskeluarheader) > 0 ? $kaskeluarheader[0]['NoTransaksi'] : '' }}" readonly>
+											</fieldset>
+											
+										</div>
 
-                            		<div class="col-md-4">
-                            			<label  class="text-body">Tanggal Transaksi</label>
-                            			<fieldset class="form-group mb-3">
-                            				<input type="date" class="form-control" id="TglTransaksi" name="TglTransaksi" placeholder="<Auto>" value="{{ count($kaskeluarheader) > 0 ? $kaskeluarheader[0]['TglTransaksi'] : '' }}" required="">
-                            			</fieldset>
-                            		</div>
+										<div class="col-md-4">
+											<label  class="text-body">Tanggal Transaksi</label>
+											<fieldset class="form-group mb-3">
+												<input type="date" class="form-control" id="TglTransaksi" name="TglTransaksi" placeholder="<Auto>" value="{{ count($kaskeluarheader) > 0 ? $kaskeluarheader[0]['TglTransaksi'] : '' }}" required="">
+											</fieldset>
+										</div>
 
-                            		<div class="col-md-4">
-                            			<label  class="text-body">Status</label>
-                            			<fieldset class="form-group mb-3">
-                            				<select name="Status" id="Status" class="js-example-basic-single js-states form-control bg-transparent" >
-												<option value="O" {{ count($kaskeluarheader) > 0 ? $kaskeluarheader[0]['Status'] == 'O' ? "selected" : '' :""}} >OPEN</option>
-												<option value="D" {{ count($kaskeluarheader) > 0 ? $kaskeluarheader[0]['Status'] == 'D' ? "selected" : '' :""}}>CANCEL</option>
-												
-											</select>
-                            			</fieldset>
-                            		</div>
+										<div class="col-md-4">
+											<label  class="text-body">Status</label>
+											<fieldset class="form-group mb-3">
+												<select name="StatusDocument" id="StatusDocument" class="js-example-basic-single js-states form-control bg-transparent" >
+													<option value="O" {{ count($kaskeluarheader) > 0 ? $kaskeluarheader[0]['StatusDocument'] == 'O' ? "selected" : '' :""}} >OPEN</option>
+													<option value="D" {{ count($kaskeluarheader) > 0 ? $kaskeluarheader[0]['StatusDocument'] == 'D' ? "selected" : '' :""}}>CANCEL</option>
+													
+												</select>
+											</fieldset>
+										</div>
 
-                                    <div class="col-md-6">
-                            			<label  class="text-body">Keluar dari Akun</label>
-                            			<fieldset class="form-group mb-3">
-                            				<select name="KodeAkun" id="KodeAkun" class="js-example-basic-single js-states form-control bg-transparent" >
-												<option value="" {{ count($kaskeluarheader) > 0 ? $kaskeluarheader[0]['KodeAkun'] == '' ? "selected" : '' :""}} >Pilih Akun</option>
-												@foreach($rekening as $ko)
-													<option value="{{ $ko->KodeRekening }}" {{ count($kaskeluarheader) > 0 ? $kaskeluarheader[0]['KodeAkun'] == $ko->KodeRekening ? "selected" : '' :""}}>
-                                                        {{ $ko->NamaRekening }}
-                                                    </option>
-												@endforeach
-											</select>
-                            			</fieldset>
-                            		</div>
+										<div class="col-md-6">
+											<label  class="text-body">Keluar dari Akun</label>
+											<fieldset class="form-group mb-3">
+												<select name="KodeAkun" id="KodeAkun" class="js-example-basic-single js-states form-control bg-transparent" >
+													<option value="" {{ count($kaskeluarheader) > 0 ? $kaskeluarheader[0]['KodeAkun'] == '' ? "selected" : '' :""}} >Pilih Akun</option>
+													@foreach($rekening as $ko)
+														<option value="{{ $ko->KodeRekening }}" {{ count($kaskeluarheader) > 0 ? $kaskeluarheader[0]['KodeAkun'] == $ko->KodeRekening ? "selected" : '' :""}}>
+															{{ $ko->NamaRekening }}
+														</option>
+													@endforeach
+												</select>
+											</fieldset>
+										</div>
 
-                            		<div class="col-md-6">
-                            			<label  class="text-body">Jumlah</label>
-                            			<fieldset class="form-group mb-3">
-                            				<input type="text" class="form-control" id="TotalTransaksi" TotalTransaksi="NoReff" placeholder="0.00" value="{{ count($kaskeluarheader) > 0 ? $kaskeluarheader[0]['TotalTransaksi'] : '0' }}" >
-                            			</fieldset>
-                            		</div>
+										<div class="col-md-6">
+											<label  class="text-body">Jumlah</label>
+											<fieldset class="form-group mb-3">
+												<input type="text" class="form-control" id="TotalTransaksi" TotalTransaksi="NoReff" placeholder="0.00" >
+											</fieldset>
+										</div>
 
-                            		<div class="col-md-12">
-                                        <div class="table-responsive" id="printableTable">
-                                            <table id="tblkaskeluardetail" class="display" style="width:100%">
-                                                <thead>
-                                                    <tr>
-                                                        <th width="20px" class="no-sort">#</th>
-                                                        <th width="250px" class="no-sort">Akun</th>
-                                                        <th class="no-sort">Keterangan</th>
-                                                        <th class="no-sort">Jumlah</th>
-                                                        <th width="70px" class="no-sort text-end">Action</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="AppendArea">
-                                                    
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
+										<div class="col-md-12">
+											<label  class="text-body">Keterangan</label>
+											<fieldset class="form-group mb-3">
+												<input type="text" class="form-control" name="Keterangan" id="Keterangan" TotalTransaksi="NoReff" placeholder="Keterangan" value="{{ count($kaskeluarheader) > 0 ? $kaskeluarheader[0]['Keterangan'] : '' }}" >
+											</fieldset>
+										</div>
 
-									<div class="col-md-12">
-										<div class="row">
-											<div class="col-md-7"></div>
-											<div class="col-md-5">
-												<table class="table right-table">
-													<tbody>
-														<tr class="d-flex align-items-center justify-content-between">
-															<th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">
-																Total Transaksi
-															</th>
-															<td class="border-0 justify-content-end d-flex text-dark font-size-base">
-																<input type="text" name="_TotalTransaksi" id="_TotalTransaksi" value="0" class="form-control TotalText">
-															</td>
-															
+										<div class="col-md-12">
+											<div class="table-responsive" id="printableTable">
+												<table id="tblkaskeluardetail" class="display" style="width:100%">
+													<thead>
+														<tr>
+															<th width="20px" class="no-sort">#</th>
+															<th width="250px" class="no-sort">Akun</th>
+															<th class="no-sort">Keterangan</th>
+															<th class="no-sort">Jumlah</th>
+															<th width="70px" class="no-sort text-end">Action</th>
 														</tr>
+													</thead>
+													<tbody id="AppendArea">
+														
 													</tbody>
 												</table>
 											</div>
 										</div>
+
+										<div class="col-md-12">
+											<div class="row">
+												<div class="col-md-7"></div>
+												<div class="col-md-5">
+													<table class="table right-table">
+														<tbody>
+															<tr class="d-flex align-items-center justify-content-between">
+																<th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">
+																	Total Transaksi
+																</th>
+																<td class="border-0 justify-content-end d-flex text-dark font-size-base">
+																	<input type="text" name="TotalTransaksi" id="_TotalTransaksi" value="0" class="form-control TotalText">
+																</td>
+																
+															</tr>
+														</tbody>
+													</table>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-12">
+											<button type="submit" id="btSave" class="btn btn-success text-white font-weight-bold me-1 mb-1">Simpan</button>
+										</div>
 									</div>
-                            		<div class="col-md-12">
-                            			<button type="button" id="btSave" class="btn btn-success text-white font-weight-bold me-1 mb-1">Simpan</button>
-                            		</div>
-                            	</div>
+								</form>
 							</div>
 						</div>
 					</div>
@@ -219,11 +233,11 @@
 	    	jQuery('#TglTransaksi').val(NowDay);
             oKasKeluarDetail = <?php echo json_encode($kaskeluardetail); ?>;
             oListAccount = <?php echo json_encode($rekeningDetail); ?>;
-	    	// console.log(jQuery('#formtype').val())
+	    	console.log(oKasKeluarDetail);
 	    	jurnalHeader = <?php echo json_encode($kaskeluarheader); ?>;
 			if (jQuery('#formtype').val() == "edit") {
 
-	      		StatusTransaksi = jurnalHeader[0]["StatusTransaksi"];
+	      		StatusTransaksi = jurnalHeader[0]["StatusDocument"];
 	      		var KodeTransaksi = jurnalHeader[0]["KodeTransaksi"];
 	      		console.log(jurnalHeader)
 	      		if (StatusTransaksi != "O") {
@@ -234,8 +248,14 @@
 	      			jQuery('#btSave').attr('disabled',true);
 	      		}
 	      		
+				formatCurrency(jQuery('#TotalTransaksi'), jurnalHeader[0]["TotalTransaksi"]);
 	      		// CreateCombobox([])
 	      		jQuery('#KodeTransaksi').val(KodeTransaksi).trigger('change');
+				for (let index = 0; index < oKasKeluarDetail.length; index++) {
+					addNewLine(oKasKeluarDetail[index], index);
+				}
+
+				updateTotalDisplay();
 	      		// valueExpr: "NoTransaksi",
 			}
 			else{
@@ -274,7 +294,6 @@
             var KodeAkunText = document.createElement('select');
             KodeAkunText.name = 'DetailParameter['+index+'][KodeAkun]';
             KodeAkunText.className = 'dynamiCombo js-states form-control bg-transparent';
-            KodeAkunText.required = true;
             KodeAkunText.value = oData['KodeRekening'];
 			KodeAkunText.id = "cboKodeAkun";
             KodeAkunText.setAttribute('KodeAkun', oData['KodeRekening']);
@@ -288,6 +307,11 @@
 				const option = document.createElement('option');
 				option.value = optionData.KodeRekening;
 				option.text = optionData.NamaRekening;
+
+				if (optionData.KodeRekening === oData['KodeAkun']) {
+					option.selected = true; // Set the selected attribute
+				}
+
 				KodeAkunText.appendChild(option);
 			});
 
@@ -311,7 +335,9 @@
 				AsignRowNumber();
 				SetEnableCommand();
 			});
+			
             KodeAkunCol.appendChild(KodeAkunText);
+			// jQuery(KodeAkunText).val(oData["KodeAkun"]).change();
             
 
             var KeteranganText = document.createElement('input');
@@ -319,7 +345,7 @@
             KeteranganText.name = 'DetailParameter['+index+'][Keterangan]';
             KeteranganText.placeholder = "Keterangan";
             KeteranganText.className = 'form-control';
-            KeteranganText.value = "";
+            KeteranganText.value = (typeof oData["Keterangan"] === "undefined" ? "" : oData["Keterangan"]);
             KeteranganText.id = "RowKeterangan";
             KeteranganCol.appendChild(KeteranganText);
 
@@ -328,9 +354,9 @@
             JumlahTransaksiText.name = 'DetailParameter['+index+'][TotalTransaksi]';
             JumlahTransaksiText.placeholder = "0.0";
             JumlahTransaksiText.className = 'txtTotalTransaksi form-control';
-            JumlahTransaksiText.value = "";
+            JumlahTransaksiText.value = (typeof oData["TotalTransaksi"] === "undefined" ? "0" : oData["TotalTransaksi"]);
             JumlahTransaksiText.required = true;
-
+			
 			jQuery(JumlahTransaksiText).on('focusout', function (e) {
 
 				let caretPosition = this.selectionStart;
@@ -461,124 +487,68 @@
 			formatCurrency(jQuery('#TotalTransaksi'), jQuery("#TotalTransaksi").val());
 			SetEnableCommand();
 		});
-			
-		jQuery('#btSave').click(function () {
-			// formatCurrency(jQuery('#TotalTransaksi'));
 
+		jQuery('#frmSaveKasKeluar').on('submit', function(event) {
 			jQuery('#btSave').text('Tunggu Sebentar.....');
       		jQuery('#btSave').attr('disabled',true);
 
-      		var dataGridInstance = jQuery('#gridContainerDetail').dxDataGrid('instance');
-      		var allRowsData  = dataGridInstance.getDataSource().items();
-      		console.log(allRowsData)
-      		var oDetail = [];
-
-      		for (var i = 0; i < allRowsData.length; i++) {
-      			// Things[i]
-      			if (allRowsData[i]['KodeItem'] != "") {
-
-      				var oItem = {
-      					'KodeTransaksi' : allRowsData[i]['KodeTransaksi'],
-						'KodeRekening' : allRowsData[i]['KodeRekening'],
-						'Debit' : allRowsData[i]['Debit'],
-						'Kredit' : allRowsData[i]['Kredit'],
-						'Keterangan' : allRowsData[i]['Keterangan'],
-      				}
-      				
-      				oDetail.push(oItem)
-      			}
-      		}
-
-			var oData = {
-				'NoTransaksi' : jQuery('#NoTransaksi').val(),
-				'TglTransaksi' : jQuery('#TglTransaksi').val(),
-                'KodeTransaksi' : jQuery('#KodeTransaksi').val(),
-				'NoReff' : jQuery('#NoReff').val(),
-				'Status' : jQuery('#Status').val(),
-				'Detail' : oDetail
-			}
-			// var originalvalue = jQuery("#TotalTransaksi").attr("originalvalue");
-
-			// console.log(oData)
-			if (jQuery('#formtype').val() == "add") {
-				$.ajax({
-					url: "{{route('kaskeluar-store')}}",
-					type: 'POST',
-					contentType: 'application/json',
-					headers: {
-		                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
-		            },
-		            data: JSON.stringify(oData),
-		            success: function(response) {
-		            	if (response.success == true) {
-		            		Swal.fire({
-		                        html: "Data berhasil disimpan!",
-		                        icon: "success",
-		                        title: "Horray...",
-		                        // text: "Data berhasil disimpan! <br> " + response.Kembalian,
-		                    }).then((result)=>{
-		                        jQuery('#btSave').text('Save');
-		                        jQuery('#btSave').attr('disabled',false);
-		                        // location.reload();
-		                        window.location.href = '{{url("kaskeluar")}}';
-		                    });
-		            	}
-		            	else{
-		            		Swal.fire({
-		                      icon: "error",
-		                      title: "Opps...",
-		                      text: response.message,
-		                    })
-		                    jQuery('#btSave').text('Save');
-		                    jQuery('#btSave').attr('disabled',false);
-		            	}
-		            }
-				})
-			}
-			else if (jQuery('#formtype').val() == "edit") {
-				$.ajax({
-					url: "{{route('kaskeluar-edit')}}",
-					type: 'POST',
-					contentType: 'application/json',
-					headers: {
-		                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
-		            },
-		            data: JSON.stringify(oData),
-		            success: function(response) {
-		            	if (response.success == true) {
-		            		Swal.fire({
-		                        html: "Data berhasil disimpan!",
-		                        icon: "success",
-		                        title: "Horray...",
-		                        // text: "Data berhasil disimpan! <br> " + response.Kembalian,
-		                    }).then((result)=>{
-		                        jQuery('#btSave').text('Save');
-		                        jQuery('#btSave').attr('disabled',false);
-		                        // location.reload();
-		                        window.location.href = '{{url("kaskeluar")}}';
-		                    });
-		            	}
-		            	else{
-		            		Swal.fire({
-		                      icon: "error",
-		                      title: "Opps...",
-		                      text: response.message,
-		                    })
-		                    jQuery('#btSave').text('Save');
-		                    jQuery('#btSave').attr('disabled',false);
-		            	}
-		            }
-				})
-			}
-			else{
-				Swal.fire({
-	              icon: "error",
-	              title: "Opps...",
-	              text: "Invalid Form Type",
-	            })
-	            jQuery('#btSave').text('Save');
-	            jQuery('#btSave').attr('disabled',false);
-			}
+			event.preventDefault();
+			var formData = jQuery(this).serializeArray();
+			formData.forEach(function(item) {
+				if (item.name === 'TotalTransaksi') { // Change 'name' to the parameter you want to modify
+					item.value = jQuery("#_TotalTransaksi").attr("originalvalue"); // Set your desired value here
+					
+				}
+				if (item.name.includes('DetailParameter') && item.name.includes('[TotalTransaksi]')) {
+					// Update `TotalTransaksi` value for all indices
+					item.value = item.value.replace(/,/g, ""); // Set your desired value here
+				}
+				// console.log(item);
+			});
+			// console.log(formData);
+			var urlData = (jQuery('#formtype').val() == "add" ? '{{ route("kaskeluar-store") }}' : '{{ route("kaskeluar-edit") }}')
+			$.ajax({
+                url: urlData, // Route to handle form submission
+                method: 'POST',
+                data: $.param(formData),
+                success: function(response) {
+                    if (response.success == true) {
+						Swal.fire({
+							text: "Data berhasil disimpan!",
+							icon: "success",
+							title: "Horray...",
+							// text: "Data berhasil disimpan! <br> " + response.Kembalian,
+						}).then((result)=>{
+							jQuery('#btSave').text('Save');
+							jQuery('#btSave').attr('disabled',false);
+							// location.reload();
+							window.location.href = '{{url("kaskeluar")}}';
+						});
+					}
+					else{
+						Swal.fire({
+							text: "Error Data " + response.message,
+							icon: "error",
+							title: "woopss...",
+							// text: "Data berhasil disimpan! <br> " + response.Kembalian,
+						}).then((result)=>{
+							jQuery('#btSave').text('Save');
+							jQuery('#btSave').attr('disabled',false);
+						});
+					}
+                },
+                error: function(xhr, status, error) {
+					Swal.fire({
+						text: "Error Data " + error,
+						icon: "error",
+						title: "woopss...",
+						// text: "Data berhasil disimpan! <br> " + response.Kembalian,
+					}).then((result)=>{
+						jQuery('#btSave').text('Save');
+						jQuery('#btSave').attr('disabled',false);
+					});
+                }
+            });
 		});
 
 		jQuery('#KodeTransaksi').change(function () {
