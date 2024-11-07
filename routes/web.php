@@ -858,3 +858,4 @@ Route::post('/kaskeluar/store', [KasKeluarController::class, 'store'])->name('ka
 Route::post('/kaskeluar/edit', [KasKeluarController::class, 'edit'])->name('kaskeluar-edit')->middleware('auth');
 Route::post('/kaskeluar/readheader', [KasKeluarController::class, 'ViewHeader'])->name('kaskeluar-readheader')->middleware('auth');
 Route::post('/kaskeluar/readdetail', [KasKeluarController::class, 'ViewDetail'])->name('kaskeluar-readdetail')->middleware('auth');
+Route::delete('/kaskeluar/delete/{id}', [KasKeluarController::class, 'deletedata'])->name('kaskeluar-delete')->middleware('auth');

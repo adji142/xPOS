@@ -208,13 +208,12 @@
                     caption: "Action",
                     fixed: true,
                     cellTemplate: function(cellElement, cellInfo) {
-                        var link = "kaskeluar/form/"+cellInfo.data.NoTransaksi;
+                        const deleteRouteTemplate = `{{ route('kaskeluar-delete', ':NoTransaksi') }}`;
                         var LinkAccess = "";
 
                         LinkAccess += `<a href="{{ url('kaskeluar/form') }}/${cellInfo.data.NoTransaksi}" class="btn btn-outline-warning font-weight-bold me-1 mb-1" id="btEdit">Edit</a>`;
-                        LinkAccess += "<button class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btDelete' >Delete</button>";
-
-                        cellElement.append(LinkAccess);
+                        LinkAccess += `<a class="btn btn-outline-danger font-weight-bold me-1 mb-1" title="Delete" href="${deleteRouteTemplate.replace(':NoTransaksi', cellInfo.data.NoTransaksi)}" data-confirm-delete="true">Batal</a>`;
+                        $(cellElement).append(LinkAccess);
                     }
                 },
             ],
@@ -274,5 +273,9 @@
             ]
 		});
 	}
+
+    function DeleteData(params) {
+        alert(params);
+    }
 </script>
 @endpush

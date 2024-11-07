@@ -23,6 +23,10 @@ class KasKeluarController extends Controller
     public function View(Request $request)
     {
     	$keyword = $request->input('keyword');
+        $title = 'Batalkan Transaksi Kas Keluar !';
+        $text = "Apakah anda yakin untuk membatalkan Transaksi ini ?";
+        confirmDelete($title, $text);
+
 	    return view("Transaksi.Accounting.KasKeluar");
     }
 
@@ -221,8 +225,10 @@ jump:
 		                ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
 		                ->delete();
                 $index = 0;
+                // var_dump($DetailParameter);
                 foreach ($DetailParameter as $dt) {
-                    if ($dt["TotalTransaksi"] == 0) {
+                    if ($dt["TotalTransaksi"] == "0") {
+                        // var_dump($dt["TotalTransaksi"]. " / ". $dt['KodeAkun']);
                         goto skip;
                     }
 
@@ -276,7 +282,7 @@ jump:
 
         try {
             $update = DB::table('kaskeluarheader')
-                        ->where('NoTransaksi','=', $request->input('NoTransaksi'))
+                        ->where('NoTransaksi','=', $request->id)
                         ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                         ->update(
                             [
@@ -289,6 +295,7 @@ jump:
         } catch (\Exception $e) {
             alert()->error('Error',$e->getMessage());
         }
+        return redirect('kaskeluar');
     }
 
 

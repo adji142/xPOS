@@ -255,21 +255,28 @@
 					addNewLine(oKasKeluarDetail[index], index);
 				}
 
+				jQuery('#tblkaskeluardetail').DataTable({
+					colReorder: false,
+				});
+				addNewLine([],oKasKeluarDetail.length);
+				jQuery(".dynamiCombo").select2();
+				AsignRowNumber();
+				jQuery('.dataTables_empty').first().remove();
+				SetEnableCommand();
+
 				updateTotalDisplay();
 	      		// valueExpr: "NoTransaksi",
 			}
 			else{
-				// BindGridDetail([])	
+				jQuery('#tblkaskeluardetail').DataTable({
+					colReorder: false,
+				});
+				addNewLine([],0);
+				jQuery(".dynamiCombo").select2();
+				AsignRowNumber();
+				jQuery('.dataTables_empty').first().remove();
+				SetEnableCommand();
 			}
-
-            jQuery('#tblkaskeluardetail').DataTable({
-				colReorder: false,
-			});
-			addNewLine([],0);
-			jQuery(".dynamiCombo").select2();
-			AsignRowNumber();
-			jQuery('.dataTables_empty').first().remove();
-			SetEnableCommand();
 		});
 
 
@@ -505,7 +512,7 @@
 				}
 				// console.log(item);
 			});
-			// console.log(formData);
+			console.log(formData);
 			var urlData = (jQuery('#formtype').val() == "add" ? '{{ route("kaskeluar-store") }}' : '{{ route("kaskeluar-edit") }}')
 			$.ajax({
                 url: urlData, // Route to handle form submission
