@@ -59,6 +59,7 @@ use App\Http\Controllers\MenuRestoAddonController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\TnCController;
 use App\Http\Controllers\KasKeluarController;
+use App\Http\Controllers\KasMasukController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -859,3 +860,18 @@ Route::post('/kaskeluar/edit', [KasKeluarController::class, 'edit'])->name('kask
 Route::post('/kaskeluar/readheader', [KasKeluarController::class, 'ViewHeader'])->name('kaskeluar-readheader')->middleware('auth');
 Route::post('/kaskeluar/readdetail', [KasKeluarController::class, 'ViewDetail'])->name('kaskeluar-readdetail')->middleware('auth');
 Route::delete('/kaskeluar/delete/{id}', [KasKeluarController::class, 'deletedata'])->name('kaskeluar-delete')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Kas Masuk
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/kasmasuk', [KasMasukController::class,'View'])->name('kasmasuk')->middleware('auth');
+Route::get('/kasmasuk/form/{id}', [KasMasukController::class,'Form'])->name('kasmasuk-form')->middleware('auth');
+Route::post('/kasmasuk/store', [KasMasukController::class, 'store'])->name('kasmasuk-store')->middleware('auth');
+Route::post('/kasmasuk/edit', [KasMasukController::class, 'edit'])->name('kasmasuk-edit')->middleware('auth');
+Route::post('/kasmasuk/readheader', [KasMasukController::class, 'ViewHeader'])->name('kasmasuk-readheader')->middleware('auth');
+Route::post('/kasmasuk/readdetail', [KasMasukController::class, 'ViewDetail'])->name('kasmasuk-readdetail')->middleware('auth');
+Route::delete('/kasmasuk/delete/{id}', [KasMasukController::class, 'deletedata'])->name('kasmasuk-delete')->middleware('auth');
