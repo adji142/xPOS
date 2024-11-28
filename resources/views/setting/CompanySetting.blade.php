@@ -122,6 +122,10 @@
 													<li class="nav-item" >
 														<a class="nav-link" id="invoice-tab" data-bs-toggle="pill" href="#invoice" role="tab" aria-controls="invoice" aria-selected="false">Tagihan</a>
 													</li>
+													<li class="nav-item" >
+														<a class="nav-link" id="custdisplay-tab" data-bs-toggle="pill" href="#custdisplay" role="tab" aria-controls="custdisplay" aria-selected="false">Customer Display</a>
+													</li>
+													
 												@else
 													<li class="nav-item" >
 														<a class="nav-link active" id="general-tab2" data-bs-toggle="pill" href=" #general" role="tab" aria-controls="general" aria-selected="true">General</a>
@@ -140,6 +144,9 @@
 													</li>
 													<li class="nav-item" >
 														<a class="nav-link" id="invoice-tab" data-bs-toggle="pill" href="#invoice" role="tab" aria-controls="invoice" aria-selected="false">Tagihan</a>
+													</li>
+													<li class="nav-item" >
+														<a class="nav-link" id="custdisplay-tab" data-bs-toggle="pill" href="#custdisplay" role="tab" aria-controls="custdisplay" aria-selected="false">Customer Display</a>
 													</li>
 												@endif
 											</ul>
@@ -667,6 +674,97 @@
 													</div>
 												</div>
 
+												<div class="tab-pane fade " id="custdisplay" role="tabpanel" aria-labelledby="custdisplay-tab">
+													<div class="row">
+														<div class="col-sm-12">
+															<label  class="text-body">Promo tampil customer display</label>
+															<fieldset class="form-group mb-3">
+																{{-- <input type="text" class="form-control" id="BannerText2" name="BannerText2" placeholder="Masukan Banner Text" value="{{ count($company) > 0 ? $company[0]['BannerText2'] : '' }}"  > --}}
+																<textarea id="PromoDsiplay" name="PromoDsiplay" class="bg-transparent text-dark">
+																	{{ count($company) > 0 ? $company[0]['PromoDsiplay'] : '' }}
+																</textarea>
+															</fieldset>
+														</div>
+														<div class="col-md-10">
+					                            			<label  class="text-body">Running Text</label>
+					                            			<fieldset class="form-group mb-4">
+					                            				<input type="text" class="form-control" id="RunningText" name="RunningText" placeholder="Masukan Running Text" value="{{ count($company) > 0 ? $company[0]['RunningText'] : 0 }}" >
+					                            			</fieldset>
+					                            		</div>
+														<div class="row">
+															<label  class="text-body">Gambar Customer Display</label>
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageCustDisplay1Base64" name = "ImageCustDisplay1Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageCustDisplay1'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageCustDisplay1" name="fileImageCustDisplay1" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageCustDisplay1" class="image_result_sample">
+																			@if ($company[0]['ImageCustDisplay1'] != '')
+																				<img src=" {{$company[0]['ImageCustDisplay1']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageCustDisplay2Base64" name = "ImageCustDisplay2Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageCustDisplay2'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageCustDisplay2" name="fileImageCustDisplay2" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageCustDisplay2" class="image_result_sample">
+																			@if ($company[0]['ImageCustDisplay2'] != '')
+																				<img src=" {{$company[0]['ImageCustDisplay2']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageCustDisplay3Base64" name = "ImageCustDisplay3Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageCustDisplay3'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageCustDisplay3" name="fileImageCustDisplay3" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageCustDisplay3" class="image_result_sample">
+																			@if ($company[0]['ImageCustDisplay3'] != '')
+																				<img src=" {{$company[0]['ImageCustDisplay3']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageCustDisplay4Base64" name = "ImageCustDisplay4Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageCustDisplay4'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageCustDisplay4" name="fileImageCustDisplay4" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageCustDisplay4" class="image_result_sample">
+																			@if ($company[0]['ImageCustDisplay3'] != '')
+																				<img src=" {{$company[0]['ImageCustDisplay4']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+														</div>
+													</div>
+												</div>
+
 											</div>
 										</div>
 									</div>
@@ -735,6 +833,14 @@ var oCompany;
 			ClassicEditor.create(document.querySelector('#BannerText3')).then( editor => {})
 			.catch( error => {
 					console.error( error );
+			});
+			
+
+			tinymce.init({
+				selector: '#PromoDsiplay',
+				plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
+				toolbar_mode: 'floating',
+				toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help'
 			});
 
 			oCompany = <?php echo $company ?>;
@@ -849,6 +955,19 @@ var oCompany;
 			$('#fileBanner3').click();
 		});
 
+		jQuery('#ImageCustDisplay1').click(function(){
+			$('#fileImageCustDisplay1').click();
+		});
+		jQuery('#ImageCustDisplay2').click(function(){
+			$('#fileImageCustDisplay2').click();
+		});
+		jQuery('#ImageCustDisplay3').click(function(){
+			$('#fileImageCustDisplay3').click();
+		});
+		jQuery('#ImageCustDisplay4').click(function(){
+			$('#fileImageCustDisplay4').click();
+		});
+
 		jQuery("#fileBanner1").change(function(){
 			var file = $(this)[0].files[0];
 			img = new Image();
@@ -897,6 +1016,74 @@ var oCompany;
 			}
 			readURL(this, "Banner3");
 			encodeImagetoBase64(this, "Banner3Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileImageCustDisplay1").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageCustDisplay1");
+			encodeImagetoBase64(this, "ImageCustDisplay1Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileImageCustDisplay2").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageCustDisplay2");
+			encodeImagetoBase64(this, "ImageCustDisplay2Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileImageCustDisplay3").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageCustDisplay3");
+			encodeImagetoBase64(this, "ImageCustDisplay3Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileImageCustDisplay4").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageCustDisplay4");
+			encodeImagetoBase64(this, "ImageCustDisplay4Base64");
 			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
 		});
 

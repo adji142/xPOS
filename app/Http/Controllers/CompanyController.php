@@ -186,7 +186,13 @@ class CompanyController extends Controller
                                     'BannerText1' => empty($request->input('BannerText1')) ? "" : $request->input('BannerText1'),
                                     'BannerText2' => empty($request->input('BannerText2')) ? "" : $request->input('BannerText2'),
                                     'BannerText3' => empty($request->input('BannerText3')) ? "" : $request->input('BannerText3'),
-                                    'ShowLinkInReciept' => 0
+                                    'ShowLinkInReciept' => 0,
+                                    'ImageCustDisplay1' => empty($request->input('ImageCustDisplay1Base64')) ? "" : $request->input('ImageCustDisplay1Base64'),
+                                    'ImageCustDisplay2' => empty($request->input('ImageCustDisplay2Base64')) ? "" : $request->input('ImageCustDisplay2Base64'),
+                                    'ImageCustDisplay3' => empty($request->input('ImageCustDisplay3Base64')) ? "" : $request->input('ImageCustDisplay3Base64'),
+                                    'ImageCustDisplay4' => empty($request->input('ImageCustDisplay4Base64')) ? "" : $request->input('ImageCustDisplay4Base64'),
+                                    'PromoDsiplay' => empty($request->input('PromoDsiplay')) ? "" : $request->input('PromoDsiplay'),
+                                    'RunningText' => empty($request->input('RunningText')) ? "" : $request->input('RunningText'),
                 				]
                 			);
 

@@ -60,6 +60,7 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\TnCController;
 use App\Http\Controllers\KasKeluarController;
 use App\Http\Controllers\KasMasukController;
+use App\Http\Controllers\CustDisplayController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -532,6 +533,7 @@ Route::get('/fpenjualan/print/{id}', [FakturPenjualanController::class, 'CetakFa
 Route::get('/fpenjualan/printthermal/{id}', [FakturPenjualanController::class, 'PrintThermalReciept'])->name('fpenjualan-printthermal')->middleware('auth');
 Route::post('/fpenjualan/retailPosFnb', [FakturPenjualanController::class, 'storePoSFnB'])->name('fpenjualan-retailPosFnB')->middleware('auth');
 Route::post('/fpenjualan/editJsonPosFnb', [FakturPenjualanController::class, 'editJsonPoSFnB'])->name('fpenjualan-editJsonPosFnB')->middleware('auth');
+Route::get('/fpenjualan/custdisplay', [CustDisplayController::class, 'View'])->name('fpenjualan-custdisplay')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------

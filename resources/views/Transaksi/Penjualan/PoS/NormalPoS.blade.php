@@ -94,6 +94,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			   <div class="col-xl-4 col-lg-4 col-md-6">
 				   <div class="greeting-text">
 					<h3 class="card-label mb-0 font-weight-bold text-primary">WELCOME
+						<br>
 					</h3>
 					<h3 class="card-label mb-0 ">
 						{{ Auth::user()->name }}
@@ -123,17 +124,28 @@ License: You must have a valid license purchased only from themeforest(the above
 
 				<div class="topbar justify-content-end">
 					<div class="topbar-item folder-data">
-					 <div class="btn btn-icon  w-auto h-auto btn-clean d-flex align-items-center py-0 me-3"  data-bs-toggle="modal" data-bs-target="#folderpop"
-					 >
-						 <span class="badge badge-pill badge-primary" id="_draftCount">5</span>
-						 <span class="symbol symbol-35  symbol-light-success">
-							 <span class="symbol-label bg-warning font-size-h5 ">
-								 <svg width="20px" height="20px" xmlns="http://www.w3.org/2000/svg" fill="#ffff"  viewBox="0 0 16 16">
-									 <path d="M9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3zm-8.322.12C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139z"></path>
-								   </svg>
-							 </span>
-						 </span>
-					 </div>
+						<div class="btn btn-icon  w-auto h-auto btn-clean d-flex align-items-center py-0 me-3"  data-bs-toggle="modal" data-bs-target="#folderpop">
+							<span class="badge badge-pill badge-primary" id="_draftCount">5</span>
+							<span class="symbol symbol-35  symbol-light-success">
+								<span class="symbol-label bg-warning font-size-h5 ">
+									<svg width="20px" height="20px" xmlns="http://www.w3.org/2000/svg" fill="#ffff"  viewBox="0 0 16 16">
+										<path d="M9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3zm-8.322.12C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139z"></path>
+									</svg>
+								</span>
+							</span>
+						</div>
+					</div>
+
+					<div class="topbar-item folder-data">
+						<div id="btOpenCustDisplay" class="btn btn-icon  w-auto h-auto btn-clean d-flex align-items-center py-0 me-3">
+							<span class="symbol symbol-35  symbol-light-success">
+								<span class="symbol-label font-size-h5 ">
+									<svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" class="bi bi-pc-display-horizontal" viewBox="0 0 16 16">
+									<path d="M1.5 0A1.5 1.5 0 0 0 0 1.5v7A1.5 1.5 0 0 0 1.5 10H6v1H1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-5v-1h4.5A1.5 1.5 0 0 0 16 8.5v-7A1.5 1.5 0 0 0 14.5 0zm0 1h13a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-7a.5.5 0 0 1 .5-.5M12 12.5a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0m2 0a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0M1.5 12h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1M1 14.25a.25.25 0 0 1 .25-.25h5.5a.25.25 0 1 1 0 .5h-5.5a.25.25 0 0 1-.25-.25"/>
+									</svg>
+								</span>
+							</span>
+						</div>
 				 
 					</div>
 			 
@@ -219,7 +231,6 @@ License: You must have a valid license purchased only from themeforest(the above
 										<h2><div id="_NoTransaksi"></div></h2>
 									</div>	
 								</div>
-								
 							</div>	
 						</div>
 						<div class="card card-custom gutter-b bg-white border-0 table-contentpos">
@@ -873,6 +884,8 @@ License: You must have a valid license purchased only from themeforest(the above
 	var _KodeMetodePembayaran = -1;
 	var _MetodeVerifikasiPembayaran = '';
 	var _TipePembayaran = '';
+	let customerDisplayWindow;
+
 
 	document.addEventListener('DOMContentLoaded', () => {
 	    const listItems = document.querySelectorAll('.horizontal-list li');
@@ -945,6 +958,10 @@ License: You must have a valid license purchased only from themeforest(the above
 	    	bindGridLookupCustomer(_Pelanggan);
 
 	    	jQuery('#_NoTransaksi').text("<OTOMATIS>");
+
+			// window.open("{{ url('/fpenjualan/custdisplay') }}", '_blank');
+			// openCustomerDisplay();
+			localStorage.setItem('PoSData', JSON.stringify([]));
 		});
 
 
@@ -1450,6 +1467,9 @@ License: You must have a valid license purchased only from themeforest(the above
             });
 		});
 
+		$('#btOpenCustDisplay').click(function(){
+			openCustomerDisplay();
+		});
 	});
 
 	function LoadDraftOrderList() {
@@ -2344,10 +2364,11 @@ License: You must have a valid license purchased only from themeforest(the above
   		var _tempTotalTax = 0;
   		var _tempTotalServices = 0;
   		var _tempGrandTotal = 0;
-
+		allRowsData = [];
   		dataGridInstance.getDataSource().store().load().done(function (data) {
   			_tempTotalItem = data.length;
 	        for (var i = 0; i < data.length; i++) {
+				allRowsData.push(data[i]);
 	        	console.log(data[i]['Diskon'])
 	        	var _Total = data[i]['Qty'] * data[i]['Harga'];
 				var _diskonPerRow = 0;
@@ -2389,7 +2410,8 @@ License: You must have a valid license purchased only from themeforest(the above
   		// $('#_TotalItem').text(_tempTotalItem);
   		// $('#_SubTotal').text(_tempSubTotal);
   		// $('#_GrandTotal').text(_tempSubTotal - _tempTotalDiskon);
-
+		localStorage.setItem('PoSData', JSON.stringify(allRowsData));
+		
   		$('#_Barcode').val('');
   		$('#_Barcode').focus();
 	}
@@ -2541,6 +2563,12 @@ License: You must have a valid license purchased only from themeforest(the above
 		  }
 		});
     }
+
+	function openCustomerDisplay() {
+		// Use Laravel's url() helper to generate the URL
+		const url = "{{ url('/fpenjualan/custdisplay') }}";
+		window.open(url, '_blank', 'width=1390,height=800,,scrollbars=no,toolbar=no,status=no,menubar=no');
+	}
 
 
     

@@ -1,0 +1,8 @@
+ALTER TABLE `xpos`.`company` 
+ADD COLUMN `ImageCustDisplay1` text NULL AFTER `isInitialSetting`,
+ADD COLUMN `ImageCustDisplay2` text NULL AFTER `ImageCustDisplay1`,
+ADD COLUMN `ImageCustDisplay3` text NULL AFTER `ImageCustDisplay2`,
+ADD COLUMN `ImageCustDisplay4` text NULL AFTER `ImageCustDisplay3`,
+ADD COLUMN `ImageCustDisplay5` text NULL AFTER `ImageCustDisplay4`;
+ADD COLUMN `PromoDsiplay` text NULL AFTER `ImageCustDisplay5`,
+ADD COLUMN `RunningText` varchar(255) NULL AFTER `PromoDsiplay`;
