@@ -61,6 +61,9 @@ use App\Http\Controllers\TnCController;
 use App\Http\Controllers\KasKeluarController;
 use App\Http\Controllers\KasMasukController;
 use App\Http\Controllers\CustDisplayController;
+use App\Http\Controllers\MasterControllerController;
+use App\Http\Controllers\TitikLampuController;
+use App\Http\Controllers\EnvController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -877,3 +880,51 @@ Route::post('/kasmasuk/edit', [KasMasukController::class, 'edit'])->name('kasmas
 Route::post('/kasmasuk/readheader', [KasMasukController::class, 'ViewHeader'])->name('kasmasuk-readheader')->middleware('auth');
 Route::post('/kasmasuk/readdetail', [KasMasukController::class, 'ViewDetail'])->name('kasmasuk-readdetail')->middleware('auth');
 Route::delete('/kasmasuk/delete/{id}', [KasMasukController::class, 'deletedata'])->name('kasmasuk-delete')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Meja
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/controller', [MasterControllerController::class,'View'])->name('controller')->middleware('auth');
+Route::get('/controller/form/{id}', [MasterControllerController::class,'Form'])->name('controller-form')->middleware('auth');
+Route::post('/controller/store', [MasterControllerController::class, 'store'])->name('controller-store')->middleware('auth');
+Route::post('/controller/edit', [MasterControllerController::class, 'edit'])->name('controller-edit')->middleware('auth');
+// json
+Route::post('/controller/read', [MasterControllerController::class, 'ViewJson'])->name('controller-ViewJson')->middleware('auth');
+Route::post('/controller/storeJson', [MasterControllerController::class, 'storeJson'])->name('controller-storeJson')->middleware('auth');
+Route::post('/controller/editJson', [MasterControllerController::class, 'editJson'])->name('controller-editJson')->middleware('auth');
+// end json
+Route::delete('/controller/delete/{id}', [MasterControllerController::class, 'deletedata'])->name('controller-delete')->middleware('auth');
+Route::get('/controller/export', [MasterControllerController::class,'Export'])->name('controller-export')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Meja
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/titiklampu', [TitikLampuController::class,'View'])->name('titiklampu')->middleware('auth');
+Route::get('/titiklampu/form/{id}', [TitikLampuController::class,'Form'])->name('titiklampu-form')->middleware('auth');
+Route::post('/titiklampu/store', [TitikLampuController::class, 'store'])->name('titiklampu-store')->middleware('auth');
+Route::post('/titiklampu/edit', [TitikLampuController::class, 'edit'])->name('titiklampu-edit')->middleware('auth');
+// json
+Route::post('/titiklampu/read', [TitikLampuController::class, 'ViewJson'])->name('titiklampu-ViewJson')->middleware('auth');
+Route::post('/titiklampu/storeJson', [TitikLampuController::class, 'storeJson'])->name('titiklampu-storeJson')->middleware('auth');
+Route::post('/titiklampu/editJson', [TitikLampuController::class, 'editJson'])->name('titiklampu-editJson')->middleware('auth');
+// end json
+Route::delete('/titiklampu/delete/{id}', [TitikLampuController::class, 'deletedata'])->name('titiklampu-delete')->middleware('auth');
+Route::get('/titiklampu/export', [TitikLampuController::class,'Export'])->name('titiklampu-export')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| App Setting
+|--------------------------------------------------------------------------
+|
+*/
+
+Route::get('/appsetting', [EnvController::class,'View'])->name('appsetting')->middleware('auth');
+Route::post('/appsetting/update', [EnvController::class, 'update'])->name('appsetting-update')->middleware('auth');

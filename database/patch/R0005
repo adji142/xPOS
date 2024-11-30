@@ -6,3 +6,9 @@ ADD COLUMN `ImageCustDisplay4` text NULL AFTER `ImageCustDisplay3`,
 ADD COLUMN `ImageCustDisplay5` text NULL AFTER `ImageCustDisplay4`;
 ADD COLUMN `PromoDsiplay` text NULL AFTER `ImageCustDisplay5`,
 ADD COLUMN `RunningText` varchar(255) NULL AFTER `PromoDsiplay`;
+
+
+INSERT INTO `xpos`.`permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Controller', 'dashboard', '', 2, 1, 1, 1.0, 1, NOW(), NOW());
+INSERT INTO `xpos`.`permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Daftar Controller', 'dashboard', '', 3, 88, 2, 1.1, 1, NOW(), NOW());
+INSERT INTO `xpos`.`permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Daftar Titik Lampu', 'dashboard', '', 3, 88, 2, 1.2, 1, NOW(), NOW());
+

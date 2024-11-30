@@ -36,10 +36,6 @@
 		<!--end::Logo-->
 		<!--begin::Toolbar-->
 		<div class="d-flex align-items-center">
-           
-			<div class="posicon">
-				<a href="pos.html" class="btn btn-primary d-flex align-items-center justify-content-center white me-2">POS</a>
-			</div>
 			<button class="btn p-0" id="tc_aside_mobile_toggle">
 				<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-justify-right" fill="currentColor"
 					xmlns="http://www.w3.org/2000/svg">
@@ -89,7 +85,7 @@
 						<div id="accordion">
 							<ul class="nav flex-column">
 								<li class="nav-item active">
-									<a href="{{ route('dashboard') }}" class="nav-link">
+									<a href="{{ route('dashboardadmin') }}" class="nav-link">
 										<span class="svg-icon nav-icon">
 											<svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
 												viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -117,7 +113,7 @@
                                     <div id="accordion1">
                                         <ul class="nav flex-column">
                                             <li class="nav-item">
-                                                <a href="subs" class="nav-link sub-nav-link">
+                                                <a href="{{ route('subs') }}" class="nav-link sub-nav-link">
                                                     <span class="svg-icon nav-icon d-flex justify-content-center">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="10px" height="10px" fill="currentColor" class="bi bi-circle" viewBox="0 0 16 16">
                                                             <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
@@ -128,7 +124,7 @@
                                             </li>
 
 											<li class="nav-item">
-                                                <a href="tnc" class="nav-link sub-nav-link">
+                                                <a href="{{ route('tnc') }}" class="nav-link sub-nav-link">
                                                     <span class="svg-icon nav-icon d-flex justify-content-center">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="10px" height="10px" fill="currentColor" class="bi bi-circle" viewBox="0 0 16 16">
                                                             <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
@@ -137,6 +133,18 @@
                                                     <span class="nav-text">Term and Condition</span>
                                                 </a>
                                             </li>
+
+											<li class="nav-item">
+                                                <a href="{{ route('appsetting') }}" class="nav-link sub-nav-link">
+                                                    <span class="svg-icon nav-icon d-flex justify-content-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="10px" height="10px" fill="currentColor" class="bi bi-circle" viewBox="0 0 16 16">
+                                                            <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                                          </svg>
+                                                    </span>
+                                                    <span class="nav-text">Apps Setting</span>
+                                                </a>
+                                            </li>
+
                                         </ul>
                                     </div>
                                 </div>
@@ -155,7 +163,7 @@
                                     <div id="accordion1">
                                         <ul class="nav flex-column">
                                             <li class="nav-item">
-                                                <a href="penggunaaplikasi" class="nav-link sub-nav-link">
+                                                <a href="{{ route('penggunaaplikasi') }}" class="nav-link sub-nav-link">
                                                     <span class="svg-icon nav-icon d-flex justify-content-center">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="10px" height="10px" fill="currentColor" class="bi bi-circle" viewBox="0 0 16 16">
                                                             <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
@@ -166,7 +174,7 @@
                                             </li>
 
                                             <li class="nav-item">
-                                                <a href="tagihanpengguna" class="nav-link sub-nav-link">
+                                                <a href="{{ route('invpengguna-tagihanpengguna') }}" class="nav-link sub-nav-link">
                                                     <span class="svg-icon nav-icon d-flex justify-content-center">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="10px" height="10px" fill="currentColor" class="bi bi-circle" viewBox="0 0 16 16">
                                                             <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
@@ -232,9 +240,6 @@
 					<!--end::Header Menu Wrapper-->
 					<!--begin::Topbar-->
 					<div class="topbar">
-						<div class="posicon d-lg-block d-none">
-							<a href="pos.html" class="btn btn-primary white me-2">POS</a>
-						</div>
 
 						<!--begin::Quick Actions-->
 						<div class="dropdown">
