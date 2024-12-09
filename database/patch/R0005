@@ -11,4 +11,24 @@ ADD COLUMN `RunningText` varchar(255) NULL AFTER `PromoDsiplay`;
 INSERT INTO `xpos`.`permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Controller', 'dashboard', '', 2, 1, 1, 1.0, 1, NOW(), NOW());
 INSERT INTO `xpos`.`permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Daftar Controller', 'dashboard', '', 3, 88, 2, 1.1, 1, NOW(), NOW());
 INSERT INTO `xpos`.`permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Daftar Titik Lampu', 'dashboard', '', 3, 88, 2, 1.2, 1, NOW(), NOW());
+INSERT INTO `xpos`.`permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Paket', 'dashboard', '', 2, 1, 1, 60.0, 1, NOW(), NOW());
+INSERT INTO `xpos`.`permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Paket Per Menit', 'dashboard', '', 3, 91, 2, 60.1, 1, NOW(), NOW());
+INSERT INTO `xpos`.`permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Paket Per Jam', 'dashboard', '', 3, 91, 2, 60.2, 1, NOW(), NOW());
+INSERT INTO `xpos`.`permission`(`PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `created_at`, `updated_at`) VALUES ('Paket Transaksi', 'dashboard', '', 3, 91, 2, 60.3, 1, NOW(), NOW());
 
+
+CREATE TRIGGER `trg_updateStatusLampu` AFTER INSERT ON `tableorderheader` FOR EACH ROW BEGIN
+	UPDATE titiklampu set `Status` = NEW.`Status` WHERE id = NEW.tableid and RecordOwnerID = NEW.RecordOwnerID;
+END;
+
+CREATE TRIGGER `trg_updateStatusLampu_co` AFTER INSERT ON `tableorderheader` FOR EACH ROW BEGIN
+	UPDATE titiklampu  set `Status` = NEW.`Status` WHERE id = NEW.tableid and RecordOwnerID = NEW.RecordOwnerID;
+END;
+
+INSERT INTO `xpos`.`documenttype`(`KodeDokumen`, `NamaDokumen`, `created_at`, `updated_at`) VALUES ('TRDR', 'Table Order', NULL, NULL);
+
+ALTER TABLE `xpos`.`titiklampu` 
+MODIFY COLUMN `Status` int(1) NULL DEFAULT 0 COMMENT '0: Off, 1: On, 2: Warning, -1: Checkout' AFTER `RecordOwnerID`;
+
+ALTER TABLE `xpos`.`tableorderheader` 
+MODIFY COLUMN `JamSelesai` datetime(0) NULL AFTER `JamMulai`;

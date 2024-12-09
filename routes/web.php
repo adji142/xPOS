@@ -64,6 +64,9 @@ use App\Http\Controllers\CustDisplayController;
 use App\Http\Controllers\MasterControllerController;
 use App\Http\Controllers\TitikLampuController;
 use App\Http\Controllers\EnvController;
+use App\Http\Controllers\PaketController;
+use App\Http\Controllers\TableOrderController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -928,3 +931,30 @@ Route::get('/titiklampu/export', [TitikLampuController::class,'Export'])->name('
 
 Route::get('/appsetting', [EnvController::class,'View'])->name('appsetting')->middleware('auth');
 Route::post('/appsetting/update', [EnvController::class, 'update'])->name('appsetting-update')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Paket Per Menit
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/paket', [PaketController::class,'View'])->name('paket')->middleware('auth');
+Route::get('/paket/form/{id}', [PaketController::class,'Form'])->name('paket-form')->middleware('auth');
+Route::post('/paket/store', [PaketController::class, 'store'])->name('paket-store')->middleware('auth');
+Route::post('/paket/edit', [PaketController::class, 'edit'])->name('paket-edit')->middleware('auth');
+// json
+Route::post('/paket/read', [PaketController::class, 'ViewJson'])->name('paket-ViewJson')->middleware('auth');
+Route::post('/paket/storeJson', [PaketController::class, 'storeJson'])->name('paket-storeJson')->middleware('auth');
+Route::post('/paket/editJson', [PaketController::class, 'editJson'])->name('paket-editJson')->middleware('auth');
+// end json
+Route::delete('/paket/delete/{id}', [PaketController::class, 'deletedata'])->name('paket-delete')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Billing
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/billing', [TableOrderController::class,'View'])->name('billing')->middleware('auth');
+Route::post('/billing/store', [TableOrderController::class, 'store'])->name('billing-store')->middleware('auth');

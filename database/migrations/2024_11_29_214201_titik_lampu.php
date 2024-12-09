@@ -18,6 +18,7 @@ class TitikLampu extends Migration
             $table->string('NamaTitikLampu');
             $table->integer('DigitalInput');
             $table->integer('ControllerID');
+            $table->integer('Status'); // 0: Off, 1: On, 2: Warning, -1: Checkout
             $table->String('RecordOwnerID');
             $table->timestamps();
         });
