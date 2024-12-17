@@ -84,7 +84,7 @@
                                         <div class="col-md-6" id="divAkhirJamNormal">
 	                            			<label  class="text-body">Akhir Jam Harga Normal</label>
 	                            			<fieldset class="form-group mb-3">
-	                            				<input type="time" class="form-control" id="AkhirJamNormal" name="AkhirJamNormal" value="{{ count($paket) > 0 ? $paket[0]['AkhirJamNormal'] : '' }}" required="">
+	                            				<input type="time" class="form-control" id="AkhirJamNormal" name="AkhirJamNormal" value="{{ count($paket) > 0 ? $paket[0]['AkhirJamNormal'] : '' }}">
 	                            			</fieldset>
 	                            		</div>
 

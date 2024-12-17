@@ -958,3 +958,7 @@ Route::delete('/paket/delete/{id}', [PaketController::class, 'deletedata'])->nam
 */
 Route::get('/billing', [TableOrderController::class,'View'])->name('billing')->middleware('auth');
 Route::post('/billing/store', [TableOrderController::class, 'store'])->name('billing-store')->middleware('auth');
+Route::post('/billing/editdurasi', [TableOrderController::class, 'EditPaket'])->name('billing-editdurasi')->middleware('auth');
+Route::post('/billing/checkout', [TableOrderController::class, 'CheckOut'])->name('billing-checkout')->middleware('auth');
+Route::post('/billing/addfnb', [TableOrderController::class, 'AddFnB'])->name('billing-addfnb')->middleware('auth');
+Route::post('/billing/readfnb', [TableOrderController::class, 'ReadTableOrderFnB'])->name('billing-readfnb')->middleware('auth');

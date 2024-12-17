@@ -32,3 +32,9 @@ MODIFY COLUMN `Status` int(1) NULL DEFAULT 0 COMMENT '0: Off, 1: On, 2: Warning,
 
 ALTER TABLE `xpos`.`tableorderheader` 
 MODIFY COLUMN `JamSelesai` datetime(0) NULL AFTER `JamMulai`;
+
+ALTER TABLE `xpos`.`company` 
+ADD COLUMN `PajakHiburan` double(16, 2) NULL AFTER `RunningText`;
+
+ALTER TABLE `xpos`.`settingaccount` 
+ADD COLUMN `OthPajakHiburan` varchar(255) NULL AFTER `OthAcctLabaTahunBerjalan`;

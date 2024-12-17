@@ -178,6 +178,7 @@ License: You must have a valid license purchased only from themeforest(the above
                             <option value="" >Pilih Jenis Usaha</option>
                             <option value="Retail" >Retail</option>
                             <option value="FnB" >Food and Beverage</option>
+                            <option value="Hiburan" >Hiburan</option>
                         </select>
                     </div>
                  

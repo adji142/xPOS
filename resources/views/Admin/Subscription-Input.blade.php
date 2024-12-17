@@ -77,6 +77,7 @@
                                                 <option value=""  {{ count($subscriptionheader) > 0 ? $subscriptionheader[0]['JenisUsaha'] == "" ? 'selected' : '' : '' }}>Pilih Jenis Usaha</option>
                                                 <option value="Retail" {{ count($subscriptionheader) > 0 ? $subscriptionheader[0]['JenisUsaha'] == "Retail" ? 'selected' : '' : '' }} >Retail</option>
                                                 <option value="FnB" {{ count($subscriptionheader) > 0 ? $subscriptionheader[0]['JenisUsaha'] == "FnB" ? 'selected' : '' : '' }}>Food and Beverage</option>
+                                                <option value="Hiburan" {{ count($subscriptionheader) > 0 ? $subscriptionheader[0]['JenisUsaha'] == "Hiburan" ? 'selected' : '' : '' }}>Hiburan</option>
                                             </select>
                                         </fieldset>
                                     </div>

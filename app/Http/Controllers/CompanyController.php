@@ -193,6 +193,7 @@ class CompanyController extends Controller
                                     'ImageCustDisplay4' => empty($request->input('ImageCustDisplay4Base64')) ? "" : $request->input('ImageCustDisplay4Base64'),
                                     'PromoDsiplay' => empty($request->input('PromoDsiplay')) ? "" : $request->input('PromoDsiplay'),
                                     'RunningText' => empty($request->input('RunningText')) ? "" : $request->input('RunningText'),
+                                    'PajakHiburan' => empty($request->input('PajakHiburan')) ? "" : $request->input('PajakHiburan'),
                 				]
                 			);
 

@@ -126,6 +126,11 @@
 														<a class="nav-link" id="custdisplay-tab" data-bs-toggle="pill" href="#custdisplay" role="tab" aria-controls="custdisplay" aria-selected="false">Customer Display</a>
 													</li>
 													
+													@if ($company[0]['JenisUsaha'] == "Hiburan")
+													<li class="nav-item" >
+														<a class="nav-link" id="hiburan-tab" data-bs-toggle="pill" href="#hiburan" role="tab" aria-controls="hiburan" aria-selected="false">Hiburan</a>
+													</li>
+													@endif
 												@else
 													<li class="nav-item" >
 														<a class="nav-link active" id="general-tab2" data-bs-toggle="pill" href=" #general" role="tab" aria-controls="general" aria-selected="true">General</a>
@@ -148,6 +153,11 @@
 													<li class="nav-item" >
 														<a class="nav-link" id="custdisplay-tab" data-bs-toggle="pill" href="#custdisplay" role="tab" aria-controls="custdisplay" aria-selected="false">Customer Display</a>
 													</li>
+													@if ($company[0]['JenisUsaha'] == "Hiburan")
+													<li class="nav-item" >
+														<a class="nav-link" id="hiburan-tab" data-bs-toggle="pill" href="#hiburan" role="tab" aria-controls="hiburan" aria-selected="false">Hiburan</a>
+													</li>
+													@endif
 												@endif
 											</ul>
 										</div>
@@ -762,6 +772,89 @@
 															</div>
 
 														</div>
+													</div>
+												</div>
+
+												<div class="tab-pane fade " id="printer" role="tabpanel" aria-labelledby="printer-tab">
+													<div class="form-group row">
+														<div class="col-md-4">
+					                            			<label  class="text-body">Printer Register</label>
+					                            			<fieldset class="form-group mb-4">
+					                            				<select name="NamaPosPrinter" id="NamaPosPrinter" class="js-example-basic-single js-states form-control bg-transparent">
+					                            					<option value="-1">Pilih Printer</option>
+																	@foreach($printer as $ko)
+																		<option {{ count($company) > 0 ? $company[0]['NamaPosPrinter'] == $ko->DeviceAddress ? "selected" : '' :""}} value="{{ $ko->DeviceAddress }}">
+					                                                        {{ $ko->NamaPrinter. ' > '. $ko->PrinterInterface }}
+					                                                    </option>
+																	@endforeach
+					                            				</select>
+					                            			</fieldset>
+					                            			
+					                            		</div>
+
+					                            		<div class="col-md-3">
+					                            			<label  class="text-body">Lebar Kertas</label>
+					                            			<fieldset class="form-group mb-3">
+					                            				<select name="LebarKertas" id="LebarKertas" class="js-example-basic-single js-states form-control bg-transparent">
+					                            					<option value="48">48</option>
+					                            					<option value="58">58</option>
+					                            					<option value="80">80</option>
+					                            				</select>
+					                            			</fieldset>
+					                            		</div>
+														<!--
+					                            		<div class="col-md-3">
+					                            			<fieldset class="form-group mb-3">
+					                            				<button type="button" class="btn btn-warning">Test Print</button>
+					                            			</fieldset>
+					                            		</div>
+					                            		<div class="col-md-3">
+					                            			<fieldset class="form-group mb-3">
+					                            				<button type="button" class="btn btn-warning" id="testPrintUSB">Test Print Usb</button>
+					                            			</fieldset>
+					                            		</div> -->
+
+					                            		<!-- <a href="{{ url('companysetting/testprint') }}">Test Print</a> -->
+					                            		<div class="col-md-12">
+					                            			<label  class="text-body">Keterangan Footer</label>
+					                            			<fieldset class="form-group mb-12">
+					                            				<textarea class="form-control" id="FooterNota" name="FooterNota" rows="3" placeholder="Masukan Alamat">{{ count($company) > 0 ? $company[0]['FooterNota'] : '' }}</textarea>
+					                            			</fieldset>
+					                            		</div>
+
+														<div class="col-md-4">
+					                            			<label  class="text-body">Format Faktur</label>
+					                            			<fieldset class="form-group mb-3">
+					                            				<select name="DefaultSlip" id="DefaultSlip" class="js-example-basic-single js-states form-control bg-transparent">
+					                            					<option value="slip1" {{ count($company) > 0 ? $company[0]['DefaultSlip'] == "slip1"? "selected" : '' :""}} >Slip 1</option>
+					                            					<option value="slip2" {{ count($company) > 0 ? $company[0]['DefaultSlip'] == "slip2"? "selected" : '' :""}} >Slip 2</option>
+					                            					<option value="slip3" {{ count($company) > 0 ? $company[0]['DefaultSlip'] == "slip3"? "selected" : '' :""}} >Slip 3</option>
+					                            				</select>
+					                            			</fieldset>
+					                            		</div>
+
+														<div class="col-md-8">
+															<label  class="text-body">Preview</label>
+															<fieldset class="form-group mb-3">
+																<img src="#" id="PreviewImageSlip" width="100%">
+															</fieldset>
+														</div>
+
+													</div>
+												</div>
+
+
+
+												<div class="tab-pane fade " id="hiburan" role="tabpanel" aria-labelledby="hiburan-tab">
+													<div class="form-group row">
+														<div class="col-md-12">
+					                            			<label  class="text-body">Pajak Hiburan (%)</label>
+					                            			<fieldset class="form-group mb-4">
+					                            				<input type="number" class="form-control" step="0.01" id="PajakHiburan" name="PajakHiburan" placeholder="Masukan Pajak Hiburan" value="{{ count($company) > 0 ? $company[0]['PajakHiburan'] : 0 }}" >
+					                            			</fieldset>
+					                            			
+					                            		</div>
+
 													</div>
 												</div>
 

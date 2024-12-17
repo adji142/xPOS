@@ -16,6 +16,8 @@ use App\Models\Company;
 use App\Models\Sales;
 use App\Models\Pelanggan;
 use App\Models\DocumentNumbering;
+use App\Models\MetodePembayaran;
+use App\Models\ItemMaster;
 
 class TableOrderController extends Controller
 {
@@ -38,12 +40,16 @@ class TableOrderController extends Controller
                             sales.NamaSales,
                             tableorderheader.DurasiPaket,
                             tableorderheader.JamMulai,
-                            tableorderheader.JamSelesai
+                            tableorderheader.JamSelesai,
+                            tableorderheader.JenisPaket,
+                            tableorderheader.paketid,
+                            tableorderheader.TglTransaksi
                         ")
                         ->leftJoin('tableorderheader', function ($value)  {
                             $value->on('titiklampu.id','=','tableorderheader.tableid')
                             ->on('titiklampu.RecordOwnerID','=','tableorderheader.RecordOwnerID')
-                            ->on(DB::raw("DATE_FORMAT(COALESCE(tableorderheader.JamSelesai, now()), '%Y-%m-%d %H:%i')"),'>=',DB::raw("DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i')"));
+                            ->on(DB::raw("DATE_FORMAT(COALESCE(tableorderheader.JamSelesai, now()), '%Y-%m-%d')"),'>=',DB::raw("DATE_FORMAT(NOW(), '%Y-%m-%d')"))
+                            ->on('tableorderheader.Status','!=',DB::raw('0'));
                         })
                         ->leftJoin('pakettransaksi', function ($value)  {
                             $value->on('tableorderheader.paketid','=','pakettransaksi.id')
@@ -66,13 +72,21 @@ class TableOrderController extends Controller
                     ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                     ->where('Status','=',1)
                     ->get();
+        $metodepembayaran = MetodePembayaran::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+        // $itemmaster = ItemMaster::selectRaw('KodeItem as id, NamaItem as text, Satuan, HargaJual')
+        //                 ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+        //                 ->where('Active','=', 'Y')->get();
+        $oItem = new ItemMaster();
+        $itemmaster = $oItem->GetItemData(Auth::user()->RecordOwnerID,"", "", "","", "Y", '', 0);
         return view("Transaksi.Penjualan.PoS.Billing",[
             'paket' => $paket, 
             'titiklampu' => $titiklampu,
             'titiklampuoption' => $titiklampuoption,
             'company' => $company,
             'sales' => $sales,
-            'pelanggan' => $pelanggan
+            'pelanggan' => $pelanggan,
+            'metodepembayaran' => $metodepembayaran,
+            'itemmaster' => $itemmaster->get()
         ]);
     }
 
@@ -98,8 +112,8 @@ class TableOrderController extends Controller
 
             $model = new TableOrderHeader;
             $model->NoTransaksi = $NoTransaksi;
-            $model->TglTransaksi = $currentDate;
-            $model->TglPencatatan = $currentDate;
+            $model->TglTransaksi = Carbon::now();
+            $model->TglPencatatan = Carbon::now();
             $model->JenisPaket = $request->input('JenisPaket');
             $model->paketid = $request->input('paketid');
             $model->tableid = $request->input('tableid');
@@ -111,13 +125,23 @@ class TableOrderController extends Controller
             $model->GrossTotal = 0; //$request->input('GrossTotal');
             $model->DiscTotal = 0;// $request->input('DiscTotal');
             $model->NetTotal = 0;//$request->input('NetTotal');
-            $model->JamMulai = $currentDate;
+            $model->JamMulai = Carbon::now();
             if ($request->input('JenisPaket') != 'MENIT') {
                 $model->JamSelesai = $currentDate->addHours($request->input('DurasiPaket'));
+                // var_dump($currentDate->addHours($request->input('DurasiPaket')));
             }
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
+
+            DB::table('tableorderheader')
+                            ->where('NoTransaksi','=', $NoTransaksi)
+                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->update(
+                                [
+                                    'JamSelesai' => DB::raw('DATE_ADD(JamMulai, INTERVAL DurasiPaket HOUR)')
+                                ]
+                            );
 
             if ($save) {
                 $data['success'] = true;
@@ -127,6 +151,189 @@ class TableOrderController extends Controller
         } catch (\Throwable $th) {
             $data['message'] = 'Internal error, '. $th->getMessage() ;
         }
+        return response()->json($data);
+    }
+
+    public function EditPaket(Request $request){
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        $this->validate($request, [
+            'txtNoTransaksi_RubahDurasi'=>'required',
+            'txtDurasiPaket_RubahDurasi'=>'required'
+        ]);
+
+        try {
+            $model = TableOrderHeader::where('NoTransaksi','=',$request->input('txtNoTransaksi_RubahDurasi'))
+                        ->where('RecordOwnerID','=', Auth::user()->RecordOwnerID);
+
+            if ($model) {
+                $update = DB::table('tableorderheader')
+                            ->where('NoTransaksi','=', $request->input('txtNoTransaksi_RubahDurasi'))
+                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->update(
+                                [
+                                    'DurasiPaket' => DB::raw('DurasiPaket + ' . $request->input('txtDurasiPaket_RubahDurasi')),
+                                    'JamSelesai' => DB::raw('DATE_ADD(JamMulai, INTERVAL DurasiPaket HOUR)')
+                                ]
+                            );
+
+                if ($update) {
+                    $data['success'] = true;
+                }else{
+                    $data['message']= 'Update Data Paket Gagal';
+                }
+            }
+        } catch (\Throwable $th) {
+            $data['message'] = 'Internal error, '. $th->getMessage() ;
+        }
+
+        return response()->json($data);
+    }
+
+    public function CheckOut(Request $request){
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        $this->validate($request, [
+            'txtNoTransaksi_CheckOut'=>'required',
+            'txtJenisPaket_CheckOut'=>'required'
+        ]);
+
+        try {
+            $model = TableOrderHeader::where('NoTransaksi','=',$request->input('txtNoTransaksi_CheckOut'))
+                        ->where('RecordOwnerID','=', Auth::user()->RecordOwnerID);
+
+            if ($model) {
+                $update = DB::table('tableorderheader')
+                            ->where('NoTransaksi','=', $request->input('txtNoTransaksi_CheckOut'))
+                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->update(
+                                [
+                                    'Status' => '-1',
+                                    'JamSelesai' => DB::raw("CASE WHEN '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENIT' THEN NOW() ELSE JamSelesai END")
+                                ]
+                            );
+
+                if ($update) {
+                    $data['success'] = true;
+                }else{
+                    $data['message']= 'Update Data Paket Gagal';
+                }
+            }
+        } catch (\Throwable $th) {
+            $data['message'] = 'Internal error, '. $th->getMessage() ;
+        }
+
+        return response()->json($data);
+    }
+
+    public function AddFnB(Request $request){
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        $this->validate($request, [
+            'txtNoTransaksi_TambahMakan'=>'required',
+        ]);
+
+        try {
+            DB::beginTransaction();
+            $oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
+
+            $DetailParameter = $request->input('DetailParameter');
+            $NoTransaksi = $request->input('txtNoTransaksi_TambahMakan');
+            $errorCount = 0;
+
+            if ($DetailParameter) {
+                $delete = DB::table('tableorderfnb')
+		                ->where('NoTransaksi','=', $NoTransaksi)
+		                ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+		                ->delete();
+
+                $index = 0;
+                foreach ($DetailParameter as $dt) {
+                    if ($dt["Qty"] == 0) {
+                        $$data['message'] = "Qty Harus Lebih dari 0 ";
+                        $errorCount +=1;
+                        goto jump;
+                    }
+
+                    if ($oCompany->AllowNegativeInventory == NULL || $oCompany->AllowNegativeInventory == 'N') {
+                        $oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
+                                    ->where('KodeItem',$dt['KodeItem'])
+                                    ->where('Stock','>',0)
+                                    ->get();
+
+                        if (count($oItem) == 0) {
+                            $data['message'] = "Stock Item ".$dt['NamaItem']." Tidak Cukup";
+                            $errorCount += 1;
+                            goto jump;		
+                        }
+                    }
+
+                    $detail = new TableOrderFnB();
+                    $detail->NoTransaksi = $NoTransaksi;
+                    $detail->LineNumber = $index;
+                    $detail->KodeItem = $dt['KodeItem'];
+                    $detail->Qty = $dt['Qty'];
+                    $detail->Harga = $dt['Harga'];
+                    $detail->Tax = 0;
+                    $detail->Discount = $dt['Diskon'];
+                    $detail->LineTotal = $dt['Qty'] * $dt['Harga'];
+                    $detail->RecordOwnerID = Auth::user()->RecordOwnerID;
+                    $detail->save();
+
+                    if (!$detail) {
+                        $data['message'] = "Menyimpan Data " . dt["NamaItem"] . " Gagal dilakukan";
+                        $errorCount +=1;
+                        goto jump;
+                    }
+
+                    $index +=1;
+                }
+            }
+            else{
+                $data['message'] = "Pilih Item terlebih dahulu";
+                $errorCount += 1;
+                goto jump;	
+            }
+
+            jump:
+
+            if ($errorCount > 0) {
+		        DB::rollback();
+		        $data['success'] = false;
+	        }
+	        else{
+		        DB::commit();
+		        $data['success'] = true;
+	        }
+        } catch (\Throwable $th) {
+            $data['success'] = false;
+            $data['message'] = 'Internal error, '. $th->getMessage() ;
+        }
+
+        return response()->json($data);
+    }
+
+    public function ReadTableOrderFnB(Request $request) {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        $NoTransaksi = $request->input('txtNoTransaksi_TambahMakan');
+
+        try {
+            $tableorderfnb = TableOrderFnB::selectRaw("tableorderfnb.*, itemmaster.NamaItem, itemmaster.HargaJual")
+                        ->leftJoin('itemmaster', function ($value)  {
+                            $value->on('tableorderfnb.KodeItem','=','itemmaster.KodeItem')
+                            ->on('tableorderfnb.RecordOwnerID','=','itemmaster.RecordOwnerID');
+                        })
+                        ->where('tableorderfnb.NoTransaksi','=',$NoTransaksi)
+                        ->where('tableorderfnb.RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                        ->get();
+        $data['data'] = $tableorderfnb;
+        $data['success'] = true;
+        } catch (\Throwable $th) {
+            $data['success'] = true;
+            $data['message'] = 'Internal error, '. $th->getMessage() ;
+        }
+        
         return response()->json($data);
     }
 }
