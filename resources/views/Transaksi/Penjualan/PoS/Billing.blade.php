@@ -267,7 +267,7 @@ License: You must have a valid license purchased only from themeforest(the above
 																<a class="disabled-link dropdown-item btDetail_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Detail</a>
 															@endif
 
-															@if ($item->Status == 1)
+															@if ($item->Status == 1 || $item->Status == 2)
 																<a class="disabled-link dropdown-item btPilihPaket_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Pilih Paket</a>
 																<a class="dropdown-item btCheckOut_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Check Out</a>
 																<a class="dropdown-item btTambahMakanan_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Makanan</a>
@@ -290,6 +290,10 @@ License: You must have a valid license purchased only from themeforest(the above
 
 													@if ($item->Status == 1)
 														<button class="btn btn-danger text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
+													@endif
+
+													@if ($item->Status == 2)
+														<button class="btn btn-warning text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
 													@endif
 
 													@if ($item->Status == -1)
@@ -548,187 +552,217 @@ License: You must have a valid license purchased only from themeforest(the above
 
 <div class="modal fade text-left" id="LookupDetailOrder" tabindex="-1" role="dialog" aria-labelledby="myModalLabel11" style="display: none;" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-scrollable  modal-lg" role="document">
-		<form id="frmUpdatePaket">
-			<div class="modal-content">
-				<div class="modal-header">
-				  	<h3 class="modal-title" id="myModalLabel11">Detail Order</h3>
-					<button type="button" class="close rounded-pill btn btn-sm btn-icon btn-light btn-hover-primary m-0" data-bs-dismiss="modal" aria-label="Close">
-						<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-							<path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
-						</svg>
-					</button>
-				</div>
-				<div class="modal-body">
-					<div class="form-group row">
-						<div class="col-md-12">
-							<div class="row">
-								<div class="col-md-12 col-12">
-									<div class="card card-custom gutter-b bg-white border-0">
-										<div class="card-header align-items-center  border-0">
-											<div class="card-title mb-0">
-												<h3 class="card-label mb-0 font-weight-bold text-body ">Detail Table Order</h3>
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3 class="modal-title" id="myModalLabel11">Detail Order</h3>
+				<button id="btCloseModalDetails" type="button" class="close rounded-pill btn btn-sm btn-icon btn-light btn-hover-primary m-0" data-bs-dismiss="modal" aria-label="Close">
+					<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+						<path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+					</svg>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group row">
+					<div class="col-md-12">
+						<div class="row">
+							<div class="col-md-12 col-12">
+								<div class="card card-custom gutter-b bg-white border-0">
+									<div class="card-header align-items-center  border-0">
+										<div class="card-title mb-0">
+											<h3 class="card-label mb-0 font-weight-bold text-body ">Detail Table Order</h3>
+											<h3 class="card-label mb-0 font-weight-bold text-body "><small>Selamat Datang <span id="lblNamaCustomer"></span></small></h3>
+										</div>
+									</div>
+									<div class="card-body">
+										<div class="form-group row">
+											<div class="col-md-12">
+												<label  class="text-body">Nomor Order</label>
+												<fieldset class="form-group mb-12">
+													<input type="text" class="form-control" id="txtNoTransaksi_Detail" name="txtNoTransaksi_Detail" readonly>
+												</fieldset>
+											</div>
+											
+											<div class="col-md-12">
+												<div class="table-responsive" id="printableTable">
+													<table class="display" style="width:100%" id="tblDetailFnB">
+														<tr>
+															<td style="text-align: right">Jenis Paket</td>
+															<td>:</td>
+															<td id="dtJenisPaket_Detail"></td>
+														</tr>
+														<tr>
+															<td style="text-align: right">Nama Paket Paket</td>
+															<td>:</td>
+															<td id="dtNamaPaket_Detail"></td>
+														</tr>
+														<tr>
+															<td style="text-align: right">Jam Mulai</td>
+															<td>:</td>
+															<td id="dtJamMulai_Detail"></td>
+														</tr>
+														<tr>
+															<td style="text-align: right">Jam Selesai</td>
+															<td>:</td>
+															<td id="dtJamSelesai_Detail"></td>
+														</tr>
+														<tr>
+															<td style="text-align: right">Total Harga Normal</td>
+															<td>:</td>
+															<td id="dtTotalHargaNormal_Detail" style="text-align: right"></td>
+														</tr>
+														<tr>
+															<td style="text-align: right">Total Perubahan Harga</td>
+															<td>:</td>
+															<td id="dtTotalPerubahanHarga_Detail" style="text-align: right"></td>
+														</tr>
+														<tr>
+															<td style="text-align: right">Total PPN</td>
+															<td>:</td>
+															<td id="dtTotalPPN_Detail" style="text-align: right"></td>
+														</tr>
+														<tr>
+															<td style="text-align: right">Total Pajak Hiburan</td>
+															<td>:</td>
+															<td id="dtTotalPajakHiburan_Detail" style="text-align: right"></td>
+														</tr>
+														<tr>
+															<td style="text-align: right">Sub Total </td>
+															<td>:</td>
+															<td id="dtSubTotal_Detail" style="text-align: right"></td>
+														</tr>
+													</table>
+												</div>
+											</div>
+
+											<div class="col-md-12">
+												<label  class="text-body">Order Makanan</label>
+												<div class="table-responsive">
+													<table id="TablePenjualan" class="display" style="width:100%">
+														<thead>
+															<tr>
+																<th>Item</th>
+																<th>Qty</th>
+																<th>Harga</th>
+																<th>Diskon</th>
+																<th>Total</th>
+
+																<!-- Other Info -->
+																<th>KodeItem</th>
+																<th>HargaPokokPenjualan</th>
+																<th>Satuan</th>
+															</tr>
+														</thead>
+														<tbody>
+
+														</tbody>
+													</table>
+												</div>
+											</div>
+											<div class="col-md-12">
+												<div class="table-responsive" id="printableTable">
+													<table class="display" style="width:100%">
+														<tr>
+															<td style="text-align: right">Sub Total </td>
+															<td>:</td>
+															<td style="text-align: right">
+																<input type="text" class="form-control" id="txtSubTotal_Detail" name="txtSubTotal_Detail" readonly>
+															</td>
+														</tr>
+
+														<tr>
+															<td style="text-align: right">Total Makanan </td>
+															<td>:</td>
+															<td style="text-align: right">
+																<input type="text" class="form-control" id="txtTotalMakanan_Detail" name="txtTotalMakanan_Detail" readonly>
+															</td>
+														</tr>
+
+														<tr>
+															<td style="text-align: right">Pajak (*) </td>
+															<td>:</td>
+															<td style="text-align: right">
+																<input type="text" class="form-control" id="txtTotalPajak_Detail" name="txtTotalPajak_Detail" readonly>
+															</td>
+														</tr>
+														<tr>
+															<td style="text-align: right">Diskon Member <span id="lblNamaMember"></span></td>
+															<td>:</td>
+															<td style="text-align: right">
+																<fieldset class="form-group mb-3 d-flex">
+																	<input type="text" name="text" class="form-control bg-white" id="txtDiscountMember_Detail"  name="txtDiscountMember_Detail" readonly>
+																</fieldset>
+															</td>
+														</tr>
+														<tr>
+															<td style="text-align: right">Diskon Table</td>
+															<td>:</td>
+															<td style="text-align: right">
+																<fieldset class="form-group mb-3 d-flex">
+																	<input type="text" name="text" class="form-control bg-white" id="txtDiscountTable_Detail"  name="txtDiscountTable_Detail" readonly>
+																</fieldset>
+															</td>
+														</tr>
+														<tr>
+															<td style="text-align: right">Diskon FnB</td>
+															<td>:</td>
+															<td style="text-align: right">
+																<fieldset class="form-group mb-3 d-flex">
+																	<input type="text" name="text" class="form-control bg-white" id="txtDiscountFnB_Detail"  name="txtDiscountFnB_Detail" readonly>
+																</fieldset>
+															</td>
+														</tr>
+
+														<tr>
+															<td style="text-align: right">Total Discount </td>
+															<td>:</td>
+															<td style="text-align: right">
+																<fieldset class="form-group mb-3 d-flex">
+																	<input type="text" name="text" class="form-control bg-white" id="txtDiscount_Detail"  name="txtDiscount_Detail" readonly>
+																</fieldset>
+															</td>
+														</tr>
+
+														<tr>
+															<td style="text-align: right">Grand Total </td>
+															<td>:</td>
+															<td style="text-align: right">
+																<input type="text" class="form-control" id="txtGrandTotal_Detail" name="txtGrandTotal_Detail" readonly>
+															</td>
+														</tr>
+													</table>
+												</div>
 											</div>
 										</div>
-										<div class="card-body">
-											<div class="form-group row">
-												<div class="col-md-12">
-													<label  class="text-body">Nomor Order</label>
-													<fieldset class="form-group mb-12">
-														<input type="text" class="form-control" id="txtNoTransaksi_Detail" name="txtNoTransaksi_Detail" readonly>
-													</fieldset>
-												</div>
-												
-												<div class="col-md-12">
-													<div class="table-responsive" id="printableTable">
-														<table class="display" style="width:100%" id="tblDetailFnB">
-															<tr>
-																<td style="text-align: right">Jenis Paket</td>
-																<td>:</td>
-																<td id="dtJenisPaket_Detail"></td>
-															</tr>
-															<tr>
-																<td style="text-align: right">Nama Paket Paket</td>
-																<td>:</td>
-																<td id="dtNamaPaket_Detail"></td>
-															</tr>
-															<tr>
-																<td style="text-align: right">Jam Mulai</td>
-																<td>:</td>
-																<td id="dtJamMulai_Detail"></td>
-															</tr>
-															<tr>
-																<td style="text-align: right">Jam Selesai</td>
-																<td>:</td>
-																<td id="dtJamSelesai_Detail"></td>
-															</tr>
-															<tr>
-																<td style="text-align: right">Total Harga Normal</td>
-																<td>:</td>
-																<td id="dtTotalHargaNormal_Detail" style="text-align: right"></td>
-															</tr>
-															<tr>
-																<td style="text-align: right">Total Perubahan Harga</td>
-																<td>:</td>
-																<td id="dtTotalPerubahanHarga_Detail" style="text-align: right"></td>
-															</tr>
-															<tr>
-																<td style="text-align: right">Total PPN</td>
-																<td>:</td>
-																<td id="dtTotalPPN_Detail" style="text-align: right"></td>
-															</tr>
-															<tr>
-																<td style="text-align: right">Total Pajak Hiburan</td>
-																<td>:</td>
-																<td id="dtTotalPajakHiburan_Detail" style="text-align: right"></td>
-															</tr>
-															<tr>
-																<td style="text-align: right">Sub Total </td>
-																<td>:</td>
-																<td id="dtSubTotal_Detail" style="text-align: right"></td>
-															</tr>
-														</table>
-													</div>
-												</div>
 
-												<div class="col-md-12">
-													<label  class="text-body">Order Makanan</label>
-													<div class="table-responsive">
-														<table id="TablePenjualan" class="display" style="width:100%">
-															<thead>
-																<tr>
-																	<th>Item</th>
-																	<th>Qty</th>
-																	<th>Harga</th>
-																	<th>Diskon</th>
-																	<th>Total</th>
-																</tr>
-															</thead>
-															<tbody>
-
-															</tbody>
-														</table>
-													</div>
-												</div>
-												<div class="col-md-12">
-													<div class="table-responsive" id="printableTable">
-														<table class="display" style="width:100%">
-															<tr>
-																<td style="text-align: right">Sub Total </td>
-																<td>:</td>
-																<td style="text-align: right">
-																	<input type="text" class="form-control" id="txtSubTotal_Detail" name="txtSubTotal_Detail" readonly>
-																</td>
-															</tr>
-
-															<tr>
-																<td style="text-align: right">Total Makanan </td>
-																<td>:</td>
-																<td style="text-align: right">
-																	<input type="text" class="form-control" id="txtTotalMakanan_Detail" name="txtTotalMakanan_Detail" readonly>
-																</td>
-															</tr>
-
-															<tr>
-																<td style="text-align: right">Pajak (*) </td>
-																<td>:</td>
-																<td style="text-align: right">
-																	<input type="text" class="form-control" id="txtTotalPajak_Detail" name="txtTotalPajak_Detail" readonly>
-																</td>
-															</tr>
-
-															<tr>
-																<td style="text-align: right">Discount </td>
-																<td>:</td>
-																<td style="text-align: right">
-																	<fieldset class="form-group mb-3 d-flex">
-																		<input type="text" name="text" class="form-control bg-white" id="txtDiscount_Detail"  name="txtDiscount_Detail" readonly>
-																		<a href="javascript:void(0)" class="btn-secondary btn ms-2 white pt-1 pb-1 d-flex align-items-center justify-content-center">Tambah</a>
-																	</fieldset>
-																</td>
-															</tr>
-
-															<tr>
-																<td style="text-align: right">Grand Total </td>
-																<td>:</td>
-																<td style="text-align: right">
-																	<input type="text" class="form-control" id="txtGrandTotal_Detail" name="txtGrandTotal_Detail" readonly>
-																</td>
-															</tr>
-														</table>
-													</div>
-												</div>
+										<div class="form-group row">
+											<div class="col-md-6">
+												<label  class="text-body">Metode Pembayaran</label>
+												<fieldset class="form-group mb-12">
+													<select name="cboMetodePembayaran_Detail" id="cboMetodePembayaran_Detail" class="cboMetodePembayaran_Detail js-states form-control bg-transparent" >
+														<option value="">Pilih Metode Pembayaran</option>
+														@foreach ($metodepembayaran as $mtd)
+															<option value="{{ $mtd->id }}">{{ $mtd->NamaMetodePembayaran }}</option>
+														@endforeach
+													</select>
+												</fieldset>
 											</div>
-
-											<div class="form-group row">
-												<div class="col-md-6">
-													<label  class="text-body">Metode Pembayaran</label>
-													<fieldset class="form-group mb-12">
-														<select name="cboMetodePembayaran_Detail" id="cboMetodePembayaran_Detail" class="cboMetodePembayaran_Detail js-states form-control bg-transparent" >
-															<option value="">Pilih Metode Pembayaran</option>
-															@foreach ($metodepembayaran as $mtd)
-																<option value="{{ $mtd->id }}">{{ $mtd->NamaMetodePembayaran }}</option>
-															@endforeach
-														</select>
-													</fieldset>
-												</div>
-												<div class="col-md-6">
-													<label  class="text-body">Refrensi</label>
-													<fieldset class="form-group mb-12">
-														<input type="text" class="form-control" id="txtRefrensi_Detail" name="txtRefrensi_Detail">
-													</fieldset>
-												</div>
-												<div class="col-md-6">
-													<label  class="text-body">Jumlah Bayar</label>
-													<fieldset class="form-group mb-12">
-														<input type="text" class="form-control" id="txtJumlahBayar_Detail" name="txtJumlahBayar_Detail">
-													</fieldset>
-												</div>
-												<div class="col-md-6">
-													<label  class="text-body">Kembalian</label>
-													<fieldset class="form-group mb-12">
-														<input type="text" class="form-control" id="txtJumlahKembalian_Detail" name="txtJumlahKembalian_Detail" readonly>
-													</fieldset>
-												</div>
+											<div class="col-md-6">
+												<label  class="text-body">Refrensi</label>
+												<fieldset class="form-group mb-12">
+													<input type="text" class="form-control" id="txtRefrensi_Detail" name="txtRefrensi_Detail">
+												</fieldset>
+											</div>
+											<div class="col-md-6">
+												<label  class="text-body">Jumlah Bayar</label>
+												<fieldset class="form-group mb-12">
+													<input type="text" class="form-control" id="txtJumlahBayar_Detail" name="txtJumlahBayar_Detail">
+												</fieldset>
+											</div>
+											<div class="col-md-6">
+												<label  class="text-body">Kembalian</label>
+												<fieldset class="form-group mb-12">
+													<input type="text" class="form-control" id="txtJumlahKembalian_Detail" name="txtJumlahKembalian_Detail" readonly>
+												</fieldset>
 											</div>
 										</div>
 									</div>
@@ -737,13 +771,13 @@ License: You must have a valid license purchased only from themeforest(the above
 						</div>
 					</div>
 				</div>
-				<div class="modal-footer">
-					<button class="btn btn-success ms-1" id="btBayar" data-bs-dismiss="modal">
-						<span class="">Bayar</span>
-					</button>
-				</div> 	
 			</div>
-		</form>
+			<div class="modal-footer">
+				<button class="btn btn-success ms-1" id="btBayar" data-bs-dismiss="modal">
+					<span class="">Bayar</span>
+				</button>
+			</div> 	
+		</div>
 	</div>	  	  
 </div>
 
@@ -850,7 +884,7 @@ License: You must have a valid license purchased only from themeforest(the above
 <link href="{{ asset('devexpress/dx.light.css')}}" rel="stylesheet" type="text/css" />
 <script src="{{asset('devexpress/dx.all.js')}}"></script>
 <script src="{{asset('api/select2/select2.min.js')}}"></script>
-<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ $midtransclientkey }}"></script>
 <script src="{{asset('api/datatable/jquery.dataTables.min.js')}}"></script>
 
 </body>
@@ -863,7 +897,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 		jQuery(document).ready(function() {
 			_billing = <?php echo $titiklampu ?>;
-			
+			console.log(_billing);
 			jQuery('.js-example-basic-single').select2({
 				dropdownParent: $('#LookupPilihPaket')
 			});
@@ -872,8 +906,8 @@ License: You must have a valid license purchased only from themeforest(the above
 					jQuery('#lblPaketTransaksi'+v['id']).text(v["NamaPaket"]);
 
 					if (v['JamSelesai'] != null) {
-						if (v['Status'] == 1) {
-							SetTimer(v['id'],0,v['JamSelesai'], v['JamMulai'], v['NoTransaksi'], v['JenisPaket']);
+						if (v['Status'] == 1 || v['Status'] == 2) {
+							SetTimer(v['id'],0,v['JamSelesai'], v['JamMulai'], v['NoTransaksi'], v['JenisPaket'], v['Status']);
 							jQuery('#lblMulai'+v['id']).text(stringtoDateTime(v["JamMulai"]));
 							jQuery('#lblSelesai'+v['id']).text(stringtoDateTime(v["JamSelesai"]));	
 						}
@@ -884,7 +918,7 @@ License: You must have a valid license purchased only from themeforest(the above
 					}
 					else{
 						if (v['Status'] == 1) {
-							SetTimer(v['id'],1,v['JamMulai'], v['JamMulai'], v['NoTransaksi'], v['JenisPaket']);
+							SetTimer(v['id'],1,v['JamMulai'], v['JamMulai'], v['NoTransaksi'], v['JenisPaket'], v['Status']);
 							jQuery('#lblMulai'+v['id']).text(stringtoDateTime(v["JamMulai"]));	
 						}
 						else{
@@ -896,11 +930,9 @@ License: You must have a valid license purchased only from themeforest(the above
 				}
 			});
 			GeneratePaket();
-			jQuery('#PosDetail').DataTable();
 
-			FirstRowHandling();
+			// FirstRowHandling();
 			// SetTimer(1,0,'2024-12-09T21:55:00');
-			// console.log(_billing);
 			// Fill Datatable
 
 		});
@@ -950,7 +982,9 @@ License: You must have a valid license purchased only from themeforest(the above
 			} else if (clickedClass.includes('btTambahMakanan')) {
 				jQuery('#LookupTambahMakanan').modal({backdrop: 'static', keyboard: false})
 		    	jQuery('#LookupTambahMakanan').modal('show');
+				jQuery('#txtNoTransaksi_TambahMakan').val(NoTransaksi);
 
+				jQuery('#PosDetail').DataTable();
 				// 
 
 				$.ajax({
@@ -991,7 +1025,13 @@ License: You must have a valid license purchased only from themeforest(the above
 				console.log(`Tambah Makanan clicked for item ID: ${itemId}`);
 			} else if (clickedClass.includes('btDetail')) {
 				// LookupDetailOrder
-				const table = jQuery('#TablePenjualan').DataTable();
+				const table = jQuery('#TablePenjualan').DataTable({
+					columnDefs: [
+						{ targets: 5, visible: false },
+						{ targets: 6, visible: false },
+						{ targets: 7, visible: false },
+					]
+				});
 				var oMakananData = [];
 
 				$.ajax({
@@ -1012,10 +1052,13 @@ License: You must have a valid license purchased only from themeforest(the above
 								oTotal += item.LineTotal;
 								table.row.add([
 									item.NamaItem,
-									formatNumber(item.Qty),
-									formatNumber(item.Harga),
-									formatNumber(item.Discount),
-									formatNumber(item.LineTotal)
+									`<span data-raw="${item.Qty}">${formatNumber(item.Qty)}</span>`,
+									`<span data-raw="${item.Harga}">${formatNumber(item.Harga)}</span>`,
+									`<span data-raw="${item.Discount}">${formatNumber(item.Discount)}</span>`,
+									`<span data-raw="${item.LineTotal}">${formatNumber(item.LineTotal)}</span>`,
+									item.KodeItem,
+									item.HargaPokokPenjualan,
+									item.Satuan
 								]).draw(false);
 							});
 							fnDetails(NoTransaksi,response.data);
@@ -1324,13 +1367,108 @@ License: You must have a valid license purchased only from themeforest(the above
 			location.reload();
 		});
 
-		jQuery('#LookupDetailOrder').on('hidden.bs.modal', function () {
+		// jQuery('#LookupDetailOrder').on('hidden.bs.modal', function () {
+		// 	location.reload();
+		// });
+
+		jQuery('#btCloseModalDetails').click(function () {
 			location.reload();
 		});
 
-		function SetTimer(tableid, TimerType ,EndTime, StartTime, NoTransaksi, JenisPaket) {
+		jQuery('#txtJumlahBayar_Detail').on('input', function () {
+			let value = jQuery(this).val();
+			let numericValue = value.replace(/[^0-9.]/g, '');
+
+			const formatter = new Intl.NumberFormat('en-US', {
+				style: 'decimal',
+				maximumFractionDigits: 2,
+			});
+
+			if (numericValue) {
+				$(this).val(formatter.format(numericValue));
+				$(this).attr("originalvalue", value.replace(",",""));
+
+				var kembalian = $(this).attr("originalvalue") - jQuery('#txtGrandTotal_Detail').attr("originalvalue");
+				jQuery('#txtJumlahKembalian_Detail').val(formatter.format(kembalian));
+				jQuery('#txtJumlahKembalian_Detail').attr(kembalian);
+			}
+			SetEnableCommand();
+		});
+
+		jQuery('#txtJumlahBayar_Detail').on('focus', function() {
+			jQuery(this).val(jQuery(this).attr('originalvalue'));
+			SetEnableCommand();
+		});
+
+		jQuery('#txtJumlahBayar_Detail').on('blur', function() {
+			const formatter = new Intl.NumberFormat('en-US', {
+				style: 'decimal',
+				maximumFractionDigits: 2,
+			});
+
+			$(this).val(formatter.format(jQuery('#txtJumlahBayar_Detail').attr('originalvalue')));
+			$(this).attr(jQuery('#txtJumlahBayar_Detail').attr('originalvalue'));
+			SetEnableCommand();
+		});
+
+		jQuery('#btBayar').click(function () {
+			const metodepembayaran = <?php echo $metodepembayaran ?>;
+			const filteredData = metodepembayaran.filter(item => item.id == jQuery('#cboMetodePembayaran_Detail').val());
+			const midtransclientkey = "<?php echo $midtransclientkey ?>";
+
+			if (filteredData[0]['MetodeVerifikasi'] == "AUTO") {
+				if (midtransclientkey == "") {
+					Swal.fire({
+						icon: "error",
+						title: "Opps...",
+						text: "Client Key Midtrans belum di set, silahkan hubungi admin",
+					});
+					return;
+				}
+
+				PaymentGateWay('C',$('#btBayar'),'Bayar');
+			}
+			else{
+				SaveData('C',$('#btBayar'),'Bayar');
+			}
+		});
+
+		jQuery('#cboMetodePembayaran_Detail').change(function () {
+			const metodepembayaran = <?php echo $metodepembayaran ?>;
+			const filteredData = metodepembayaran.filter(item => item.id == jQuery('#cboMetodePembayaran_Detail').val());
+			const midtransclientkey = "<?php echo $midtransclientkey ?>";
+
+			if (filteredData[0]['MetodeVerifikasi'] == "AUTO") {
+				if (midtransclientkey == "") {
+					Swal.fire({
+						icon: "error",
+						title: "Opps...",
+						text: "Client Key Midtrans belum di set, silahkan hubungi admin",
+					});
+					jQuery('#cboMetodePembayaran_Detail').val("").change();
+					return;
+				}
+				
+			}
+
+			if (filteredData[0]['TipePembayaran'] == "NON TUNAI") {
+				formatCurrency(jQuery('#txtJumlahBayar_Detail'), jQuery('#txtGrandTotal_Detail').attr('originalvalue'));
+				jQuery('#txtJumlahBayar_Detail').attr('readonly', true);
+			}
+			else{
+				formatCurrency(jQuery('#txtJumlahBayar_Detail'), "0");
+				jQuery('#txtJumlahBayar_Detail').attr('readonly', false);
+			}
+
+			SetEnableCommand();
+		});
+
+		function SetTimer(tableid, TimerType ,EndTime, StartTime, NoTransaksi, JenisPaket, Status) {
 
 			// clock_
+			const oCompany = <?php echo $company ?>;
+			const _warningMinutes = oCompany[0]["WarningTimer"] == null ? 0 : oCompany[0]["WarningTimer"];
+
 			const ul = document.createElement("ul");
 			ul.classList.add("timer")
 
@@ -1370,9 +1508,17 @@ License: You must have a valid license purchased only from themeforest(the above
 				case 0:
 					const endDate = new Date(EndTime).getTime();
 					const startDate = new Date(StartTime).getTime();
+
+					const endDateTS = new Date(endDate);
+					const warningDate = new Date(endDateTS.setMinutes(endDateTS.getMinutes() - _warningMinutes)).getTime();
+
 					const timer = setInterval(() => {
 						const now = new Date().getTime();
 
+						// console.log(genfnFormatingDate(warningDate));
+						// console.log(genfnFormatingDate(now));
+						// console.log(now >= warningDate);
+						// console.log(now == warningDate);
 						if (now < startDate) {
 							jQuery("#hours_"+tableid).html("0");
 							jQuery("#min_"+tableid).html("0");
@@ -1389,15 +1535,17 @@ License: You must have a valid license purchased only from themeforest(the above
 							jQuery("#hours_"+tableid).html((hours < 10 ? "0" : "") + hours);
 							jQuery("#min_"+tableid).html((minutes < 10 ? "0" : "") + minutes);
 							jQuery("#sec_"+tableid).html((seconds < 10 ? "0" : "") + seconds);
-
-						} else {
+							if(genfnFormatingDate(now) == genfnFormatingDate(warningDate)){
+								console.log('Warning');
+								fnWarning(NoTransaksi);
+							} 
+						}
+						else {
 							// After the end date, stop the timer and display "Countdown ended"
 							clearInterval(timer);
 							
 							// Do Update Status
-							jQuery("#hours_"+tableid).html("0");
-							jQuery("#min_"+tableid).html("0");
-							jQuery("#sec_"+tableid).html("0");
+							fnCheckOut(NoTransaksi, JenisPaket);
 						}
 					}, 1000);
 					break;
@@ -1493,19 +1641,58 @@ License: You must have a valid license purchased only from themeforest(the above
 			
 		}
 
+		function fnWarning(NoTransaksi) {
+			// GeneratePaket()
+
+			$.ajax({
+				async:false,
+				url: "{{route('billing-warning')}}",
+				type: 'POST',
+				headers: {
+					'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+				},
+				data: {
+					'NoTransaksi':NoTransaksi,
+				},
+				success: function(response) {
+					if (response.success == true) {
+						Swal.fire({
+	                      icon: "success",
+	                      title: "Sukses",
+	                      text: "Waktu Tinggal 10 Menit",
+	                    }).then((result) => {
+						  location.reload();
+						});
+					}
+					else{
+						Swal.fire({
+							icon: "error",
+							title: "Opps...",
+							text: response.message,
+						}).then((result) => {
+						  location.reload();
+						});
+					}
+				}
+			});
+
+			
+		}
+
 		function fnDetails(NoTransaksi, oData) {
 			const filteredData = _billing.filter(item => item.NoTransaksi == NoTransaksi);
 			const DataPaket = <?php echo $paket ?>;
 			const oCompany = <?php echo $company ?>;
 			const filteredPaket = DataPaket.filter(item => item.id == filteredData[0]['paketid']);
 			// console.log(NoTransaksi);
-			console.log(oData);
+			// console.log(filteredData);
+			// console.log(filteredPaket);
 
 			jQuery('#txtNoTransaksi_Detail').val(NoTransaksi);
 			jQuery('#dtJenisPaket_Detail').text(filteredData[0]["JenisPaket"]);
 			jQuery('#dtNamaPaket_Detail').text(filteredData[0]["NamaPaket"]);
 			jQuery('#dtJamMulai_Detail').text(genfnFormatingDate(filteredData[0]["JamMulai"]));
-			jQuery('#dtJamSelesai_Detail').text(genfnFormatingDate(filteredData[0]["JamSelesai"]));
+			jQuery('#lblNamaCustomer').text(filteredData[0]["NamaPelanggan"]);
 			// formatCurrency($('#_TotalItem'), _tempTotalItem);
 
 			var _HargaNormal = filteredPaket[0]["HargaNormal"];
@@ -1516,45 +1703,125 @@ License: You must have a valid license purchased only from themeforest(the above
 			var _NewHargaNormal = 0;
 			var _NewHargaBaru = 0;
 			var _ppnPercent = oCompany[0]["PPN"];
-			var _PPn = 0;
+			var _PPnNormal = 0;
+			var _PPnBaru = 0;
 			var _PajakHiburanPercent = oCompany[0]["PajakHiburan"];
-			var _PajakHiburan = 0;
+			var _PajakHiburanNormal = 0;
+			var _PajakHiburanBaru = 0;
 			var _SubTotal = 0;
-			var _TotalMakanan = 0;// belum
+			var _TotalMakanan = 0;
+			
+			var _DiscountMember = 0; // belum
+			var _DiscountTable = 0; // belum
+			var _DiscountFnB = 0; // belum
 			var _Discount = 0; // belum
 
 			var Now = new Date();
 			var _maxPaketNormal = new Date(filteredData[0]["TglTransaksi"] + " " + filteredPaket[0]["AkhirJamNormal"]);
 			var _maxPaketBaru = new Date(filteredData[0]["TglTransaksi"] + " " + filteredPaket[0]["AkhirJamPerubahanHarga"]);
+			var _JamMulaiPaket = new Date(filteredData[0]["JamMulai"]);
+			var _JamSelesaiPaket = new Date(filteredData[0]["JamSelesai"]);
 
+			console.log(filteredData);
+			console.log(filteredPaket);
 			console.log(_maxPaketNormal);
 			console.log(_maxPaketBaru);
+			console.log(_JamSelesaiPaket);
 			var _TextTotalHargaNormal = "";
 			var _TextTotalHargaBaru = "";
+			var _durasiPaket = 0;
 
 			// Calculate Billing
 			if (filteredData[0]["JenisPaket"] != "MENIT") {
+				jQuery('#dtJamSelesai_Detail').text(genfnFormatingDate(filteredData[0]["JamSelesai"]));
 				_NewHargaNormal = filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"];
 				if (_ppnPercent > 0) {
-					_PPn = (_ppnPercent / 100) * (filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"]);	
+					_PPnNormal = (_ppnPercent / 100) * (filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"]);	
 				}
 
 				if (_PajakHiburanPercent > 0) {
-					_PajakHiburan = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"]);	
+					_PajakHiburanNormal = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"]);	
 				}
 
-				_SubTotal = _NewHargaNormal + _PPn + _PajakHiburan;
+				_SubTotal = _NewHargaNormal + _PPnNormal + _PajakHiburanNormal;
 
 				_TextTotalHargaNormal = filteredData[0]["DurasiPaket"] + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
+				_durasiPaket = filteredData[0]["DurasiPaket"];
 			}
 			else{
+				var _diferentMinutes = 0;
+				jQuery('#dtJamSelesai_Detail').text(genfnFormatingDate(Now.toISOString()));
 
+				const differenceInMilliseconds = (filteredData[0]["JamSelesai"] == null ? Now : _JamSelesaiPaket) - _JamMulaiPaket;
+
+				if (filteredPaket[0]["AkhirJamNormal"] == null) {
+					_diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
+					_NewHargaNormal = _diferentMinutes * filteredPaket[0]["HargaNormal"];
+					_TextTotalHargaNormal = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
+					if (_ppnPercent > 0) {
+						_PPnNormal += (_ppnPercent / 100) * (_NewHargaNormal);	
+					}
+					if (_PajakHiburanPercent > 0) {
+						_PajakHiburanNormal = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * _diferentMinutes);	
+					}
+				}
+				else{
+					if (Now < _maxPaketNormal) {
+						_diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
+						_NewHargaNormal = _diferentMinutes * filteredPaket[0]["HargaNormal"];
+						_TextTotalHargaNormal = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
+						if (_ppnPercent > 0) {
+							_PPnNormal += (_ppnPercent / 100) * (_NewHargaNormal);	
+						}
+						if (_PajakHiburanPercent > 0) {
+							_PajakHiburanNormal = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * _diferentMinutes);	
+						}
+					}
+					else if (Now > _maxPaketNormal && _maxPaketNormal <= _maxPaketBaru) {
+						_diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
+						_NewHargaBaru = _diferentMinutes * filteredPaket[0]["HargaBaru"];
+						_TextTotalHargaBaru = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaBaru + " = ";
+						if (_ppnPercent > 0) {
+							_PPnBaru += (_ppnPercent / 100) * (_NewHargaBaru);	
+						}
+
+						if (_PajakHiburanPercent > 0) {
+							_PajakHiburanBaru = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaBaru"] * _diferentMinutes);	
+						}
+					}
+				}
+
+				// if (_PajakHiburanPercent > 0) {
+				// 	_PajakHiburan = (_PajakHiburanPercent / 100) * (_NewHargaNormal + _NewHargaBaru);	
+				// }
+
+				_SubTotal = _NewHargaNormal + _NewHargaBaru + _PPnBaru + _PPnNormal + _PajakHiburanNormal + _PajakHiburanBaru;
+				_durasiPaket = _diferentMinutes;
 			}
 			// Calculate FnB
 
 			for (let index = 0; index < oData.length; index++) {
 				_TotalMakanan += oData[index]["LineTotal"];
 			}
+
+			// Calculate Discount
+
+			// Diskon Member : 
+			if (filteredData[0]["DiskonPersen"] > 0) {
+				jQuery('#lblNamaMember').text(filteredData[0]["NamaGrup"]);
+				_DiscountMember = (_SubTotal + _TotalMakanan) * (filteredData[0]["DiskonPersen"] / 100)
+			}
+
+			if (filteredPaket[0]["DiskonTable"] != null || filteredPaket[0]["DiskonTable"] > 0) {
+				_DiscountTable = (_SubTotal + _TotalMakanan+ - _Discount) * (filteredPaket[0]["DiskonTable"] / 100)
+			}
+
+			if (filteredPaket[0]["DiskonFnB"] != null || filteredPaket[0]["DiskonFnB"] > 0) {
+				_DiscountFnB = (_SubTotal + _TotalMakanan+ - _Discount) * (filteredPaket[0]["DiskonFnB"] / 100)
+			}
+
+			_Discount = _DiscountMember + _DiscountTable + _DiscountFnB;
+			console.log(_Discount);
 
 			// Set Total
 			jQuery('#dtTotalHargaNormal_Detail').text(
@@ -1564,6 +1831,13 @@ License: You must have a valid license purchased only from themeforest(the above
 					currency: 'IDR',
 				}).format(_NewHargaNormal)
 			);
+			const tdElementNormal = document.getElementById("dtTotalHargaNormal_Detail");
+			tdElementNormal.setAttribute("raw-durasi", _durasiPaket);
+			tdElementNormal.setAttribute("raw-satuan-durasi", filteredPaket[0]["JenisPaket"]);
+			tdElementNormal.setAttribute("raw-harga-normal", _HargaNormal);
+			tdElementNormal.setAttribute("raw-totalharga-normal", _NewHargaNormal);
+			tdElementNormal.setAttribute("raw-ppn-normal", _PPnNormal);
+			tdElementNormal.setAttribute("raw-pajakhiburan-normal", _PajakHiburanNormal);
 
 			jQuery('#dtTotalPerubahanHarga_Detail').text(
 				_TextTotalHargaBaru + 
@@ -1573,19 +1847,35 @@ License: You must have a valid license purchased only from themeforest(the above
 				}).format(_NewHargaBaru)
 			);
 
+			const tdElementBaru = document.getElementById("dtTotalPerubahanHarga_Detail");
+			tdElementBaru.setAttribute("raw-durasi-baru", _durasiPaket);
+			tdElementBaru.setAttribute("raw-satuan-durasi-baru", filteredPaket[0]["JenisPaket"]);
+			tdElementBaru.setAttribute("raw-harga-baru", _HargaBaru);
+			tdElementBaru.setAttribute("raw-totalharga-baru", _NewHargaBaru);
+			tdElementBaru.setAttribute("raw-ppn-baru", _PPnBaru);
+			tdElementBaru.setAttribute("raw-pajakhiburan-baru", _PajakHiburanBaru);
+			// _PPnBaru + _PPnNormal
+
+
 			jQuery('#dtTotalPPN_Detail').text(
 				new Intl.NumberFormat('id-ID', {
 					style: 'currency',
 					currency: 'IDR',
-				}).format(_PPn)
+				}).format(_PPnNormal + _PPnBaru)
 			);
+			const tdElementPpn = document.getElementById("dtTotalPPN_Detail");
+			tdElementPpn.setAttribute("raw-totalharga-ppn", _PPnNormal + _PPnBaru);
+
 
 			jQuery('#dtTotalPajakHiburan_Detail').text(
 				new Intl.NumberFormat('id-ID', {
 					style: 'currency',
 					currency: 'IDR',
-				}).format(_PajakHiburan)
+				}).format(_PajakHiburanNormal + _PajakHiburanBaru)
 			);
+			const tdElementPajakHiburan = document.getElementById("dtTotalPajakHiburan_Detail");
+			tdElementPajakHiburan.setAttribute("raw-totalharga-pajakhiburan", _PajakHiburanNormal + _PajakHiburanBaru);
+
 
 			jQuery('#dtSubTotal_Detail').text(
 				new Intl.NumberFormat('id-ID', {
@@ -1596,10 +1886,17 @@ License: You must have a valid license purchased only from themeforest(the above
 
 			formatCurrency($('#txtSubTotal_Detail'), _SubTotal);
 			formatCurrency($('#txtTotalMakanan_Detail'), _TotalMakanan);
-			formatCurrency($('#txtTotalPajak_Detail'), _PPn + _PajakHiburan);
+			formatCurrency($('#txtTotalPajak_Detail'), _PPnNormal + _PPnBaru + _PajakHiburanNormal + _PajakHiburanBaru);
+			formatCurrency($('#txtDiscountMember_Detail'), _DiscountMember);
+			formatCurrency($('#txtDiscountTable_Detail'), _DiscountTable);
+			formatCurrency($('#txtDiscountFnB_Detail'), _DiscountFnB);
 			formatCurrency($('#txtDiscount_Detail'), _Discount);
-			formatCurrency($('#txtGrandTotal_Detail'), _SubTotal + _TotalMakanan+ - _Discount);
+			formatCurrency($('#txtGrandTotal_Detail'), _SubTotal + _TotalMakanan+ - _Discount + _PPnNormal + _PPnBaru + _PajakHiburanNormal + _PajakHiburanBaru);
 			
+			formatCurrency($('#txtJumlahBayar_Detail'), 0);
+			formatCurrency($('#txtJumlahKembalian_Detail'), 0);
+			// SaveData('','','');
+			SetEnableCommand();
 		}
 
 		function genfnFormatingDate(oDateTime) {
@@ -1612,7 +1909,7 @@ License: You must have a valid license purchased only from themeforest(the above
             const minutes = String(date.getMinutes()).padStart(2, '0');
             const seconds = String(date.getSeconds()).padStart(2, '0');
 
-			const formattedDateTime = `${day}-${month}-${year} ${hours}:${minutes}`;
+			const formattedDateTime = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
 
 			return formattedDateTime;
 		}
@@ -1804,6 +2101,487 @@ License: You must have a valid license purchased only from themeforest(the above
 			return retData;
 		}
 
+		function SaveData(Status, ButonObject, ButtonDefaultText) {
+			ButonObject.text('Tunggu Sebentar.....');
+  			ButonObject.attr('disabled',true);
 
+			const oCompany = <?php echo $company ?>;
+			const filteredData = _billing.filter(item => item.NoTransaksi == jQuery('#txtNoTransaksi_Detail').val());
+
+			const now = new Date();
+	    	const day = ("0" + now.getDate()).slice(-2);
+	    	const month = ("0" + (now.getMonth() + 1)).slice(-2);
+	    	const hours = now.getHours().toString().padStart(2, '0');
+			const minutes = now.getMinutes().toString().padStart(2, '0');
+			const seconds = now.getSeconds().toString().padStart(2, '0');
+
+	    	const firstDay = now.getFullYear()+"-"+month+"-01";
+	    	const NowDay = now.getFullYear()+"-"+month+"-"+day;
+
+	    	const _Tanggal = NowDay;
+	    	const _Jam = hours+":"+minutes+":"+seconds;
+
+			var oDetail = [];
+			const tdElementNormal = document.getElementById("dtTotalHargaNormal_Detail");
+			const tdElementBaru = document.getElementById("dtTotalPerubahanHarga_Detail");
+			const tdElementPpn = document.getElementById("dtTotalPPN_Detail");
+			const tdElementPajakHiburan = document.getElementById("dtTotalPajakHiburan_Detail");
+
+			const DurasiLama = tdElementNormal.getAttribute("raw-durasi");
+			const DurasiBaru = tdElementBaru.getAttribute("raw-durasi-baru");
+			const SatuanDurasiLama = tdElementNormal.getAttribute("raw-satuan-durasi");
+			const SatuanDurasiBaru = tdElementBaru.getAttribute("raw-satuan-durasi-baru");
+			const HargaNormal = tdElementNormal.getAttribute("raw-harga-normal");
+			const HargaBaru = tdElementBaru.getAttribute("raw-harga-baru");
+			const TotalHargaNormal = tdElementNormal.getAttribute("raw-totalharga-normal");
+			const TotalHargaBaru = tdElementBaru.getAttribute("raw-totalharga-baru");
+			const TotalPPN = tdElementPpn.getAttribute("raw-totalharga-ppn");
+			const TotalPajakHiburan = tdElementPajakHiburan.getAttribute("raw-totalharga-pajakhiburan");
+			const PPNNormal = tdElementNormal.getAttribute("raw-ppn-normal");
+			const PPNBaru = tdElementBaru.getAttribute("raw-ppn-baru");
+			const PajakHiburanNormal = tdElementNormal.getAttribute("raw-pajakhiburan-normal");
+			const PajakHiburanBaru = tdElementBaru.getAttribute("raw-pajakhiburan-baru");
+
+			const table = jQuery('#TablePenjualan').DataTable();
+			const columnNames = table.columns().header().toArray().map(header => $(header).text());
+
+			const _ppnPercent = oCompany[0]["PPN"];
+			// Get raw data from the table
+			const dataMakanan = table.rows().data().toArray().map(row => {
+				let rowDataObj = {};
+				columnNames.forEach((colName, index) => {
+					if (colName == 'Diskon' || colName == 'Harga' || colName == 'Qty' || colName == 'Total') {
+					// Parse the raw HTML string into a DOM element
+					const cellHtml = $.parseHTML(row[index]); // Convert to DOM elements
+					const rawValue = $(cellHtml).data('raw'); // Extract data-raw attribute
+					rowDataObj[colName] = rawValue;
+					} else {
+					rowDataObj[colName] = row[index];
+					}
+				});
+				return rowDataObj;
+			});
+			var NoUrut = 0;
+
+			if (oCompany[0]["ItemHiburan"] == null || oCompany[0]["ItemHiburan"] == "") {
+				alert('Setting Item Hiburan');
+				return;
+			}
+
+			if (TotalHargaNormal > 0) {
+				var oItem = {
+					'NoUrut' : 0,
+					'KodeItem' : oCompany[0]["ItemHiburan"],
+					'Qty' : DurasiLama,
+					'QtyKonversi' : DurasiLama,
+					'Satuan' : SatuanDurasiLama,
+					'Harga' : HargaNormal,
+					'Discount' : 0,
+					'HargaNet' : DurasiLama * HargaNormal,
+					'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
+					'BaseLine' : -1,
+					'KodeGudang' : oCompany[0]['GudangPoS'],
+					'LineStatus': 'O',
+					'VatPercent' : 0,
+					'HargaPokokPenjualan' : HargaNormal,
+					'Pajak' : PPNNormal,
+					'PajakHiburan' : PajakHiburanNormal,
+				}
+				oDetail.push(oItem);
+				NoUrut += 1;
+			}
+
+			if (TotalHargaBaru > 0) {
+				var oItem = {
+					'NoUrut' : 1,
+					'KodeItem' : oCompany[0]["ItemHiburan"],
+					'Qty' : DurasiBaru,
+					'QtyKonversi' : DurasiBaru,
+					'Satuan' : SatuanDurasiBaru,
+					'Harga' : HargaBaru,
+					'Discount' : 0,
+					'HargaNet' : DurasiBaru * HargaBaru,
+					'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
+					'BaseLine' : -1,
+					'KodeGudang' : oCompany[0]['GudangPoS'],
+					'LineStatus': 'O',
+					'VatPercent' : 0,
+					'HargaPokokPenjualan' : HargaBaru,
+					'Pajak' : PPNBaru,
+					'PajakHiburan' : PajakHiburanBaru,
+				}
+				oDetail.push(oItem);
+				NoUrut += 1;
+			}
+
+			// Makanan
+
+			if (dataMakanan.length > 0) {
+				for (var i = 0; i < dataMakanan.length; i++) {
+					var PajakMakanan = 0;
+
+					if (_ppnPercent > 0) {
+						PajakMakanan += (_ppnPercent / 100) * ((dataMakanan[i]["Qty"] * dataMakanan[i]["Harga"]) - dataMakanan[i]["Diskon"]);	
+					}
+					var oItem = {
+						'NoUrut' : NoUrut,
+						'KodeItem' : dataMakanan[i]["KodeItem"],
+						'Qty' : dataMakanan[i]["Qty"],
+						'QtyKonversi' : dataMakanan[i]["Qty"],
+						'Satuan' : dataMakanan[i]["Satuan"],
+						'Harga' : dataMakanan[i]["Harga"],
+						'Discount' : dataMakanan[i]["Diskon"],
+						'HargaNet' : (dataMakanan[i]["Qty"] * dataMakanan[i]["Harga"]) - dataMakanan[i]["Diskon"] + PajakMakanan,
+						'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
+						'BaseLine' : -1,
+						'KodeGudang' : oCompany[0]['GudangPoS'],
+						'LineStatus': 'O',
+						'VatPercent' : 0,
+						'HargaPokokPenjualan' : dataMakanan[i]["HargaPokokPenjualan"],
+						'Pajak' : PajakMakanan,
+						'PajakHiburan' : 0,
+					}
+					oDetail.push(oItem);
+
+					NoUrut += 1;
+				}
+			}
+
+			// Header
+			var oData = {
+				'NoTransaksi' : "",
+				'TglTransaksi' : _Tanggal + " " + _Jam,
+				'TglJatuhTempo' : _Tanggal,
+				'NoReff' : 'POS',
+				'KodeSales' : filteredData[0]["KodeSales"],
+				'KodePelanggan' : filteredData[0]["KodePelanggan"],
+				'KodeTermin' : oCompany[0]['TerminBayarPoS'],
+				'Termin' : 0,
+				'TotalTransaksi' : parseFloat(jQuery('#txtSubTotal_Detail').attr("originalvalue")) + parseFloat(jQuery('#txtTotalMakanan_Detail').attr("originalvalue")),
+				'Potongan' : jQuery('#txtDiscount_Detail').attr("originalvalue"),
+				'Pajak' : parseFloat(PPNNormal) + parseFloat(PPNBaru),
+				'PajakHiburan' : parseFloat(PajakHiburanNormal) + parseFloat(PajakHiburanBaru),
+				'Pembulatan' : 0,
+				'TotalPembelian' : jQuery('#txtGrandTotal_Detail').attr("originalvalue"),
+				'TotalRetur' : 0,
+				'TotalPembayaran' : jQuery('#txtJumlahBayar_Detail').attr("originalvalue"),
+				'Status' : Status,
+				'Keterangan' : '',
+				'MetodeBayar' : jQuery('#cboMetodePembayaran_Detail').val(),
+				'ReffPembayaran' : $('#txtRefrensi_Detail').val(),
+				'Detail' : oDetail
+			}
+
+			console.log(oData);
+
+			$.ajax({
+				async:false,
+				url: "{{route('fpenjualan-hiburanPoS')}}",
+				type: 'POST',
+				contentType: 'application/json',
+				headers: {
+					'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+				},
+				data: JSON.stringify(oData),
+				success: function(response) {
+					if (response.success == true) {
+						let formattedAmount = parseFloat(response.Kembalian).toLocaleString('en-US', {
+							style: 'decimal',
+							minimumFractionDigits: 2,
+							maximumFractionDigits: 2
+						});
+						Swal.fire({
+							title: "KEMBALIAN "+formattedAmount,
+							text: "Cetak Struk ?",
+							icon: "warning",
+							showCancelButton: true,
+							confirmButtonColor: "#3085d6",
+							cancelButtonColor: "#d33",
+							confirmButtonText: "Cetak",
+							cancelButtonText: "Tidak Cetak"
+						}).then((result) => {
+							if (result.isConfirmed) {
+								PrintStruk(response.LastTRX);
+							}
+							else{
+								location.reload();
+							}
+						});
+					}
+					else{
+						Swal.fire({
+							icon: "error",
+							title: "Opps...",
+							text: response.message,
+						}).then((result) => {
+							ButonObject.text(ButtonDefaultText);
+							ButonObject.attr('disabled',false);
+						});
+						
+					}
+				}
+			});
+
+			ButonObject.text(ButtonDefaultText);
+			ButonObject.attr('disabled',false);
+		}
+
+		function PaymentGateWay(Status, ButonObject, ButtonDefaultText) {
+
+			const oCompany = <?php echo $company ?>;
+			const filteredData = _billing.filter(item => item.NoTransaksi == jQuery('#txtNoTransaksi_Detail').val());
+
+			const now = new Date();
+	    	const day = ("0" + now.getDate()).slice(-2);
+	    	const month = ("0" + (now.getMonth() + 1)).slice(-2);
+	    	const hours = now.getHours().toString().padStart(2, '0');
+			const minutes = now.getMinutes().toString().padStart(2, '0');
+			const seconds = now.getSeconds().toString().padStart(2, '0');
+
+	    	const firstDay = now.getFullYear()+"-"+month+"-01";
+	    	const NowDay = now.getFullYear()+"-"+month+"-"+day;
+
+	    	const _Tanggal = NowDay;
+	    	const _Jam = hours+":"+minutes+":"+seconds;
+
+			var oDetail = [];
+			const tdElementNormal = document.getElementById("dtTotalHargaNormal_Detail");
+			const tdElementBaru = document.getElementById("dtTotalPerubahanHarga_Detail");
+			const tdElementPpn = document.getElementById("dtTotalPPN_Detail");
+			const tdElementPajakHiburan = document.getElementById("dtTotalPajakHiburan_Detail");
+
+			const DurasiLama = tdElementNormal.getAttribute("raw-durasi");
+			const DurasiBaru = tdElementBaru.getAttribute("raw-durasi-baru");
+			const SatuanDurasiLama = tdElementNormal.getAttribute("raw-satuan-durasi");
+			const SatuanDurasiBaru = tdElementBaru.getAttribute("raw-satuan-durasi-baru");
+			const HargaNormal = tdElementNormal.getAttribute("raw-harga-normal");
+			const HargaBaru = tdElementBaru.getAttribute("raw-harga-baru");
+			const TotalHargaNormal = tdElementNormal.getAttribute("raw-totalharga-normal");
+			const TotalHargaBaru = tdElementBaru.getAttribute("raw-totalharga-baru");
+			const TotalPPN = tdElementPpn.getAttribute("raw-totalharga-ppn");
+			const TotalPajakHiburan = tdElementPajakHiburan.getAttribute("raw-totalharga-pajakhiburan");
+
+			const table = jQuery('#TablePenjualan').DataTable();
+			const columnNames = table.columns().header().toArray().map(header => $(header).text());
+
+			// Get raw data from the table
+			const dataMakanan = table.rows().data().toArray().map(row => {
+				let rowDataObj = {};
+				columnNames.forEach((colName, index) => {
+					if (colName == 'Diskon' || colName == 'Harga' || colName == 'Qty' || colName == 'Total') {
+					// Parse the raw HTML string into a DOM element
+					const cellHtml = $.parseHTML(row[index]); // Convert to DOM elements
+					const rawValue = $(cellHtml).data('raw'); // Extract data-raw attribute
+					rowDataObj[colName] = rawValue;
+					} else {
+					rowDataObj[colName] = row[index];
+					}
+				});
+				return rowDataObj;
+			});
+			var NoUrut = 0;
+
+			if (oCompany[0]["ItemHiburan"] == null || oCompany[0]["ItemHiburan"] == "") {
+				alert('Setting Item Hiburan');
+				return;
+			}
+
+			if (TotalHargaNormal > 0) {
+				var oItem = {
+					'NoUrut' : 0,
+					'KodeItem' : oCompany[0]["ItemHiburan"],
+					'Qty' : DurasiLama,
+					'QtyKonversi' : DurasiLama,
+					'Satuan' : SatuanDurasiLama,
+					'Harga' : HargaNormal,
+					'Discount' : 0,
+					'HargaNet' : DurasiLama * HargaNormal,
+					'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
+					'BaseLine' : -1,
+					'KodeGudang' : oCompany[0]['GudangPoS'],
+					'LineStatus': 'O',
+					'VatPercent' : 0,
+					'HargaPokokPenjualan' : HargaNormal,
+				}
+				oDetail.push(oItem);
+				NoUrut += 1;
+			}
+
+			if (TotalHargaBaru > 0) {
+				var oItem = {
+					'NoUrut' : 1,
+					'KodeItem' : oCompany[0]["ItemHiburan"],
+					'Qty' : DurasiBaru,
+					'QtyKonversi' : DurasiBaru,
+					'Satuan' : SatuanDurasiBaru,
+					'Harga' : HargaBaru,
+					'Discount' : 0,
+					'HargaNet' : DurasiBaru * HargaBaru,
+					'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
+					'BaseLine' : -1,
+					'KodeGudang' : oCompany[0]['GudangPoS'],
+					'LineStatus': 'O',
+					'VatPercent' : 0,
+					'HargaPokokPenjualan' : HargaBaru,
+				}
+				oDetail.push(oItem);
+				NoUrut += 1;
+			}
+
+			// Makanan
+
+			if (dataMakanan.length > 0) {
+				for (var i = 0; i < dataMakanan.length; i++) {
+					var oItem = {
+						'NoUrut' : NoUrut,
+						'KodeItem' : dataMakanan[i]["KodeItem"],
+						'Qty' : dataMakanan[i]["Qty"],
+						'QtyKonversi' : dataMakanan[i]["Qty"],
+						'Satuan' : dataMakanan[i]["Satuan"],
+						'Harga' : dataMakanan[i]["Harga"],
+						'Discount' : dataMakanan[i]["Diskon"],
+						'HargaNet' : (dataMakanan[i]["Qty"] * dataMakanan[i]["Harga"]) - dataMakanan[i]["Diskon"],
+						'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
+						'BaseLine' : -1,
+						'KodeGudang' : oCompany[0]['GudangPoS'],
+						'LineStatus': 'O',
+						'VatPercent' : 0,
+						'HargaPokokPenjualan' : dataMakanan[i]["HargaPokokPenjualan"],
+					}
+					oDetail.push(oItem);
+
+					NoUrut += 1;
+				}
+			}
+
+			// Header
+			var oData = {
+				'NoTransaksi' : "",
+				'TglTransaksi' : _Tanggal + " " + _Jam,
+				'TglJatuhTempo' : _Tanggal,
+				'NoReff' : 'POS',
+				'KodeSales' : filteredData[0]["KodeSales"],
+				'KodePelanggan' : filteredData[0]["KodePelanggan"],
+				'KodeTermin' : oCompany[0]['TerminBayarPoS'],
+				'Termin' : 0,
+				'TotalTransaksi' : jQuery('#txtSubTotal_Detail').attr("originalvalue"),
+				'Potongan' : jQuery('#txtDiscount_Detail').attr("originalvalue"),
+				'Pajak' : TotalPPN,
+				'PajakHiburan' : TotalPajakHiburan,
+				'Pembulatan' : 0,
+				'TotalPembelian' : jQuery('#txtGrandTotal_Detail').attr("originalvalue"),
+				'TotalRetur' : 0,
+				'TotalPembayaran' : jQuery('#txtJumlahBayar_Detail').attr("originalvalue"),
+				'Status' : Status,
+				'Keterangan' : '',
+				'MetodeBayar' : jQuery('#cboMetodePembayaran_Detail').val(),
+				'ReffPembayaran' : $('#txtRefrensi_Detail').val(),
+				'Detail' : oDetail
+			}
+
+			fetch( "{{route('pembayaranpenjualan-createpayment')}}", {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRF-TOKEN': '{{ csrf_token() }}'
+				},
+				body: JSON.stringify(oData)
+			})
+			.then(response => response.json())
+			.then(data => {
+				console.log(data);
+				if (data.snap_token) {
+					snap.pay(data.snap_token, {
+						onSuccess: function(result){
+							// console.log(result);
+							if(result.transaction_status == "cancel"){
+								Swal.fire({
+									icon: "error",
+									title: "Opps...",
+									text: "Pembayaran Dibatalkan",
+								})
+							}
+							else{
+								// order_id
+								jQuery('#txtRefrensi_Detail').val(result.order_id)
+								SaveData(Status, ButonObject, ButtonDefaultText)
+							}
+							// Proses pembayaran sukses
+						},
+						onPending: function(result){
+							// console.log(result);
+							// Pembayaran tertunda
+						},
+						onError: function(result){
+							// console.log(result);
+							Swal.fire({
+								icon: "error",
+								title: "Opps...",
+								text: result,
+							})
+							// Pembayaran gagal
+						},
+						onClose: function(){
+							console.log('customer closed the popup without finishing the payment');
+						}
+					});
+				} else {
+					// alert('Error: ' + data.error);
+					Swal.fire({
+						icon: "error",
+						title: "Opps...",
+						text: data.error,
+					})
+				}
+			})
+			.catch(error => console.error('Error:', error));
+		}
+
+		function PrintStruk(NoTransaksi) {
+
+			// var link = "fpenjualan/printthermal/"+cellInfo.data.NoTransaksi;
+			let url = "{{ url('') }}";
+			// url.searchParams.append('NoTransaksi', NoTransaksi);
+			url += "/fpenjualan/printthermal/"+NoTransaksi;
+			// console.log(url);
+			// // window.location.href = url.toString();
+			window.open(url, "_blank");
+			location.reload();
+		}
+
+		function SetEnableCommand() {
+			var errorCount = 0;
+
+			var GrandTotal = jQuery('#txtGrandTotal_Detail').attr("originalvalue");
+			var JumlahBayar = jQuery('#txtJumlahBayar_Detail').attr("originalvalue");
+			var Kembalian = jQuery('#txtJumlahKembalian_Detail').attr("originalvalue");
+
+			// console.log(parseFloat(GrandTotal));
+			// console.log(parseFloat(JumlahBayar));
+			// console.log(parseFloat(Kembalian));
+
+			if (parseFloat(GrandTotal) == 0) {
+				errorCount +=1;
+			}
+			if (parseFloat(JumlahBayar) == 0) {
+				errorCount +=1;
+			}
+			if (parseFloat(Kembalian) < 0) {
+				errorCount +=1;
+			}
+
+			if (jQuery('#cboMetodePembayaran_Detail').val() == "") {
+				errorCount +=1
+			}
+
+			// console.log(errorCount);
+
+			if (errorCount > 0) {
+				jQuery('#btBayar').attr('disabled',true);
+			}
+			else{
+				jQuery('#btBayar').attr('disabled',false);
+			}
+		}
 	});
 </script>

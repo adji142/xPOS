@@ -37,6 +37,7 @@ use Database\Seeders\KelompokRekeningSeeder;
 use Database\Seeders\GudangSeeder;
 use Database\Seeders\SatuanSeeder;
 use App\Exports\PenggunaAplikasiExport;
+use App\Models\ItemMaster;
 
 class CompanyController extends Controller
 {
@@ -72,7 +73,7 @@ class CompanyController extends Controller
 
         return view("Admin.Pengguna",[
             'oCompany' => $oCompany,
-            'subs' => $subs
+            'subs' => $subs,
         ]);
     }
     public function View(Request $request)
@@ -130,7 +131,9 @@ class CompanyController extends Controller
         $printer = Printer::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
         $gudang = Gudang::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
         $temin = Termin::Where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
-
+        $itemjasa = ItemMaster::where('TypeItem','=','4')
+                        ->where('RecordOwnerID', '=', Auth::user()->RecordOwnerID)
+                        ->get();
         $title = 'Delete Data Perusahaan !';
         $text = "Are you sure you want to delete ?";
         confirmDelete($title, $text);
@@ -139,7 +142,8 @@ class CompanyController extends Controller
             'printer' => $printer,
                 'gudang' => $gudang,
                 'temin' => $temin,
-                'clientOS' => $clientOS
+                'clientOS' => $clientOS,
+                'itemjasa' => $itemjasa
             ]);
     }
     public function edit(Request $request){
@@ -194,6 +198,8 @@ class CompanyController extends Controller
                                     'PromoDsiplay' => empty($request->input('PromoDsiplay')) ? "" : $request->input('PromoDsiplay'),
                                     'RunningText' => empty($request->input('RunningText')) ? "" : $request->input('RunningText'),
                                     'PajakHiburan' => empty($request->input('PajakHiburan')) ? "" : $request->input('PajakHiburan'),
+                                    'WarningTimer' => empty($request->input('WarningTimer')) ? "" : $request->input('WarningTimer'),
+                                    'ItemHiburan' => empty($request->input('ItemHiburan')) ? "" : $request->input('ItemHiburan'),
                 				]
                 			);
 

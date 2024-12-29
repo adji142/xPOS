@@ -38,3 +38,19 @@ ADD COLUMN `PajakHiburan` double(16, 2) NULL AFTER `RunningText`;
 
 ALTER TABLE `xpos`.`settingaccount` 
 ADD COLUMN `OthPajakHiburan` varchar(255) NULL AFTER `OthAcctLabaTahunBerjalan`;
+
+ALTER TABLE `xpos`.`company` 
+ADD COLUMN `WarningTimer` int NULL AFTER `PajakHiburan`;
+
+ALTER TABLE `xpos`.`company` 
+ADD COLUMN `ItemHiburan` varchar(255) NULL AFTER `WarningTimer`;
+
+ALTER TABLE `xpos`.`settingaccount` 
+ADD COLUMN `PjAcctPajakHiburan` varchar(255) NULL AFTER `PjAcctReturnPenjualan`;
+
+ALTER TABLE `xpos`.`fakturpenjualanheader` 
+ADD COLUMN `PajakHiburan` double(16, 2) NULL AFTER `NomorMeja`;
+
+ALTER TABLE `xpos`.`fakturpenjualandetail` 
+ADD COLUMN `Pajak` double(16, 2) NULL DEFAULT 0 AFTER `RecordOwnerID`,
+ADD COLUMN `PajakHiburan` double(16, 2) NULL DEFAULT 0 AFTER `Pajak`;

@@ -403,6 +403,23 @@
 																</select>
                                         					</fieldset>
                                         				</div>
+
+														<div class="col-md-9">
+                                        					<label >Akun Pajak Hiburan</label>
+                                        					<fieldset class="form-group mb-3">
+                                        						<select class="js-example-basic-single js-states form-control bg-transparent" name="PjAcctPajakHiburan" id="PjAcctPajakHiburan">
+																	<option value="">Pilih Akun</option>
+																	@foreach($account as $ko)
+																		<option 
+				                                                            value="{{ $ko->KodeRekening }}"
+				                                                            {{ count($settingakun) > 0 ? $settingakun[0]['PjAcctPajakHiburan'] == $ko->KodeRekening ? "selected" : '' :""}}>
+				                                                            {{ $ko->NamaRekening }}
+				                                                        </option>
+																	@endforeach
+																</select>
+                                        					</fieldset>
+                                        				</div>
+
                                         			</div>
                                         		</div>
 

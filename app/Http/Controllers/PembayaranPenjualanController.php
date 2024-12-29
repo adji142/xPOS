@@ -526,10 +526,12 @@ class PembayaranPenjualanController extends Controller
 						$oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
 									->where('KodeItem',$key['KodeItem'])
 									->where('Stock','>',0)
-									->get();
+									->first();
 
-						if (count($oItem) == 0) {
-							return response()->json(['error' => "Stock Item ".$key['KodeItem'].' Tidak Cukup']);
+						if ($oItem) {
+							if ($oItem->TypeItem != 4) {
+								return response()->json(['error' => "Stock Item ".$key['KodeItem'].' Tidak Cukup']);
+							}
 						}
 					}
 				}

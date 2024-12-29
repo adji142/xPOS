@@ -43,7 +43,11 @@ class TableOrderController extends Controller
                             tableorderheader.JamSelesai,
                             tableorderheader.JenisPaket,
                             tableorderheader.paketid,
-                            tableorderheader.TglTransaksi
+                            tableorderheader.TglTransaksi,
+                            tableorderheader.KodePelanggan,
+                            pelanggan.NamaPelanggan,
+                            gruppelanggan.NamaGrup,
+                            gruppelanggan.DiskonPersen
                         ")
                         ->leftJoin('tableorderheader', function ($value)  {
                             $value->on('titiklampu.id','=','tableorderheader.tableid')
@@ -58,6 +62,14 @@ class TableOrderController extends Controller
                         ->leftJoin('sales', function ($value)  {
                             $value->on('tableorderheader.KodeSales','=','sales.KodeSales')
                             ->on('tableorderheader.RecordOwnerID','=','sales.RecordOwnerID');
+                        })
+                        ->leftJoin('pelanggan', function ($value)  {
+                            $value->on('tableorderheader.KodePelanggan','=','pelanggan.KodePelanggan')
+                            ->on('tableorderheader.RecordOwnerID','=','pelanggan.RecordOwnerID');
+                        })
+                        ->leftJoin('gruppelanggan', function ($value)  {
+                            $value->on('pelanggan.KodeGrupPelanggan','=','gruppelanggan.KodeGrup')
+                            ->on('pelanggan.RecordOwnerID','=','gruppelanggan.RecordOwnerID');
                         })
                         ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)->get();
         $titiklampuoption = TitikLampu::where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
@@ -78,6 +90,14 @@ class TableOrderController extends Controller
         //                 ->where('Active','=', 'Y')->get();
         $oItem = new ItemMaster();
         $itemmaster = $oItem->GetItemData(Auth::user()->RecordOwnerID,"", "", "","", "Y", '', 0);
+
+        $midtransdata = MetodePembayaran::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->where('MetodeVerifikasi','=','AUTO')->first();
+        $midtransclientkey = "";
+        if ($midtransdata) {
+            $midtransclientkey = $midtransdata->ClientKey;
+        }
+
         return view("Transaksi.Penjualan.PoS.Billing",[
             'paket' => $paket, 
             'titiklampu' => $titiklampu,
@@ -86,7 +106,8 @@ class TableOrderController extends Controller
             'sales' => $sales,
             'pelanggan' => $pelanggan,
             'metodepembayaran' => $metodepembayaran,
-            'itemmaster' => $itemmaster->get()
+            'itemmaster' => $itemmaster->get(),
+            'midtransclientkey' => $midtransclientkey
         ]);
     }
 
@@ -134,14 +155,14 @@ class TableOrderController extends Controller
 
             $save = $model->save();
 
-            DB::table('tableorderheader')
-                            ->where('NoTransaksi','=', $NoTransaksi)
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                            ->update(
-                                [
-                                    'JamSelesai' => DB::raw('DATE_ADD(JamMulai, INTERVAL DurasiPaket HOUR)')
-                                ]
-                            );
+            // DB::table('tableorderheader')
+            //                 ->where('NoTransaksi','=', $NoTransaksi)
+            //                 ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+            //                 ->update(
+            //                     [
+            //                         'JamSelesai' => DB::raw('DATE_ADD(JamMulai, INTERVAL DurasiPaket HOUR)')
+            //                     ]
+            //                 );
 
             if ($save) {
                 $data['success'] = true;
@@ -172,6 +193,7 @@ class TableOrderController extends Controller
                             ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                             ->update(
                                 [
+                                    'Status' => '1',
                                     'DurasiPaket' => DB::raw('DurasiPaket + ' . $request->input('txtDurasiPaket_RubahDurasi')),
                                     'JamSelesai' => DB::raw('DATE_ADD(JamMulai, INTERVAL DurasiPaket HOUR)')
                                 ]
@@ -210,6 +232,40 @@ class TableOrderController extends Controller
                                 [
                                     'Status' => '-1',
                                     'JamSelesai' => DB::raw("CASE WHEN '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENIT' THEN NOW() ELSE JamSelesai END")
+                                ]
+                            );
+
+                if ($update) {
+                    $data['success'] = true;
+                }else{
+                    $data['message']= 'Update Data Paket Gagal';
+                }
+            }
+        } catch (\Throwable $th) {
+            $data['message'] = 'Internal error, '. $th->getMessage() ;
+        }
+
+        return response()->json($data);
+    }
+
+    public function NotifHampirHabis(Request $request){
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        $this->validate($request, [
+            'NoTransaksi'=>'required'
+        ]);
+
+        try {
+            $model = TableOrderHeader::where('NoTransaksi','=',$request->input('NoTransaksi'))
+                        ->where('RecordOwnerID','=', Auth::user()->RecordOwnerID);
+
+            if ($model) {
+                $update = DB::table('tableorderheader')
+                            ->where('NoTransaksi','=', $request->input('NoTransaksi'))
+                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->update(
+                                [
+                                    'Status' => '2'
                                 ]
                             );
 
@@ -319,7 +375,7 @@ class TableOrderController extends Controller
         $NoTransaksi = $request->input('txtNoTransaksi_TambahMakan');
 
         try {
-            $tableorderfnb = TableOrderFnB::selectRaw("tableorderfnb.*, itemmaster.NamaItem, itemmaster.HargaJual")
+            $tableorderfnb = TableOrderFnB::selectRaw("tableorderfnb.*, itemmaster.NamaItem, itemmaster.HargaJual, itemmaster.HargaPokokPenjualan, itemmaster.Satuan")
                         ->leftJoin('itemmaster', function ($value)  {
                             $value->on('tableorderfnb.KodeItem','=','itemmaster.KodeItem')
                             ->on('tableorderfnb.RecordOwnerID','=','itemmaster.RecordOwnerID');
@@ -330,10 +386,31 @@ class TableOrderController extends Controller
         $data['data'] = $tableorderfnb;
         $data['success'] = true;
         } catch (\Throwable $th) {
-            $data['success'] = true;
+            $data['success'] = false;
             $data['message'] = 'Internal error, '. $th->getMessage() ;
         }
         
+        return response()->json($data);
+    }
+
+    Public function ReadTableAPI(Request $request) {
+        $data = array('success' => false, 'data' => array());
+        // A1B2C3D4E5F6
+
+        try {
+            $titiklampuoption = TitikLampu::selectRaw("DigitalInput as id ,Status")
+                                    ->join('mastercontroller', function ($value)  {
+                                        $value->on('mastercontroller.id','=','titiklampu.ControllerID')
+                                        ->on('mastercontroller.RecordOwnerID','=','titiklampu.RecordOwnerID');
+                                    })
+                                    ->where('titiklampu.RecordOwnerID', '=', $request->input("RecordOwnerID"))
+                                    ->where('mastercontroller.SN','=',$request->input("SerialNumber") )->get();
+            $data['success'] = true;
+            $data['data'] = $titiklampuoption;
+        } catch (\Throwable $th) {
+            $data['success'] = false;
+            $data['data'] = 'Internal error, '. $th->getMessage() ;
+        }
         return response()->json($data);
     }
 }

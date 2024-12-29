@@ -74,6 +74,7 @@ class SettingAccountController extends Controller
 									'PjAcctUangMukaPenjualan'=>$this->checkInput($request, 'PjAcctUangMukaPenjualan'),
                                     'PjAcctGoodsInTransit'=>$this->checkInput($request, 'PjAcctGoodsInTransit'),
                                     'PjAcctReturnPenjualan'=>$this->checkInput($request, 'PjAcctReturnPenjualan'),
+									'PjAcctPajakHiburan'=>$this->checkInput($request, 'PjAcctPajakHiburan'),
 									'KnAcctHutangKonsinyasi'=>$this->checkInput($request, 'KnAcctHutangKonsinyasi'),
 									'KnAcctPembayaranHutang'=>$this->checkInput($request, 'KnAcctPembayaranHutang'),
 									'KnAcctPenerimaanKonsinyasi'=>$this->checkInput($request, 'KnAcctPenerimaanKonsinyasi'),

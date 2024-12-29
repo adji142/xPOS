@@ -855,6 +855,31 @@
 					                            			
 					                            		</div>
 
+														<div class="col-md-12">
+					                            			<label  class="text-body">Warning Waktu Hampir Habis</label>
+					                            			<fieldset class="form-group mb-4">
+					                            				<input type="number" class="form-control" step="1" id="WarningTimer" name="WarningTimer" placeholder="Masukan Warning Hampir Habis" value="{{ count($company) > 0 ? $company[0]['WarningTimer'] : 0 }}" >
+					                            			</fieldset>
+					                            			
+					                            		</div>
+
+														<div class="col-md-12">
+					                            			<label  class="text-body">Item Jasa Sewa</label>
+					                            			<fieldset class="form-group mb-4">
+					                            				<select name="ItemHiburan" id="ItemHiburan" class="js-example-basic-single js-states form-control bg-transparent">
+					                            					<option value="" {{ count($company) > 0 ? $company[0]['ItemHiburan'] == ""? "selected" : '' :""}} >Pilih Item</option>
+																	@foreach($itemjasa as $js)
+																		<option value="{{ $js->KodeItem }}" {{ $js->KodeItem == (count($company) > 0 ? $company[0]['ItemHiburan'] : '') ? 'selected' : '' }}>
+								                                            {{ $js->NamaItem }}
+								                                        </option>
+																	@endforeach
+					                            				</select>
+
+																<small>Setting ini digunakan untuk generate faktur penjualan</small>
+					                            			</fieldset>
+					                            			
+					                            		</div>
+
 													</div>
 												</div>
 

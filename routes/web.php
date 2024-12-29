@@ -540,6 +540,7 @@ Route::get('/fpenjualan/printthermal/{id}', [FakturPenjualanController::class, '
 Route::post('/fpenjualan/retailPosFnb', [FakturPenjualanController::class, 'storePoSFnB'])->name('fpenjualan-retailPosFnB')->middleware('auth');
 Route::post('/fpenjualan/editJsonPosFnb', [FakturPenjualanController::class, 'editJsonPoSFnB'])->name('fpenjualan-editJsonPosFnB')->middleware('auth');
 Route::get('/fpenjualan/custdisplay', [CustDisplayController::class, 'View'])->name('fpenjualan-custdisplay')->middleware('auth');
+Route::post('/fpenjualan/hiburanPoS', [FakturPenjualanController::class, 'storePoSHiburan'])->name('fpenjualan-hiburanPoS')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------
@@ -962,3 +963,4 @@ Route::post('/billing/editdurasi', [TableOrderController::class, 'EditPaket'])->
 Route::post('/billing/checkout', [TableOrderController::class, 'CheckOut'])->name('billing-checkout')->middleware('auth');
 Route::post('/billing/addfnb', [TableOrderController::class, 'AddFnB'])->name('billing-addfnb')->middleware('auth');
 Route::post('/billing/readfnb', [TableOrderController::class, 'ReadTableOrderFnB'])->name('billing-readfnb')->middleware('auth');
+Route::post('/billing/warning', [TableOrderController::class, 'NotifHampirHabis'])->name('billing-warning')->middleware('auth');

@@ -1,0 +1,82 @@
+#include <SoftwareSerial.h>
+#include <ArduinoJson.h>
+
+#define RELAY_PIN3 3
+#define RELAY_PIN4 4
+#define RELAY_PIN5 5
+#define RELAY_PIN6 6
+#define RELAY_PIN7 7
+
+SoftwareSerial uno(2,3); //RX,TX
+
+String data;
+char c;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  uno.begin(9600);
+  
+  Serial.println("Starting Listen Node MCU");
+
+  pinMode(RELAY_PIN3, OUTPUT);
+  pinMode(RELAY_PIN4, OUTPUT);
+  pinMode(RELAY_PIN5, OUTPUT);
+  pinMode(RELAY_PIN6, OUTPUT);
+  pinMode(RELAY_PIN7, OUTPUT);
+
+
+  delay(10000);
+  digitalWrite(RELAY_PIN3, HIGH);
+  delay(3000);
+  digitalWrite(RELAY_PIN3, LOW);
+
+  delay(10000);
+  digitalWrite(RELAY_PIN4, HIGH);
+  delay(3000);
+  digitalWrite(RELAY_PIN4, LOW);
+
+  delay(10000); 
+  digitalWrite(RELAY_PIN5, HIGH);
+  delay(3000);
+  digitalWrite(RELAY_PIN5, LOW);
+
+  delay(10000);
+  digitalWrite(RELAY_PIN6, HIGH);
+  delay(3000);
+  digitalWrite(RELAY_PIN6, LOW);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  while(uno.available()){
+    delay(10);
+    c = uno.read();
+    data+= c;
+  }
+  
+  if(data.length() > 0){
+    Serial.println(data);
+    // DynamicJsonDocument doc(1024);
+    // DeserializationError error = deserializeJson(doc, data);
+
+    // if (error) {
+    //   Serial.print("Failed to parse JSON: ");
+    //   Serial.println(error.f_str());
+    //   return;
+    // }
+
+    // JsonArray data = doc["data"].as<JsonArray>();
+
+    // for (JsonObject obj : data) {
+    //   int id = obj["id"];
+    //   int status = obj["Status"];
+
+    //   Serial.print("id: ");
+    //   Serial.print(id);
+    //   Serial.print(", Status: ");
+    //   Serial.println(status);
+    // }
+  }
+
+}

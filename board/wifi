@@ -1,0 +1,113 @@
+#include <ESP8266WiFi.h>   
+#include <DNSServer.h>
+#include <ESP8266WebServer.h>
+#include "WiFiManager.h"
+#include <SoftwareSerial.h>
+#include <ESP8266HTTPClient.h>
+
+SoftwareSerial node(D1,D2); //RX,TX
+
+const char* apiEndpoint = "http://192.168.137.1:8000/api/getTable";
+
+unsigned long interval = 30000; // 30 Sec
+unsigned long previousMillis = 0;
+
+String inputString = "";
+bool stringComplete = false;
+
+WiFiManager wifiManager;
+
+void configModeCallback (WiFiManager *myWiFiManager) {
+  Serial.println("Entered config mode");
+  Serial.println(WiFi.softAPIP());
+  //if you used auto generated SSID, print it
+  Serial.println(myWiFiManager->getConfigPortalSSID());
+}
+
+void setup() {
+  Serial.begin(9600);
+  node.begin(9600);
+
+  Serial.println("Resetting WiFiManager settings...");
+  wifiManager.resetSettings();
+
+  wifiManager.setAPCallback(configModeCallback);
+
+  if(!wifiManager.autoConnect("TESTESP")) {
+    Serial.println("failed to connect and hit timeout");
+    //reset and try again, or maybe put it to deep sleep
+    ESP.reset();
+    delay(1000);
+  } 
+
+  Serial.println("WIFIManager connected!");
+ 
+  Serial.print("IP --> ");
+  Serial.println(WiFi.localIP());
+  Serial.print("GW --> ");
+  Serial.println(WiFi.gatewayIP());
+  Serial.print("SM --> ");
+  Serial.println(WiFi.subnetMask());
+ 
+  Serial.print("DNS 1 --> ");
+  Serial.println(WiFi.dnsIP(0));
+ 
+  Serial.print("DNS 2 --> ");
+  Serial.println(WiFi.dnsIP(1));
+
+}
+
+void loop() {
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    if (WiFi.status() == WL_CONNECTED) {
+      hitApi();
+    }
+    else{
+      Serial.println("WiFi not connected");
+    }
+  }
+}
+
+void hitApi() {
+  WiFiClient client;
+  HTTPClient http;
+
+  // Begin connection to the API
+  http.begin(client, apiEndpoint);
+
+  // Set headers and content type
+  http.addHeader("Content-Type", "application/json");
+
+  // Prepare JSON payload
+  String payload = "{\"RecordOwnerID\":\"CL0003\"}";
+
+  // Send HTTP POST request
+  int httpResponseCode = http.POST(payload);
+
+  // Check HTTP response code
+  if (httpResponseCode > 0) {
+    Serial.print("HTTP Response Code: ");
+    Serial.println(httpResponseCode);
+
+    // Get the response payload
+    String response = http.getString();
+    Serial.println("Response:");
+    Serial.println(response);
+
+    node.write(response.c_str());
+
+    // while(Serial.available()){
+    //   inputString = response;
+    //   node.print(inputString);
+    // }
+    
+  } else {
+    Serial.print("Error on sending POST: ");
+    Serial.println(httpResponseCode);
+  }
+
+  // End the HTTP connection
+  http.end();
+}
