@@ -207,7 +207,7 @@
 					                            					<option value="" {{ count($company) > 0 ? $company[0]['JenisUsaha'] == '' ? 'selected' : '' : '' }}>Pilih Jenis Usaha</option>
 					                            					<option value="Retail" {{ count($company) > 0 ? $company[0]['JenisUsaha'] == 'Retail' ? 'selected' : '' : '' }}>Retail</option>
 					                            					<option value="FnB" {{ count($company) > 0 ? $company[0]['JenisUsaha'] == 'FnB' ? 'selected' : '' : '' }}>Food and Beverage</option>
-					                            					<option value="Services" {{ count($company) > 0 ? $company[0]['JenisUsaha'] == 'Services' ? 'selected' : '' : '' }}>Service</option>
+					                            					<option value="Hiburan" {{ count($company) > 0 ? $company[0]['JenisUsaha'] == 'Hiburan' ? 'selected' : '' : '' }}>Hiburan</option>
 					                            				</select>
 					                            			</fieldset>
 					                            			
