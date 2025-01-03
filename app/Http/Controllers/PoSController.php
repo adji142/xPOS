@@ -133,6 +133,9 @@ class PoSController extends Controller
                 alert()->error('Error','Fitur PoS untuk Bisnis Services Belum Tersedia');
                 return redirect()->back();
                 break;
+            case 'Hiburan' :
+                return redirect()->route('billing');
+                break;
             default:
                 alert()->error('Error','Jenis Usaha belum ada');
                 break;

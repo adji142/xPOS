@@ -123,12 +123,12 @@
 														<a class="nav-link" id="invoice-tab" data-bs-toggle="pill" href="#invoice" role="tab" aria-controls="invoice" aria-selected="false">Tagihan</a>
 													</li>
 													<li class="nav-item" >
-														<a class="nav-link" id="custdisplay-tab" data-bs-toggle="pill" href="#custdisplay" role="tab" aria-controls="custdisplay" aria-selected="false">Customer Display</a>
+														<a class="nav-link disabled" id="custdisplay-tab" data-bs-toggle="pill" href="#custdisplay" role="tab" aria-controls="custdisplay" aria-selected="false">Customer Display</a>
 													</li>
 													
 													@if ($company[0]['JenisUsaha'] == "Hiburan")
 													<li class="nav-item" >
-														<a class="nav-link" id="hiburan-tab" data-bs-toggle="pill" href="#hiburan" role="tab" aria-controls="hiburan" aria-selected="false">Hiburan</a>
+														<a class="nav-link disabled" id="hiburan-tab" data-bs-toggle="pill" href="#hiburan" role="tab" aria-controls="hiburan" aria-selected="false">Hiburan</a>
 													</li>
 													@endif
 												@else

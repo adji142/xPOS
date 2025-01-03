@@ -163,31 +163,6 @@ License: You must have a valid license purchased only from themeforest(the above
 			   <div class="col-xl-4 col-lg-3 col-md-12  order-lg-last order-second">
 
 				<div class="topbar justify-content-end">
-					<div class="topbar-item folder-data">
-						<div class="btn btn-icon  w-auto h-auto btn-clean d-flex align-items-center py-0 me-3"  data-bs-toggle="modal" data-bs-target="#folderpop">
-							<span class="badge badge-pill badge-primary" id="_draftCount">5</span>
-							<span class="symbol symbol-35  symbol-light-success">
-								<span class="symbol-label bg-warning font-size-h5 ">
-									<svg width="20px" height="20px" xmlns="http://www.w3.org/2000/svg" fill="#ffff"  viewBox="0 0 16 16">
-										<path d="M9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3zm-8.322.12C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139z"></path>
-									</svg>
-								</span>
-							</span>
-						</div>
-					</div>
-
-					<div class="topbar-item folder-data">
-						<div id="btOpenCustDisplay" class="btn btn-icon  w-auto h-auto btn-clean d-flex align-items-center py-0 me-3">
-							<span class="symbol symbol-35  symbol-light-success">
-								<span class="symbol-label font-size-h5 ">
-									<svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" class="bi bi-pc-display-horizontal" viewBox="0 0 16 16">
-									<path d="M1.5 0A1.5 1.5 0 0 0 0 1.5v7A1.5 1.5 0 0 0 1.5 10H6v1H1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-5v-1h4.5A1.5 1.5 0 0 0 16 8.5v-7A1.5 1.5 0 0 0 14.5 0zm0 1h13a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-7a.5.5 0 0 1 .5-.5M12 12.5a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0m2 0a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0M1.5 12h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1M1 14.25a.25.25 0 0 1 .25-.25h5.5a.25.25 0 1 1 0 .5h-5.5a.25.25 0 0 1-.25-.25"/>
-									</svg>
-								</span>
-							</span>
-						</div>
-				 
-					</div>
 			 
 				 <div class="dropdown">
 					 <div class="topbar-item" data-bs-toggle="dropdown" data-display="static">
@@ -232,128 +207,132 @@ License: You must have a valid license purchased only from themeforest(the above
 						<div class="card card-custom gutter-b bg-white border-0 table-contentpos">
 							<div class="card-body" >
                                 <div class="row">
-                                    @foreach ($titiklampu as $item)
-                                        <div class="col-xl-3 col-lg-8 col-md-8">
-                                            <div class="card card-custom gutter-b bg-white border-0 table-contentpos">
-                                                <div class="card-header align-items-center  border-0">
-													<div class="card-title mb-0">
-														<h3 class="card-label text-body font-weight-bold mb-0">{{ $item->NamaTitikLampu }}</h3>
+									@if (count($titiklampu) > 0)
+										@foreach ($titiklampu as $item)
+											<div class="col-xl-3 col-lg-8 col-md-8">
+												<div class="card card-custom gutter-b bg-white border-0 table-contentpos">
+													<div class="card-header align-items-center  border-0">
+														<div class="card-title mb-0">
+															<h3 class="card-label text-body font-weight-bold mb-0">{{ $item->NamaTitikLampu }}</h3>
+														</div>
+														<div class="card-toolbar">
+															<button class="btn p-0" type="button" id="dropdownMenuButton1"
+																data-bs-toggle="dropdown" aria-haspopup="true"
+																aria-expanded="false">
+																<span class="svg-icon">
+																	<svg width="20px" height="20px" viewBox="0 0 16 16"
+																		class="bi bi-three-dots text-body" fill="currentColor"
+																		xmlns="http://www.w3.org/2000/svg">
+																		<path fill-rule="evenodd"
+																			d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+																	</svg>
+																</span>
+															</button>
+															<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton1">
+																@if ($item->Status == -1)
+																	<a class="disabled-link dropdown-item btPilihPaket_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Pilih Paket</a>
+																	<a class="disabled-link dropdown-item btCheckOut_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Check Out</a>
+																	<a class="dropdown-item btTambahMakanan_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Makanan</a>
+																	<a class="dropdown-item btDetail_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Detail</a>
+																@endif
+
+																@if ($item->Status == 0)
+																	<a class="dropdown-item btPilihPaket_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Pilih Paket</a>
+																	<a class="disabled-link dropdown-item btCheckOut_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Check Out</a>
+																	<a class="disabled-link dropdown-item btTambahMakanan_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Makanan</a>
+																	<a class="disabled-link dropdown-item btDetail_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Detail</a>
+																@endif
+
+																@if ($item->Status == 1 || $item->Status == 2)
+																	<a class="disabled-link dropdown-item btPilihPaket_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Pilih Paket</a>
+																	<a class="dropdown-item btCheckOut_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Check Out</a>
+																	<a class="dropdown-item btTambahMakanan_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Makanan</a>
+																	<a class="dropdown-item btDetail_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Detail</a>
+																@endif
+
+																@if ($item->NoTransaksi != "" && $item->JenisPaket == "JAM")
+																	<a class="dropdown-item btTambahJam_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Jam</a>
+																@else
+																	<a class="disabled-link dropdown-item btTambahJam_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Jam</a>
+																@endif
+															</div>
+														</div>
 													</div>
-													<div class="card-toolbar">
-														<button class="btn p-0" type="button" id="dropdownMenuButton1"
-															data-bs-toggle="dropdown" aria-haspopup="true"
-															aria-expanded="false">
-															<span class="svg-icon">
-																<svg width="20px" height="20px" viewBox="0 0 16 16"
-																	class="bi bi-three-dots text-body" fill="currentColor"
-																	xmlns="http://www.w3.org/2000/svg">
-																	<path fill-rule="evenodd"
-																		d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
-																</svg>
-															</span>
-														</button>
-														<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton1">
-															@if ($item->Status == -1)
-																<a class="disabled-link dropdown-item btPilihPaket_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Pilih Paket</a>
-																<a class="disabled-link dropdown-item btCheckOut_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Check Out</a>
-																<a class="dropdown-item btTambahMakanan_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Makanan</a>
-																<a class="dropdown-item btDetail_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Detail</a>
-															@endif
+													<div class="card-body" >
 
-															@if ($item->Status == 0)
-																<a class="dropdown-item btPilihPaket_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Pilih Paket</a>
-																<a class="disabled-link dropdown-item btCheckOut_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Check Out</a>
-																<a class="disabled-link dropdown-item btTambahMakanan_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Makanan</a>
-																<a class="disabled-link dropdown-item btDetail_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Detail</a>
-															@endif
+														@if ($item->Status == 0)
+															<button class="btn btn-success text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
+														@endif
 
-															@if ($item->Status == 1 || $item->Status == 2)
-																<a class="disabled-link dropdown-item btPilihPaket_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Pilih Paket</a>
-																<a class="dropdown-item btCheckOut_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Check Out</a>
-																<a class="dropdown-item btTambahMakanan_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Makanan</a>
-																<a class="dropdown-item btDetail_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Detail</a>
-															@endif
+														@if ($item->Status == 1)
+															<button class="btn btn-danger text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
+														@endif
 
-															@if ($item->NoTransaksi != "" && $item->JenisPaket == "JAM")
-																<a class="dropdown-item btTambahJam_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Jam</a>
-															@else
-																<a class="disabled-link dropdown-item btTambahJam_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Jam</a>
-															@endif
+														@if ($item->Status == 2)
+															<button class="btn btn-warning text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
+														@endif
+
+														@if ($item->Status == -1)
+															<button class="btn btn-warning text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
+														@endif
+
+														<ul class="list-group scrollbar-1">
+															<li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2">
+																<div class="list-left d-flex align-items-center">
+																	<span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-success text-white me-2">
+																		<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-credit-card-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+																			<path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1H0V4z"/>
+																			<path fill-rule="evenodd" d="M0 7v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7H0zm3 2a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1H3z"/>
+																		</svg>
+																		</span>
+																	<div class="list-content">
+																	<span class="list-title text-body">Paket</span>
+																	</div>
+																</div>
+																<span id="lblPaketTransaksi{{ $item->id }}">-</span>
+															</li>
+															<li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2">
+																<div class="list-left d-flex align-items-center">
+																	<span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-primary text-white me-2">
+																		<svg width="20px" height="20px" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+																			<path d="M3 2v12s6.333-2.833 10.666-6C9.333 4.833 3 2 3 2z" fill="white" overflow="visible" style="marker:none" color="#000000"/>
+																		</svg>
+																	</span>
+																	<div class="list-content">
+																		<span class="list-title text-body">Mulai</span>
+																	</div>
+																</div>
+																<span id="lblMulai{{ $item->id }}">-</span>
+															</li>
+
+															<li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2">
+																<div class="list-left d-flex align-items-center">
+																	<span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-secondary text-white me-2">
+																		<svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+																			<path d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z" fill="#FFFFFF"/>
+																		</svg>
+																	</span>
+																<div class="list-content">
+																	<span class="list-title text-body">Selesai</span>
+																</div>
+																</div>
+																<span id="lblSelesai{{ $item->id }}">-</span>
+															</li>
+														</ul>
+														<div class="col-xl-3 col-lg-8 col-md-8  clock-main">
+															<div class="clock">
+																<div id="clock_{{ $item->id }}">
+
+																</div>
+															</div>
 														</div>
 													</div>
 												</div>
-                                                <div class="card-body" >
-
-													@if ($item->Status == 0)
-														<button class="btn btn-success text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
-													@endif
-
-													@if ($item->Status == 1)
-														<button class="btn btn-danger text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
-													@endif
-
-													@if ($item->Status == 2)
-														<button class="btn btn-warning text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
-													@endif
-
-													@if ($item->Status == -1)
-														<button class="btn btn-warning text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
-													@endif
-
-                                                    <ul class="list-group scrollbar-1">
-														<li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2">
-															<div class="list-left d-flex align-items-center">
-																<span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-success text-white me-2">
-																	<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-credit-card-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-																		<path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1H0V4z"/>
-																		<path fill-rule="evenodd" d="M0 7v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7H0zm3 2a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1H3z"/>
-																	</svg>
-																	</span>
-																<div class="list-content">
-																<span class="list-title text-body">Paket</span>
-																</div>
-															</div>
-															<span id="lblPaketTransaksi{{ $item->id }}">-</span>
-														</li>
-                                                        <li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2">
-                                                            <div class="list-left d-flex align-items-center">
-                                                                <span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-primary text-white me-2">
-                                                                    <svg width="20px" height="20px" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M3 2v12s6.333-2.833 10.666-6C9.333 4.833 3 2 3 2z" fill="white" overflow="visible" style="marker:none" color="#000000"/>
-                                                                    </svg>
-                                                                </span>
-                                                                <div class="list-content">
-                                                                    <span class="list-title text-body">Mulai</span>
-                                                                </div>
-                                                            </div>
-                                                            <span id="lblMulai{{ $item->id }}">-</span>
-                                                        </li>
-
-                                                        <li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2">
-                                                            <div class="list-left d-flex align-items-center">
-                                                                <span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-secondary text-white me-2">
-                                                                    <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z" fill="#FFFFFF"/>
-                                                                    </svg>
-                                                                </span>
-                                                              <div class="list-content">
-                                                                <span class="list-title text-body">Selesai</span>
-                                                              </div>
-                                                            </div>
-                                                            <span id="lblSelesai{{ $item->id }}">-</span>
-                                                        </li>
-                                                    </ul>
-													<div class="col-xl-3 col-lg-8 col-md-8  clock-main">
-														<div class="clock">
-															<div id="clock_{{ $item->id }}">
-
-															</div>
-														</div>
-													</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
+											</div>
+										@endforeach
+									@else
+										<center><h3 class="card-label mb-0 font-weight-bold text-body ">Belum Ada Data Meja / Titik Lampu</h3></center>
+									@endif
                                 </div>
 							</div>
 						</div>	

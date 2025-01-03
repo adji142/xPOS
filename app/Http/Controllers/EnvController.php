@@ -9,7 +9,27 @@ class EnvController extends Controller
 {
     public function View(Request $request)
     {
-        return view("Admin.AppSetting");
+        $envPath = base_path('.env');
+        $envContent = file_get_contents($envPath);
+
+        $envArray = [];
+        foreach (explode("\n", $envContent) as $line) {
+            // Skip empty lines and comments
+            if (trim($line) === '' || str_starts_with(trim($line), '#')) {
+                continue;
+            }
+        
+            // Split the line into key and value
+            $parts = explode('=', $line, 2);
+            if (count($parts) === 2) {
+                $key = trim($parts[0]);
+                // Remove quotes (single or double) from the value
+                $value = trim($parts[1], " \t\n\r\0\x0B'\"");
+        
+                $envArray[$key] = $value;
+            }
+        }
+        return view("Admin.AppSetting",compact('envArray'));
     }
     public function update(Request $request)
     {
