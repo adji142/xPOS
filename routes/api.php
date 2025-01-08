@@ -44,3 +44,4 @@ Route::post('getAddon',[FlutterWebAppsController::class,'getVariantAddonData']);
 Route::post('getTable',[TableOrderController::class,'ReadTableAPI']);
 
 Route::post('checkCommand',[MasterControllerController::class,'CheckCommand']);
+Route::post('releaseCommand',[MasterControllerController::class,'DeviceCommand']);
