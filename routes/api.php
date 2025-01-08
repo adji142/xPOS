@@ -9,6 +9,7 @@ use App\Http\Controllers\PrinterController;
 use App\Http\Controllers\FlutterWebAppsController;
 use App\Http\Controllers\FakturPenjualanController;
 use App\Http\Controllers\TableOrderController;
+use App\Http\Controllers\MasterControllerController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -41,3 +42,5 @@ Route::post('saveFromTable',[FlutterWebAppsController::class,'TableServices']);
 Route::post('getMenu',[FlutterWebAppsController::class,'GetMenuByKelompok']);
 Route::post('getAddon',[FlutterWebAppsController::class,'getVariantAddonData']);
 Route::post('getTable',[TableOrderController::class,'ReadTableAPI']);
+
+Route::post('checkCommand',[MasterControllerController::class,'CheckCommand']);

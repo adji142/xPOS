@@ -9,12 +9,19 @@
 #include <EEPROM.h>
 
 #define RESET_COUNT_ADDRESS 0
-#define TIMEFRAME 3000
+#define TIMEFRAME 5000
+
+/** 
+  Blink Code :
+    1. 1 Times => Device Reseted
+    2. 
+**/
 
 int digitalPins[] = { D0, D1, D2, D3, D4, D5, D6, D7, D8 };
 
-const char* apiEndpoint = "http://192.168.1.6:8000/api/getTable";
+// const char* apiEndpoint = "http://192.168.1.6:8000/api/getTable";
 const char* SerialNumber = "A1B2C3D4E5F6";
+const char* APName = "LALAIoT-A1B2C3D4E5F6";
 
 unsigned long interval = 10000;  // 10 Sec
 unsigned long previousMillis = 0;
@@ -23,10 +30,8 @@ unsigned long previousMillisWarning = 0;
 const long intervalWarning = 180000;  // Setiap 3 Menit
 
 
-char recordOwnerID[7];
-WiFiManagerParameter custom_recordOwnerID("RecordOwnerID", "Enter Record Owner ID", "", 7);
-
-WiFiManager wifiManager;
+char recordOwnerID[7] = "";
+char apiEndpoint[254] = "";
 
 void configModeCallback(WiFiManager* myWiFiManager) {
   Serial.println("Entered config mode");
@@ -38,42 +43,19 @@ void configModeCallback(WiFiManager* myWiFiManager) {
 void setup() {
   Serial.begin(9600);
 
+  // Initialize the LED pin as an output
+  pinMode(D0, OUTPUT);
+  pinMode(D1, OUTPUT);
+  pinMode(D2, OUTPUT);
+  pinMode(D3, OUTPUT);
+  pinMode(D4, OUTPUT);
+  pinMode(D5, OUTPUT);
+  pinMode(D6, OUTPUT);
+  pinMode(D7, OUTPUT);
+  pinMode(D8, OUTPUT);
+
   EEPROM.begin(512);
-
-  int resetCount = EEPROM.read(RESET_COUNT_ADDRESS);
-  unsigned long lastResetTime = EEPROM.read(RESET_COUNT_ADDRESS + 1);
-
-  if (millis() - lastResetTime < TIMEFRAME) {
-    resetCount++; // Increment the reset count
-  } else {
-    resetCount = 1; // Reset the count if outside the timeframe
-  }
-
-  EEPROM.write(RESET_COUNT_ADDRESS, resetCount);
-  EEPROM.write(RESET_COUNT_ADDRESS + 1, millis() & 0xFF);
-  EEPROM.commit();
-
-  String resetReason = ESP.getResetReason();
-  Serial.println(resetReason);
-  if (resetReason == "External System" || resetReason == "Power on") {
-    // resetWiFiManager();
-    ESP.restart();
-  } else {
-    Serial.println("NodeMCU reset due to another reason: " + resetReason);
-  }
-
-  if (resetCount >= 3) {
-    Serial.println("3 short presses detected! Resetting WiFiManager...");
-    EEPROM.write(RESET_COUNT_ADDRESS, 0); // Reset the counter
-    EEPROM.commit();
-    resetWiFiManager();
-  } else {
-    Serial.print("Reset count: ");
-    Serial.println(resetCount);
-    Serial.println("Waiting for more resets...");
-  }
-
-  delay(200);
+  WiFiManager wifiManager;
 
   if (!SPIFFS.begin()) {
     Serial.println("Failed to mount file system");
@@ -81,20 +63,33 @@ void setup() {
   }
   loadConfig();
 
+  WiFiManagerParameter custom_recordOwnerID("RecordOwnerID", "Enter Record Owner ID", recordOwnerID, 7);
+  WiFiManagerParameter custom_apiEndpoint("APIEndpoint", "API URL, ex: http://api.aissystem.org/api", apiEndpoint, 254);
+
   wifiManager.addParameter(&custom_recordOwnerID);
+  wifiManager.addParameter(&custom_apiEndpoint);
 
   wifiManager.setAPCallback(configModeCallback);
 
-  if (!wifiManager.autoConnect("TESTESP")) {
+  if (!wifiManager.autoConnect(APName)) {
     Serial.println("failed to connect and hit timeout");
     //reset and try again, or maybe put it to deep sleep
     ESP.reset();
     delay(1000);
   }
 
-  Serial.println("WIFIManager connected!");
+  strncpy(recordOwnerID, custom_recordOwnerID.getValue(), sizeof(recordOwnerID));
+  strncpy(apiEndpoint, custom_apiEndpoint.getValue(), sizeof(apiEndpoint));
 
-  saveConfig();
+  Serial.println("WIFIManager connected!");
+  // Print loaded configuration
+  Serial.println("Loaded configuration:");
+  Serial.print("RecordOwnerID: ");
+  Serial.println(recordOwnerID);
+  Serial.print("APIEndpoint: ");
+  Serial.println(apiEndpoint);
+
+  saveConfig(recordOwnerID, apiEndpoint);
 
   // strcpy(recordOwnerID, wifiManager.getParameter("RecordOwnerID")->getValue());
 
@@ -122,21 +117,6 @@ void setup() {
   Serial.print("DNS 2 --> ");
   Serial.println(WiFi.dnsIP(1));
 
-  Serial.println("WiFi connected!");
-  Serial.print("RecordOwnerID: ");
-  Serial.println(recordOwnerID);
-
-  // Initialize the LED pin as an output
-  pinMode(D0, OUTPUT);
-  pinMode(D1, OUTPUT);
-  pinMode(D2, OUTPUT);
-  pinMode(D3, OUTPUT);
-  pinMode(D4, OUTPUT);
-  pinMode(D5, OUTPUT);
-  pinMode(D6, OUTPUT);
-  pinMode(D7, OUTPUT);
-  pinMode(D8, OUTPUT);
-
 }
 
 void loop() {
@@ -145,7 +125,40 @@ void loop() {
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
     if (WiFi.status() == WL_CONNECTED) {
-      hitApi();
+      if(recordOwnerID == ""){
+        digitalWrite(digitalPins[0], HIGH);
+        delay(500);
+        digitalWrite(digitalPins[0], LOW);
+        delay(500);
+        digitalWrite(digitalPins[0], HIGH);
+        delay(500);
+        digitalWrite(digitalPins[0], LOW);
+        delay(500);
+        Serial.println("Record Owner ID is Blank");
+      }
+      else if(apiEndpoint == ""){
+        digitalWrite(digitalPins[0], HIGH);
+        delay(500);
+        digitalWrite(digitalPins[0], LOW);
+        delay(500);
+        digitalWrite(digitalPins[0], HIGH);
+        delay(500);
+        digitalWrite(digitalPins[0], LOW);
+        delay(500);
+        digitalWrite(digitalPins[0], HIGH);
+        delay(500);
+        digitalWrite(digitalPins[0], LOW);
+        delay(2000);
+        digitalWrite(digitalPins[0], HIGH);
+        delay(2000);
+        digitalWrite(digitalPins[0], LOW);
+        delay(2000);
+        Serial.println("API Endpoint is Blank");
+      }
+      else{
+        checkCommand();
+        hitApi();
+      }
     } else {
       Serial.println("WiFi not connected");
     }
@@ -174,6 +187,76 @@ void loop() {
   // delay(500);
 }
 
+void checkCommand(){
+  unsigned long currentMillisWarning = millis();
+
+  WiFiClient client;
+  HTTPClient http;
+  WiFiManager wifiManager;
+
+  http.begin(client, String(apiEndpoint) + "/getTable");
+  http.addHeader("Content-Type", "application/json");
+  String payload = String("{\"RecordOwnerID\":\"") + recordOwnerID + "\",\"SerialNumber\":\"" + SerialNumber + "\"}";
+  int httpResponseCode = http.POST(payload);
+
+  if (httpResponseCode > 0) {
+    Serial.print("HTTP Response Code: ");
+    Serial.println(httpResponseCode);
+
+    // Get the response payload
+    String response = http.getString();
+    Serial.println("Response:");
+    Serial.println(response);
+    http.end();
+
+    DynamicJsonDocument doc(1024);
+    DeserializationError error = deserializeJson(doc, response);
+
+    if (error) {
+      Serial.print("Failed to parse JSON: ");
+      Serial.println(error.f_str());
+      return;
+    }
+
+    bool success = doc["success"];
+    int command = doc["Command"];
+
+    if(success){
+      digitalWrite(digitalPins[0], HIGH);
+      switch (command) {
+        case 1 :
+          ESP.restart();
+          Serial.println("Table Status OFF");
+          break;
+        case 2 :
+          wifiManager.resetSettings();
+          WiFi.disconnect(true);
+          ESP.restart();
+          Serial.println("Table Status OFF");
+          break;
+      }
+
+      http.begin(client, String(apiEndpoint) + "/checkCommand");
+      http.addHeader("Content-Type", "application/json");
+      String payload = String("{\"RecordOwnerID\":\"") + recordOwnerID + "\",\"SerialNumber\":\"" + SerialNumber + "\"}";
+      int httpResponseCode = http.POST(payload);
+      if (httpResponseCode > 0) {
+        Serial.print("HTTP Response Code: ");
+        Serial.println(httpResponseCode);
+
+        // Get the response payload
+        String response = http.getString();
+        Serial.println("Response:");
+        Serial.println(response);
+      }
+
+      http.end();
+
+      digitalWrite(digitalPins[0], LOW);
+    }
+  }
+}
+
 void hitApi() {
   unsigned long currentMillisWarning = millis();
 
@@ -181,7 +264,7 @@ void hitApi() {
   HTTPClient http;
 
   // Begin connection to the API
-  http.begin(client, apiEndpoint);
+  http.begin(client, String(apiEndpoint) + "/getTable");
 
   // Set headers and content type
   http.addHeader("Content-Type", "application/json");
@@ -232,22 +315,28 @@ void hitApi() {
           Serial.println("Table Status ON");
           break;
         case 2:
-          digitalWrite(digitalPins[id - 1], LOW);
-          delay(1000);
-          digitalWrite(digitalPins[id - 1], HIGH);
-          delay(1000);
-          digitalWrite(digitalPins[id - 1], LOW);
-          delay(1000);
-          digitalWrite(digitalPins[id - 1], HIGH);
-          delay(1000);
-          digitalWrite(digitalPins[id - 1], LOW);
-          delay(1000);
-          digitalWrite(digitalPins[id - 1], HIGH);
-          delay(1000);
-          digitalWrite(digitalPins[id - 1], LOW);
-          delay(1000);
-          digitalWrite(digitalPins[id - 1], HIGH);
-          Serial.println("Table Status WARNING");
+          if (currentMillisWarning - previousMillisWarning >= intervalWarning) {
+            previousMillisWarning = currentMillisWarning;
+            digitalWrite(digitalPins[id - 1], LOW);
+            delay(1000);
+            digitalWrite(digitalPins[id - 1], HIGH);
+            delay(1000);
+            digitalWrite(digitalPins[id - 1], LOW);
+            delay(1000);
+            digitalWrite(digitalPins[id - 1], HIGH);
+            delay(1000);
+            digitalWrite(digitalPins[id - 1], LOW);
+            delay(1000);
+            digitalWrite(digitalPins[id - 1], HIGH);
+            delay(1000);
+            digitalWrite(digitalPins[id - 1], LOW);
+            delay(1000);
+            digitalWrite(digitalPins[id - 1], HIGH);
+            Serial.println("Table Status WARNING");
+          }
+          else{
+            Serial.println("Waiting WARNING");
+          }
           break;
         case -1:
           digitalWrite(digitalPins[id - 1], LOW);
@@ -277,14 +366,16 @@ void hitApi() {
   http.end();
 }
 
-void saveConfig() {
+void saveConfig(const char* A, const char* B) {
   File configFile = SPIFFS.open("/config.json", "w");
   if (configFile) {
     DynamicJsonDocument doc(1024);
-    doc["RecordOwnerID"] = custom_recordOwnerID.getValue();
+    doc["RecordOwnerID"] = A;  // Save RecordOwnerID
+    doc["APIEndpoint"] = B;     // Save APIEndpoint
     serializeJson(doc, configFile);
     configFile.close();
-    Serial.println("Configuration saved!");
+    Serial.println("Configuration saved to SPIFFS!");
+    Serial.println(A);
   } else {
     Serial.println("Failed to open config file for writing.");
   }
@@ -292,6 +383,7 @@ void saveConfig() {
 
 
 void loadConfig() {
+  Serial.println("Loading Config");
   File configFile = SPIFFS.open("/config.json", "r");
   if (configFile) {
     size_t size = configFile.size();
@@ -300,36 +392,22 @@ void loadConfig() {
       return;
     }
 
-    // Read and parse JSON
+    // Parse JSON from SPIFFS
     DynamicJsonDocument doc(1024);
     DeserializationError error = deserializeJson(doc, configFile);
     if (!error) {
       strncpy(recordOwnerID, doc["RecordOwnerID"] | "", sizeof(recordOwnerID));
-      Serial.println("Configuration loaded:");
-      Serial.println("Configuration loaded:");
+      strncpy(apiEndpoint, doc["APIEndpoint"] | "", sizeof(apiEndpoint));
+      Serial.println("Variable Configuration loaded:");
+      Serial.print("Variable RecordOwnerID: ");
       Serial.println(recordOwnerID);
-      // if (strlen(recordOwnerID) == 0) {
-      //   Serial.println("RecordOwnerID is blank, restarting NodeMCU...");
-      //   ESP.restart();  // Restart if RecordOwnerID is blank
-      // } else {
-      //   Serial.println("RecordOwnerID: " + String(recordOwnerID));  // Print the value if it's valid
-      // }
+      Serial.print("Variable APIEndpoint: ");
+      Serial.println(apiEndpoint);
     } else {
       Serial.println("Failed to parse config file.");
     }
     configFile.close();
+  } else {
+    Serial.println("No configuration file found.");
   }
-}
-
-void resetWiFiManager() {
-  Serial.println("Resetting WiFi settings...");
-  WiFiManager wifiManager;
-  wifiManager.resetSettings();  // Clear WiFi credentials
-
-  digitalWrite(digitalPins[0], HIGH);
-  delay(1000);
-  digitalWrite(digitalPins[0], LOW);
-
-  delay(1000);
-  ESP.restart();  // Restart the ESP
 }

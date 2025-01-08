@@ -900,6 +900,7 @@ Route::post('/controller/edit', [MasterControllerController::class, 'edit'])->na
 Route::post('/controller/read', [MasterControllerController::class, 'ViewJson'])->name('controller-ViewJson')->middleware('auth');
 Route::post('/controller/storeJson', [MasterControllerController::class, 'storeJson'])->name('controller-storeJson')->middleware('auth');
 Route::post('/controller/editJson', [MasterControllerController::class, 'editJson'])->name('controller-editJson')->middleware('auth');
+Route::post('/controller/editcommand', [MasterControllerController::class, 'DeviceCommand'])->name('controller-editcommand')->middleware('auth');
 // end json
 Route::delete('/controller/delete/{id}', [MasterControllerController::class, 'deletedata'])->name('controller-delete')->middleware('auth');
 Route::get('/controller/export', [MasterControllerController::class,'Export'])->name('controller-export')->middleware('auth');

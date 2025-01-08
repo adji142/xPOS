@@ -223,4 +223,54 @@ class MasterControllerController extends Controller
     	}
     }
 
+    public function DeviceCommand(Request $request) {
+        try {
+            $model = MasterController::where('SN','=',$request->input('SN'));
+
+            if ($model) {
+            	// $model->Kode = $request->input('Kode');
+             //    $model->Nama = $request->input('Nama');
+                $update = DB::table('mastercontroller')
+                			->where('SN','=', $request->input('SN'))
+                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                			->update(
+                				[
+                					'Command'=>$request->input('Command'),
+                				]
+                			);
+
+                if ($update) {
+                    $data['success'] = true;
+                    // alert()->success('Success','Data Merk berhasil disimpan.');
+                    // return redirect('controller');
+                }else{
+                    // throw new \Exception('Manipulasi Controller Gagal');
+                    $data['success'] = false;
+                    $data['message'] = 'Manipulasi Controller Gagal';
+                }
+            } else{
+                // throw new \Exception('Controller found.');
+                $data['success'] = false;
+                $data['message'] = 'Controller not found.';
+            }
+        } catch (Exception $e) {
+            Log::debug($e->getMessage());
+            $data['success'] = false;
+            $data['message'] = $e->getMessage();
+        }
+
+        return response()->json($data);
+    }
+
+    public function CheckCommand(Request $request) {
+        $data = array('success' => false, 'Command'=>0);
+        $controller = MasterController::where('SN','=',$request->input('SN'))
+                        ->where('RecordOwnerID','=',$request->input('RecordOwnerID'))->get();
+        if (count($controller) > 0) {
+            $data['success'] = true;
+            $data['Command'] = $controller[0]->Command;
+        }
+        return response()->json($data);
+    }
+
 }

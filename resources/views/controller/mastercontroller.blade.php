@@ -73,6 +73,8 @@
 															<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdowneditButton1"  style="position: absolute; transform: translate3d(1001px, 111px, 0px); top: 0px; left: 0px; will-change: transform;">
 																<a class="dropdown-item" href="{{ url('controller/form/' . $v['id']) }}">Edit</a>
 																<a class="dropdown-item" title="Delete" href="{{ route('controller-delete', $v['id']) }}" data-confirm-delete="true">Delete</a>
+																<a class="dropdown-item" title="Restart" id="btRestart" data-serialnumber="{{ $v['SN'] }}">Restart Device</a>
+																<a class="dropdown-item" title="Reset" id="btReset" data-serialnumber="{{ $v['SN'] }}">Reset Device Setting</a>
 															</div>
 														</div>
 													</td>
@@ -107,5 +109,124 @@
 		}]
 		});
 	} );
+
+	jQuery('#btRestart').click(function (e) {
+		e.preventDefault();
+		const SN = jQuery(this).data('serialnumber');
+
+		swal.fire({
+			title: "Are you sure?",
+			text: "Restart Device",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonText: 'Yes',
+			cancelButtonText: 'No',
+			dangerMode: true,
+		}).then((result) => {
+			if (result.isConfirmed) {
+				$.ajax({
+					async:false,
+					url: "{{route('controller-editcommand')}}",
+					type: 'POST',
+					headers: {
+						'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+					},
+					data: {
+						'SN':SN,
+						'Command': 1
+					},
+					success: function (data) {
+						if(data.success == true){
+							Swal.fire({
+								icon: "success",
+								title: "Horray..",
+								text: "Request Restart Device Berhasil dikirim ke Device",
+							}).then((result) => {
+								location.reload();
+							});
+						}
+						else{
+							Swal.fire({
+								icon: "error",
+								title: "Oops..",
+								text: "Data Gagal Diproses " + data.message,
+							});
+						}
+					},
+					error: function (data) {
+						Swal.fire({
+							icon: "error",
+							title: "Oops..",
+							text: "Data Gagal Diproses " + data,
+						});
+					}
+				});
+				// swal.fire("Restart Device", {
+				// 	icon: "success",
+				// });
+			}
+		});
+
+	});
+
+
+	jQuery('#btReset').click(function (e) {
+		e.preventDefault();
+		const SN = jQuery(this).data('serialnumber');
+
+		swal.fire({
+			title: "Are you sure?",
+			text: "Reset Device Setting",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonText: 'Yes',
+			cancelButtonText: 'No',
+			dangerMode: true,
+		}).then((result) => {
+			if (result.isConfirmed) {
+				$.ajax({
+					async:false,
+					url: "{{route('controller-editcommand')}}",
+					type: 'POST',
+					headers: {
+						'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+					},
+					data: {
+						'SN':SN,
+						'Command': 2
+					},
+					success: function (data) {
+						if(data.success == true){
+							Swal.fire({
+								icon: "success",
+								title: "Horray..",
+								text: "Request Reset Setting Device Berhasil dikirim ke Device",
+							}).then((result) => {
+								location.reload();
+							});
+						}
+						else{
+							Swal.fire({
+								icon: "error",
+								title: "Oops..",
+								text: "Data Gagal Diproses " + data.message,
+							});
+						}
+					},
+					error: function (data) {
+						Swal.fire({
+							icon: "error",
+							title: "Oops..",
+							text: "Data Gagal Diproses " + data,
+						});
+					}
+				});
+				// swal.fire("Restart Device", {
+				// 	icon: "success",
+				// });
+			}
+		});
+
+	});
 </script>
 @endpush

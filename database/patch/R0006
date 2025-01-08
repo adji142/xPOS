@@ -1,0 +1,2 @@
+ALTER TABLE `xpos`.`mastercontroller` 
+ADD COLUMN `Command` int(1) NULL DEFAULT 0 COMMENT '0: Normal, 1: Restart, 2: Reset' AFTER `RecordOwnerID`;
