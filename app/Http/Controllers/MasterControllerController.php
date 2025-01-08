@@ -32,7 +32,7 @@ class MasterControllerController extends Controller
         $title = 'Delete Controller !';
         $text = "Are you sure you want to delete ?";
         confirmDelete($title, $text);
-        return view("Controller.mastercontroller",[
+        return view("controller.mastercontroller",[
             'controller' => $controller
         ]);
     }
@@ -51,7 +51,7 @@ class MasterControllerController extends Controller
     {
     	$controller = MasterController::where('id','=',$id)->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
         
-        return view("Controller.mastercontroller-Input",[
+        return view("controller.mastercontroller-Input",[
             'controller' => $controller
         ]);
     }
