@@ -232,7 +232,6 @@ class MasterControllerController extends Controller
              //    $model->Nama = $request->input('Nama');
                 $update = DB::table('mastercontroller')
                 			->where('SN','=', $request->input('SN'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                 			->update(
                 				[
                 					'Command'=>$request->input('Command'),
@@ -272,5 +271,6 @@ class MasterControllerController extends Controller
         }
         return response()->json($data);
     }
+    
 
 }
