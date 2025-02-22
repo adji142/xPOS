@@ -41,7 +41,7 @@ class TitikLampuController extends Controller
         $title = 'Delete Titik Lampu !';
         $text = "Are you sure you want to delete ?";
         confirmDelete($title, $text);
-        return view("Controller.titiklampu",[
+        return view("controller.titiklampu",[
             'titiklampu' => $titiklampu->get()
         ]);
     }
