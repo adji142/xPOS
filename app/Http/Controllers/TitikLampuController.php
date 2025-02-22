@@ -61,7 +61,7 @@ class TitikLampuController extends Controller
         $controller = MasterController::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
     	$titiklampu = TitikLampu::where('id','=',$id)->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
         
-        return view("Controller.titiklampu-Input",[
+        return view("controller.titiklampu-Input",[
             'titiklampu' => $titiklampu,
             'controller' => $controller
         ]);
