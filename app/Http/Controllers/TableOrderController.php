@@ -400,10 +400,8 @@ class TableOrderController extends Controller
         try {
             $titiklampuoption = TitikLampu::selectRaw("DigitalInput as id ,Status")
                                     ->join('mastercontroller', function ($value)  {
-                                        $value->on('mastercontroller.id','=','titiklampu.ControllerID')
-                                        ->on('mastercontroller.RecordOwnerID','=','titiklampu.RecordOwnerID');
+                                        $value->on('mastercontroller.id','=','titiklampu.ControllerID');
                                     })
-                                    ->where('titiklampu.RecordOwnerID', '=', $request->input("RecordOwnerID"))
                                     ->where('mastercontroller.SN','=',$request->input("SerialNumber") )->get();
             $data['success'] = true;
             $data['data'] = $titiklampuoption;
