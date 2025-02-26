@@ -81,9 +81,9 @@ class CompanyController extends Controller
     	// Test Printer
 
     	// exec("print /d:USB001: D:\testprinting.txt");
-        try {
+        // try {
             
-            $clientOS = $request->input('client_os');
+        //     $clientOS = $request->input('client_os');
             // dd($clientOS);
             
             // if ($clientOS == "Windows") {
@@ -118,12 +118,12 @@ class CompanyController extends Controller
             //     // echo $printerList[0];
             
             // }
-        } catch (\Exception $e) {
-            alert()->error('Error',$e->getMessage());
-        }
-        catch (\Throwable $th) {
-            alert()->error('Error',"Server tidak support shell_exec ". $th->getMessage());
-        }
+        // } catch (\Exception $e) {
+        //     alert()->error('Error',$e->getMessage());
+        // }
+        // catch (\Throwable $th) {
+        //     alert()->error('Error',"Server tidak support shell_exec ". $th->getMessage());
+        // }
 
         $company = Company::Where('KodePartner','=',Auth::user()->RecordOwnerID)
                         ->leftJoin('subscriptionheader', 'company.KodePaketLangganan', 'subscriptionheader.NoTransaksi')
@@ -205,11 +205,11 @@ class CompanyController extends Controller
 
                 $clientOS = $request->input('client_os');
 
-                if ($clientOS == "Windows") {
-                    $printername = empty($request->input('NamaPosPrinter')) ? "" : $request->input('NamaPosPrinter');
-                    $command = 'wmic printer where name="' .$printername. '" call setdefaultprinter';
-                    $output = shell_exec($command);
-                }
+                // if ($clientOS == "Windows") {
+                //     $printername = empty($request->input('NamaPosPrinter')) ? "" : $request->input('NamaPosPrinter');
+                //     $command = 'wmic printer where name="' .$printername. '" call setdefaultprinter';
+                //     $output = shell_exec($command);
+                // }
                 alert()->success('Success','Data Perusahaan berhasil disimpan.');
                 return redirect('companysetting');
             } else{
