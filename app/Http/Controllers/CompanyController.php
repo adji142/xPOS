@@ -83,7 +83,7 @@ class CompanyController extends Controller
     	// exec("print /d:USB001: D:\testprinting.txt");
         // try {
             
-        //     $clientOS = $request->input('client_os');
+            $clientOS = "";
             // dd($clientOS);
             
             // if ($clientOS == "Windows") {
