@@ -203,7 +203,7 @@ class CompanyController extends Controller
                 				]
                 			);
 
-                $clientOS = $request->input('client_os');
+                // $clientOS = $request->input('client_os');
 
                 // if ($clientOS == "Windows") {
                 //     $printername = empty($request->input('NamaPosPrinter')) ? "" : $request->input('NamaPosPrinter');
