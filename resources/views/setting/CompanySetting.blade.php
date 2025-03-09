@@ -131,6 +131,11 @@
 														<a class="nav-link disabled" id="hiburan-tab" data-bs-toggle="pill" href="#hiburan" role="tab" aria-controls="hiburan" aria-selected="false">Hiburan</a>
 													</li>
 													@endif
+													@if ($company[0]['JenisUsaha'] == "Hiburan")
+													<li class="nav-item" >
+														<a class="nav-link" id="booking-tab" data-bs-toggle="pill" href="#booking" role="tab" aria-controls="booking" aria-selected="false">Booking Online</a>
+													</li>
+													@endif
 												@else
 													<li class="nav-item" >
 														<a class="nav-link active" id="general-tab2" data-bs-toggle="pill" href=" #general" role="tab" aria-controls="general" aria-selected="true">General</a>
@@ -156,6 +161,11 @@
 													@if ($company[0]['JenisUsaha'] == "Hiburan")
 													<li class="nav-item" >
 														<a class="nav-link" id="hiburan-tab" data-bs-toggle="pill" href="#hiburan" role="tab" aria-controls="hiburan" aria-selected="false">Hiburan</a>
+													</li>
+													@endif
+													@if ($company[0]['JenisUsaha'] == "Hiburan")
+													<li class="nav-item" >
+														<a class="nav-link" id="booking-tab" data-bs-toggle="pill" href="#booking" role="tab" aria-controls="booking" aria-selected="false">Booking Online</a>
 													</li>
 													@endif
 												@endif
@@ -761,7 +771,7 @@
 																	<input type="file" id="fileImageCustDisplay4" name="fileImageCustDisplay4" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
 																	<div class="xContainer">
 																		<div id="ImageCustDisplay4" class="image_result_sample">
-																			@if ($company[0]['ImageCustDisplay3'] != '')
+																			@if ($company[0]['ImageCustDisplay4'] != '')
 																				<img src=" {{$company[0]['ImageCustDisplay4']}} ">
 																			@else
 																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
@@ -883,6 +893,308 @@
 													</div>
 												</div>
 
+
+												<div class="tab-pane fade" id="booking" role="tabpanel" aria-labelledby="booking-tab">
+													<div class="form-group row">
+														
+														<div class="col-md-12">
+															<label class="text-body">Upload Image Banner Booking</label>
+															<fieldset class="form-group mb-3">
+																<textarea id = "BannerBookingBase64" name = "BannerBookingBase64" style="display: none;"> {{ count($company) > 0 ? $company[0]['BannerBooking'] : '' }} </textarea>
+																				
+																				<input type="file" id="fileBannerBooking" name="fileBannerBooking" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																				<div class="xContainer">
+																					<div id="BannerBooking" class="image_result_sample">
+																						@if (count($company) > 0)
+																							<img src=" {{$company[0]['BannerBooking']}} ">
+																						@else
+																							<img src="https://www.generationsforpeace.org/wp-content/uploads/2018/03/empty.jpg">
+																						@endif
+																					</div>
+																				</div>
+															</fieldset>
+														</div>
+
+														<div class="col-sm-12">
+															<label  class="text-body">Headline</label>
+															<fieldset class="form-group mb-3">
+																<textarea id="HeadlineBanner" name="HeadlineBanner" class="bg-transparent text-dark">
+																	{{ count($company) > 0 ? $company[0]['HeadlineBanner'] : '' }}
+																</textarea>
+															</fieldset>
+														</div>
+
+														<div class="col-sm-12">
+															<label  class="text-body">Sub Headline</label>
+															<fieldset class="form-group mb-3">
+																<textarea id="SubHeadlineBanner" name="SubHeadlineBanner" class="bg-transparent text-dark">
+																	{{ count($company) > 0 ? $company[0]['SubHeadlineBanner'] : '' }}
+																</textarea>
+															</fieldset>
+														</div>
+
+														<div class="col-md-12">
+															<label class="text-body">Daftar Meja yang Bisa Dipesan</label>
+															<div class="table-responsive">
+																<table id="bookingTable" class="table table-bordered">
+																	<thead class="bg-primary text-white">
+																		<tr>
+																			<th>No</th>
+																			<th>Meja</th>
+																			<th>Bisa Di Booking ?</th>
+																		</tr>
+																	</thead>
+																	<tbody id="tableBookingList">
+																		<!-- Data akan di-load dari database -->
+																	</tbody>
+																</table>
+															</div>
+														</div>
+
+														
+														<div class="col-md-6">
+															<label class="text-body">Jam Awal Booking</label>
+															<fieldset class="form-group mb-3">
+																<input type="time" class="form-control" id="JamAwalBooking" name="JamAwalBooking" step="60"
+																	value="{{ count($company) > 0 ? date('H:i', strtotime($company[0]['JamAwalBooking'])) : '' }}">
+															</fieldset>
+														</div>
+														
+														<div class="col-md-6">
+															<label class="text-body">Jam Akhir Booking</label>
+															<fieldset class="form-group mb-3">
+																<input type="time" class="form-control" id="JamAkhirBooking" name="JamAkhirBooking" step="60"
+																	value="{{ count($company) > 0 ? date('H:i', strtotime($company[0]['JamAkhirBooking'])) : '' }}">
+															</fieldset>
+														</div>
+														
+														<div class="col-md-12">
+					                            			<label  class="text-body">Term and Condition</label>
+					                            			<fieldset class="form-group mb-12">
+					                            				<textarea class="form-control" id="TermAndCondition" name="TermAndCondition" rows="3" placeholder="">{{ count($company) > 0 ? $company[0]['TermAndCondition'] : '' }}</textarea>
+					                            			</fieldset>
+					                            		</div>
+
+														<div class="col-md-12">
+					                            			<label  class="text-body">About US</label>
+					                            			<fieldset class="form-group mb-12">
+					                            				<textarea class="form-control" id="AboutUs" name="AboutUs" rows="3" placeholder="">{{ count($company) > 0 ? $company[0]['AboutUs'] : '' }}</textarea>
+					                            			</fieldset>
+					                            		</div>
+
+														<div class="row">
+															<label  class="text-body">Image Gallery</label>
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageGallery1Base64" name = "ImageGallery1Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageGallery1'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageGallery1" name="fileImageGallery1" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageGallery1" class="image_result_sample">
+																			@if ($company[0]['ImageGallery1'] != '')
+																				<img src=" {{$company[0]['ImageGallery1']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageGallery2Base64" name = "ImageGallery2Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageGallery2'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageGallery2" name="fileImageGallery2" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageGallery2" class="image_result_sample">
+																			@if ($company[0]['ImageGallery2'] != '')
+																				<img src=" {{$company[0]['ImageGallery2']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageGallery3Base64" name = "ImageGallery3Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageGallery3'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageGallery3" name="fileImageGallery3" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageGallery3" class="image_result_sample">
+																			@if ($company[0]['ImageGallery3'] != '')
+																				<img src=" {{$company[0]['ImageGallery3']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageGallery4Base64" name = "ImageGallery4Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageGallery4'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageGallery4" name="fileImageGallery4" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageGallery4" class="image_result_sample">
+																			@if ($company[0]['ImageGallery4'] != '')
+																				<img src=" {{$company[0]['ImageGallery4']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageGallery5Base64" name = "ImageGallery5Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageGallery5'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageGallery5" name="fileImageGallery5" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageGallery5" class="image_result_sample">
+																			@if ($company[0]['ImageGallery5'] != '')
+																				<img src=" {{$company[0]['ImageGallery5']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageGallery6Base64" name = "ImageGallery6Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageGallery6'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageGallery6" name="fileImageGallery6" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageGallery6" class="image_result_sample">
+																			@if ($company[0]['ImageGallery6'] != '')
+																				<img src=" {{$company[0]['ImageGallery6']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageGallery7Base64" name = "ImageGallery7Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageGallery7'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageGallery7" name="fileImageGallery7" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageGallery7" class="image_result_sample">
+																			@if ($company[0]['ImageGallery7'] != '')
+																				<img src=" {{$company[0]['ImageGallery7']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageGallery8Base64" name = "ImageGallery8Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageGallery8'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageGallery8" name="fileImageGallery8" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageGallery8" class="image_result_sample">
+																			@if ($company[0]['ImageGallery8'] != '')
+																				<img src=" {{$company[0]['ImageGallery8']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageGallery9Base64" name = "ImageGallery9Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageGallery9'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageGallery9" name="fileImageGallery9" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageGallery9" class="image_result_sample">
+																			@if ($company[0]['ImageGallery9'] != '')
+																				<img src=" {{$company[0]['ImageGallery9']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageGallery10Base64" name = "ImageGallery10Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageGallery10'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageGallery10" name="fileImageGallery10" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageGallery10" class="image_result_sample">
+																			@if ($company[0]['ImageGallery10'] != '')
+																				<img src=" {{$company[0]['ImageGallery10']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageGallery11Base64" name = "ImageGallery11Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageGallery11'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageGallery11" name="fileImageGallery11" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageGallery11" class="image_result_sample">
+																			@if ($company[0]['ImageGallery11'] != '')
+																				<img src=" {{$company[0]['ImageGallery11']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageGallery12Base64" name = "ImageGallery12Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageGallery12'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageGallery12" name="fileImageGallery12" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageGallery12" class="image_result_sample">
+																			@if ($company[0]['ImageGallery12'] != '')
+																				<img src=" {{$company[0]['ImageGallery12']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+
+														</div>
+
+													</div>
+												</div>
+
 											</div>
 										</div>
 									</div>
@@ -906,6 +1218,7 @@
 @endsection
 
 @push('scripts')
+
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script type="text/javascript">
 var _URL = window.URL || window.webkitURL;
@@ -949,6 +1262,16 @@ var oCompany;
 					console.error( error );
 			});
 			ClassicEditor.create(document.querySelector('#BannerText3')).then( editor => {})
+			.catch( error => {
+					console.error( error );
+			});
+
+			ClassicEditor.create(document.querySelector('#HeadlineBanner')).then( editor => {})
+			.catch( error => {
+					console.error( error );
+			});
+
+			ClassicEditor.create(document.querySelector('#SubHeadlineBanner')).then( editor => {})
 			.catch( error => {
 					console.error( error );
 			});
@@ -1061,6 +1384,10 @@ var oCompany;
 			$('#Attachment').click();
 		});
 
+		jQuery('#BannerBooking').click(function(){
+			$('#fileBannerBooking').click();
+		});
+
 		jQuery('#Banner1').click(function(){
 			$('#fileBanner1').click();
 		});
@@ -1084,6 +1411,61 @@ var oCompany;
 		});
 		jQuery('#ImageCustDisplay4').click(function(){
 			$('#fileImageCustDisplay4').click();
+		});
+
+		jQuery('#ImageGallery1').click(function(){
+			$('#fileImageGallery1').click();
+		});
+		jQuery('#ImageGallery2').click(function(){
+			$('#fileImageGallery2').click();
+		});
+		jQuery('#ImageGallery3').click(function(){
+			$('#fileImageGallery3').click();
+		});
+		jQuery('#ImageGallery4').click(function(){
+			$('#fileImageGallery4').click();
+		});
+
+		jQuery('#ImageGallery5').click(function(){
+			$('#fileImageGallery5').click();
+		});
+		jQuery('#ImageGallery6').click(function(){
+			$('#fileImageGallery6').click();
+		});
+		jQuery('#ImageGallery7').click(function(){
+			$('#fileImageGallery7').click();
+		});
+		jQuery('#ImageGallery8').click(function(){
+			$('#fileImageGallery8').click();
+		});
+		jQuery('#ImageGallery9').click(function(){
+			$('#fileImageGallery9').click();
+		});
+		jQuery('#ImageGallery10').click(function(){
+			$('#fileImageGallery10').click();
+		});
+		jQuery('#ImageGallery11').click(function(){
+			$('#fileImageGallery11').click();
+		});
+		jQuery('#ImageGallery12').click(function(){
+			$('#fileImageGallery12').click();
+		});
+
+		jQuery("#fileBannerBooking").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "BannerBooking");
+			encodeImagetoBase64(this, "BannerBookingBase64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
 		});
 
 		jQuery("#fileBanner1").change(function(){
@@ -1204,6 +1586,213 @@ var oCompany;
 			encodeImagetoBase64(this, "ImageCustDisplay4Base64");
 			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
 		});
+
+		jQuery("#fileImageGallery1").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageGallery1");
+			encodeImagetoBase64(this, "ImageGallery1Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileImageGallery2").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageGallery2");
+			encodeImagetoBase64(this, "ImageGallery2Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileImageGallery3").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageGallery3");
+			encodeImagetoBase64(this, "ImageGallery3Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileImageGallery4").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageGallery4");
+			encodeImagetoBase64(this, "ImageGallery4Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+
+		jQuery("#fileImageGallery5").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageGallery5");
+			encodeImagetoBase64(this, "ImageGallery5Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileImageGallery6").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageGallery6");
+			encodeImagetoBase64(this, "ImageGallery6Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileImageGallery7").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageGallery7");
+			encodeImagetoBase64(this, "ImageGallery7Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileImageGallery8").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageGallery8");
+			encodeImagetoBase64(this, "ImageGallery8Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileImageGallery9").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageGallery9");
+			encodeImagetoBase64(this, "ImageGallery9Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileImageGallery10").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageGallery10");
+			encodeImagetoBase64(this, "ImageGallery10Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileImageGallery11").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageGallery11");
+			encodeImagetoBase64(this, "ImageGallery11Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+		jQuery("#fileImageGallery12").change(function(){
+			var file = $(this)[0].files[0];
+			img = new Image();
+			img.src = _URL.createObjectURL(file);
+			var imgwidth = 0;
+			var imgheight = 0;
+			img.onload = function () {
+				imgwidth = this.width;
+				imgheight = this.height;
+				$('#width').val(imgwidth);
+				$('#height').val(imgheight);
+			}
+			readURL(this, "ImageGallery12");
+			encodeImagetoBase64(this, "ImageGallery12Base64");
+			// alert("Current width=" + imgwidth + ", " + "Original height=" + imgheight);
+		});
+
+
 
 		$("#Attachment").change(function(){
 			var file = $(this)[0].files[0];
@@ -1520,5 +2109,80 @@ var oCompany;
 			.catch(error => console.error('Error:', error));
 			}
 	})
+
+	document.addEventListener("DOMContentLoaded", function () {
+    fetch('/get-meja')
+        .then(response => response.json())
+        .then(data => {
+            let tableBody = document.getElementById("tableBookingList");
+            if (!tableBody) {
+                console.error("Element tableBookingList tidak ditemukan!");
+                return;
+            }
+            tableBody.innerHTML = "";
+
+            data.forEach((meja) => {
+                let checked = meja.BisaDipesan == 1 ? "checked" : "";
+                let row = `<tr>
+                    <td>${meja.id}</td>
+                    <td>${meja.NamaTitikLampu}</td>
+                    <td>
+                        <input type="checkbox" class="meja-checkbox" data-id="${meja.id}" ${checked} />
+                    </td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        })
+        .catch(error => console.error('Error fetching meja:', error));
+});
+
+document.addEventListener("change", function (event) {
+    if (event.target.classList.contains('meja-checkbox')) {
+        let mejaId = event.target.getAttribute('data-id');
+        let bisaDipesan = event.target.checked ? 1 : 0;
+
+        let xData = {
+            "id": mejaId,
+            "BisaDipesan": bisaDipesan,
+        };
+
+        $.ajax({
+            type: 'POST',
+            url: "/titiklampu/updateStatusMeja", 
+            headers: {
+										'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+									},
+            data: JSON.stringify(xData),
+            contentType: "application/json", 
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: 'Horay',
+                        text: 'Data Meja Berhasil Diupdate',
+                    }).then(() => {
+                        //location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: 'Error',
+                        text: response.message,
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", xhr.responseText);
+                Swal.fire({
+                    icon: "error",
+                    title: 'Error',
+                    text: 'Terjadi kesalahan saat memperbarui data.',
+                });
+            }
+        });
+    }
+});
+
+
 </script>
 @endpush

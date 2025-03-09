@@ -923,6 +923,8 @@ Route::post('/titiklampu/editJson', [TitikLampuController::class, 'editJson'])->
 // end json
 Route::delete('/titiklampu/delete/{id}', [TitikLampuController::class, 'deletedata'])->name('titiklampu-delete')->middleware('auth');
 Route::get('/titiklampu/export', [TitikLampuController::class,'Export'])->name('titiklampu-export')->middleware('auth');
+Route::get('/get-meja', [TitikLampuController::class, 'getMeja'])->name('titiklampu-getMeja')->middleware('auth');
+Route::post('/titiklampu/updateStatusMeja', [TitikLampuController::class, 'updateStatusMeja'])->name('titiklampu-updateStatusMeja')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------

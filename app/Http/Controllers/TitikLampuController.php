@@ -228,4 +228,29 @@ class TitikLampuController extends Controller
     	}
     }
 
+    public function getMeja()
+    {
+        $data = TitikLampu::select('id', 'NamaTitikLampu', 'BisaDipesan')->get();
+        return response()->json($data);
+    }
+
+    public function updateStatusMeja(Request $request)
+    {
+       
+        $update = DB::table('titiklampu')
+        ->where('id','=', $request->input('id'))
+        ->update(
+            [
+                'BisaDipesan'=>$request->input('BisaDipesan'),
+            ]
+        );
+
+        if ($update) {
+            return response()->json(['success' => true, 'message' => 'Status meja berhasil diperbarui!']);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Edit Titik Lampu Gagal'], 400);
+        }
+
+    }
+
 }
