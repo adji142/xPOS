@@ -915,24 +915,21 @@
 															</fieldset>
 														</div>
 
-														<div class="col-sm-12">
-															<label  class="text-body">Headline</label>
-															<fieldset class="form-group mb-3">
-																<textarea id="HeadlineBanner" name="HeadlineBanner" class="bg-transparent text-dark">
-																	{{ count($company) > 0 ? $company[0]['HeadlineBanner'] : '' }}
-																</textarea>
-															</fieldset>
-														</div>
+														<div class="col-md-12">
+					                            			<label  class="text-body">Headline</label>
+					                            			<fieldset class="form-group mb-12">
+					                            				<textarea class="form-control" id="HeadlineBanner" name="HeadlineBanner" rows="3" placeholder="">{{ count($company) > 0 ? $company[0]['HeadlineBanner'] : '' }}</textarea>
+					                            			</fieldset>
+					                            		</div>
 
-														<div class="col-sm-12">
-															<label  class="text-body">Sub Headline</label>
-															<fieldset class="form-group mb-3">
-																<textarea id="SubHeadlineBanner" name="SubHeadlineBanner" class="bg-transparent text-dark">
-																	{{ count($company) > 0 ? $company[0]['SubHeadlineBanner'] : '' }}
-																</textarea>
-															</fieldset>
-														</div>
+														<div class="col-md-12">
+					                            			<label  class="text-body">Sub Headline</label>
+					                            			<fieldset class="form-group mb-12">
+					                            				<textarea class="form-control" id="SubHeadlineBanner" name="SubHeadlineBanner" rows="3" placeholder="">{{ count($company) > 0 ? $company[0]['SubHeadlineBanner'] : '' }}</textarea>
+					                            			</fieldset>
+					                            		</div>
 
+														
 														<div class="col-md-12">
 															<label class="text-body">Daftar Meja yang Bisa Dipesan</label>
 															<div class="table-responsive">
@@ -1266,15 +1263,15 @@ var oCompany;
 					console.error( error );
 			});
 
-			ClassicEditor.create(document.querySelector('#HeadlineBanner')).then( editor => {})
-			.catch( error => {
-					console.error( error );
-			});
+			// ClassicEditor.create(document.querySelector('#HeadlineBanner')).then( editor => {})
+			// .catch( error => {
+			// 		console.error( error );
+			// });
 
-			ClassicEditor.create(document.querySelector('#SubHeadlineBanner')).then( editor => {})
-			.catch( error => {
-					console.error( error );
-			});
+			// ClassicEditor.create(document.querySelector('#SubHeadlineBanner')).then( editor => {})
+			// .catch( error => {
+			// 		console.error( error );
+			// });
 			
 
 			tinymce.init({
