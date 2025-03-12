@@ -230,7 +230,11 @@ class TitikLampuController extends Controller
 
     public function getMeja()
     {
-        $data = TitikLampu::select('id', 'NamaTitikLampu', 'BisaDipesan')->get();
+        $data = TitikLampu::select('id', 'NamaTitikLampu', 'BisaDipesan')
+    ->where('BisaDipesan', 1)
+    ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+    ->get();
+
         return response()->json($data);
     }
 
