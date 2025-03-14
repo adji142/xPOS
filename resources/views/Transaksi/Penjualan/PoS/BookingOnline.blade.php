@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>xPos - </title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body id="page-top">
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+            <div class="container">
+                <a class="navbar-brand" href="#page-top"><img src="assets/img/navbar-logo.svg" alt="..." /></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars ms-1"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav text-uppercase ms-auto py-4 py-lg-0">
+                        {{-- <li class="nav-item"><a class="nav-link" href="#services">Services</a></li> --}}
+                        <li class="nav-item"><a class="nav-link" href="#portfolio">Booking</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#team">Team</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Masthead-->
+        <header class="masthead" style="background-image: url('{{ $company->first()->BannerBooking}}');">
+            <div class="container">
+                <div class="masthead-subheading">{{ $company->first()->HeadlineBanner }}</div>
+                <div class="masthead-heading text-uppercase">{{ $company->first()->SubHeadlineBanner }}</div>
+                {{-- <a class="btn btn-primary btn-xl text-uppercase" href="#services">Tell Me More</a> --}}
+            </div>
+        </header>
+        <!-- Services-->
+        {{-- <section class="page-section" id="services">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Services</h2>
+                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                </div>
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <span class="fa-stack fa-4x">
+                            <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                            <i class="fas fa-shopping-cart fa-stack-1x fa-inverse"></i>
+                        </span>
+                        <h4 class="my-3">E-Commerce</h4>
+                        <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima maxime quam architecto quo inventore harum ex magni, dicta impedit.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="fa-stack fa-4x">
+                            <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                            <i class="fas fa-laptop fa-stack-1x fa-inverse"></i>
+                        </span>
+                        <h4 class="my-3">Responsive Design</h4>
+                        <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima maxime quam architecto quo inventore harum ex magni, dicta impedit.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="fa-stack fa-4x">
+                            <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                            <i class="fas fa-lock fa-stack-1x fa-inverse"></i>
+                        </span>
+                        <h4 class="my-3">Web Security</h4>
+                        <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima maxime quam architecto quo inventore harum ex magni, dicta impedit.</p>
+                    </div>
+                </div>
+            </div>
+        </section> --}}
+        <!-- Portfolio Grid-->
+        <section class="page-section bg-light" id="portfolio">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Booking Meja</h2>
+                    <h3 class="section-subheading text-muted"></h3>
+                </div>
+                <div class="row">
+                    @foreach($titikLampu as $lampu)
+        <div class="col-lg-4 col-sm-6 mb-4">
+            <div class="portfolio-item">
+                <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal{{ $lampu->id }}">
+                    <div class="portfolio-hover">
+                        <div class="portfolio-hover-content">
+                            <i class="fas fa-plus fa-3x"></i>
+                        </div>
+                    </div>
+                    <img class="img-fluid" src="{{ asset('assets/img/portfolio/meja.jpg') }}" alt="..." />
+                </a>
+                <div class="portfolio-caption">
+                    <div class="portfolio-caption-heading">{{ $lampu->NamaTitikLampu }}</div>
+                </div>
+            </div>
+        </div>
+        @endforeach
+                    
+                </div>
+            </div>
+        </section>
+        <!-- About-->
+        <section class="page-section" id="about">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">About</h2>
+                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                </div>
+                <ul class="timeline">
+                    <li>
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="assets/img/about/1.jpg" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>2009-2011</h4>
+                                <h4 class="subheading">Our Humble Beginnings</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li class="timeline-inverted">
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="assets/img/about/2.jpg" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>March 2011</h4>
+                                <h4 class="subheading">An Agency is Born</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="assets/img/about/3.jpg" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>December 2015</h4>
+                                <h4 class="subheading">Transition to Full Service</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li class="timeline-inverted">
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="assets/img/about/4.jpg" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>July 2020</h4>
+                                <h4 class="subheading">Phase Two Expansion</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li class="timeline-inverted">
+                        <div class="timeline-image">
+                            <h4>
+                                Be Part
+                                <br />
+                                Of Our
+                                <br />
+                                Story!
+                            </h4>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+        <!-- Team-->
+        <section class="page-section bg-light" id="team">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Our Amazing Team</h2>
+                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="assets/img/team/1.jpg" alt="..." />
+                            <h4>Parveen Anand</h4>
+                            <p class="text-muted">Lead Designer</p>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Parveen Anand Twitter Profile"><i class="fab fa-twitter"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Parveen Anand Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Parveen Anand LinkedIn Profile"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="assets/img/team/2.jpg" alt="..." />
+                            <h4>Diana Petersen</h4>
+                            <p class="text-muted">Lead Marketer</p>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Diana Petersen Twitter Profile"><i class="fab fa-twitter"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Diana Petersen Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Diana Petersen LinkedIn Profile"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="assets/img/team/3.jpg" alt="..." />
+                            <h4>Larry Parker</h4>
+                            <p class="text-muted">Lead Developer</p>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker Twitter Profile"><i class="fab fa-twitter"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker LinkedIn Profile"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-8 mx-auto text-center"><p class="large text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eaque, laboriosam veritatis, quos non quis ad perspiciatis, totam corporis ea, alias ut unde.</p></div>
+                </div>
+            </div>
+        </section>
+        <!-- Clients-->
+        <div class="py-5">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-3 col-sm-6 my-3">
+                        <a href="#!"><img class="img-fluid img-brand d-block mx-auto" src="assets/img/logos/microsoft.svg" alt="..." aria-label="Microsoft Logo" /></a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 my-3">
+                        <a href="#!"><img class="img-fluid img-brand d-block mx-auto" src="assets/img/logos/google.svg" alt="..." aria-label="Google Logo" /></a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 my-3">
+                        <a href="#!"><img class="img-fluid img-brand d-block mx-auto" src="assets/img/logos/facebook.svg" alt="..." aria-label="Facebook Logo" /></a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 my-3">
+                        <a href="#!"><img class="img-fluid img-brand d-block mx-auto" src="assets/img/logos/ibm.svg" alt="..." aria-label="IBM Logo" /></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Contact-->
+        <section class="page-section" id="contact">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Contact Us</h2>
+                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                </div>
+                <!-- * * * * * * * * * * * * * * *-->
+                <!-- * * SB Forms Contact Form * *-->
+                <!-- * * * * * * * * * * * * * * *-->
+                <!-- This form is pre-integrated with SB Forms.-->
+                <!-- To make this form functional, sign up at-->
+                <!-- https://startbootstrap.com/solution/contact-forms-->
+                <!-- to get an API token!-->
+                <form id="contactForm" data-sb-form-api-token="API_TOKEN">
+                    <div class="row align-items-stretch mb-5">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <!-- Name input-->
+                                <input class="form-control" id="name" type="text" placeholder="Your Name *" data-sb-validations="required" />
+                                <div class="invalid-feedback" data-sb-feedback="name:required">A name is required.</div>
+                            </div>
+                            <div class="form-group">
+                                <!-- Email address input-->
+                                <input class="form-control" id="email" type="email" placeholder="Your Email *" data-sb-validations="required,email" />
+                                <div class="invalid-feedback" data-sb-feedback="email:required">An email is required.</div>
+                                <div class="invalid-feedback" data-sb-feedback="email:email">Email is not valid.</div>
+                            </div>
+                            <div class="form-group mb-md-0">
+                                <!-- Phone number input-->
+                                <input class="form-control" id="phone" type="tel" placeholder="Your Phone *" data-sb-validations="required" />
+                                <div class="invalid-feedback" data-sb-feedback="phone:required">A phone number is required.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-group-textarea mb-md-0">
+                                <!-- Message input-->
+                                <textarea class="form-control" id="message" placeholder="Your Message *" data-sb-validations="required"></textarea>
+                                <div class="invalid-feedback" data-sb-feedback="message:required">A message is required.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Submit success message-->
+                    <!---->
+                    <!-- This is what your users will see when the form-->
+                    <!-- has successfully submitted-->
+                    <div class="d-none" id="submitSuccessMessage">
+                        <div class="text-center text-white mb-3">
+                            <div class="fw-bolder">Form submission successful!</div>
+                            To activate this form, sign up at
+                            <br />
+                            <a href="https://startbootstrap.com/solution/contact-forms">https://startbootstrap.com/solution/contact-forms</a>
+                        </div>
+                    </div>
+                    <!-- Submit error message-->
+                    <!---->
+                    <!-- This is what your users will see when there is-->
+                    <!-- an error submitting the form-->
+                    <div class="d-none" id="submitErrorMessage"><div class="text-center text-danger mb-3">Error sending message!</div></div>
+                    <!-- Submit Button-->
+                    <div class="text-center"><button class="btn btn-primary btn-xl text-uppercase disabled" id="submitButton" type="submit">Send Message</button></div>
+                </form>
+            </div>
+        </section>
+        <!-- Footer-->
+        <footer class="footer py-4">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-4 text-lg-start">Copyright &copy; Your Website 2023</div>
+                    <div class="col-lg-4 my-3 my-lg-0">
+                        <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <div class="col-lg-4 text-lg-end">
+                        <a class="link-dark text-decoration-none me-3" href="#!">Privacy Policy</a>
+                        <a class="link-dark text-decoration-none" href="#!">Terms of Use</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Portfolio Modals-->
+        <!-- Portfolio item 1 modal popup-->
+        @foreach($titikLampu as $lampu)
+
+        <div class="portfolio-modal modal fade" id="portfolioModal{{ $lampu->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">{{$lampu->NamaTitikLampu}}</h2>
+                                    <input type="hidden" name="idMeja" value="{{ $lampu->id }}">
+                                    {{-- <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p> --}}
+                                    {{-- <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/1.jpg" alt="..." /> --}}
+                                    {{-- <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p> --}}
+                                    <ul class="list-inline" style="display: flex; flex-direction: column; align-items: center;">
+                                        <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                            <strong>Nama Lengkap:</strong>
+                                            <input type="text" class="form-control" name="namaLengkap" style="width: 200px;">
+                                        </li>
+                                        
+                                        <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                            <strong>Email Address:</strong>
+                                            <input type="email" class="form-control" name="email" style="width: 200px;">
+                                        </li>
+                                        
+                                        <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                            <strong>No Telp:</strong>
+                                            <input type="tel" class="form-control" name="noTelp" style="width: 200px;">
+                                        </li>
+                                        
+                                    <li style="display: flex; align-items: center; gap: 10px;">
+                                        <strong>---</strong>
+                                           ---   ---
+                                        </li>
+
+                                        <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                            <strong>Pilih Tanggal Booking:</strong>
+                                            <input type="date" class="form-control" name="tanggalbooking" id="tanggalbooking" 
+                                                style="width: 200px; text-align: center;">
+                                        </li>
+                                        <div id="bookingInfo" style="margin-left: 15px; font-size: 14px; color: red; margin-bottom: 10px;"></div>
+                                        
+                                        
+                                        <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                            <strong>Jam Awal Booking:</strong>
+                                            <input type="time" class="form-control" name="jamMulai" id="jamMulai" 
+                                                style="width: 150px; text-align: center;" step="60">
+                                        </li>
+                                        
+                                        <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                            <strong>Jam Akhir Booking:</strong>
+                                            <input type="time" class="form-control" name="jamSelesai" id="jamSelesai" 
+                                                style="width: 150px; text-align: center;" step="60">
+                                        </li>
+
+                                        <li style="display: flex; align-items: center; gap: 10px;">
+                                            <strong>---</strong>
+                                               ---   ---
+                                            </li>
+                                        
+                                        
+                                            <li style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
+                                                <strong>Pilih Paket :</strong>
+                                                <div>
+                                                    @foreach ($paketTransaksi as $paket)
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="paket" 
+                                                                value="{{ $paket->id }}" id="paket{{ $paket->id }}" 
+                                                                data-harga="{{ $paket->HargaNormal }}" 
+                                                                data-jenis="{{ $paket->JenisPaket }}">
+                                                            <label class="form-check-label" for="paket{{ $paket->id }}">
+                                                                {{ $paket->NamaPaket }} - Rp {{ number_format($paket->HargaNormal, 0, ',', '.') }} 
+                                                                per {{ $paket->JenisPaket }}
+                                                            </label>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </li>
+
+                                            <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                                <strong>Extra Request:</strong>
+                                                <textarea class="form-control" name="extraRequest" rows="3" style="width: 210px;"></textarea>
+                                            </li>
+                                            
+                                        
+                                            <li style="margin-top: 10px;">
+                                                <strong style="font-size: 24px;">Total Transaksi: Rp <span id="totalTransaksi" style="font-size: 28px; font-weight: bold;">0</span></strong>
+                                            </li>
+                                            
+                                        
+                                        
+                                    </ul>
+                                    <button class="btn btn-success btn-xl text-uppercase" id="btn-success" type="button">
+                                        <i class="fas fa-check me-1"></i>
+                                        Bayar
+                                    </button>
+                                    
+                                    <button class="btn btn-danger btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Batal
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endforeach
+        
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+        <!-- * *                               SB Forms JS                               * *-->
+        <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
+        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+        <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+        <script>
+            function hitungTotal(event) {
+    let modal = event.target.closest(".modal"); // Ambil modal terdekat dari elemen yang berubah
+    let jamMulai = modal.querySelector("input[name='jamMulai']").value;
+    let jamSelesai = modal.querySelector("input[name='jamSelesai']").value;
+    let paketDipilih = modal.querySelector("input[name='paket']:checked");
+
+    if (!jamMulai || !jamSelesai || !paketDipilih) {
+        modal.querySelector("#totalTransaksi").innerText = "0";
+        return;
+    }
+
+    let harga = parseInt(paketDipilih.getAttribute("data-harga"));
+    let jenisPaket = paketDipilih.getAttribute("data-jenis");
+
+    // Konversi jam ke menit
+    let [jamAwal, menitAwal] = jamMulai.split(":").map(Number);
+    let [jamAkhir, menitAkhir] = jamSelesai.split(":").map(Number);
+    let totalMenit = (jamAkhir * 60 + menitAkhir) - (jamAwal * 60 + menitAwal);
+
+    let total = 0;
+    if (jenisPaket.toLowerCase() === "jam") {
+        let totalJam = Math.ceil(totalMenit / 60); // Pembulatan ke atas jika lebih dari 1 jam
+        total = harga * totalJam;
+    } else if (jenisPaket.toLowerCase() === "menit") {
+        total = harga * totalMenit;
+    }
+
+    modal.querySelector("#totalTransaksi").innerText = total.toLocaleString("id-ID");
+}
+
+// Tambahkan event listener ke semua input dalam setiap modal
+document.addEventListener("change", function (event) {
+    if (
+        event.target.matches("input[name='jamMulai']") ||
+        event.target.matches("input[name='jamSelesai']") ||
+        event.target.matches("input[name='paket']")
+    ) {
+        hitungTotal(event);
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".btn-success").forEach(button => {
+        button.addEventListener("click", function (event) {
+
+            let modal = event.target.closest(".modal");
+            let modalId = modal.id; 
+
+            let lampuId = modalId.replace("portfolioModal", "");
+
+            let formData = {
+    namaLengkap: modal.querySelector("input[name='namaLengkap']").value,
+    mejaID: lampuId,
+    email: modal.querySelector("input[name='email']").value,
+    noTelp: modal.querySelector("input[name='noTelp']").value,
+    tanggalBooking: modal.querySelector("input[name='tanggalbooking']").value,
+    jamMulai: modal.querySelector("input[name='jamMulai']").value,
+    jamSelesai: modal.querySelector("input[name='jamSelesai']").value,
+    paketid: modal.querySelector("input[name='paket']:checked")?.value || null,
+    ExtraRequest: modal.querySelector("textarea[name='extraRequest']").value,
+    totalPembelian: parseInt(modal.querySelector("#totalTransaksi").innerText.replace(/\D/g, "")),
+};
+            
+            // Validasi hanya untuk field yang wajib diisi
+if (!formData.namaLengkap || !formData.email || 
+    !formData.tanggalBooking || !formData.jamMulai || !formData.jamSelesai || 
+    !formData.paketid) {
+    
+    Swal.fire({
+        icon: "warning",
+        title: "Oops...",
+        text: "Mohon isi semua data yang diperlukan!",
+    });
+    return;
+}
+            
+            let noTransaksi = "BOOKING"+Date.now(); // Contoh nomor transaksi unik
+            PaymentGateWay($(button), "Bayar", formData);
+        });
+    });
+});
+
+function PaymentGateWay(ButtonObject, ButtonDefaultText, formData) {
+    ButtonObject.text('Tunggu Sebentar.....');
+    ButtonObject.attr('disabled', true);
+
+    console.log("FormData:", formData);  // Debugging
+console.log("TotalPembelian:", formData.TotalPembelian);
+
+    
+    let oData = {
+        'NoTransaksi': formData.NoTransaksi,
+        'TotalPembelian': formData.totalPembelian,
+    };
+    
+    fetch("{{route('booking-create-gateway')}}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify(oData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.snap_token) {
+            snap.pay(data.snap_token, {
+                onSuccess: function (result) {
+                    if (result.transaction_status === "cancel") {
+                        ButtonObject.text('Bayar');
+                        ButtonObject.attr('disabled', false);
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops...",
+                            text: "Pembayaran Dibatalkan",
+                        });
+                    } else {
+                        let xData = {
+                            "NoTransaksi": formData.NoTransaksi,
+                            "TglBooking": formData.tanggalBooking,
+                            "Keterangan": result.payment_type + "#" + (result.va_numbers?.[0]?.bank || "") + "#" + (result.va_numbers?.[0]?.va_number || ""),
+                            "JamMulai": formData.jamMulai,
+                            "JamSelesai": formData.jamSelesai,
+                            "mejaID": formData.mejaID,
+                            "paketid": formData.paketid,
+                            "KodeSales": "-",
+                            "KodePelanggan": "-",
+                            "StatusTransaksi": 0,
+                            "ExtraRequest": formData.ExtraRequest,
+                            "TotalTransaksi": 0,
+                            "TotalTax": 0,
+                            "TotalDiskon": 0,
+                            "TotalLainLain": 0,
+                            "NetTotal": formData.totalPembelian,
+                            "NamaPelanggan": formData.namaLengkap,
+                            "Email": formData.email,
+                            "NoTlp1": formData.noTelp
+                        };
+                        
+                        fetch("{{route('booking-pay-gateway')}}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify(xData)
+                        })
+                        .then(response => response.json())
+                        .then(response => {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: "success",
+                                    title: 'Berhasil',
+                                    text: 'Pembayaran berhasil disimpan!',
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                ButtonObject.text('Bayar');
+                                ButtonObject.attr('disabled', false);
+                                Swal.fire({
+                                    icon: "error",
+                                    title: 'Error',
+                                    text: response.message,
+                                });
+                            }
+                        });
+                    }
+                },
+                onError: function (result) {
+                    ButtonObject.text('Bayar');
+                    ButtonObject.attr('disabled', false);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Terjadi kesalahan saat pembayaran",
+                    });
+                },
+                onClose: function () {
+                    ButtonObject.text('Bayar');
+                    ButtonObject.attr('disabled', false);
+                    console.log('Pelanggan menutup popup pembayaran');
+                }
+            });
+        } else {
+            ButtonObject.text('Bayar');
+            ButtonObject.attr('disabled', false);
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: data.error,
+            });
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+$(document).ready(function () {
+    let bookedSlots = {}; // Objek untuk menyimpan daftar jam yang sudah dibooking berdasarkan ID meja
+
+    // Event ketika tanggal booking diubah
+    $(document).on('change', 'input[name="tanggalbooking"]', function () {
+        var selectedDate = $(this).val();
+        var modal = $(this).closest('.modal-body');
+        var idMeja = modal.find('input[name="idMeja"]').val();
+        var bookingInfoContainer = modal.find('#bookingInfo');
+
+        bookingInfoContainer.html('');
+        bookedSlots[idMeja] = []; // Reset daftar booking sebelumnya untuk meja ini
+
+        if (selectedDate && idMeja) {
+            $.ajax({
+                url: '/booking/get-bookedtable',
+                type: 'GET',
+                data: { tanggal: selectedDate, idMeja: idMeja },
+                success: function (data) {
+                    if (data.length > 0) {
+                        var infoHtml = '<strong>Meja ini sudah dibooking:</strong><ul>';
+                        data.forEach(function (booking) {
+                            infoHtml += '<li>Jam ' + booking.JamMulai + ' - ' + booking.JamSelesai + '</li>';
+                            bookedSlots[idMeja].push({ start: booking.JamMulai, end: booking.JamSelesai }); // Simpan waktu booking untuk meja ini
+                        });
+                        infoHtml += '</ul>';
+                        bookingInfoContainer.html(infoHtml);
+                    } else {
+                        bookingInfoContainer.html('<strong>Meja ini masih tersedia di tanggal ini.</strong>');
+                    }
+                },
+                error: function () {
+                    bookingInfoContainer.html('<strong>Terjadi kesalahan saat mengambil data.</strong>');
+                }
+            });
+        }
+    });
+
+    // Validasi input jam booking (Gunakan event delegation untuk semua modal)
+    $(document).on('change', 'input[name="jamMulai"], input[name="jamSelesai"]', function () {
+        var modal = $(this).closest('.modal-body');
+        var idMeja = modal.find('input[name="idMeja"]').val();
+        var jamMulai = modal.find('input[name="jamMulai"]').val();
+        var jamSelesai = modal.find('input[name="jamSelesai"]').val();
+        var errorMessage = '';
+
+        if (jamMulai && jamSelesai) {
+            var mulai = jamMulai + ':00';
+            var selesai = jamSelesai + ':00';
+
+            for (let i = 0; i < bookedSlots[idMeja].length; i++) {
+                let bookedStart = bookedSlots[idMeja][i].start;
+                let bookedEnd = bookedSlots[idMeja][i].end;
+
+                // Cek apakah input waktu bentrok dengan booking yang ada
+                if ((mulai >= bookedStart && mulai < bookedEnd) || (selesai > bookedStart && selesai <= bookedEnd) || (mulai <= bookedStart && selesai >= bookedEnd)) {
+                    errorMessage = 'Waktu yang dipilih bertabrakan dengan booking lain (' + bookedStart + ' - ' + bookedEnd + ')';
+                    break;
+                }
+            }
+
+            if (errorMessage) {
+                alert(errorMessage);
+                $(this).val(''); // Kosongkan input yang salah
+            }
+        }
+    });
+});
+
+
+        </script>
+
+    </body>
+</html>

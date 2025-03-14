@@ -66,6 +66,7 @@ use App\Http\Controllers\TitikLampuController;
 use App\Http\Controllers\EnvController;
 use App\Http\Controllers\PaketController;
 use App\Http\Controllers\TableOrderController;
+use App\Http\Controllers\BookingOnlineController;
 
 /*
 |--------------------------------------------------------------------------
@@ -967,3 +968,15 @@ Route::post('/billing/checkout', [TableOrderController::class, 'CheckOut'])->nam
 Route::post('/billing/addfnb', [TableOrderController::class, 'AddFnB'])->name('billing-addfnb')->middleware('auth');
 Route::post('/billing/readfnb', [TableOrderController::class, 'ReadTableOrderFnB'])->name('billing-readfnb')->middleware('auth');
 Route::post('/billing/warning', [TableOrderController::class, 'NotifHampirHabis'])->name('billing-warning')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Booking Online
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/booking', [BookingOnlineController::class, 'getData'])->name('booking')->middleware('auth');
+Route::post('/booking/create-gateway', [BookingOnlineController::class, 'createMidTransTransaction'])->name('booking-create-gateway')->middleware('auth');
+Route::post('/booking/pay-gateway', [BookingOnlineController::class, 'SimpanPembayaranJson'])->name('booking-pay-gateway')->middleware('auth');
+Route::get('/booking/get-bookedtable', [BookingOnlineController::class, 'getBookingsByDate'])->name('booking-get-bookedtable')->middleware('auth');
