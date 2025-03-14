@@ -148,7 +148,7 @@ function SimpanPembayaranJson(Request $request) {
          // 🔹 Ambil data pelanggan berdasarkan KodePelanggan
 $emailPelanggan = Pelanggan::where('KodePelanggan', $KodePelanggan)->first();
 
-dd($emailPelanggan);
+//dd($emailPelanggan);
 
 if ($emailPelanggan) {
     // 🔹 Kirim email konfirmasi
