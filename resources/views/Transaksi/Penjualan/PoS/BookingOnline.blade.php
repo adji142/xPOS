@@ -531,7 +531,7 @@ function PaymentGateWay(ButtonObject, ButtonDefaultText, formData) {
     ButtonObject.attr('disabled', true);
 
     console.log("FormData:", formData);  // Debugging
-console.log("TotalPembelian:", formData.TotalPembelian);
+console.log("TotalPembelian:", formData.totalPembelian);
 
     
     let oData = {
@@ -597,7 +597,7 @@ console.log("TotalPembelian:", formData.TotalPembelian);
                                 Swal.fire({
                                     icon: "success",
                                     title: 'Berhasil',
-                                    text: 'Pembayaran berhasil disimpan!',
+                                    text: 'Pembayaran berhasil disimpan, Silahkan Cek Email Anda!',
                                 }).then(() => {
                                     location.reload();
                                 });

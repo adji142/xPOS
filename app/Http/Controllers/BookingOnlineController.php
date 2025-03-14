@@ -18,6 +18,7 @@ use App\Exports\PelangganExport;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\KonfirmasiPembayaranMail;
+use App\Mail\SendMail;
 
 use Midtrans\Config;
 use Midtrans\Snap;
@@ -84,7 +85,7 @@ function SimpanPembayaranJson(Request $request) {
     $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
 
     $jsonData = $request->json()->all();
-
+    //dd($jsonData);
     DB::beginTransaction(); // Mulai transaksi
     try {
         $NoTransaksi = "";
@@ -142,26 +143,35 @@ function SimpanPembayaranJson(Request $request) {
             }
         }
 
+
         // Jika semuanya berhasil, commit transaksi
         DB::commit();
 
-         // 🔹 Ambil data pelanggan berdasarkan KodePelanggan
-$emailPelanggan = Pelanggan::where('KodePelanggan', $KodePelanggan)->first();
+         // Send Email
+         $booking = [
+            'Email' => $jsonData['Email'],
+            'NoTransaksi' => $NoTransaksi,
+            'TglBooking' => $jsonData['TglBooking'],
+            'JamMulai' => $jsonData['JamMulai'],
+            'JamSelesai' => $jsonData['JamSelesai']
+        ];
 
-//dd($emailPelanggan);
+  
+       
+$emailPelanggan = Pelanggan::where('KodePelanggan', $KodePelanggan)->first();
+//dd($data);
 
 if ($emailPelanggan) {
-    // 🔹 Kirim email konfirmasi
-    Mail::to($emailPelanggan->Email)->send(new KonfirmasiPembayaranMail($model, $emailPelanggan->Email));
+  
+    Mail::to($emailPelanggan->Email)->send(new KonfirmasiPembayaranMail($booking));
 }
-
 
         $data['success'] = true;
         $data['message'] = 'Data berhasil disimpan';
         //return response()->json($data);
 
     } catch (\Exception $e) {
-        DB::rollBack(); // Batalkan semua perubahan jika ada kesalahan
+        DB::rollBack(); 
         $data['success'] = false;
         $data['message'] = $e->getMessage();
         
