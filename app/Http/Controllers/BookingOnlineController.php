@@ -15,6 +15,7 @@ use App\Models\Pelanggan;
 use App\Models\DocumentNumbering;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PelangganExport;
+use App\Models\User;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\KonfirmasiPembayaranMail;
@@ -28,26 +29,26 @@ class BookingOnlineController extends Controller
     public function getData()
 {
     $company = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->get();
-    //$company = Company::where('KodePartner',"CL0003")->get();
     $titikLampu = TitikLampu::where('BisaDipesan', 1)
     ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
     ->get();
-
+    $gallery = Company::select('ImageGallery1', 'ImageGallery2', 'ImageGallery3','ImageGallery4','ImageGallery5','ImageGallery6','ImageGallery7','ImageGallery8','ImageGallery9','ImageGallery10','ImageGallery11','ImageGallery12')
+    ->where('KodePartner', Auth::user()->RecordOwnerID)
+    ->get();
     $paketTransaksi = Paket::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+    $user= User::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
     //dd($company);
 
     //dd($paketTransaksi);
 
 
-    return view('Transaksi.Penjualan.PoS.BookingOnline', compact('company', 'titikLampu','paketTransaksi'));
+    return view('Transaksi.Penjualan.PoS.BookingOnline', compact('company', 'titikLampu','gallery','paketTransaksi','user'));
 }
 
 public function createMidTransTransaction(Request $request)
 {
     $jsonData = $request->json()->all();
-
-    //dd( $jsonData);
 
     $TotalPembelian = $jsonData['TotalPembelian'];
     $oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
@@ -190,7 +191,5 @@ public function getBookingsByDate(Request $request) {
 
     return response()->json($bookings);
 }
-
-
 
 }

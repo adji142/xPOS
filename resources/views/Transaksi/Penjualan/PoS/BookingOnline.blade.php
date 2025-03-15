@@ -20,7 +20,9 @@
         <!-- Navigation-->
         <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
             <div class="container">
-                <a class="navbar-brand" href="#page-top"><img src="assets/img/navbar-logo.svg" alt="..." /></a>
+                <a class="navbar-brand" href="#page-top" style="color: yellow; font-weight: bold;">
+                    {{ $company->first()->NamaPartner }}
+                </a>                
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
                     Menu
                     <i class="fas fa-bars ms-1"></i>
@@ -30,7 +32,7 @@
                         {{-- <li class="nav-item"><a class="nav-link" href="#services">Services</a></li> --}}
                         <li class="nav-item"><a class="nav-link" href="#portfolio">Booking</a></li>
                         <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#team">Team</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#team">Gallery</a></li>
                         <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
                     </ul>
                 </div>
@@ -112,10 +114,14 @@
         <section class="page-section" id="about">
             <div class="container">
                 <div class="text-center">
-                    <h2 class="section-heading text-uppercase">About</h2>
-                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                    <h2 class="section-heading text-uppercase">About Us</h2>
+                    <h3 class="section-subheading text-muted">{{ $company->first()->AboutUs}}</h3>
                 </div>
-                <ul class="timeline">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Term And Condition</h2>
+                    <h3 class="section-subheading text-muted">{{ $company->first()->TermAndCondition}}</h3>
+                </div>
+                {{-- <ul class="timeline">
                     <li>
                         <div class="timeline-image"><img class="rounded-circle img-fluid" src="assets/img/about/1.jpg" alt="..." /></div>
                         <div class="timeline-panel">
@@ -167,55 +173,56 @@
                             </h4>
                         </div>
                     </li>
-                </ul>
+                </ul> --}}
             </div>
         </section>
         <!-- Team-->
         <section class="page-section bg-light" id="team">
             <div class="container">
                 <div class="text-center">
-                    <h2 class="section-heading text-uppercase">Our Amazing Team</h2>
-                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                    <h2 class="section-heading text-uppercase">Gallery</h2>
+                    <h3 class="section-subheading text-muted">  </h3>
                 </div>
-                <div class="row">
-                    <div class="col-lg-4">
-                        <div class="team-member">
-                            <img class="mx-auto rounded-circle" src="assets/img/team/1.jpg" alt="..." />
-                            <h4>Parveen Anand</h4>
-                            <p class="text-muted">Lead Designer</p>
-                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Parveen Anand Twitter Profile"><i class="fab fa-twitter"></i></a>
-                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Parveen Anand Facebook Profile"><i class="fab fa-facebook-f"></i></a>
-                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Parveen Anand LinkedIn Profile"><i class="fab fa-linkedin-in"></i></a>
-                        </div>
+               <!-- Grid Gallery -->
+<div class="row">
+    @foreach($gallery as $galleries)
+        @foreach($galleries->toArray() as $index => $image)
+            @if(!is_null($image) && !empty($image))
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="team-member">
+                        <!-- Klik gambar untuk membuka modal -->
+                        <img class="mx-auto rounded-circle img-thumbnail" src="{{ $image }}" alt="Gallery Image" 
+                            data-bs-toggle="modal" data-bs-target="#imageModal{{ $index }}" style="cursor: pointer; ">
                     </div>
-                    <div class="col-lg-4">
-                        <div class="team-member">
-                            <img class="mx-auto rounded-circle" src="assets/img/team/2.jpg" alt="..." />
-                            <h4>Diana Petersen</h4>
-                            <p class="text-muted">Lead Marketer</p>
-                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Diana Petersen Twitter Profile"><i class="fab fa-twitter"></i></a>
-                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Diana Petersen Facebook Profile"><i class="fab fa-facebook-f"></i></a>
-                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Diana Petersen LinkedIn Profile"><i class="fab fa-linkedin-in"></i></a>
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="team-member">
-                            <img class="mx-auto rounded-circle" src="assets/img/team/3.jpg" alt="..." />
-                            <h4>Larry Parker</h4>
-                            <p class="text-muted">Lead Developer</p>
-                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker Twitter Profile"><i class="fab fa-twitter"></i></a>
-                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker Facebook Profile"><i class="fab fa-facebook-f"></i></a>
-                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker LinkedIn Profile"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+
+                <!-- Modal untuk menampilkan gambar full-size -->
+                <div class="modal fade" id="imageModal{{ $index }}" tabindex="-1" aria-labelledby="imageModalLabel{{ $index }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="imageModalLabel{{ $index }}">Preview Gambar</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <img src="{{ $image }}" class="img-fluid" alt="Full Image">
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-lg-8 mx-auto text-center"><p class="large text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eaque, laboriosam veritatis, quos non quis ad perspiciatis, totam corporis ea, alias ut unde.</p></div>
-                </div>
+            @endif
+        @endforeach
+    @endforeach
+</div>
+
+                
+                {{-- <div class="row">
+                    <div class="col-lg-8 mx-auto text-center"><p class="large text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eaque, laboriosam veritatis, quos non quis ad perspiciatis, totam corporis ea, alias ut unde.</p></div> --}}
+                
             </div>
         </section>
         <!-- Clients-->
-        <div class="py-5">
+        {{-- <div class="py-5">
             <div class="container">
                 <div class="row align-items-center">
                     <div class="col-md-3 col-sm-6 my-3">
@@ -232,77 +239,39 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
         <!-- Contact-->
         <section class="page-section" id="contact">
             <div class="container">
                 <div class="text-center">
                     <h2 class="section-heading text-uppercase">Contact Us</h2>
-                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                    <h3 class="section-subheading text-muted" style="color: white !important;">Hubungi kami untuk informasi lebih lanjut.</h3>
                 </div>
-                <!-- * * * * * * * * * * * * * * *-->
-                <!-- * * SB Forms Contact Form * *-->
-                <!-- * * * * * * * * * * * * * * *-->
-                <!-- This form is pre-integrated with SB Forms.-->
-                <!-- To make this form functional, sign up at-->
-                <!-- https://startbootstrap.com/solution/contact-forms-->
-                <!-- to get an API token!-->
-                <form id="contactForm" data-sb-form-api-token="API_TOKEN">
-                    <div class="row align-items-stretch mb-5">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <!-- Name input-->
-                                <input class="form-control" id="name" type="text" placeholder="Your Name *" data-sb-validations="required" />
-                                <div class="invalid-feedback" data-sb-feedback="name:required">A name is required.</div>
-                            </div>
-                            <div class="form-group">
-                                <!-- Email address input-->
-                                <input class="form-control" id="email" type="email" placeholder="Your Email *" data-sb-validations="required,email" />
-                                <div class="invalid-feedback" data-sb-feedback="email:required">An email is required.</div>
-                                <div class="invalid-feedback" data-sb-feedback="email:email">Email is not valid.</div>
-                            </div>
-                            <div class="form-group mb-md-0">
-                                <!-- Phone number input-->
-                                <input class="form-control" id="phone" type="tel" placeholder="Your Phone *" data-sb-validations="required" />
-                                <div class="invalid-feedback" data-sb-feedback="phone:required">A phone number is required.</div>
-                            </div>
+                <div class="row justify-content-center">
+                    <div class="col-lg-6 text-center">
+                        <div class="mb-4">
+                            <h4 class="text-uppercase" style="color: white;">Alamat</h4>
+                            <p class="text-muted" style="color: yellow !important;">{{ $company->first()->AlamatTagihan}}</p>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group form-group-textarea mb-md-0">
-                                <!-- Message input-->
-                                <textarea class="form-control" id="message" placeholder="Your Message *" data-sb-validations="required"></textarea>
-                                <div class="invalid-feedback" data-sb-feedback="message:required">A message is required.</div>
-                            </div>
+                        <div class="mb-4">
+                            <h4 class="text-uppercase" style="color: white;">Telepon</h4>
+                            <p class="text-muted"><a href="tel:{{ $company->first()->NoTlp}}">{{ $company->first()->NoTlp}}</a></p>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="text-uppercase" style="color: white;">Email</h4>
+                            <p class="text-muted"><a href="mailto:{{ $user->first()->email}}">{{ $user->first()->email}}</a></p>
                         </div>
                     </div>
-                    <!-- Submit success message-->
-                    <!---->
-                    <!-- This is what your users will see when the form-->
-                    <!-- has successfully submitted-->
-                    <div class="d-none" id="submitSuccessMessage">
-                        <div class="text-center text-white mb-3">
-                            <div class="fw-bolder">Form submission successful!</div>
-                            To activate this form, sign up at
-                            <br />
-                            <a href="https://startbootstrap.com/solution/contact-forms">https://startbootstrap.com/solution/contact-forms</a>
-                        </div>
-                    </div>
-                    <!-- Submit error message-->
-                    <!---->
-                    <!-- This is what your users will see when there is-->
-                    <!-- an error submitting the form-->
-                    <div class="d-none" id="submitErrorMessage"><div class="text-center text-danger mb-3">Error sending message!</div></div>
-                    <!-- Submit Button-->
-                    <div class="text-center"><button class="btn btn-primary btn-xl text-uppercase disabled" id="submitButton" type="submit">Send Message</button></div>
-                </form>
+                </div>
             </div>
         </section>
+        
         <!-- Footer-->
         <footer class="footer py-4">
             <div class="container">
                 <div class="row align-items-center">
-                    <div class="col-lg-4 text-lg-start">Copyright &copy; Your Website 2023</div>
-                    <div class="col-lg-4 my-3 my-lg-0">
+                    <div class="col-lg-4 text-lg-start">Copyright &copy; AIS System Solo 2025</div>
+                    {{-- <div class="col-lg-4 my-3 my-lg-0">
                         <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
                         <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
                         <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
@@ -310,7 +279,7 @@
                     <div class="col-lg-4 text-lg-end">
                         <a class="link-dark text-decoration-none me-3" href="#!">Privacy Policy</a>
                         <a class="link-dark text-decoration-none" href="#!">Terms of Use</a>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
         </footer>
@@ -332,93 +301,83 @@
                                     {{-- <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p> --}}
                                     {{-- <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/1.jpg" alt="..." /> --}}
                                     {{-- <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p> --}}
-                                    <ul class="list-inline" style="display: flex; flex-direction: column; align-items: center;">
-                                        <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                            <strong>Nama Lengkap:</strong>
-                                            <input type="text" class="form-control" name="namaLengkap" style="width: 200px;">
+                                    <ul class="list-group w-100">
+                                        <li class="list-group-item d-flex align-items-center justify-content-between">
+                                            <strong >Nama Lengkap:</strong>
+                                            <input type="text" class="form-control w-50" name="namaLengkap">
                                         </li>
-                                        
-                                        <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                            <strong>Email Address:</strong>
-                                            <input type="email" class="form-control" name="email" style="width: 200px;">
-                                        </li>
-                                        
-                                        <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                            <strong>No Telp:</strong>
-                                            <input type="tel" class="form-control" name="noTelp" style="width: 200px;">
-                                        </li>
-                                        
-                                    <li style="display: flex; align-items: center; gap: 10px;">
-                                        <strong>---</strong>
-                                           ---   ---
-                                        </li>
-
-                                        <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                            <strong>Pilih Tanggal Booking:</strong>
-                                            <input type="date" class="form-control" name="tanggalbooking" id="tanggalbooking" 
-                                                style="width: 200px; text-align: center;">
-                                        </li>
-                                        <div id="bookingInfo" style="margin-left: 15px; font-size: 14px; color: red; margin-bottom: 10px;"></div>
-                                        
-                                        
-                                        <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                            <strong>Jam Awal Booking:</strong>
-                                            <input type="time" class="form-control" name="jamMulai" id="jamMulai" 
-                                                style="width: 150px; text-align: center;" step="60">
-                                        </li>
-                                        
-                                        <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                            <strong>Jam Akhir Booking:</strong>
-                                            <input type="time" class="form-control" name="jamSelesai" id="jamSelesai" 
-                                                style="width: 150px; text-align: center;" step="60">
-                                        </li>
-
-                                        <li style="display: flex; align-items: center; gap: 10px;">
-                                            <strong>---</strong>
-                                               ---   ---
-                                            </li>
-                                        
-                                        
-                                            <li style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
-                                                <strong>Pilih Paket :</strong>
-                                                <div>
-                                                    @foreach ($paketTransaksi as $paket)
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="radio" name="paket" 
-                                                                value="{{ $paket->id }}" id="paket{{ $paket->id }}" 
-                                                                data-harga="{{ $paket->HargaNormal }}" 
-                                                                data-jenis="{{ $paket->JenisPaket }}">
-                                                            <label class="form-check-label" for="paket{{ $paket->id }}">
-                                                                {{ $paket->NamaPaket }} - Rp {{ number_format($paket->HargaNormal, 0, ',', '.') }} 
-                                                                per {{ $paket->JenisPaket }}
-                                                            </label>
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            </li>
-
-                                            <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                                <strong>Extra Request:</strong>
-                                                <textarea class="form-control" name="extraRequest" rows="3" style="width: 210px;"></textarea>
-                                            </li>
-                                            
-                                        
-                                            <li style="margin-top: 10px;">
-                                                <strong style="font-size: 24px;">Total Transaksi: Rp <span id="totalTransaksi" style="font-size: 28px; font-weight: bold;">0</span></strong>
-                                            </li>
-                                            
-                                        
-                                        
-                                    </ul>
-                                    <button class="btn btn-success btn-xl text-uppercase" id="btn-success" type="button">
-                                        <i class="fas fa-check me-1"></i>
-                                        Bayar
-                                    </button>
                                     
-                                    <button class="btn btn-danger btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
-                                        <i class="fas fa-xmark me-1"></i>
-                                        Batal
-                                    </button>
+                                        <li class="list-group-item d-flex align-items-center justify-content-between">
+                                            <strong >Email Address:</strong>
+                                            <input type="email" class="form-control w-50" name="email">
+                                        </li>
+                                    
+                                        <li class="list-group-item d-flex align-items-center justify-content-between">
+                                            <strong >No Telp:</strong>
+                                            <input type="tel" class="form-control w-50" name="noTelp">
+                                        </li>
+                                    
+                                        <li class="list-group-item text-center fw-bold">---</li>
+                                    
+                                        <li class="list-group-item d-flex align-items-center justify-content-between">
+                                            <strong>Pilih Tanggal Booking:</strong>
+                                            <input type="date" class="form-control w-50 text-center" name="tanggalbooking" id="tanggalbooking">
+                                        </li>
+                                    
+                                        <div id="bookingInfo" class="text-danger text-center my-2"></div>
+                                    
+                                        <li class="list-group-item d-flex align-items-center justify-content-between">
+                                            <strong>Jam Awal Booking:</strong>
+                                            <input type="time" class="form-control w-50 text-center" name="jamMulai" id="jamMulai" step="60">
+                                        </li>
+                                    
+                                        <li class="list-group-item d-flex align-items-center justify-content-between">
+                                            <strong>Jam Akhir Booking:</strong>
+                                            <input type="time" class="form-control w-50 text-center" name="jamSelesai" id="jamSelesai" step="60">
+                                        </li>
+                                    
+                                        <li class="list-group-item text-center fw-bold">---</li>
+                                    
+                                        <li class="list-group-item">
+                                            <strong>Pilih Paket :</strong>
+                                            <div class="mt-2">
+                                                @foreach ($paketTransaksi as $paket)
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="paket" 
+                                                            value="{{ $paket->id }}" id="paket{{ $paket->id }}" 
+                                                            data-harga="{{ $paket->HargaNormal }}" 
+                                                            data-jenis="{{ $paket->JenisPaket }}">
+                                                        <label class="form-check-label" for="paket{{ $paket->id }}">
+                                                            {{ $paket->NamaPaket }} - Rp {{ number_format($paket->HargaNormal, 0, ',', '.') }} 
+                                                            per {{ $paket->JenisPaket }}
+                                                        </label>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </li>
+                                    
+                                        <li class="list-group-item d-flex align-items-center justify-content-between">
+                                            <strong>Extra Request:</strong>
+                                            <textarea class="form-control w-50" name="extraRequest" rows="3"></textarea>
+                                        </li>
+                                    
+                                        <li class="list-group-item text-center">
+                                            <strong class="fs-4">Total Transaksi: Rp <span id="totalTransaksi" class="fs-3 fw-bold">0</span></strong>
+                                        </li>
+                                    </ul>
+                                    
+                                    <div class="d-flex justify-content-center gap-3 mt-4">
+                                        <button class="btn btn-success btn-lg text-uppercase" id="btn-success" type="button">
+                                            <i class="fas fa-check me-1"></i>
+                                            Bayar
+                                        </button>
+                                    
+                                        <button class="btn btn-danger btn-lg text-uppercase" data-bs-dismiss="modal" type="button">
+                                            <i class="fas fa-xmark me-1"></i>
+                                            Batal
+                                        </button>
+                                    </div>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -428,8 +387,7 @@
         </div>
         @endforeach
         
-        <!-- Bootstrap core JS-->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+       
         <!-- Core theme JS-->
         <script src="js/scripts.js"></script>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
