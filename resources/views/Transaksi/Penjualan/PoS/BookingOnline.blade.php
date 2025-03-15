@@ -298,42 +298,42 @@
                                     <!-- Project details-->
                                     <h2 class="text-uppercase">{{$lampu->NamaTitikLampu}}</h2>
                                     <input type="hidden" name="idMeja" value="{{ $lampu->id }}">
-                                    {{-- <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p> --}}
+                                    <p class="item-intro text-muted">Meja Bisa Di Booking dari Jam: {{ $company->first()->JamAwalBooking}} - {{ $company->first()->JamAkhirBooking}}</p>
                                     {{-- <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/1.jpg" alt="..." /> --}}
                                     {{-- <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p> --}}
                                     <ul class="list-group w-100">
                                         <li class="list-group-item d-flex align-items-center justify-content-between">
                                             <strong >Nama Lengkap:</strong>
-                                            <input type="text" class="form-control w-50" name="namaLengkap">
+                                            <input type="text" class="form-control w-75" name="namaLengkap">
                                         </li>
                                     
                                         <li class="list-group-item d-flex align-items-center justify-content-between">
                                             <strong >Email Address:</strong>
-                                            <input type="email" class="form-control w-50" name="email">
+                                            <input type="email" class="form-control w-75" name="email">
                                         </li>
                                     
                                         <li class="list-group-item d-flex align-items-center justify-content-between">
                                             <strong >No Telp:</strong>
-                                            <input type="tel" class="form-control w-50" name="noTelp">
+                                            <input type="tel" class="form-control w-75" name="noTelp">
                                         </li>
                                     
                                         <li class="list-group-item text-center fw-bold">---</li>
                                     
                                         <li class="list-group-item d-flex align-items-center justify-content-between">
                                             <strong>Pilih Tanggal Booking:</strong>
-                                            <input type="date" class="form-control w-50 text-center" name="tanggalbooking" id="tanggalbooking">
+                                            <input type="date" class="form-control w-75 text-center" name="tanggalbooking" id="tanggalbooking">
                                         </li>
                                     
                                         <div id="bookingInfo" class="text-danger text-center my-2"></div>
                                     
                                         <li class="list-group-item d-flex align-items-center justify-content-between">
                                             <strong>Jam Awal Booking:</strong>
-                                            <input type="time" class="form-control w-50 text-center" name="jamMulai" id="jamMulai" step="60">
+                                            <input type="time" class="form-control w-75 text-center" name="jamMulai" id="jamMulai" step="60">
                                         </li>
                                     
                                         <li class="list-group-item d-flex align-items-center justify-content-between">
                                             <strong>Jam Akhir Booking:</strong>
-                                            <input type="time" class="form-control w-50 text-center" name="jamSelesai" id="jamSelesai" step="60">
+                                            <input type="time" class="form-control w-75 text-center" name="jamSelesai" id="jamSelesai" step="60">
                                         </li>
                                     
                                         <li class="list-group-item text-center fw-bold">---</li>
@@ -358,7 +358,7 @@
                                     
                                         <li class="list-group-item d-flex align-items-center justify-content-between">
                                             <strong>Extra Request:</strong>
-                                            <textarea class="form-control w-50" name="extraRequest" rows="3"></textarea>
+                                            <textarea class="form-control w-75" name="extraRequest" rows="3"></textarea>
                                         </li>
                                     
                                         <li class="list-group-item text-center">
