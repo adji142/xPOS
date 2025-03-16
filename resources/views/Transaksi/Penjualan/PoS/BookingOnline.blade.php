@@ -39,7 +39,7 @@
             </div>
         </nav>
         <!-- Masthead-->
-        <header class="masthead" style="background-image: url('{{ $company->first()->BannerBooking}}');">
+        <header class="masthead" style="position: relative; background-image: url('{{ $company->first()->BannerBooking}}'); background-size: cover; background-position: center; ">
             <div class="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);"></div>
     
     <div class="container position-relative">
