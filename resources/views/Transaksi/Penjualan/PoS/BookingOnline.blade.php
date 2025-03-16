@@ -40,11 +40,12 @@
         </nav>
         <!-- Masthead-->
         <header class="masthead" style="background-image: url('{{ $company->first()->BannerBooking}}');">
-            <div class="container">
-                <div class="masthead-subheading">{{ $company->first()->HeadlineBanner }}</div>
-                <div class="masthead-heading text-uppercase">{{ $company->first()->SubHeadlineBanner }}</div>
-                {{-- <a class="btn btn-primary btn-xl text-uppercase" href="#services">Tell Me More</a> --}}
-            </div>
+            <div class="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);"></div>
+    
+    <div class="container position-relative">
+        <div class="masthead-subheading">{{ $company->first()->HeadlineBanner }}</div>
+        <div class="masthead-heading text-uppercase">{{ $company->first()->SubHeadlineBanner }}</div>
+    </div>
         </header>
         <!-- Services-->
         {{-- <section class="page-section" id="services">
