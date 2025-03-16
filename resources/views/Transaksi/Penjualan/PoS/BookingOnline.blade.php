@@ -198,14 +198,14 @@
 
                 <!-- Modal untuk menampilkan gambar full-size -->
                 <div class="modal fade" id="imageModal{{ $index }}" tabindex="-1" aria-labelledby="imageModalLabel{{ $index }}" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-dialog modal-dialog-centered modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="imageModalLabel{{ $index }}">Preview Gambar</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body text-center">
-                                <img src="{{ $image }}" class="img-fluid" alt="Full Image">
+                                <img src="{{ $image }}" style="max-width: 100%; height: auto;" alt="Full Image">
                             </div>
                         </div>
                     </div>
