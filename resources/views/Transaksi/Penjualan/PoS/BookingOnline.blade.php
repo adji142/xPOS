@@ -361,10 +361,19 @@
                                             <strong>Extra Request:</strong>
                                             <textarea class="form-control w-75" name="extraRequest" rows="3"></textarea>
                                         </li>
-                                    
-                                        <li class="list-group-item text-center">
-                                            <strong class="fs-4">Total Transaksi: Rp <span id="totalTransaksi" class="fs-3 fw-bold">0</span></strong>
+
+                                        <li class="list-group-item d-flex flex-column">
+                                            <strong>Kode Voucher Discount:</strong>
+                                            <input type="text" class="form-control w-100 mt-2" name="voucherCode" id="voucherCode">
+                                            <button class="btn btn-primary mt-2 w-30 mx-auto" type="button" id="applyVoucher">Apply</button>
                                         </li>
+                                    
+                                        <li class="list-group-item d-flex flex-column">
+                                            <strong class="fs-6">Total Transaksi: Rp <span id="totalAsli" class="fs-6 text-danger">0</span></strong>
+                                            <strong class="fs-6">Total Diskon: Rp <span id="totalDiskon" class="fs-6 text-warning">0</span></strong>
+                                            <strong class="fs-4">Total Setelah Diskon: Rp <span id="totalTransaksi" class="fs-3 fw-bold text-success">0</span></strong>
+                                        </li>
+                                                                               
                                     </ul>
                                     
                                     <div class="d-flex justify-content-center gap-3 mt-4">
@@ -403,14 +412,15 @@
         <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
         <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
         <script>
-            function hitungTotal(event) {
-    let modal = event.target.closest(".modal"); // Ambil modal terdekat dari elemen yang berubah
+  function hitungTotal(event) {
+    let modal = event.target.closest(".modal");
     let jamMulai = modal.querySelector("input[name='jamMulai']").value;
     let jamSelesai = modal.querySelector("input[name='jamSelesai']").value;
     let paketDipilih = modal.querySelector("input[name='paket']:checked");
+    let voucherCode = modal.querySelector("input[name='voucherCode']").value.trim();
 
     if (!jamMulai || !jamSelesai || !paketDipilih) {
-        modal.querySelector("#totalTransaksi").innerText = "0";
+        updateTotal(0, 0, 0);
         return;
     }
 
@@ -422,27 +432,83 @@
     let [jamAkhir, menitAkhir] = jamSelesai.split(":").map(Number);
     let totalMenit = (jamAkhir * 60 + menitAkhir) - (jamAwal * 60 + menitAwal);
 
-    let total = 0;
+    let totalAsli = 0;
     if (jenisPaket.toLowerCase() === "jam") {
-        let totalJam = Math.ceil(totalMenit / 60); // Pembulatan ke atas jika lebih dari 1 jam
-        total = harga * totalJam;
+        let totalJam = Math.ceil(totalMenit / 60);
+        totalAsli = harga * totalJam;
     } else if (jenisPaket.toLowerCase() === "menit") {
-        total = harga * totalMenit;
+        totalAsli = harga * totalMenit;
     }
 
-    modal.querySelector("#totalTransaksi").innerText = total.toLocaleString("id-ID");
+    let totalDiskon = 0;
+    let totalSetelahDiskon = totalAsli;
+
+    console.log("Total Asli sebelum diskon:", totalAsli);
+
+    function updateTotal(finalTotal, discount, originalTotal) {
+        modal.querySelector("#totalAsli").innerText = originalTotal.toLocaleString("id-ID");
+        modal.querySelector("#totalDiskon").innerText = discount.toLocaleString("id-ID");
+        modal.querySelector("#totalTransaksi").innerText = finalTotal.toLocaleString("id-ID");
+    }
+
+    if (voucherCode === "") {
+        updateTotal(totalSetelahDiskon, totalDiskon, totalAsli);
+        return;
+    }
+
+    $.ajax({
+        url: '/booking/get-DiscountVoucher',
+        type: 'GET',
+        data: { code: voucherCode },
+        dataType: 'json',
+        success: function (data) {
+            console.log("Response voucher:", data);
+            
+            if (data.success) {
+                let discountPercent = parseFloat(data.discountPercent) / 100;
+                let maximalDiscount = parseFloat(data.maximalDiscount);
+                let discountQuota = parseFloat(data.discountQuota);
+
+                console.log("Diskon persen:", discountPercent);
+                console.log("Maksimal diskon:", maximalDiscount);
+                console.log("Kuota diskon:", discountQuota);
+
+                if (discountQuota >= totalAsli) {
+                    let calculatedDiscount = totalAsli * discountPercent;
+                    totalDiskon = Math.min(calculatedDiscount, maximalDiscount);
+                    totalSetelahDiskon = totalAsli - totalDiskon;
+
+                    console.log("Diskon diterapkan:", totalDiskon);
+                } else {
+                    console.log("Kuota diskon tidak mencukupi, diskon tidak diterapkan.");
+                }
+            } else {
+                console.log("Kode voucher tidak valid atau tidak ditemukan.");
+            }
+            
+            updateTotal(totalSetelahDiskon, totalDiskon, totalAsli);
+        },
+        error: function (xhr, status, error) {
+            console.error("Error fetching voucher data:", error);
+            updateTotal(totalSetelahDiskon, totalDiskon, totalAsli);
+        }
+    });
 }
 
-// Tambahkan event listener ke semua input dalam setiap modal
+
+
+// Event listener untuk perubahan input
 document.addEventListener("change", function (event) {
     if (
         event.target.matches("input[name='jamMulai']") ||
         event.target.matches("input[name='jamSelesai']") ||
-        event.target.matches("input[name='paket']")
+        event.target.matches("input[name='paket']") ||
+        event.target.matches("input[name='voucherCode']")
     ) {
         hitungTotal(event);
     }
 });
+
 
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".btn-success").forEach(button => {
@@ -464,6 +530,9 @@ document.addEventListener("DOMContentLoaded", function () {
     paketid: modal.querySelector("input[name='paket']:checked")?.value || null,
     ExtraRequest: modal.querySelector("textarea[name='extraRequest']").value,
     totalPembelian: parseInt(modal.querySelector("#totalTransaksi").innerText.replace(/\D/g, "")),
+    totalAsli: parseInt(modal.querySelector("#totalAsli").innerText.replace(/\D/g, "")),
+    totalDiskon: parseInt(modal.querySelector("#totalDiskon").innerText.replace(/\D/g, "")),
+    voucherCode: modal.querySelector("input[name='voucherCode']").value,
 };
             
             // Validasi hanya untuk field yang wajib diisi
@@ -532,14 +601,15 @@ console.log("TotalPembelian:", formData.totalPembelian);
                             "KodePelanggan": "-",
                             "StatusTransaksi": 0,
                             "ExtraRequest": formData.ExtraRequest,
-                            "TotalTransaksi": 0,
+                            "TotalTransaksi": formData.totalAsli,
                             "TotalTax": 0,
-                            "TotalDiskon": 0,
+                            "TotalDiskon": formData.totalDiskon,
                             "TotalLainLain": 0,
                             "NetTotal": formData.totalPembelian,
                             "NamaPelanggan": formData.namaLengkap,
                             "Email": formData.email,
-                            "NoTlp1": formData.noTelp
+                            "NoTlp1": formData.noTelp,
+                            "VoucherCode" : formData.voucherCode
                         };
                         
                         fetch("{{route('booking-pay-gateway')}}", {

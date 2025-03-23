@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use DB;
 use Log;
 
+use App\Models\TableOrderHeader;
+
 use Illuminate\Http\Request;
 use App\Models\Company;
 use App\Models\TitikLampu;
@@ -16,6 +18,7 @@ use App\Models\DocumentNumbering;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PelangganExport;
 use App\Models\User;
+use App\Models\DiscountVoucher;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\KonfirmasiPembayaranMail;
@@ -144,6 +147,17 @@ function SimpanPembayaranJson(Request $request) {
             }
         }
 
+         // Update kuota voucher jika ada
+         if (isset($jsonData['VoucherCode'])) {
+           
+         $update = DB::table('discountvoucher')
+         ->where('VoucherCode', '=', $request->input('VoucherCode'))
+         ->update(['DiscountQuota' => 0]);
+       
+     if (!$update) {
+         throw new \Exception('Gagal menggunakan voucher Diskon.');
+     }
+    }
 
         // Jika semuanya berhasil, commit transaksi
         DB::commit();
@@ -191,5 +205,233 @@ public function getBookingsByDate(Request $request) {
 
     return response()->json($bookings);
 }
+
+public function getDiscountVoucher(Request $request)
+{
+    $voucherCode = $request->query('code');
+    $voucher = DiscountVoucher::where('VoucherCode', $voucherCode)->first();
+
+    if (!$voucher) {
+        return response()->json(['success' => false, 'message' => 'Voucher tidak ditemukan'], 404);
+    }
+
+    return response()->json([
+        'success' => true,
+        'discountPercent' => $voucher->DiscountPercent,
+        'maximalDiscount' => $voucher->MaximalDiscount,
+        'discountQuota' => $voucher->DiscountQuota,
+        'startDate' => $voucher->StartDate,
+        'endDate' => $voucher->EndDate,
+    ]);
+}
+
+public function View(Request $request)
+{
+    $listBooking = BookingOnline::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+
+
+    return view('Transaksi.Penjualan.PoS.ListBookingOnline', compact('listBooking'));
+}
+
+public function ViewGenerateVoucher(Request $request)
+{
+    $listBooking = BookingOnline::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+
+
+    return view('Transaksi.Penjualan.PoS.GenerateVoucher', compact('listBooking'));
+}
+
+public function storeVoucher(Request $request)
+{
+    try{
+    // Validasi input
+    $request->validate([
+        'discountPercent' => 'required|numeric|min:1|max:100',
+        'maximalDiscount' => 'required|numeric|min:1000',
+        'discountQuota' => 'required|integer|min:1',
+        'expiryDate' => 'required|date|after:today',
+    ]);
+
+    // Generate kode voucher unik (6 karakter)
+    //$voucherCode = strtoupper(Str::random(6));
+    
+    // Simpan data ke database
+    $voucher = new DiscountVoucher();
+    $voucher->VoucherCode = $request->voucherCode;
+    $voucher->DiscountPercent = $request->discountPercent;
+    $voucher->MaximalDiscount = $request->maximalDiscount;
+    $voucher->DiscountQuota = $request->discountQuota;
+    $voucher->DiscountDescription = $request->description;
+    $voucher->StartDate = $request->startDate;
+    $voucher->EndDate = $request->expiryDate;
+    $voucher->RecordOwnerID = Auth::user()->RecordOwnerID;
+    $voucher->save();
+
+    $data['success'] = true;
+    $data['message'] = 'Data berhasil disimpan';
+
+} catch (\Exception $e) {
+    $data['success'] = false;
+    $data['message'] = $e->getMessage();
+    
+}
+
+    return response()->json($data);
+
+}
+
+public function getListVoucher()
+    {
+        $vouchers = DiscountVoucher::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+
+        return response()->json($vouchers);
+    }
+
+    public function getBookings()
+    {
+        $query = BookingOnline::join('pelanggan', 'bookingtableonline.KodePelanggan', '=', 'pelanggan.KodePelanggan')
+        ->join('titiklampu', 'bookingtableonline.mejaID', '=', 'titiklampu.id') 
+        ->where('bookingtableonline.RecordOwnerID', Auth::user()->RecordOwnerID)
+        ->orderBy('bookingtableonline.created_at', 'desc')
+        ->select(
+            'bookingtableonline.*', 
+            'pelanggan.NamaPelanggan', 
+            'pelanggan.Email', 
+            'pelanggan.NoTlp1', 
+            'titiklampu.NamaTitikLampu' ,
+            DB::raw("CASE 
+                    WHEN bookingtableonline.StatusTransaksi = 0 THEN 'WAITING' 
+                    WHEN bookingtableonline.StatusTransaksi = 1 THEN 'CHECK IN' 
+                    ELSE 'UNKNOWN' 
+                 END AS StatusTransaksi")
+        );
+        
+
+        //dd($query->toSql(), $query->getBindings());
+
+        $bookings = $query->get();
+
+        return response()->json($bookings);
+    }
+
+    public function getBookingDetail($noTransaksi)
+{
+    $booking = BookingOnline::join('pelanggan', 'bookingtableonline.KodePelanggan', '=', 'pelanggan.KodePelanggan')
+        ->join('titiklampu', 'bookingtableonline.mejaID', '=', 'titiklampu.id')
+        ->join('pakettransaksi', 'bookingtableonline.paketid', '=', 'pakettransaksi.id')
+        ->where('bookingtableonline.NoTransaksi', $noTransaksi)
+        ->select(
+            'bookingtableonline.*', 
+            'pelanggan.NamaPelanggan', 
+            'pelanggan.Email', 
+            'titiklampu.NamaTitikLampu',
+            'pakettransaksi.JenisPaket',
+            'pakettransaksi.DurasiPaket',
+            DB::raw("CASE 
+            WHEN bookingtableonline.StatusTransaksi = 0 THEN 'WAITING' 
+            WHEN bookingtableonline.StatusTransaksi = 1 THEN 'CHECK IN' 
+            ELSE 'UNKNOWN' 
+         END AS StatusTransaksi")
+        )
+        ->first();
+
+    if ($booking) {
+        return response()->json($booking);
+    } else {
+        return response()->json(['error' => 'Data tidak ditemukan'], 404);
+    }
+}
+
+public function getMejaByTransaksi($noTransaksi)
+{
+    $booking = BookingOnline::where('NoTransaksi', $noTransaksi)
+    ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+    ->select('mejaID')
+    ->first();
+    
+
+if (!$booking) {
+    return response()->json(['error' => 'Data tidak ditemukan'], 404);
+}
+
+return response()->json($booking);
+
+}
+
+
+public function insertTableOrder(Request $request)
+{
+    $data = ['success' => false, 'message' => '', 'data' => [], 'Kembalian' => ""];
+
+    $this->validate($request, [
+        'JenisPaket' => 'required',
+        'paketid' => 'required',
+        'tableid' => 'required',
+        'KodeSales' => 'required',
+        'DurasiPaket' => 'required'
+    ]);
+
+    try {
+        DB::beginTransaction(); // Mulai transaksi
+
+        $currentDate = Carbon::now();
+        $Year = $currentDate->format('Y');
+        $Month = $currentDate->format('m');
+
+        $tglBooking = $request->input('TglBooking'); // "2025-03-13 00:00:00"
+        $jamMulai = $request->input('JamMulai'); // "10:00:00"
+
+        $startDate = Carbon::parse($tglBooking)->format('Y-m-d') . ' ' . $jamMulai;
+
+        // Insert ke tableorderheader
+        $model = new TableOrderHeader();
+        $model->NoTransaksi = $request->input('NoTransaksi');
+        $model->TglTransaksi = $startDate;
+        $model->TglPencatatan = Carbon::now();
+        $model->JenisPaket = $request->input('JenisPaket');
+        $model->paketid = $request->input('paketid');
+        $model->tableid = $request->input('tableid');
+        $model->KodeSales = $request->input('KodeSales');
+        $model->DurasiPaket = $request->input('DurasiPaket');
+        $model->Status = $request->input('Status');
+        $model->KodePelanggan = $request->input('KodePelanggan');
+        $model->TaxTotal = 0; // Default 0
+        $model->GrossTotal = $request->input('GrossTotal');
+        $model->DiscTotal = $request->input('DiscTotal');
+        $model->NetTotal = $request->input('NetTotal');
+        $model->JamMulai = $startDate;
+
+        if ($request->input('JenisPaket') != 'MENIT') {
+            $model->JamSelesai = Carbon::parse($startDate)->addHours($request->input('DurasiPaket'));
+        }
+
+        $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+
+        if (!$model->save()) {
+            throw new \Exception('Gagal menyimpan data ke tableorderheader.');
+        }
+
+        // Update bookingtableonline
+        $update = DB::table('bookingtableonline')
+            ->where('NoTransaksi', '=', $request->input('NoTransaksi'))
+            ->update(['StatusTransaksi' => 1]);
+
+        if (!$update) {
+            throw new \Exception('Gagal memperbarui bookingtableonline.');
+        }
+
+        DB::commit(); // Commit transaksi jika semuanya berhasil
+        $data['success'] = true;
+    } catch (\Throwable $th) {
+        DB::rollBack(); // Rollback transaksi jika ada error
+        $data['message'] = 'Internal error: ' . $th->getMessage();
+    }
+
+    return response()->json($data);
+}
+
+
 
 }

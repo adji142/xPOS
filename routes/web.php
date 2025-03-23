@@ -980,3 +980,12 @@ Route::get('/booking', [BookingOnlineController::class, 'getData'])->name('booki
 Route::post('/booking/create-gateway', [BookingOnlineController::class, 'createMidTransTransaction'])->name('booking-create-gateway')->middleware('auth');
 Route::post('/booking/pay-gateway', [BookingOnlineController::class, 'SimpanPembayaranJson'])->name('booking-pay-gateway')->middleware('auth');
 Route::get('/booking/get-bookedtable', [BookingOnlineController::class, 'getBookingsByDate'])->name('booking-get-bookedtable')->middleware('auth');
+Route::get('/booking/get-DiscountVoucher', [BookingOnlineController::class, 'getDiscountVoucher'])->name('booking-get-DiscountVoucher')->middleware('auth');
+Route::get('/booking/list', [BookingOnlineController::class, 'View'])->name('booking-list')->middleware('auth');
+Route::get('/booking/generateVoucher', [BookingOnlineController::class, 'ViewGenerateVoucher'])->name('booking-generateVoucher')->middleware('auth');
+Route::post('/booking/voucher-store', [BookingOnlineController::class, 'storeVoucher'])->name('booking-voucherStore')->middleware('auth');
+Route::get('/booking/get-listVoucher', [BookingOnlineController::class, 'getListVoucher'])->name('booking-getListVoucher')->middleware('auth');
+Route::get('/booking/get-Bookings', [BookingOnlineController::class, 'getBookings'])->name('booking-getBookings')->middleware('auth');
+Route::get('/booking/get-detailBooking/{noTransaksi}', [BookingOnlineController::class, 'getBookingDetail'])->name('booking-getDetailBooking')->middleware('auth');
+Route::get('/booking/get-meja-by-transaksi/{noTransaksi}', [BookingOnlineController::class, 'getMejaByTransaksi'])->name('booking-getMejaByTransaksi')->middleware('auth');
+Route::post('/booking/insert-tableorderheader', [BookingOnlineController::class, 'insertTableOrder'])->name('booking-insertTableorderheader')->middleware('auth');

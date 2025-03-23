@@ -262,6 +262,15 @@
 						
 
 					<div class="topbar">
+
+						<div class="posicon d-lg-block d-none">
+							<a href="{{ url('/booking/generateVoucher') }}" class="btn btn-primary white me-2">VOUCHER</a>
+						</div>
+
+						<div class="posicon d-lg-block d-none">
+							<a href="{{ url('/booking/list') }}" class="btn btn-primary white me-2">LIST BOOKING</a>
+						</div>
+
 						<div class="posicon d-lg-block d-none">
 							<a href="{{ url('/booking') }}" class="btn btn-primary white me-2">BOOKING ONLINE</a>
 						</div>
