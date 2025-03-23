@@ -36,7 +36,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 <body id="tc_body" class="">
 	   <!-- Paste this code after body tag -->
-	<div class="l-form" style="background-image: url({{ asset('images/misc/bg-login3.jpg')}}); background-size: cover;">
+	<div class="l-form" style="background-image: url({{ asset('images/misc/bg-login3.jpg')}}); background-size: contain; background-position: center; background-color: #d00904; background-repeat: no-repeat;">
 		<form method="post" action="{{route('action-login')}}" class="adminloginform">
 			@csrf
 			<div class="maintitle">
