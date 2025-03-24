@@ -74,6 +74,8 @@ class AppServiceProvider extends ServiceProvider
                 if (count($PermissionID) > 0) {
                     $oObject->whereIn("permission.id", $PermissionID);
                 }
+               
+
                 $oObject = $oObject->orderBy("permission.Order","asc")->get();
                             
                 foreach ($oObject as $item) {
@@ -144,10 +146,12 @@ class AppServiceProvider extends ServiceProvider
                                 // ->where("permission.MenuInduk","=","0")
                                 ->where("permission.Status","=","1")
                                 ->where("permission.Level","=","3")
-                                ->where("permission.MenuInduk","=",$key2->id);
+                                ->where("permission.MenuInduk","=","25");
                         if (count($PermissionID) > 0) {
                             $dt3->whereIn("permission.id", $PermissionID);
                         }
+
+                        //dd($dt3->toSql(), $dt3->getBindings());
                         $dt3 = $dt3->orderBy("permission.Order","asc")->get();
 
                         $array3 = array();
@@ -173,6 +177,9 @@ class AppServiceProvider extends ServiceProvider
                 }
 
                 // var_dump($oMenu);
+                //dd($oMenu);
+               
+
 
                 $view->with([
                     'navbars' => $oMenu,
