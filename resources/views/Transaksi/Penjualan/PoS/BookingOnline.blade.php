@@ -43,8 +43,8 @@
             <div class="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);"></div>
     
     <div class="container position-relative">
-        <div class="masthead-subheading">{{ $company->first()->HeadlineBanner }}</div>
-        <div class="masthead-heading text-uppercase">{{ $company->first()->SubHeadlineBanner }}</div>
+        <div class="masthead-subheading">{!! $company->first()->HeadlineBanner  !!}</div>
+        <div class="masthead-heading text-uppercase">{!! $company->first()->SubHeadlineBanner  !!}</div>
     </div>
         </header>
         <!-- Services-->
@@ -116,11 +116,11 @@
             <div class="container">
                 <div class="text-center">
                     <h2 class="section-heading text-uppercase">About Us</h2>
-                    <h3 class="section-subheading text-muted">{{ $company->first()->AboutUs}}</h3>
+                    <h3 class="section-subheading text-muted">{!! $company->first()->AboutUs !!}</h3>
                 </div>
                 <div class="text-center">
                     <h2 class="section-heading text-uppercase">Term And Condition</h2>
-                    <h3 class="section-subheading text-muted">{{ $company->first()->TermAndCondition}}</h3>
+                    <h3 class="section-subheading text-muted">{!! $company->first()->TermAndCondition !!}</h3>
                 </div>
                 {{-- <ul class="timeline">
                     <li>

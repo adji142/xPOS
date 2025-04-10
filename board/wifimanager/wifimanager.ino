@@ -13,11 +13,19 @@
 
 /** 
   Blink Code :
-    1. 1 Times => Device Reseted
-    2. 
+    1. 1 Times Slow=> Device Reseted
+    2. 2 Time Fast => RecordOwnerID Not Set
+    3. 3 Fast 1 Slow => API Endpoint Not Set
+    4. Lamp 1 ON => Restarting Device
+    5. Lamp 1 and 2 ON => Reseting Device
+
+  Jika akan mereset wifi setting silahkan setting variable isReset ke true, jika sudah, silahkan upload.
+  jika sudah terupload, silahkan setting wifi dan setting is reset ke false kembali
 **/
 
+bool isReset = false;
 int digitalPins[] = { D0, D1, D2, D3, D4, D5, D6, D7, D8 };
+int listSize = sizeof(digitalPins) / sizeof(digitalPins[0]);
 
 // const char* apiEndpoint = "http://192.168.1.6:8000/api/getTable";
 const char* SerialNumber = "A1B2C3D4E5F6";
@@ -64,7 +72,7 @@ void setup() {
   loadConfig();
 
   WiFiManagerParameter custom_recordOwnerID("RecordOwnerID", "Enter Record Owner ID", recordOwnerID, 7);
-  WiFiManagerParameter custom_apiEndpoint("APIEndpoint", "API URL, ex: http://api.aissystem.org/api", apiEndpoint, 254);
+  WiFiManagerParameter custom_apiEndpoint("APIEndpoint", "API URL, ex: http://xpos.aissystem.org/api", apiEndpoint, 254);
 
   wifiManager.addParameter(&custom_recordOwnerID);
   wifiManager.addParameter(&custom_apiEndpoint);
@@ -76,6 +84,12 @@ void setup() {
     //reset and try again, or maybe put it to deep sleep
     ESP.reset();
     delay(1000);
+  }
+  
+  if(isReset){
+    wifiManager.resetSettings();
+    WiFi.disconnect(true);
+    ESP.restart();
   }
 
   strncpy(recordOwnerID, custom_recordOwnerID.getValue(), sizeof(recordOwnerID));
@@ -102,7 +116,11 @@ void setup() {
 
 
   Serial.println("WiFi connected!");
-
+  for (int i = 0; i < listSize; i++) {
+    digitalWrite(digitalPins[i], HIGH);
+    delay(2000);
+  }
+  delay(1000);
 
   Serial.print("IP --> ");
   Serial.println(WiFi.localIP());
@@ -117,6 +135,10 @@ void setup() {
   Serial.print("DNS 2 --> ");
   Serial.println(WiFi.dnsIP(1));
 
+  for (int i = 0; i < listSize; i++) {
+    digitalWrite(digitalPins[i], LOW);
+    delay(1000);
+  }
 }
 
 void loop() {
@@ -194,9 +216,9 @@ void checkCommand(){
   HTTPClient http;
   WiFiManager wifiManager;
 
-  http.begin(client, String(apiEndpoint) + "/getTable");
+  http.begin(client, String(apiEndpoint) + "/checkCommand");
   http.addHeader("Content-Type", "application/json");
-  String payload = String("{\"RecordOwnerID\":\"") + recordOwnerID + "\",\"SerialNumber\":\"" + SerialNumber + "\"}";
+  String payload = String("{\"RecordOwnerID\":\"") + recordOwnerID + "\",\"SN\":\"" + SerialNumber + "\"}";
   int httpResponseCode = http.POST(payload);
 
   if (httpResponseCode > 0) {
@@ -221,38 +243,24 @@ void checkCommand(){
     bool success = doc["success"];
     int command = doc["Command"];
 
-    if(success){
+    if(success && command > 0){
       digitalWrite(digitalPins[0], HIGH);
+      releaseCommand();
       switch (command) {
         case 1 :
+          delay(3000);
           ESP.restart();
           Serial.println("Table Status OFF");
           break;
         case 2 :
+          digitalWrite(digitalPins[1], HIGH);
+          delay(3000);
           wifiManager.resetSettings();
           WiFi.disconnect(true);
           ESP.restart();
           Serial.println("Table Status OFF");
           break;
       }
-
-      http.begin(client, String(apiEndpoint) + "/checkCommand");
-      http.addHeader("Content-Type", "application/json");
-      String payload = String("{\"RecordOwnerID\":\"") + recordOwnerID + "\",\"SerialNumber\":\"" + SerialNumber + "\"}";
-      int httpResponseCode = http.POST(payload);
-      if (httpResponseCode > 0) {
-        Serial.print("HTTP Response Code: ");
-        Serial.println(httpResponseCode);
-
-        // Get the response payload
-        String response = http.getString();
-        Serial.println("Response:");
-        Serial.println(response);
-      }
-
-      http.end();
-
-      digitalWrite(digitalPins[0], LOW);
     }
   }
 }
@@ -410,4 +418,26 @@ void loadConfig() {
   } else {
     Serial.println("No configuration file found.");
   }
+}
+void releaseCommand(){
+  WiFiClient client;
+  HTTPClient http;
+
+  int Command = 0;
+
+  http.begin(client, String(apiEndpoint) + "/releaseCommand");
+  http.addHeader("Content-Type", "application/json");
+  String payload = String("{\"Command\":\"") + Command + "\",\"SN\":\"" + SerialNumber + "\"}";
+  int httpResponseCode = http.POST(payload);
+  if (httpResponseCode > 0) {
+    Serial.print("HTTP Response Code: ");
+    Serial.println(httpResponseCode);
+
+    // Get the response payload
+    String response = http.getString();
+    Serial.println("Response:");
+    Serial.println(response);
+  }
+
+  http.end();
 }

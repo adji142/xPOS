@@ -98,7 +98,7 @@
 					<div class="col-12  px-4">
 						<div class="card card-custom gutter-b bg-white border-0" >
 							<div class="card-body" >
-								<form action="{{route('companysetting-edit')}}" method="post">
+								<form action="{{route('companysetting-edit')}}" method="post" id="formCompanySetting">	
 									@csrf
 									<div class="row">
 										<div class="col-md-3">
@@ -433,10 +433,9 @@
 																		<div class="col-sm-12">
 																			<label  class="text-body">Banner Header</label>
 																			<fieldset class="form-group mb-3">
-																				{{-- <input type="text" class="form-control" id="BannerHeader1" name="BannerHeader1" placeholder="Masukan Banner" value="{{ count($company) > 0 ? $company[0]['BannerHeader1'] : '' }}"  > --}}
-																				<textarea id="BannerHeader1" name="BannerHeader1" class="bg-transparent text-dark">
-																					{{ count($company) > 0 ? $company[0]['BannerHeader1'] : '' }}
-																				</textarea>
+																				<div id="BannerHeader1">
+																					{!! count($company) > 0 ? $company[0]['BannerHeader1'] : '' !!}
+																				</div>
 																			</fieldset>
 																		</div>
 				
@@ -444,9 +443,9 @@
 																			<label  class="text-body">Banner Text</label>
 																			<fieldset class="form-group mb-3">
 																				{{-- <input type="text" class="form-control" id="BannerText1" name="BannerText1" placeholder="Masukan Banner Text" value="{{ count($company) > 0 ? $company[0]['BannerText1'] : '' }}"  > --}}
-																				<textarea id="BannerText1" name="BannerText1" class="bg-transparent text-dark">
-																					{{ count($company) > 0 ? $company[0]['BannerText1'] : '' }}
-																				</textarea>
+																				<div id="BannerText1">
+																					{!! count($company) > 0 ? $company[0]['BannerText1'] : '' !!}
+																				</div>
 																			</fieldset>
 																		</div>
 				
@@ -488,20 +487,18 @@
 																		<div class="col-sm-12">
 																			<label  class="text-body">Banner Header</label>
 																			<fieldset class="form-group mb-3">
-																				{{-- <input type="text" class="form-control" id="BannerHeader2" name="BannerHeader2" placeholder="Masukan Banner" value="{{ count($company) > 0 ? $company[0]['BannerHeader2'] : '' }}"  > --}}
-																				<textarea id="BannerHeader2" name="BannerHeader2" class="bg-transparent text-dark">
-																					{{ count($company) > 0 ? $company[0]['BannerHeader2'] : '' }}
-																				</textarea>
+																				<div id="BannerHeader2">
+																					{!! count($company) > 0 ? $company[0]['BannerHeader2'] : '' !!}
+																				</div>
 																			</fieldset>
 																		</div>
 				
 																		<div class="col-sm-12">
 																			<label  class="text-body">Banner Text</label>
 																			<fieldset class="form-group mb-3">
-																				{{-- <input type="text" class="form-control" id="BannerText2" name="BannerText2" placeholder="Masukan Banner Text" value="{{ count($company) > 0 ? $company[0]['BannerText2'] : '' }}"  > --}}
-																				<textarea id="BannerText2" name="BannerText2" class="bg-transparent text-dark">
-																					{{ count($company) > 0 ? $company[0]['BannerText2'] : '' }}
-																				</textarea>
+																				<div id="BannerText2">
+																					{!! count($company) > 0 ? $company[0]['BannerText2'] : '' !!}
+																				</div>
 																			</fieldset>
 																		</div>
 				
@@ -543,20 +540,18 @@
 																			<div class="col-sm-12">
 																				<label  class="text-body">Banner Header</label>
 																				<fieldset class="form-group mb-3">
-																					{{-- <input type="text" class="form-control" id="BannerHeader2" name="BannerHeader2" placeholder="Masukan Banner" value="{{ count($company) > 0 ? $company[0]['BannerHeader2'] : '' }}"  > --}}
-																					<textarea id="BannerHeader3" name="BannerHeader3" class="bg-transparent text-dark">
-																						{{ count($company) > 0 ? $company[0]['BannerHeader2'] : '' }}
-																					</textarea>
+																					<div id="BannerHeader3">
+																						{!! count($company) > 0 ? $company[0]['BannerHeader3'] : '' !!}
+																					</div>
 																				</fieldset>
 																			</div>
 					
 																			<div class="col-sm-12">
 																				<label  class="text-body">Banner Text</label>
 																				<fieldset class="form-group mb-3">
-																					{{-- <input type="text" class="form-control" id="BannerText2" name="BannerText2" placeholder="Masukan Banner Text" value="{{ count($company) > 0 ? $company[0]['BannerText2'] : '' }}"  > --}}
-																					<textarea id="BannerText3" name="BannerText3" class="bg-transparent text-dark">
-																						{{ count($company) > 0 ? $company[0]['BannerText3'] : '' }}
-																					</textarea>
+																					<div id="BannerText3">
+																						{!! count($company) > 0 ? $company[0]['BannerText3'] : '' !!}
+																					</div>
 																				</fieldset>
 																			</div>
 					
@@ -680,6 +675,8 @@
 																<table id="invoiceTable" class="display" style="width:100%">
 																	<thead>
 																		<tr>
+																			<th>Nomor Invoice</th>
+																			<th>Tgl Invoice</th>
 																			<th>Nama Paket</th>
 																			<th>Total</th>
 																			<th>Tgl Jatuh Tempo</th>
@@ -699,10 +696,9 @@
 														<div class="col-sm-12">
 															<label  class="text-body">Promo tampil customer display</label>
 															<fieldset class="form-group mb-3">
-																{{-- <input type="text" class="form-control" id="BannerText2" name="BannerText2" placeholder="Masukan Banner Text" value="{{ count($company) > 0 ? $company[0]['BannerText2'] : '' }}"  > --}}
-																<textarea id="PromoDsiplay" name="PromoDsiplay" class="bg-transparent text-dark">
-																	{{ count($company) > 0 ? $company[0]['PromoDsiplay'] : '' }}
-																</textarea>
+																<div id="PromoDsiplay">
+																	{!! count($company) > 0 ? $company[0]['PromoDsiplay'] : '' !!}
+																</div>
 															</fieldset>
 														</div>
 														<div class="col-md-10">
@@ -918,14 +914,18 @@
 														<div class="col-md-12">
 					                            			<label  class="text-body">Headline</label>
 					                            			<fieldset class="form-group mb-12">
-					                            				<textarea class="form-control" id="HeadlineBanner" name="HeadlineBanner" rows="3" placeholder="">{{ count($company) > 0 ? $company[0]['HeadlineBanner'] : '' }}</textarea>
-					                            			</fieldset>
+																<div id="HeadlineBanner">
+																	{!! count($company) > 0 ? $company[0]['HeadlineBanner'] : '' !!}
+																</div>
+															</fieldset>
 					                            		</div>
 
 														<div class="col-md-12">
 					                            			<label  class="text-body">Sub Headline</label>
 					                            			<fieldset class="form-group mb-12">
-					                            				<textarea class="form-control" id="SubHeadlineBanner" name="SubHeadlineBanner" rows="3" placeholder="">{{ count($company) > 0 ? $company[0]['SubHeadlineBanner'] : '' }}</textarea>
+																<div id="SubHeadlineBanner">
+																	{!! count($company) > 0 ? $company[0]['SubHeadlineBanner'] : '' !!}
+																</div>
 					                            			</fieldset>
 					                            		</div>
 
@@ -936,7 +936,7 @@
 																<table id="bookingTable" class="table table-bordered">
 																	<thead class="bg-primary text-white">
 																		<tr>
-																			<th>No</th>
+																			<th style = 'display:none;'>No</th>
 																			<th>Meja</th>
 																			<th>Bisa Di Booking ?</th>
 																		</tr>
@@ -968,14 +968,18 @@
 														<div class="col-md-12">
 					                            			<label  class="text-body">Term and Condition</label>
 					                            			<fieldset class="form-group mb-12">
-					                            				<textarea class="form-control" id="TermAndCondition" name="TermAndCondition" rows="3" placeholder="">{{ count($company) > 0 ? $company[0]['TermAndCondition'] : '' }}</textarea>
+																<div id="TermAndCondition">
+																	{!! count($company) > 0 ? $company[0]['TermAndCondition'] : '' !!}
+																</div>
 					                            			</fieldset>
 					                            		</div>
 
 														<div class="col-md-12">
 					                            			<label  class="text-body">About US</label>
 					                            			<fieldset class="form-group mb-12">
-					                            				<textarea class="form-control" id="AboutUs" name="AboutUs" rows="3" placeholder="">{{ count($company) > 0 ? $company[0]['AboutUs'] : '' }}</textarea>
+																<div id="AboutUs">
+																	{!! count($company) > 0 ? $company[0]['AboutUs'] : '' !!}
+																</div>
 					                            			</fieldset>
 					                            		</div>
 
@@ -1222,8 +1226,44 @@ var _URL = window.URL || window.webkitURL;
 var _URLePub = window.URL || window.webkitURL;
 var oCompany;
 	$(function () {
-		jQuery(document).ready(function () {
+		const quill_BannerHeader1 = new Quill('#BannerHeader1', {
+			theme: 'snow'
+		});
+		const quill_BannerHeader2 = new Quill('#BannerHeader2', {
+			theme: 'snow'
+		});
+		const quill_BannerHeader3 = new Quill('#BannerHeader3', {
+			theme: 'snow'
+		});
 
+		const quill_BannerText1 = new Quill('#BannerText1', {
+			theme: 'snow'
+		});
+		const quill_BannerText2 = new Quill('#BannerText2', {
+			theme: 'snow'
+		});
+		const quill_BannerText3 = new Quill('#BannerText3', {
+			theme: 'snow'
+		});
+
+		const quill_PromoDsiplay = new Quill('#PromoDsiplay', {
+			theme: 'snow'
+		});
+
+		const quill_HeadlineBanner = new Quill('#HeadlineBanner', {
+			theme: 'snow'
+		});
+		const quill_SubHeadlineBanner = new Quill('#SubHeadlineBanner', {
+			theme: 'snow'
+		});
+
+		const quill_TermAndCondition = new Quill('#TermAndCondition', {
+			theme: 'snow'
+		});
+		const quill_AboutUs = new Quill('#AboutUs', {
+			theme: 'snow'
+		});
+		jQuery(document).ready(function () {
 			var now = new Date();
 			var day = ("0" + now.getDate()).slice(-2);
 			var month = ("0" + (now.getMonth() + 1)).slice(-2);
@@ -1237,50 +1277,6 @@ var oCompany;
 			jQuery('#LevelHarga').select2();
 			jQuery('#DefaultSlip').val(slip).trigger('change');
 
-			ClassicEditor.create(document.querySelector('#BannerHeader1')).then( editor => {})
-			.catch( error => {
-					console.error( error );
-			});
-			ClassicEditor.create(document.querySelector('#BannerHeader2')).then( editor => {})
-			.catch( error => {
-					console.error( error );
-			});
-			ClassicEditor.create(document.querySelector('#BannerHeader3')).then( editor => {})
-			.catch( error => {
-					console.error( error );
-			});
-
-			ClassicEditor.create(document.querySelector('#BannerText1')).then( editor => {})
-			.catch( error => {
-					console.error( error );
-			});
-			ClassicEditor.create(document.querySelector('#BannerText2')).then( editor => {})
-			.catch( error => {
-					console.error( error );
-			});
-			ClassicEditor.create(document.querySelector('#BannerText3')).then( editor => {})
-			.catch( error => {
-					console.error( error );
-			});
-
-			// ClassicEditor.create(document.querySelector('#HeadlineBanner')).then( editor => {})
-			// .catch( error => {
-			// 		console.error( error );
-			// });
-
-			// ClassicEditor.create(document.querySelector('#SubHeadlineBanner')).then( editor => {})
-			// .catch( error => {
-			// 		console.error( error );
-			// });
-			
-
-			tinymce.init({
-				selector: '#PromoDsiplay',
-				plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
-				toolbar_mode: 'floating',
-				toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help'
-			});
-
 			oCompany = <?php echo $company ?>;
 			console.log(oCompany)
 			jQuery('#isPostingAkutansi').val(oCompany[0]['AllowAccounting']);
@@ -1293,39 +1289,126 @@ var oCompany;
 			// invoiceTable
 			jQuery('#invoiceTable').DataTable({
 				"ajax": {
-					"url": "{{route('invpengguna-viewpercom')}}", // Replace with your API endpoint
+					"url": "{{route('invpengguna-viewpercom')}}",
 					"type": "POST",
 					"contentType": "application/json",
 					headers: {
-						'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+						'X-CSRF-TOKEN': '{{ csrf_token() }}'
 					},
 					"data": function(d) {
 						d.TglAwal = jQuery('#TglAwal').val();
-                		d.TglAkhir = jQuery('#TglAkhir').val();
+						d.TglAkhir = jQuery('#TglAkhir').val();
 						d.Status = "";
-						return JSON.stringify(d); // Send as JSON if required by the API
+						return JSON.stringify(d);
 					},
-					"dataSrc": "" // Adjust based on your API response structure (e.g., "data" if your data is nested)
+					"dataSrc": ""
 				},
 				"columns": [
+					{ "data": "NoTransaksi" },
+					{ 
+						"data": "TglTransaksi",
+						"render": function(data, type, row) {
+							if (!data) return '';
+							let date = new Date(data);
+							let day = String(date.getDate()).padStart(2, '0');
+							let month = String(date.getMonth() + 1).padStart(2, '0');
+							let year = date.getFullYear();
+							return `${day}-${month}-${year}`;
+						}
+					},
 					{ "data": "NamaSubscription" },
-					{ "data": "TotalTagihan" },
-					{ "data": "TglJatuhTempo" },
+					{ 
+						"data": "TotalTagihan",
+						"render": function(data, type, row) {
+							return parseFloat(data).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+						}
+					},
+					{ 
+						"data": "TglJatuhTempo",
+						"render": function(data, type, row) {
+							if (!data) return '';
+							let date = new Date(data);
+							let day = String(date.getDate()).padStart(2, '0');
+							let month = String(date.getMonth() + 1).padStart(2, '0');
+							let year = date.getFullYear();
+							return `${day}-${month}-${year}`;
+						}
+					},
 					{ "data": "StatusPembayaran" },
 					{
-						"data": null, // No data source for this column
-						"orderable": false, // Disable sorting for this column
+						"data": null,
+						"orderable": false,
 						"render": function(data, type, row) {
-							// console.log(row)
-							if (row.StatusPembayaran != "LUNAS") {
-								return '<button type="button" class="btn btn-warning btn-bayar" data-id="' + row.NoTransaksi + '" data-TotalBayar="' + row.TotalTagihan + '">Bayar</button>';
-							}
-							else{
-								return '<button type="button" class="btn btn-warning btn-bayar" data-id="' + row.NoTransaksi + '" data-TotalBayar="' + row.TotalTagihan + '" disabled>Bayar</button>';
-							}
+							let disabled = row.StatusPembayaran == "LUNAS" ? "disabled" : "";
+							return `<button type="button" class="btn btn-warning btn-bayar" data-id="${row.NoTransaksi}" data-TotalBayar="${row.TotalTagihan}" ${disabled}>Bayar</button>`;
 						}
 					}
 				]
+			});
+
+		});
+
+		jQuery('form').submit(function(e) {
+
+			e.preventDefault(); // Prevent default form submission
+
+			var form = $(this);
+			var formData = form.serializeArray();
+			var actionUrl = form.attr('action');
+			var submitButton = form.find("button[type='submit']");
+			submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Processing...');
+
+			var BannerHeader1 = quill_BannerHeader1.root.innerHTML;
+			var BannerHeader2 = quill_BannerHeader2.root.innerHTML;
+			var BannerHeader3 = quill_BannerHeader3.root.innerHTML;
+			var BannerText1 = quill_BannerText1.root.innerHTML;
+			var BannerText2 = quill_BannerText2.root.innerHTML;
+			var BannerText3 = quill_BannerText3.root.innerHTML;
+			var PromoDsiplay = quill_PromoDsiplay.root.innerHTML;
+			var HeadlineBanner = quill_HeadlineBanner.root.innerHTML;
+			var SubHeadlineBanner = quill_SubHeadlineBanner.root.innerHTML;
+			var TermAndCondition = quill_TermAndCondition.root.innerHTML;
+			var AboutUs = quill_AboutUs.root.innerHTML;
+			
+
+			formData.push({ name: "BannerHeader1", value: BannerHeader1 });
+			formData.push({ name: "BannerHeader2", value: BannerHeader2 });
+			formData.push({ name: "BannerHeader3", value: BannerHeader3 });
+			formData.push({ name: "BannerText1", value: BannerText1 });
+			formData.push({ name: "BannerText2", value: BannerText2 });
+			formData.push({ name: "BannerText3", value: BannerText3 });
+			formData.push({ name: "PromoDsiplay", value: PromoDsiplay });
+			formData.push({ name: "HeadlineBanner", value: HeadlineBanner });
+			formData.push({ name: "SubHeadlineBanner", value: SubHeadlineBanner });
+			formData.push({ name: "TermAndCondition", value: TermAndCondition });
+			formData.push({ name: "AboutUs", value: AboutUs });
+
+			$.ajax({
+				url: actionUrl,
+				type: 'POST',
+				data: formData,
+				dataType: 'json',
+				success: function(response) {
+					if(response.success == true){
+						swal.fire({
+							title: 'Success',
+							text: response.message,
+							icon: 'success',
+							confirmButtonText: 'OK'
+						}).then(function() {
+							window.location.href = "{{ route('companysetting') }}";
+						});
+					} else {
+						swal.fire({
+							title: 'Error',
+							text: response.message,
+							icon: 'error',
+							confirmButtonText: 'OK'
+						}).then(function() {
+							submitButton.prop('disabled', false).html('Save');
+						});
+					}
+				},
 			});
 		});
 
@@ -2121,7 +2204,7 @@ var oCompany;
             data.forEach((meja) => {
                 let checked = meja.BisaDipesan == 1 ? "checked" : "";
                 let row = `<tr>
-                    <td>${meja.id}</td>
+                    <td style = 'display:none;'>${meja.id}</td>
                     <td>${meja.NamaTitikLampu}</td>
                     <td>
                         <input type="checkbox" class="meja-checkbox" data-id="${meja.id}" ${checked} />

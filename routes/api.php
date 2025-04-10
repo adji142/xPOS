@@ -10,6 +10,7 @@ use App\Http\Controllers\FlutterWebAppsController;
 use App\Http\Controllers\FakturPenjualanController;
 use App\Http\Controllers\TableOrderController;
 use App\Http\Controllers\MasterControllerController;
+use App\Http\Controllers\CompanyController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -45,3 +46,5 @@ Route::post('getTable',[TableOrderController::class,'ReadTableAPI']);
 
 Route::post('checkCommand',[MasterControllerController::class,'CheckCommand']);
 Route::post('releaseCommand',[MasterControllerController::class,'DeviceCommand']);
+
+Route::post('/sendreminder', [CompanyController::class, 'CheckSubscriptionStatus'])->name('sendreminder');

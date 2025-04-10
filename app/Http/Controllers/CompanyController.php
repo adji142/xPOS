@@ -39,6 +39,10 @@ use Database\Seeders\SatuanSeeder;
 use App\Exports\PenggunaAplikasiExport;
 use App\Models\ItemMaster;
 
+use App\Mail\SendMail;
+use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\InvoicePenggunaController;
+
 class CompanyController extends Controller
 {
 
@@ -148,6 +152,7 @@ class CompanyController extends Controller
     }
     public function edit(Request $request){
     	Log::debug($request->all());
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
         try {
 
             $model = Company::where('KodePartner','=',Auth::user()->RecordOwnerID);
@@ -229,17 +234,25 @@ class CompanyController extends Controller
                 //     $command = 'wmic printer where name="' .$printername. '" call setdefaultprinter';
                 //     $output = shell_exec($command);
                 // }
-                alert()->success('Success','Data Perusahaan berhasil disimpan.');
-                return redirect('companysetting');
+                // alert()->success('Success','Data Perusahaan berhasil disimpan.');
+                // return redirect('companysetting');
+                $data['success'] = true;
+                $data['message'] = 'Data Perusahaan berhasil disimpan.';
             } else{
-                throw new \Exception('Perusahaan not found.');
+                // throw new \Exception('Perusahaan not found.');
+                $data['success'] = false;
+                $data['message'] = 'Perusahaan not found.';
             }
         } catch (\Exception $e) {
             Log::debug($e->getMessage());
+            $data['success'] = false;
+            $data['message'] = $e->getMessage();
+            // alert()->error('Error',$e->getMessage());
+            // return redirect()->back();
 
-            alert()->error('Error',$e->getMessage());
-            return redirect()->back();
         }
+
+        return response()->json($data);
     }
 
     public function UpdateSuspend(Request $request){
@@ -496,5 +509,144 @@ class CompanyController extends Controller
     public function Export()
     {
         return Excel::download(new PenggunaAplikasiExport(), 'Daftar Pengguna Aplikasi.xlsx');
+    }
+
+    public function CheckSubscriptionStatus()
+    {
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        $oTemp = [];
+
+        $company = Company::selectRaw("users.email, roles.RoleName ,company.*")
+                        ->leftJoin('users', function ($value){
+                            $value->on('users.RecordOwnerID','=','company.KodePartner');
+                        })
+                        ->leftJoin('userrole', function ($value){
+                            $value->on('userrole.userid','=','users.id')
+                            ->on('userrole.RecordOwnerID','=','users.RecordOwnerID');
+                        })
+                        ->leftJoin('roles', function ($value){
+                            $value->on('roles.id','=','userrole.roleid')
+                            ->on('roles.RecordOwnerID','=','userrole.RecordOwnerID');
+                        })
+                        ->where('roles.RoleName','=','SuperAdmin')
+                        ->where('company.isActive','=',1)
+                        ->get();
+
+        if(count($company) > 0){
+            foreach ($company as $key => $value) {
+                $currentDate = Carbon::now();
+                $endSubs = Carbon::parse($value->EndSubs)->addDays($value->ExtraDays);
+                if ($currentDate->greaterThan($endSubs)) {
+                    // return response()->json(['status' => 'expired']);
+                    DB::table('company')
+                        ->where('KodePartner', $value->KodePartner)
+                        ->update(['SuspendReason' => 'Expired', 'isActive' => 0]);
+                    
+                    
+                    // Save Invoice
+                    $oSubs = SubscriptionHeader::where('NoTransaksi',$value->KodePaketLangganan)->first();
+                    $oDetail = array(
+                        'NoTransaksi' => '',
+                        'NoUrut' => -1,
+                        'Harga' => floatval($oSubs->Harga) - floatval($oSubs->Potongan),
+                        'Catatan' => "Langganan Perdana",
+                        'KodePelanggan' => $value->KodePartner,
+                    );
+                    $oObject = array(
+                        'NoTransaksi' => '',
+                        'TglTransaksi' => Carbon::now()->format('Y-m-d'),
+                        'TglJatuhTempo' => Carbon::now()->addDays(7)->format('Y-m-d'),
+                        'KodePaketLangganan' => $value->KodePaketLangganan,
+                        'Catatan' => 'Langganan DS Tech Smart Pos Bulan ' . Carbon::now()->format('F Y'),
+                        'KodePelanggan' => $value->KodePartner,
+                        'TotalTagihan' => $oSubs->Harga - $oSubs->Potongan,
+                        'TotalBayar' => 0,
+                        'Status' => 'O',
+                        'StartSubs' => Carbon::now()->format('Y-m-d'),
+                        'EndSubs' => Carbon::now()->format('Y-m-d'),
+                        'Detail' => $oDetail
+                    );
+                    
+                    $oInv = new InvoicePenggunaController();
+                    $oSaveINV = $oInv->SaveInvoice($oObject);
+                    if (!$oSaveINV) {
+                        $otemp['success'] = false;
+                        $data['message'] = 'Failed to save invoice';
+                    } else {
+                        $data['success'] = true;
+                        $data['message'] = 'Invoice saved successfully';
+
+                        $data = [
+                            'title' => 'Email Pengingat',
+                            'message' => 'Langganan anda sudah expired, silahkan melakukan pembayaran untuk mengaktifkan kembali langganan anda.',
+                        ];
+                    
+                        Mail::to($value->email)->send(new SendMail($data,"Email Pengingat"));
+                    }
+
+                    $data['success'] = true;
+                    $data['message'] = 'Subscription '. $value->KodePartner .' Atas Nama '. $value->NamaPartner .' expired';
+
+                    $oTemp[] = $data;
+                } elseif ($currentDate->greaterThanOrEqualTo($endSubs->subDays(10))) {
+                    // return response()->json(['status' => 'warning']);
+                    // Send Email
+                    // Save Invoice
+                    $oSubs = SubscriptionHeader::where('NoTransaksi',$value->KodePaketLangganan)->first();
+                    $oDetail = array(
+                        'NoTransaksi' => '',
+                        'NoUrut' => -1,
+                        'Harga' => floatval($oSubs->Harga) - floatval($oSubs->Potongan),
+                        'Catatan' => "Langganan Perdana",
+                        'KodePelanggan' => $value->KodePartner,
+                    );
+                    $oObject = array(
+                        'NoTransaksi' => '',
+                        'TglTransaksi' => Carbon::now()->format('Y-m-d'),
+                        'TglJatuhTempo' => Carbon::now()->addDays(7)->format('Y-m-d'),
+                        'KodePaketLangganan' => $value->KodePaketLangganan,
+                        'Catatan' => 'Langganan DS Tech Smart Pos Bulan ' . Carbon::now()->format('F Y'),
+                        'KodePelanggan' => $value->KodePartner,
+                        'TotalTagihan' => $oSubs->Harga - $oSubs->Potongan,
+                        'TotalBayar' => 0,
+                        'Status' => 'O',
+                        'StartSubs' => Carbon::now()->format('Y-m-d'),
+                        'EndSubs' => Carbon::now()->format('Y-m-d'),
+                        'Detail' => $oDetail
+                    );
+                    
+                    $oInv = new InvoicePenggunaController();
+                    $oSaveINV = $oInv->SaveInvoice($oObject);
+                    if (!$oSaveINV) {
+                        $data['success'] = false;
+                        $data['message'] = 'Failed to save invoice';
+                    } else {
+                        $data['success'] = true;
+                        $data['message'] = 'Invoice saved successfully';
+
+                        $data = [
+                            'title' => 'Email Konfirmasi',
+                            'message' => 'Terimakasih telah melakukan pendaftaran di DSTechSmart PoS, Silahkan melakukan pengecekan pada langganan anda. dan segera melakukan pembayaran sebelum jatuh tempo.',
+                        ];
+                    
+                        Mail::to($value->email)->send(new SendMail($data,"Email Konfirmasi"));
+                    }
+                    $data['success'] = true;
+                    $data['message'] = 'Subscription '. $value->KodePartner .' Atas Nama '. $value->NamaPartner .' warning';
+                    $oTemp[] = $data;
+                } else {
+                    $data['success'] = true;
+                    $data['message'] = 'Subscription '. $value->KodePartner .' Atas Nama '. $value->NamaPartner .' active';
+                    $oTemp[] = $data;
+                }
+            }
+        } else {
+            $data['success'] = false;
+            $data['message'] = 'Company not found';
+            // return response()->json($data);
+            $oTemp[] = $data;
+        }
+        return response()->json($oTemp);
     }
 }

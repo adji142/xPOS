@@ -527,7 +527,8 @@
 	<script src="{{asset('js/script.bundle.js')}}"></script>
 	<script src="{{asset('js/script-slick.js')}}"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-	<script src="https://cdn.tiny.cloud/1/09gcovmh8ihvizpp9f00fgxp8oqdmhzb188ij6bxvfdrgjei/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+	<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+	<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script><script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
 	<script>
 		// In your Javascript (external .js resource or <script> tag)
 		jQuery(document).ready(function() {

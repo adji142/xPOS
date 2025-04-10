@@ -87,8 +87,13 @@ Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashb
 Route::get('/dashboardadmin', [DashboardController::class, 'dashboardAdmin'])->name('dashboardadmin')->middleware('auth');
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 Route::get('/konfirmasi/{id}', [LoginController::class, 'Konfirmasi'])->name('konfirmasi');
+Route::post('/konfirmasi', [LoginController::class, 'KonfirmasiStore'])->name('konfirmasi-store');
 
-Route::get('/testemail', [LoginController::class, 'TestSendEmail'])->name('testemail');
+
+Route::get('/forgotpassword', [LoginController::class, 'forgotpassword'])->name('forgotpassword');
+Route::get('/resetpassword/{id}', [LoginController::class, 'resetpassword'])->name('resetpassword');
+Route::post('/SendEmailResetPassword', [LoginController::class, 'SendEmailResetPassword'])->name('SendEmailResetPassword');
+Route::post('/actionResetPassword', [LoginController::class, 'actionResetPassword'])->name('actionResetPassword');
 /*
 |--------------------------------------------------------------------------
 | Grup Pelanggan
@@ -976,16 +981,16 @@ Route::post('/billing/warning', [TableOrderController::class, 'NotifHampirHabis'
 |--------------------------------------------------------------------------
 |
 */
-Route::get('/booking', [BookingOnlineController::class, 'getData'])->name('booking')->middleware('auth');
-Route::post('/booking/create-gateway', [BookingOnlineController::class, 'createMidTransTransaction'])->name('booking-create-gateway')->middleware('auth');
-Route::post('/booking/pay-gateway', [BookingOnlineController::class, 'SimpanPembayaranJson'])->name('booking-pay-gateway')->middleware('auth');
-Route::get('/booking/get-bookedtable', [BookingOnlineController::class, 'getBookingsByDate'])->name('booking-get-bookedtable')->middleware('auth');
-Route::get('/booking/get-DiscountVoucher', [BookingOnlineController::class, 'getDiscountVoucher'])->name('booking-get-DiscountVoucher')->middleware('auth');
-Route::get('/booking/list', [BookingOnlineController::class, 'View'])->name('booking-list')->middleware('auth');
-Route::get('/booking/generateVoucher', [BookingOnlineController::class, 'ViewGenerateVoucher'])->name('booking-generateVoucher')->middleware('auth');
-Route::post('/booking/voucher-store', [BookingOnlineController::class, 'storeVoucher'])->name('booking-voucherStore')->middleware('auth');
-Route::get('/booking/get-listVoucher', [BookingOnlineController::class, 'getListVoucher'])->name('booking-getListVoucher')->middleware('auth');
-Route::get('/booking/get-Bookings', [BookingOnlineController::class, 'getBookings'])->name('booking-getBookings')->middleware('auth');
-Route::get('/booking/get-detailBooking/{noTransaksi}', [BookingOnlineController::class, 'getBookingDetail'])->name('booking-getDetailBooking')->middleware('auth');
-Route::get('/booking/get-meja-by-transaksi/{noTransaksi}', [BookingOnlineController::class, 'getMejaByTransaksi'])->name('booking-getMejaByTransaksi')->middleware('auth');
-Route::post('/booking/insert-tableorderheader', [BookingOnlineController::class, 'insertTableOrder'])->name('booking-insertTableorderheader')->middleware('auth');
+Route::get('/booking', [BookingOnlineController::class, 'getData'])->name('booking');
+Route::post('/booking/create-gateway', [BookingOnlineController::class, 'createMidTransTransaction'])->name('booking-create-gateway');
+Route::post('/booking/pay-gateway', [BookingOnlineController::class, 'SimpanPembayaranJson'])->name('booking-pay-gateway');
+Route::get('/booking/get-bookedtable', [BookingOnlineController::class, 'getBookingsByDate'])->name('booking-get-bookedtable');
+Route::get('/booking/get-DiscountVoucher', [BookingOnlineController::class, 'getDiscountVoucher'])->name('booking-get-DiscountVoucher');
+Route::get('/booking/list', [BookingOnlineController::class, 'View'])->name('booking-list');
+Route::get('/booking/generateVoucher', [BookingOnlineController::class, 'ViewGenerateVoucher'])->name('booking-generateVoucher');
+Route::post('/booking/voucher-store', [BookingOnlineController::class, 'storeVoucher'])->name('booking-voucherStore');
+Route::get('/booking/get-listVoucher', [BookingOnlineController::class, 'getListVoucher'])->name('booking-getListVoucher');
+Route::get('/booking/get-Bookings', [BookingOnlineController::class, 'getBookings'])->name('booking-getBookings');
+Route::get('/booking/get-detailBooking/{noTransaksi}', [BookingOnlineController::class, 'getBookingDetail'])->name('booking-getDetailBooking');
+Route::get('/booking/get-meja-by-transaksi/{noTransaksi}', [BookingOnlineController::class, 'getMejaByTransaksi'])->name('booking-getMejaByTransaksi');
+Route::post('/booking/insert-tableorderheader', [BookingOnlineController::class, 'insertTableOrder'])->name('booking-insertTableorderheader');

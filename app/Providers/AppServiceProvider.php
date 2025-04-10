@@ -146,7 +146,7 @@ class AppServiceProvider extends ServiceProvider
                                 // ->where("permission.MenuInduk","=","0")
                                 ->where("permission.Status","=","1")
                                 ->where("permission.Level","=","3")
-                                ->where("permission.MenuInduk","=","25");
+                                ->where("permission.MenuInduk","=",$key2->id);
                         if (count($PermissionID) > 0) {
                             $dt3->whereIn("permission.id", $PermissionID);
                         }
@@ -177,7 +177,7 @@ class AppServiceProvider extends ServiceProvider
                 }
 
                 // var_dump($oMenu);
-                //dd($oMenu);
+                // dd($oMenu);
                
 
 

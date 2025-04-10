@@ -29,6 +29,26 @@ use Midtrans\Snap;
 
 class BookingOnlineController extends Controller
 {
+    public function index($id)
+    {
+        $company = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->get();
+        $titikLampu = TitikLampu::where('BisaDipesan', 1)
+        ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+        ->get();
+        $gallery = Company::select('ImageGallery1', 'ImageGallery2', 'ImageGallery3','ImageGallery4','ImageGallery5','ImageGallery6','ImageGallery7','ImageGallery8','ImageGallery9','ImageGallery10','ImageGallery11','ImageGallery12')
+        ->where('KodePartner', Auth::user()->RecordOwnerID)
+        ->get();
+        $paketTransaksi = Paket::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+        $user= User::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+
+        //dd($company);
+
+        //dd($paketTransaksi);
+
+
+        return view('Transaksi.Penjualan.PoS.BookingOnline', compact('company', 'titikLampu','gallery','paketTransaksi','user'));
+    }
+
     public function getData()
 {
     $company = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->get();

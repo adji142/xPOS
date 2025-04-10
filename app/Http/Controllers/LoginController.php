@@ -60,6 +60,76 @@ class LoginController extends Controller
             'tnc' => $tnc
         ]);
     }
+    public function forgotpassword(){
+        return view("auth.forgotpassword");
+    }
+    
+    public function SendEmailResetPassword(Request $request){
+        $this->validate($request, [
+            'email'=>'required'
+        ]);
+
+        $user = User::where('email', '=', $request->input('email'))->first();
+        if ($user) {
+            $KonfirmasiID = uniqid();
+            DB::table('users')
+                ->where('email','=',$request->input('email'))
+                ->update(
+                    [
+                        'ResetPasswordID' => $KonfirmasiID
+                    ]
+                );
+            $data = [
+                'title' => 'Reset Password',
+                'message' => 'Silahkan Melakukan Reset Password melalui linkberikut : '. url('/')."/resetpassword/".$KonfirmasiID
+            ];
+        
+            Mail::to($request->input('email'))->send(new SendMail($data,"Reset Password"));
+
+            alert()->success('Success','Link Reset Password telah dikirim ke email anda, Silahkan periksa inbox dan folder spam / junk');
+            return redirect('/');
+        }
+        else{
+            alert()->error('Error','Email tidak ditemukan');
+            return redirect()->back();
+        }
+    }
+
+    public function resetpassword($id){
+        $user = User::where('ResetPasswordID', '=', $id)->first();
+        if ($user) {
+            return view("auth.resetpassword",['id' => $id]);
+        }
+        else{
+            alert()->error('Error','Link Expired');
+            return redirect('/');
+        }
+    }
+
+    public function actionResetPassword(Request $request){
+        $this->validate($request, [
+            'password'=>'required',
+            'password_confirmation'=>'required|same:password'
+        ]);
+        $user = User::where('ResetPasswordID', '=', $request->input('ResetPasswordID'))->first();
+        
+        if ($user) {
+            DB::table('users')
+                ->where('email','=',$user->email)
+                ->update(
+                    [
+                        'password' => Hash::make($request->input('password')),
+                        'ResetPasswordID' => null
+                    ]
+                );
+            alert()->success('Success','Password Berhasil diubah, Silahkan login menggunakan password baru anda');
+            return redirect('/');
+        }
+        else{
+            alert()->error('Error','Activation Link Expired');
+            return redirect('/');
+        }
+    }
 
     public function action_login(Request $request)
     {

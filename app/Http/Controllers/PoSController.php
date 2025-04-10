@@ -87,6 +87,7 @@ class PoSController extends Controller
                                 ->on('menuheader.RecordOwnerID','=','itemmaster.RecordOwnerID');
                             })
                             ->where('Active','Y')
+                            ->where('itemmaster.RecordOwnerID','=',Auth::user()->RecordOwnerID)
                             ->get();
                 
                 $sql = "menuvarian.Father, variantdetail.variant_id AS VariantGrupID, variantheader.NamaGrup, 

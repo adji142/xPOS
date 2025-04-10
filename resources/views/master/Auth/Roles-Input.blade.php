@@ -61,7 +61,7 @@
                             		<div class="col-md-12">
                             			<label  class="text-body">Nama Grup</label>
                             			<fieldset class="form-group mb-3">
-                            				<input type="text" class="form-control" id="RoleName" name="RoleName" placeholder="Masukan Nama Kelompok AKses" value="{{ count($roles) > 0 ? $roles[0]['RoleName'] : '' }}" required="">
+                            				<input type="text" class="form-control" id="RoleName" name="RoleName" placeholder="Masukan Nama Kelompok AKses" value="{{ count($roles) > 0 ? $roles[0]['RoleName'] : '' }}" required="" {{ count($roles) > 0 ? $roles[0]['RoleName'] == 'SuperAdmin' ? 'readonly' : '' : '' }}>
                             			</fieldset>
                             			<?php 
                             				// echo json_encode($permissionrole);

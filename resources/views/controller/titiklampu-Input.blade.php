@@ -69,7 +69,7 @@
                                                 <select name="ControllerID" id="ControllerID" class="js-example-basic-single js-states form-control bg-transparent">
                                                     <option value="">Pilih Kelompok Meja</option>
                                                     @foreach($controller as $ko)
-                                                        <option value="{{ $ko->id }}" {{ $ko->id == (count($titiklampu) > 0 ? $meja[0]['ControllerID'] : '') ? 'selected' : '' }}>
+                                                        <option value="{{ $ko->id }}" {{ $ko->id == (count($titiklampu) > 0 ? $titiklampu[0]['ControllerID'] : '') ? 'selected' : '' }}>
                                                             {{ $ko->NamaController }}
                                                         </option>
                                                     @endforeach
