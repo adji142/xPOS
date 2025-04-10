@@ -1190,6 +1190,14 @@
 																</fieldset>
 															</div>
 
+															<div class="col-md-12">
+																<label class="text-body">Booking URL</label>
+																<fieldset class="form-group mb-3">
+																	<input type="text" class="form-control" id="BookingURL" name="BookingURL"
+																		value="{{ $BookingURLString }}" readonly>
+																</fieldset>
+															</div>
+
 
 														</div>
 

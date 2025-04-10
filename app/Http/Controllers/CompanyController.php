@@ -138,6 +138,8 @@ class CompanyController extends Controller
         $itemjasa = ItemMaster::where('TypeItem','=','4')
                         ->where('RecordOwnerID', '=', Auth::user()->RecordOwnerID)
                         ->get();
+        $encodedRecordOwnerID = base64_encode(Auth::user()->RecordOwnerID);
+        $BookingURLString = url('booking/').'/'.$encodedRecordOwnerID;
         $title = 'Delete Data Perusahaan !';
         $text = "Are you sure you want to delete ?";
         confirmDelete($title, $text);
@@ -147,7 +149,8 @@ class CompanyController extends Controller
                 'gudang' => $gudang,
                 'temin' => $temin,
                 'clientOS' => $clientOS,
-                'itemjasa' => $itemjasa
+                'itemjasa' => $itemjasa,
+                'BookingURLString' => $BookingURLString
             ]);
     }
     public function edit(Request $request){
