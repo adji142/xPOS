@@ -31,15 +31,17 @@ class BookingOnlineController extends Controller
 {
     public function index($id)
     {
-        $company = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->get();
+
+        $idE = base64_decode($id); // ⬅️ decode di sini
+        $company = Company::where('KodePartner','=',$idE)->first();
         $titikLampu = TitikLampu::where('BisaDipesan', 1)
-        ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+        ->where('RecordOwnerID', $idE)
         ->get();
         $gallery = Company::select('ImageGallery1', 'ImageGallery2', 'ImageGallery3','ImageGallery4','ImageGallery5','ImageGallery6','ImageGallery7','ImageGallery8','ImageGallery9','ImageGallery10','ImageGallery11','ImageGallery12')
-        ->where('KodePartner', Auth::user()->RecordOwnerID)
+        ->where('KodePartner', $idE)
         ->get();
-        $paketTransaksi = Paket::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
-        $user= User::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+        $paketTransaksi = Paket::where('RecordOwnerID','=',$idE)->get();
+        $user= User::where('RecordOwnerID','=',$idE)->first();
 
         //dd($company);
 
@@ -51,7 +53,7 @@ class BookingOnlineController extends Controller
 
     public function getData()
 {
-    $company = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->get();
+    $company = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
     $titikLampu = TitikLampu::where('BisaDipesan', 1)
     ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
     ->get();
@@ -59,7 +61,7 @@ class BookingOnlineController extends Controller
     ->where('KodePartner', Auth::user()->RecordOwnerID)
     ->get();
     $paketTransaksi = Paket::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
-    $user= User::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+    $user= User::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->first();
 
     //dd($company);
 
@@ -74,7 +76,7 @@ public function createMidTransTransaction(Request $request)
     $jsonData = $request->json()->all();
 
     $TotalPembelian = $jsonData['TotalPembelian'];
-    $oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
+    $oCompany = Company::where('KodePartner','=',$jsonData['kodePartner'])->first();
     
     Config::$serverKey = config('midtrans.server_key');
     Config::$isProduction = config('midtrans.is_production');
@@ -145,7 +147,7 @@ function SimpanPembayaranJson(Request $request) {
         $model->TotalDiskon = $jsonData['TotalDiskon'];
         $model->TotalLainLain = $jsonData['TotalLainLain'];
         $model->NetTotal = $jsonData['NetTotal'];
-        $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+        $model->RecordOwnerID = $jsonData['kodePartner'];
 
         if (!$model->save()) {
             throw new \Exception('Penambahan Data Pembayaran Gagal');
@@ -160,7 +162,7 @@ function SimpanPembayaranJson(Request $request) {
             $pelanggan->Email = $jsonData['Email'];
             $pelanggan->NoTlp1 = $jsonData['NoTlp1'];
             $pelanggan->Status = 1;
-            $pelanggan->RecordOwnerID = Auth::user()->RecordOwnerID;
+            $pelanggan->RecordOwnerID = $jsonData['kodePartner'];
 
             if (!$pelanggan->save()) {
                 throw new \Exception('Penambahan Data Pelanggan Gagal');
@@ -229,7 +231,9 @@ public function getBookingsByDate(Request $request) {
 public function getDiscountVoucher(Request $request)
 {
     $voucherCode = $request->query('code');
-    $voucher = DiscountVoucher::where('VoucherCode', $voucherCode)->first();
+    $kodePartner = $request->query('kodePartner');
+    $voucher = DiscountVoucher::where('VoucherCode', $voucherCode)
+    ->where('RecordOwnerID', $kodePartner)->first();
 
     if (!$voucher) {
         return response()->json(['success' => false, 'message' => 'Voucher tidak ditemukan'], 404);

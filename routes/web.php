@@ -981,11 +981,12 @@ Route::post('/billing/warning', [TableOrderController::class, 'NotifHampirHabis'
 |--------------------------------------------------------------------------
 |
 */
+Route::get('/booking/{id}', [BookingOnlineController::class,'index'])->name('booking-index');
 Route::get('/booking', [BookingOnlineController::class, 'getData'])->name('booking');
 Route::post('/booking/create-gateway', [BookingOnlineController::class, 'createMidTransTransaction'])->name('booking-create-gateway');
 Route::post('/booking/pay-gateway', [BookingOnlineController::class, 'SimpanPembayaranJson'])->name('booking-pay-gateway');
-Route::get('/booking/get-bookedtable', [BookingOnlineController::class, 'getBookingsByDate'])->name('booking-get-bookedtable');
-Route::get('/booking/get-DiscountVoucher', [BookingOnlineController::class, 'getDiscountVoucher'])->name('booking-get-DiscountVoucher');
+Route::get('/booking/{id}/get-bookedtable', [BookingOnlineController::class, 'getBookingsByDate'])->name('booking-get-bookedtable');
+Route::get('/booking/{id}/get-DiscountVoucher', [BookingOnlineController::class, 'getDiscountVoucher'])->name('booking-get-DiscountVoucher');
 Route::get('/booking/list', [BookingOnlineController::class, 'View'])->name('booking-list');
 Route::get('/booking/generateVoucher', [BookingOnlineController::class, 'ViewGenerateVoucher'])->name('booking-generateVoucher');
 Route::post('/booking/voucher-store', [BookingOnlineController::class, 'storeVoucher'])->name('booking-voucherStore');

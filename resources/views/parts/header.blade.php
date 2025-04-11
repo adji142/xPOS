@@ -263,10 +263,14 @@
 
 					<div class="topbar">
 
-												
+						<div class="posicon d-lg-block d-none">
+							<a href="{{ url('booking/Q0wwMDAz') }}" class="btn btn-primary white me-2">BOOKING</a>
+						</div>		
+						
 						<div class="posicon d-lg-block d-none">
 							<a href="{{ url('fpenjualan/pos') }}" class="btn btn-primary white me-2">POS</a>
 						</div>
+					
 
 						<!--begin::Quick Actions-->
 						<div class="dropdown">

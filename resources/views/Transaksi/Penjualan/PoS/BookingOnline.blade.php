@@ -7,22 +7,27 @@
         <meta name="author" content="" />
         <title>xPos - </title>
         <!-- Favicon-->
-        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <link rel="icon" type="image/x-icon" href="{{ asset('assets/favicon.ico') }}" />
+
         <!-- Font Awesome icons (free version)-->
         <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
         <!-- Google fonts-->
         <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
         <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700" rel="stylesheet" type="text/css" />
         <!-- Core theme CSS (includes Bootstrap)-->
-        <link href="css/styles.css" rel="stylesheet" />
+        <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+
+        
     </head>
     <body id="page-top">
         <!-- Navigation-->
         <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
             <div class="container">
                 <a class="navbar-brand" href="#page-top" style="color: yellow; font-weight: bold;">
-                    {{ $company->first()->NamaPartner }}
-                </a>                
+                    {{ $company->NamaPartner }}
+                </a>     
+                <input type="hidden" id="kodePartner" value="{{ $company->KodePartner }}">
+           
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
                     Menu
                     <i class="fas fa-bars ms-1"></i>
@@ -39,12 +44,12 @@
             </div>
         </nav>
         <!-- Masthead-->
-        <header class="masthead" style="position: relative; background-image: url('{{ $company->first()->BannerBooking}}'); background-size: cover; background-position: center; ">
+        <header class="masthead" style="position: relative; background-image: url('{{ $company->BannerBooking}}'); background-size: cover; background-position: center; ">
             <div class="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);"></div>
     
     <div class="container position-relative">
-        <div class="masthead-subheading">{!! $company->first()->HeadlineBanner  !!}</div>
-        <div class="masthead-heading text-uppercase">{!! $company->first()->SubHeadlineBanner  !!}</div>
+        <div class="masthead-subheading">{!! $company->HeadlineBanner  !!}</div>
+        <div class="masthead-heading text-uppercase">{!! $company->SubHeadlineBanner  !!}</div>
     </div>
         </header>
         <!-- Services-->
@@ -116,11 +121,11 @@
             <div class="container">
                 <div class="text-center">
                     <h2 class="section-heading text-uppercase">About Us</h2>
-                    <h3 class="section-subheading text-muted">{!! $company->first()->AboutUs !!}</h3>
+                    <h3 class="section-subheading text-muted">{!! $company->AboutUs !!}</h3>
                 </div>
                 <div class="text-center">
                     <h2 class="section-heading text-uppercase">Term And Condition</h2>
-                    <h3 class="section-subheading text-muted">{!! $company->first()->TermAndCondition !!}</h3>
+                    <h3 class="section-subheading text-muted">{!! $company->TermAndCondition !!}</h3>
                 </div>
                 {{-- <ul class="timeline">
                     <li>
@@ -252,15 +257,15 @@
                     <div class="col-lg-6 text-center">
                         <div class="mb-4">
                             <h4 class="text-uppercase" style="color: white;">Alamat</h4>
-                            <p class="text-muted" style="color: yellow !important;">{{ $company->first()->AlamatTagihan}}</p>
+                            <p class="text-muted" style="color: yellow !important;">{{ $company->AlamatTagihan}}</p>
                         </div>
                         <div class="mb-4">
                             <h4 class="text-uppercase" style="color: white;">Telepon</h4>
-                            <p class="text-muted"><a href="tel:{{ $company->first()->NoTlp}}">{{ $company->first()->NoTlp}}</a></p>
+                            <p class="text-muted"><a href="tel:{{ $company->NoTlp}}">{{ $company->NoTlp}}</a></p>
                         </div>
                         <div class="mb-4">
                             <h4 class="text-uppercase" style="color: white;">Email</h4>
-                            <p class="text-muted"><a href="mailto:{{ $user->first()->email}}">{{ $user->first()->email}}</a></p>
+                            <p class="text-muted"><a href="mailto:{{ $user->email}}">{{ $user->email}}</a></p>
                         </div>
                     </div>
                 </div>
@@ -291,7 +296,8 @@
         <div class="portfolio-modal modal fade" id="portfolioModal{{ $lampu->id }}" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="{{ asset('assets/img/close-icon.svg') }}" alt="Close modal" />
+                    </div>
                     <div class="container">
                         <div class="row justify-content-center">
                             <div class="col-lg-8">
@@ -299,7 +305,7 @@
                                     <!-- Project details-->
                                     <h2 class="text-uppercase">{{$lampu->NamaTitikLampu}}</h2>
                                     <input type="hidden" name="idMeja" value="{{ $lampu->id }}">
-                                    <p class="item-intro text-muted">Meja Bisa Di Booking dari Jam: {{ $company->first()->JamAwalBooking}} - {{ $company->first()->JamAkhirBooking}}</p>
+                                    <p class="item-intro text-muted">Meja Bisa Di Booking dari Jam: {{ $company->JamAwalBooking}} - {{ $company->fJamAkhirBooking}}</p>
                                     {{-- <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/1.jpg" alt="..." /> --}}
                                     {{-- <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p> --}}
                                     <ul class="list-group w-100">
@@ -366,7 +372,11 @@
                                             <strong>Kode Voucher Discount:</strong>
                                             <input type="text" class="form-control w-100 mt-2" name="voucherCode" id="voucherCode">
                                             <button class="btn btn-primary mt-2 w-30 mx-auto" type="button" id="applyVoucher">Apply</button>
+                                            
+                                            <div class="voucherInfo text-danger text-center my-2"></div>
                                         </li>
+
+                                        
                                     
                                         <li class="list-group-item d-flex flex-column">
                                             <strong class="fs-6">Total Transaksi: Rp <span id="totalAsli" class="fs-6 text-danger">0</span></strong>
@@ -399,7 +409,8 @@
         
        
         <!-- Core theme JS-->
-        <script src="js/scripts.js"></script>
+        <script src="{{ asset('js/scripts.js') }}"></script>
+
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -418,6 +429,8 @@
     let jamSelesai = modal.querySelector("input[name='jamSelesai']").value;
     let paketDipilih = modal.querySelector("input[name='paket']:checked");
     let voucherCode = modal.querySelector("input[name='voucherCode']").value.trim();
+    var kodePartner = document.getElementById('kodePartner').value;
+    
 
     if (!jamMulai || !jamSelesai || !paketDipilih) {
         updateTotal(0, 0, 0);
@@ -457,14 +470,15 @@
     }
 
     $.ajax({
-        url: '/booking/get-DiscountVoucher',
+        url: `/booking/${kodePartner}/get-DiscountVoucher`,
         type: 'GET',
-        data: { code: voucherCode },
+        data: { code: voucherCode, kodePartner: kodePartner },
         dataType: 'json',
         success: function (data) {
             console.log("Response voucher:", data);
             
             if (data.success) {
+
                 let discountPercent = parseFloat(data.discountPercent) / 100;
                 let maximalDiscount = parseFloat(data.maximalDiscount);
                 let discountQuota = parseFloat(data.discountQuota);
@@ -479,14 +493,20 @@
                     totalSetelahDiskon = totalAsli - totalDiskon;
 
                     console.log("Diskon diterapkan:", totalDiskon);
+
+                  
                 } else {
                     console.log("Kuota diskon tidak mencukupi, diskon tidak diterapkan.");
+                    
                 }
             } else {
                 console.log("Kode voucher tidak valid atau tidak ditemukan.");
+                
             }
             
             updateTotal(totalSetelahDiskon, totalDiskon, totalAsli);
+           
+
         },
         error: function (xhr, status, error) {
             console.error("Error fetching voucher data:", error);
@@ -513,7 +533,7 @@ document.addEventListener("change", function (event) {
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".btn-success").forEach(button => {
         button.addEventListener("click", function (event) {
-
+            var kodePartner = document.getElementById('kodePartner').value;
             let modal = event.target.closest(".modal");
             let modalId = modal.id; 
 
@@ -533,6 +553,7 @@ document.addEventListener("DOMContentLoaded", function () {
     totalAsli: parseInt(modal.querySelector("#totalAsli").innerText.replace(/\D/g, "")),
     totalDiskon: parseInt(modal.querySelector("#totalDiskon").innerText.replace(/\D/g, "")),
     voucherCode: modal.querySelector("input[name='voucherCode']").value,
+    kodePartner: kodePartner,
 };
             
             // Validasi hanya untuk field yang wajib diisi
@@ -565,6 +586,7 @@ console.log("TotalPembelian:", formData.totalPembelian);
     let oData = {
         'NoTransaksi': formData.NoTransaksi,
         'TotalPembelian': formData.totalPembelian,
+        "kodePartner": formData.kodePartner,
     };
     
     fetch("{{route('booking-create-gateway')}}", {
@@ -609,7 +631,8 @@ console.log("TotalPembelian:", formData.totalPembelian);
                             "NamaPelanggan": formData.namaLengkap,
                             "Email": formData.email,
                             "NoTlp1": formData.noTelp,
-                            "VoucherCode" : formData.voucherCode
+                            "VoucherCode" : formData.voucherCode,
+                            "kodePartner": formData.kodePartner,
                         };
                         
                         fetch("{{route('booking-pay-gateway')}}", {
@@ -679,13 +702,14 @@ $(document).ready(function () {
         var modal = $(this).closest('.modal-body');
         var idMeja = modal.find('input[name="idMeja"]').val();
         var bookingInfoContainer = modal.find('#bookingInfo');
+        var kodePartner = document.getElementById('kodePartner').value;
 
         bookingInfoContainer.html('');
         bookedSlots[idMeja] = []; // Reset daftar booking sebelumnya untuk meja ini
 
         if (selectedDate && idMeja) {
             $.ajax({
-                url: '/booking/get-bookedtable',
+                url: `/booking/${kodePartner}/get-bookedtable`,
                 type: 'GET',
                 data: { tanggal: selectedDate, idMeja: idMeja },
                 success: function (data) {
