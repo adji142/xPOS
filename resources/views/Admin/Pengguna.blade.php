@@ -45,7 +45,7 @@
 									<table id="orderTable" class="display" style="width:100%">
 										<thead>
 											<tr>
-                                                <th class="no-sort">Action</th>
+                                                <th class="no-sort" style="width:150px">Action</th>
 												<th>Kode Partner</th>
 												<th>Nama Partner</th>
                                                 <th>Status</th>
@@ -80,6 +80,8 @@
                                                                 @if ($v['StatusSubscription'] == "Perlu Aktivasi-danger")
                                                                     <button class="btn btn-outline-success" onclick="Aktivasi('{{ $v['KodePartner'] }}')">Aktivasi</button>
                                                                 @endif
+
+                                                                <button class="btn btn-outline-success" onclick="RubahPaket('{{ $v['KodePartner'] }}')">Rubah Paket</button>
                                                             </th>
                                                             <th>{{ $v['KodePartner'] }}</th>
                                                             <th>{{ $v['NamaPartner'] }}</th>
@@ -380,6 +382,79 @@
 	</div>	  	  
 </div>
 
+<div class="modal fade text-left" id="LookupRubahPaket" tabindex="-1" role="dialog" aria-labelledby="LookupRubahPaket" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h3 class="modal-title" id="myModalLabel1444">Rubah Paket Berlangganan</h3>
+			<button type="button" class="close rounded-pill btn btn-sm btn-icon btn-light btn-hover-primary m-0" data-bs-dismiss="modal" aria-label="Close">
+			  <svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+				  <path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+			  </svg>
+			</button>
+		  </div>
+		  <div class="modal-body">
+			<div class="col-md-12">
+                <form action="{{route('penggunaaplikasi-rubahlangganan')}}" method="post">
+                    @csrf
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <label  class="text-body">Kode Partner</label>
+                            <fieldset class="form-group mb-3">
+                                <input readonly type="text" id="ModalKodePartnerRubahLangganan" name="KodePartner" class="form-control" required>
+                            </fieldset>
+                        </div>
+                        <div class="col-md-8">
+                            <label  class="text-body">Nama Partner</label>
+                            <fieldset class="form-group mb-3">
+                                <input readonly type="text" id="ModalNamaPartnerRubahLangganan" name="NamaPartner" class="form-control" required>
+                            </fieldset>
+                        </div>
+                        <div class="col-md-6">
+                            <label  class="text-body">Jenis Usaha</label>
+                            <fieldset class="form-group mb-3">
+                                <select required id="ModalJenisUsahaRubahLangganan" name="JenisUsaha" form-control text-dark border-0 p-0 h-20px font-size-h5">
+                                    <option value="" >Pilih Jenis Usaha</option>
+                                    <option value="Retail" >Retail</option>
+                                    <option value="FnB" >Food and Beverage</option>
+                                    <option value="Hiburan" >Hiburan</option>
+                                </select>
+                            </fieldset>
+                        </div>
+                        <div class="col-md-6">
+                            <label  class="text-body">Paket Aplikasi</label>
+                            <fieldset class="form-group mb-3">
+                                <select required id="ModalPaketAplikasiRubahLangganan" name="PaketAplikasi" class="form-control text-dark border-0 p-0 h-20px font-size-h5">
+                                </select>
+                            </fieldset>
+                        </div>
+                        <div class="col-md-6">
+                            <label  class="text-body">Tanggal Mulai Langganan</label>
+                            <fieldset class="form-group mb-3">
+                                <input type="date" id="ModalStartSubsRubahLangganan" name="StartSubs" class="form-control" required>
+                            </fieldset>
+                        </div>
+                        <div class="col-md-6">
+                            <label  class="text-body">Tanggal Berakhir Langganan</label>
+                            <fieldset class="form-group mb-3">
+                                <input type="date" id="ModalEndSubsRubahLangganan" name="EndSubs" class="form-control" required>
+                            </fieldset>
+                        </div>
+    
+                    </div>
+                    <hr>
+                    <div class="form-group row justify-content-end mb-0">
+                        <div class="col-md-6  text-end">
+                            <button type="submit" class="btn btn-primary" id="btSaveTagihan">Simpan Data</button>
+                        </div>
+                    </div>
+                </form>
+			</div>
+		  </div>
+		</div>
+	</div>	  	  
+</div>
+
 @endsection
 
 @push('scripts')
@@ -416,12 +491,47 @@
             dropdownParent: $('#LookupBuatTagihan')
         });
 
+        jQuery('#ModalJenisUsahaRubahLangganan').select2({
+            dropdownParent: $('#LookupRubahPaket')
+        });
+
+        jQuery('#ModalPaketAplikasiRubahLangganan').select2({
+            dropdownParent: $('#LookupRubahPaket')
+        })
+
         oCompany = <?php echo $oCompany; ?>;
         oSubs = <?php echo $subs; ?>;
 
         // console.log(oCompany);
         // console.log(oSubs);
 	} );
+
+
+    jQuery('#ModalJenisUsahaRubahLangganan').change(function () {
+        const filteredData = oSubs.filter(item => item.JenisUsaha == jQuery('#ModalJenisUsahaRubahLangganan').val());
+        jQuery('#ModalPaketAplikasiRubahLangganan').empty();
+        var newOption = $('<option>', {
+            value: -1,
+            text: "Pilih Paket Berlangganan"
+        });
+        jQuery('#ModalPaketAplikasiRubahLangganan').append(newOption); 
+        if (filteredData.length > 0) {
+            $.each(filteredData,function (k,v) {
+                let formattedAmount = parseFloat(v.Harga).toLocaleString('en-US', {
+                    style: 'decimal',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                var newOption = $('<option>', {
+                    value: v.NoTransaksi,
+                    text: v.NamaSubscription + ' (Rp. ' + formattedAmount + ')'
+                });
+
+                jQuery('#ModalPaketAplikasiRubahLangganan').append(newOption);
+            });
+        }
+    });
+    // const filteredData = _dataPaket.filter(item => item.JenisPaket === jQuery('#JenisPaket').val());
     function formatCurrency(input, amount) {
 		input.attr("originalvalue", amount);
         let formattedAmount = parseFloat(amount).toLocaleString('en-US', {
@@ -477,6 +587,21 @@
 
         jQuery('#LookupAktivasi').modal({backdrop: 'static', keyboard: false})
 		jQuery('#LookupAktivasi').modal('show');
+    }
+
+    function RubahPaket(Partner) {
+        const filterPelanggan = oCompany.filter(comp => comp.KodePartner === Partner);
+
+        jQuery('#ModalKodePartnerRubahLangganan').val(filterPelanggan[0]['KodePartner']);
+        jQuery('#ModalNamaPartnerRubahLangganan').val(filterPelanggan[0]['NamaPartner']);
+        jQuery('#ModalJenisUsahaRubahLangganan').val(filterPelanggan[0]['JenisUsaha']).change();
+        jQuery('#ModalPaketAplikasiRubahLangganan').val(filterPelanggan[0]['KodePaketLangganan']).change();
+
+        jQuery('#ModalStartSubsRubahLangganan').val(filterPelanggan[0]['StartSubs']);
+        jQuery('#ModalEndSubsRubahLangganan').val(filterPelanggan[0]['EndSubs']);
+
+        jQuery('#LookupRubahPaket').modal({backdrop: 'static', keyboard: false})
+		jQuery('#LookupRubahPaket').modal('show');
     }
 
     jQuery('#ModalKodePaketLangganan').change(function () {

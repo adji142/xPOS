@@ -753,6 +753,7 @@ Route::post('/subs/editJson', [SubscriptionController::class, 'editJson'])->name
 */
 Route::get('/penggunaaplikasi', [CompanyController::class,'AdminPelanggan'])->name('penggunaaplikasi')->middleware('auth');
 Route::post('/penggunaaplikasi/suspend', [CompanyController::class, 'UpdateSuspend'])->name('penggunaaplikasi-suspend')->middleware('auth');
+Route::post('/penggunaaplikasi/rubahlangganan', [CompanyController::class, 'UpdatePaket'])->name('penggunaaplikasi-rubahlangganan')->middleware('auth');
 Route::get('/penggunaaplikasi/export', [CompanyController::class,'Export'])->name('penggunaaplikasi-export')->middleware('auth');
 /*
 |--------------------------------------------------------------------------
@@ -987,11 +988,11 @@ Route::post('/booking/create-gateway', [BookingOnlineController::class, 'createM
 Route::post('/booking/pay-gateway', [BookingOnlineController::class, 'SimpanPembayaranJson'])->name('booking-pay-gateway');
 Route::get('/booking/{id}/get-bookedtable', [BookingOnlineController::class, 'getBookingsByDate'])->name('booking-get-bookedtable');
 Route::get('/booking/{id}/get-DiscountVoucher', [BookingOnlineController::class, 'getDiscountVoucher'])->name('booking-get-DiscountVoucher');
-Route::get('/booking/list', [BookingOnlineController::class, 'View'])->name('booking-list');
+Route::get('/bookinglist', [BookingOnlineController::class, 'View'])->name('bookinglist')->middleware('auth');
 Route::get('/booking/generateVoucher', [BookingOnlineController::class, 'ViewGenerateVoucher'])->name('booking-generateVoucher');
 Route::post('/booking/voucher-store', [BookingOnlineController::class, 'storeVoucher'])->name('booking-voucherStore');
 Route::get('/booking/get-listVoucher', [BookingOnlineController::class, 'getListVoucher'])->name('booking-getListVoucher');
-Route::get('/booking/get-Bookings', [BookingOnlineController::class, 'getBookings'])->name('booking-getBookings');
+Route::get('/get-Bookings', [BookingOnlineController::class, 'getBookings'])->name('booking-getBookings')->middleware('auth');
 Route::get('/booking/get-detailBooking/{noTransaksi}', [BookingOnlineController::class, 'getBookingDetail'])->name('booking-getDetailBooking');
 Route::get('/booking/get-meja-by-transaksi/{noTransaksi}', [BookingOnlineController::class, 'getMejaByTransaksi'])->name('booking-getMejaByTransaksi');
 Route::post('/booking/insert-tableorderheader', [BookingOnlineController::class, 'insertTableOrder'])->name('booking-insertTableorderheader');

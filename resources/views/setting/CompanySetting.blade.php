@@ -2164,6 +2164,9 @@ var oCompany;
 						},
 						onPending: function(result){
 							// console.log(result);
+							ButtonObject.text('Bayar');
+  							ButtonObject.attr('disabled',false);
+							console.log('customer closed the popup without finishing the payment - Pending');
 							// Pembayaran tertunda
 						},
 						onError: function(result){

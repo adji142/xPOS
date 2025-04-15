@@ -525,11 +525,11 @@ class PembayaranPenjualanController extends Controller
 					if ($oCompany->AllowNegativeInventory == NULL || $oCompany->AllowNegativeInventory == 'N') {
 						$oItem = ItemMaster::where('RecordOwnerID',Auth::user()->RecordOwnerID)
 									->where('KodeItem',$key['KodeItem'])
-									->where('Stock','>',0)
+									->where('Stock','=',0)
 									->first();
-
 						if ($oItem) {
 							if ($oItem->TypeItem != 4) {
+								// dd($oItem);	
 								return response()->json(['error' => "Stock Item ".$key['KodeItem'].' Tidak Cukup']);
 							}
 						}

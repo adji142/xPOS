@@ -77,8 +77,22 @@ public function createMidTransTransaction(Request $request)
 
     $TotalPembelian = $jsonData['TotalPembelian'];
     $oCompany = Company::where('KodePartner','=',$jsonData['kodePartner'])->first();
+
+    $midtransdata = MetodePembayaran::where('RecordOwnerID','=',$jsonData['kodePartner'])
+                            ->where('MetodeVerifikasi','=','AUTO')->first();
+    $midtransclientkey = "";
+    $MetodePembayaranAutoID = -1;
+    if ($midtransdata) {
+        $midtransclientkey = $midtransdata->ClientKey;
+        $MetodePembayaranAutoID = $midtransdata->id;
+    }
+
+    if ($midtransclientkey == "") {
+        return response()->json(['error' => 'Pembayaran Belum bisa dilakukan, Silahkan Hubungi Administrator']);
+    }
     
-    Config::$serverKey = config('midtrans.server_key');
+    
+    Config::$serverKey = $midtransclientkey;
     Config::$isProduction = config('midtrans.is_production');
     Config::$isSanitized = config('midtrans.is_sanitized');
     Config::$is3ds = config('midtrans.is_3ds');
@@ -200,7 +214,7 @@ $emailPelanggan = Pelanggan::where('KodePelanggan', $KodePelanggan)->first();
 
 if ($emailPelanggan) {
   
-    Mail::to($emailPelanggan->Email)->send(new KonfirmasiPembayaranMail($booking));
+    Mail::to($emailPelanggan->Email)->send(new KonfirmasiPembayaranMail($booking, $emailPelanggan));
 }
 
         $data['success'] = true;
@@ -252,8 +266,6 @@ public function getDiscountVoucher(Request $request)
 public function View(Request $request)
 {
     $listBooking = BookingOnline::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
-
-
     return view('Transaksi.Penjualan.PoS.ListBookingOnline', compact('listBooking'));
 }
 
@@ -426,10 +438,10 @@ public function insertTableOrder(Request $request)
         $model->DiscTotal = $request->input('DiscTotal');
         $model->NetTotal = $request->input('NetTotal');
         $model->JamMulai = $startDate;
-
-        if ($request->input('JenisPaket') != 'MENIT') {
-            $model->JamSelesai = Carbon::parse($startDate)->addHours($request->input('DurasiPaket'));
-        }
+        $model->JamSelesai = Carbon::parse($startDate)->addHours($request->input('DurasiPaket'));
+        // if ($request->input('JenisPaket') != 'MENIT') {
+        //     $model->JamSelesai = Carbon::parse($startDate)->addHours($request->input('DurasiPaket'));
+        // }
 
         $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 

@@ -47,7 +47,14 @@ class TableOrderController extends Controller
                             tableorderheader.KodePelanggan,
                             pelanggan.NamaPelanggan,
                             gruppelanggan.NamaGrup,
-                            gruppelanggan.DiskonPersen
+                            gruppelanggan.DiskonPersen,
+                            CASE WHEN COALESCE(bookingtableonline.NoTransaksi,'') != '' THEN 'BOOKING' ELSE 'TIDAKBOOKING' END AS StatusBooking,
+                            COALESCE(bookingtableonline.TotalTransaksi,0) AS BookingTotalTransaksi,
+                            COALESCE(bookingtableonline.TotalTax,0) AS BookingTotalTax,
+                            COALESCE(bookingtableonline.TotalDiskon,0) AS BookingTotalDiskon,
+                            COALESCE(bookingtableonline.TotalLainLain,0) AS BookingTotalLainLain,
+                            COALESCE(bookingtableonline.NetTotal,0) AS BookingNetTotal,
+                            COALESCE(bookingtableonline.Keterangan,'') AS BookingPaymentReffNumber
                         ")
                         ->leftJoin('tableorderheader', function ($value)  {
                             $value->on('titiklampu.id','=','tableorderheader.tableid')
@@ -70,6 +77,10 @@ class TableOrderController extends Controller
                         ->leftJoin('gruppelanggan', function ($value)  {
                             $value->on('pelanggan.KodeGrupPelanggan','=','gruppelanggan.KodeGrup')
                             ->on('pelanggan.RecordOwnerID','=','gruppelanggan.RecordOwnerID');
+                        })
+                        ->leftJoin('bookingtableonline', function ($value)  {
+                            $value->on('bookingtableonline.NoTransaksi','=','tableorderheader.NoTransaksi')
+                            ->on('bookingtableonline.RecordOwnerID','=','tableorderheader.RecordOwnerID');
                         })
                         ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)->get();
         $titiklampuoption = TitikLampu::where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
@@ -94,8 +105,10 @@ class TableOrderController extends Controller
         $midtransdata = MetodePembayaran::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                             ->where('MetodeVerifikasi','=','AUTO')->first();
         $midtransclientkey = "";
+        $MetodePembayaranAutoID = -1;
         if ($midtransdata) {
             $midtransclientkey = $midtransdata->ClientKey;
+            $MetodePembayaranAutoID = $midtransdata->id;
         }
 
         return view("Transaksi.Penjualan.PoS.Billing",[
@@ -107,7 +120,8 @@ class TableOrderController extends Controller
             'pelanggan' => $pelanggan,
             'metodepembayaran' => $metodepembayaran,
             'itemmaster' => $itemmaster->get(),
-            'midtransclientkey' => $midtransclientkey
+            'midtransclientkey' => $midtransclientkey,
+            'MetodePembayaranAutoID' => $MetodePembayaranAutoID,
         ]);
     }
 

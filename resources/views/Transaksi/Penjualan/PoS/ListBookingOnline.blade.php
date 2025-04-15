@@ -302,7 +302,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
     function loadBookings() {
         $.ajax({
-            url: "/booking/get-Bookings",
+            url: "/get-Bookings",
             type: "GET",
             dataType: "json",
             success: function (response) {

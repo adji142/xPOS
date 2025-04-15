@@ -64,6 +64,12 @@ class DashboardController extends Controller
     }
 
     function dashboardAdmin() {
+        // dd(Auth::user()->RecordOwnerID);
+        if(Auth::user()->RecordOwnerID != '999999'){
+            auth()->user()->tokens()->delete();
+            Auth::logout();
+            return redirect('/');
+        }
         $awalTahun = Carbon::now()->startOfYear()->toDateString();;
         $TglAwal = Carbon::now()->startOfMonth()->toDateString();
         $TglAkhir = Carbon::now();
