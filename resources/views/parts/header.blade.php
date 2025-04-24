@@ -31,7 +31,7 @@
 	<!--begin::Header Mobile-->
 	<div id="tc_header_mobile" class="header-mobile align-items-center header-mobile-fixed">
 		<!--begin::Logo-->
-		<a href="index.html" class="brand-logo">
+		<a href="{{ route('dashboard') }}" class="brand-logo">
 
 			<span class="brand-text"><img style="height: 100%;" alt="Logo" src="{{ asset('images/misc/logo-dashboard.png')}}" /></span>
 
@@ -75,7 +75,7 @@
 				<!--begin::Brand-->
 				<div class="brand flex-column-auto" id="tc_brand">
 					<!--begin::Logo-->
-					<a href="index.html" class="brand-logo">
+					<a href="{{ route('dashboard') }}" class="brand-logo">
 						<img class="brand-image" style="height: 100%;" alt="Logo" src="{{ asset('images/misc/logo-dashboard.png')}}" />
 						<span class="brand-text"><img style="height: 100%;" alt="Logo"
 								src="{{asset('images/misc/logo-dashboard.png')}}" /></span>
