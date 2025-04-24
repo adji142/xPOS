@@ -21,10 +21,35 @@ use Midtrans\Snap;
 class InvoicePenggunaController extends Controller
 {
     public function View(Request $request){
-        $datatagihan = InvoicePenggunaHeader::where('TotalBayar','<', 'TotalTagihan')->get();
+        $datatagihan = InvoicePenggunaHeader::where('TotalBayar','<', 'TotalTagihan')
+                        ->where(DB::raw("Status <> 'D'"))->get();
+
+        $title = 'Pembatalan Invoice';
+        $text = "Are you sure you want to delete ?";
+        confirmDelete($title, $text);
         return view("Admin.InvoicePelanggan",[
             'datatagihan' => $datatagihan
         ]);
+    }
+
+    public function VoidInvoice(Request $request){
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+        try {
+            $update = DB::table('tagihanpenggunaheader')
+                        ->where('NoTransaksi','=', $request->NoTransaksi)
+                        ->update(
+                            [
+                                'Status'=>'D'
+                            ]
+                        );
+            $data['success'] = true;
+        } catch (\Throwable $th) {
+            // alert()->error('Error',$th->getMessage());
+            $data['success'] = false;
+            $data['message'] = $th->getMessage();
+        }
+
+        return response()->json($data);
     }
     public function Form($NoTransaksi = null){
 
@@ -43,6 +68,7 @@ class InvoicePenggunaController extends Controller
                     ->leftJoin('company', 'company.KodePartner', 'tagihanpenggunaheader.KodePelanggan')
                     ->leftJoin('pembayarantagihan', 'pembayarantagihan.BaseReff','tagihanpenggunaheader.NoTransaksi')
                     ->whereBetween('tagihanpenggunaheader.TglTransaksi', [$TglAwal, $TglAkhir])
+                    ->where('tagihanpenggunaheader.Status','<>', 'D')
                     ->get();
         $data['data'] = $tagihan;
         return response()->json($data);

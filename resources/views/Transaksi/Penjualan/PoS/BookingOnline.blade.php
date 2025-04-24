@@ -10,13 +10,14 @@
         <link rel="icon" type="image/x-icon" href="{{ asset('assets/favicon.ico') }}" />
 
         <!-- Font Awesome icons (free version)-->
-        <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+        {{-- <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script> --}}
         <!-- Google fonts-->
         <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
         <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700" rel="stylesheet" type="text/css" />
         <!-- Core theme CSS (includes Bootstrap)-->
         <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+		<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         
     </head>
     <body id="page-top">
@@ -335,12 +336,12 @@
                                     
                                         <li class="list-group-item d-flex align-items-center justify-content-between">
                                             <strong>Jam Awal Booking:</strong>
-                                            <input type="time" class="form-control w-75 text-center" name="jamMulai" id="jamMulai" step="60">
+                                            <input type="text" class="form-control w-75 text-center" name="jamMulai" id="jamMulai" step="60">
                                         </li>
                                     
                                         <li class="list-group-item d-flex align-items-center justify-content-between">
                                             <strong>Jam Akhir Booking:</strong>
-                                            <input type="time" class="form-control w-75 text-center" name="jamSelesai" id="jamSelesai" step="60">
+                                            <input type="text" class="form-control w-75 text-center" name="jamSelesai" id="jamSelesai" step="60">
                                         </li>
                                     
                                         <li class="list-group-item text-center fw-bold">---</li>
@@ -531,6 +532,19 @@ document.addEventListener("change", function (event) {
 
 
 document.addEventListener("DOMContentLoaded", function () {
+    flatpickr("#jamMulai", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",  // 24-hour format: H = hour (00-23), i = minutes
+        time_24hr: true
+    });
+    flatpickr("#jamSelesai", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",  // 24-hour format: H = hour (00-23), i = minutes
+        time_24hr: true
+    });
+
     document.querySelectorAll(".btn-success").forEach(button => {
         button.addEventListener("click", function (event) {
             var kodePartner = document.getElementById('kodePartner').value;

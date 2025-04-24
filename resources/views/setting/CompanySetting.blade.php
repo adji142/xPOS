@@ -57,6 +57,7 @@
 		cursor: default;
 		text-decoration: none;
 	}
+	
   </style>
 <!--begin::Subheader-->
 <div class="subheader py-2 py-lg-6 subheader-solid">
@@ -952,7 +953,7 @@
 														<div class="col-md-6">
 															<label class="text-body">Jam Awal Booking</label>
 															<fieldset class="form-group mb-3">
-																<input type="time" class="form-control" id="JamAwalBooking" name="JamAwalBooking" step="60"
+																<input type="text" class="form-control" id="JamAwalBooking" name="JamAwalBooking" step="60"
 																	value="{{ count($company) > 0 ? date('H:i', strtotime($company[0]['JamAwalBooking'])) : '' }}">
 															</fieldset>
 														</div>
@@ -960,7 +961,7 @@
 														<div class="col-md-6">
 															<label class="text-body">Jam Akhir Booking</label>
 															<fieldset class="form-group mb-3">
-																<input type="time" class="form-control" id="JamAkhirBooking" name="JamAkhirBooking" step="60"
+																<input type="text" class="form-control" id="JamAkhirBooking" name="JamAkhirBooking" step="60"
 																	value="{{ count($company) > 0 ? date('H:i', strtotime($company[0]['JamAkhirBooking'])) : '' }}">
 															</fieldset>
 														</div>
@@ -1272,6 +1273,21 @@ var oCompany;
 			theme: 'snow'
 		});
 		jQuery(document).ready(function () {
+
+			// 
+			flatpickr("#JamAwalBooking", {
+				enableTime: true,
+				noCalendar: true,
+				dateFormat: "H:i",  // 24-hour format: H = hour (00-23), i = minutes
+				time_24hr: true
+			});
+
+			flatpickr("#JamAkhirBooking", {
+				enableTime: true,
+				noCalendar: true,
+				dateFormat: "H:i",  // 24-hour format: H = hour (00-23), i = minutes
+				time_24hr: true
+			});
 			var now = new Date();
 			var day = ("0" + now.getDate()).slice(-2);
 			var month = ("0" + (now.getMonth() + 1)).slice(-2);

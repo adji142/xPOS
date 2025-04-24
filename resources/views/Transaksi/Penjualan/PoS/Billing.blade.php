@@ -163,7 +163,18 @@ License: You must have a valid license purchased only from themeforest(the above
 			   <div class="col-xl-4 col-lg-3 col-md-12  order-lg-last order-second">
 
 				<div class="topbar justify-content-end">
-			 
+					<div class="topbar-item folder-data">
+						<div id="btOpenCustDisplay" class="btn btn-icon  w-auto h-auto btn-clean d-flex align-items-center py-0 me-3">
+							<span class="symbol symbol-35  symbol-light-success">
+								<span class="symbol-label font-size-h5 ">
+									<svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" class="bi bi-pc-display-horizontal" viewBox="0 0 16 16">
+									<path d="M1.5 0A1.5 1.5 0 0 0 0 1.5v7A1.5 1.5 0 0 0 1.5 10H6v1H1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-5v-1h4.5A1.5 1.5 0 0 0 16 8.5v-7A1.5 1.5 0 0 0 14.5 0zm0 1h13a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-7a.5.5 0 0 1 .5-.5M12 12.5a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0m2 0a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0M1.5 12h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1M1 14.25a.25.25 0 0 1 .25-.25h5.5a.25.25 0 1 1 0 .5h-5.5a.25.25 0 0 1-.25-.25"/>
+									</svg>
+								</span>
+							</span>
+						</div>
+				 
+					</div>
 				 <div class="dropdown">
 					 <div class="topbar-item" data-bs-toggle="dropdown" data-display="static">
 						 <div class="btn btn-icon w-auto h-auto btn-clean d-flex align-items-center py-0">
@@ -934,7 +945,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			// FirstRowHandling();
 			// SetTimer(1,0,'2024-12-09T21:55:00');
 			// Fill Datatable
-
+			localStorage.setItem('PoSData', JSON.stringify([]));
 		});
 		$('#LookupDetailOrder').on('shown.bs.modal', function () {
 			$('#cboMetodePembayaran_Detail').select2({
@@ -1470,6 +1481,10 @@ License: You must have a valid license purchased only from themeforest(the above
 			SetEnableCommand();
 		});
 
+		$('#btOpenCustDisplay').click(function(){
+			openCustomerDisplay();
+		});
+
 		function SetTimer(tableid, TimerType ,EndTime, StartTime, NoTransaksi, JenisPaket, Status) {
 
 			// clock_
@@ -1696,6 +1711,8 @@ License: You must have a valid license purchased only from themeforest(the above
 			const DataPaket = <?php echo $paket ?>;
 			const oCompany = <?php echo $company ?>;
 			const filteredPaket = DataPaket.filter(item => item.id == filteredData[0]['paketid']);
+
+			var oCustomerDisplay = [];
 			
 			// console.log(NoTransaksi);
 			console.log(filteredData);
@@ -1744,6 +1761,8 @@ License: You must have a valid license purchased only from themeforest(the above
 			var _TextTotalHargaNormal = "";
 			var _TextTotalHargaBaru = "";
 			var _durasiPaket = 0;
+			var _durasiPaketLama = 0;
+			var _durasiPaketBaru = 0;
 
 			// Calculate Billing
 			if(filteredData[0]["StatusBooking"] == 'BOOKING'){
@@ -1822,6 +1841,14 @@ License: You must have a valid license purchased only from themeforest(the above
 							if (_PajakHiburanPercent > 0) {
 								_PajakHiburanBaru = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaBaru"] * _diferentMinutes);	
 							}
+
+							const diffPaketLama = _maxPaketNormal - _JamMulaiPaket;
+
+							console.log("Akhir Jam Normal " + _maxPaketNormal);
+							console.log("Jam Mulai Paket " + _JamMulaiPaket);
+
+							_durasiPaketBaru = _diferentMinutes;
+							_durasiPaketLama = Math.floor(diffPaketLama / (1000 * 60));
 						}
 					}
 
@@ -1834,10 +1861,69 @@ License: You must have a valid license purchased only from themeforest(the above
 				}
 			}
 
+
+			// Paket :
+			if(_durasiPaketLama > 0) {
+				oCustomerDisplay.push({
+					NamaItem: filteredData[0]["NamaPaket"] + " " + _durasiPaketLama + " " + filteredPaket[0]["JenisPaket"],
+					Qty: _durasiPaketLama,
+					Harga: filteredPaket[0]["HargaNormal"]
+				});
+
+				// PPN
+				if(_PPnNormal > 0) {
+					oCustomerDisplay.push({
+						NamaItem: "PPN " + _ppnPercent + "%",
+						Qty: 1,
+						Harga: _PPnNormal
+					});
+				}
+				// Pajak Hiburan
+				if(_PajakHiburanNormal > 0){
+					oCustomerDisplay.push({
+						NamaItem: "Pajak Hiburan  " + _PajakHiburanPercent + "%",
+						Qty: 1,
+						Harga: _PajakHiburanNormal
+					});
+				}
+			}
+
+			if(_durasiPaketBaru > 0){
+				oCustomerDisplay.push({
+					NamaItem: filteredData[0]["NamaPaket"] + " Setelah Jam "+ filteredPaket[0]["AkhirJamNormal"]+" " + _durasiPaketBaru + " " + filteredPaket[0]["JenisPaket"],
+					Qty: _durasiPaketBaru,
+					Harga: filteredPaket[0]["HargaBaru"]
+				});
+
+				// PPN
+				if(_PPnBaru > 0) {
+					oCustomerDisplay.push({
+						NamaItem: "PPN " + _ppnPercent + "%",
+						Qty: 1,
+						Harga: _PPnBaru
+					});
+				}
+				// Pajak Hiburan
+				if(_PajakHiburanNormal > 0){
+					oCustomerDisplay.push({
+						NamaItem: "Pajak Hiburan  " + _PajakHiburanPercent + "%",
+						Qty: 1,
+						Harga: _PajakHiburanBaru
+					});
+				}
+			}
+
+
 			// Calculate FnB
 
 			// Get From Booking :
+			console.log(oData)
 			for (let index = 0; index < oData.length; index++) {
+				oCustomerDisplay.push({
+					NamaItem: oData[index]['NamaItem'],
+					Qty: oData[index]['Qty'],
+					Harga: oData[index]['HargaJual'],
+				});
 				_TotalMakanan += oData[index]["LineTotal"];
 			}
 
@@ -1929,8 +2015,15 @@ License: You must have a valid license purchased only from themeforest(the above
 			formatCurrency($('#txtDiscountFnB_Detail'), _DiscountFnB);
 			formatCurrency($('#txtDiscount_Detail'), _Discount);
 			formatCurrency($('#txtTotalUangMuka_Detail'), _TotalUangMuka);
-			formatCurrency($('#txtGrandTotal_Detail'), _SubTotal + _TotalMakanan+ - _Discount + _PPnNormal + _PPnBaru + _PajakHiburanNormal + _PajakHiburanBaru - _TotalUangMuka);
-			
+			formatCurrency($('#txtGrandTotal_Detail'), _SubTotal + _TotalMakanan+ - _Discount +  _PajakHiburanNormal + _PajakHiburanBaru - _TotalUangMuka);
+			console.log(_SubTotal);
+			console.log(_TotalMakanan);
+			console.log(_Discount);
+			console.log(_PPnNormal);
+			console.log(_PPnBaru);
+			console.log(_PajakHiburanNormal);
+			console.log(_PajakHiburanBaru);
+			console.log(_TotalUangMuka);
 			if(filteredData[0]["StatusBooking"] == 'BOOKING'){
 				formatCurrency($('#txtJumlahBayar_Detail'), _SubTotal + _TotalMakanan+ - _Discount + _PPnNormal + _PPnBaru + _PajakHiburanNormal + _PajakHiburanBaru - _TotalUangMuka);
 			}
@@ -1942,6 +2035,8 @@ License: You must have a valid license purchased only from themeforest(the above
 			// SaveData('','','');
 
 			// parseFloat(jQuery('#txtSubTotal_Detail').attr("originalvalue"))
+
+			localStorage.setItem('PoSData', JSON.stringify(oCustomerDisplay));
 
 			SetEnableCommand();
 		}
@@ -2630,5 +2725,13 @@ License: You must have a valid license purchased only from themeforest(the above
 				jQuery('#btBayar').attr('disabled',false);
 			}
 		}
+
+		function openCustomerDisplay() {
+			// Use Laravel's url() helper to generate the URL
+			const url = "{{ url('/fpenjualan/custdisplay') }}";
+			window.open(url, '_blank', 'width=1390,height=800,,scrollbars=no,toolbar=no,status=no,menubar=no');
+		}
 	});
+
+	
 </script>

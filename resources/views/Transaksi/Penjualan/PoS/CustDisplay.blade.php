@@ -287,7 +287,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-xl-4 col-lg-8 col-md-8">
+				<div class="col-xl-5 col-lg-8 col-md-8">
 					<div class="card card-custom gutter-b bg-white border-0" >
 						<div class="card-body">
 							<div class="row">
@@ -345,7 +345,7 @@ License: You must have a valid license purchased only from themeforest(the above
 						</div>	
 					</div>
 				</div>
-				<div class="col-xl-5 col-lg-8 col-md-8">
+				<div class="col-xl-4 col-lg-8 col-md-8">
 					<div class="card card-custom gutter-b bg-white border-0" >
 						<div class="card-body">
 							<div class="row">

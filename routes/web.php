@@ -773,7 +773,7 @@ Route::get('/tagihanpengguna/export/{TglAwal}/{TglAkhir}', [InvoicePenggunaContr
 Route::post('/invpengguna/viewpercom', [InvoicePenggunaController::class, 'GetPerCompany'])->name('invpengguna-viewpercom')->middleware('auth');
 
 Route::get('/testseed', [CompanyController::class, 'GenerateInitialData'])->name('testseed');
-
+Route::post('/voidinvoice', [InvoicePenggunaController::class, 'VoidInvoice'])->name('voidinvoice')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------

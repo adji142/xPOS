@@ -328,12 +328,11 @@
                         if (cellInfo.data.TotalBayar < cellInfo.data.TotalTagihan) {
                             console.log("A");
                             LinkAccess += '<button class="btn btn-outline-danger font-weight-bold me-1 mb-1" onClick="BayarLanggnan('+NoTransaksi+')" >Bayar</button>';
+                            LinkAccess += '<button class="btn btn-outline-warning font-weight-bold me-1 mb-1" onClick="VoidTransaction('+NoTransaksi+')">Void</button>';
                         }else{
                             console.log("b");
                             LinkAccess += '<button class="btn btn-outline-danger font-weight-bold me-1 mb-1" disabled onClick="BayarLanggnan('+NoTransaksi+')" >Bayar</button>';
                         }
-
-                        // LinkAccess += "<a href = '#' class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btBayar' >Bayar</a>";
 
                         cellElement.append(LinkAccess);
                     }
@@ -343,6 +342,48 @@
 
 
 	}
+    
+    function VoidTransaction(NoTransaksi) {
+        Swal.fire({
+            title: 'Konfirmasi Pembatalan Invoice',
+            text: `Apakah Anda yakin ingin Membatalakan transaksi ${NoTransaksi}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Batalkan!',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "{{route('voidinvoice')}}",
+                    type: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+                    },
+                    data: {NoTransaksi:NoTransaksi},
+                    success: function(response) {
+                        if (response.success == true) {
+		            		Swal.fire({
+		                        html: "Prosedur Void Berhasil dilakukan!",
+		                        icon: "success",
+		                        title: "Horray...",
+		                        // text: "Data berhasil disimpan! <br> " + response.Kembalian,
+		                    }).then((result)=>{
+		                        location.reload();
+		                    });
+		            	}
+		            	else{
+		            		Swal.fire({
+		                      icon: "error",
+		                      title: "Opps...",
+		                      text: response.message,
+		                    })
+		            	}
+                    }
+                });
+            }
+        });
+    }
     function BayarLanggnan(NoTransaksi) {
         // alert(NoTransaksi);
         // console.log(oDataTagihan);
