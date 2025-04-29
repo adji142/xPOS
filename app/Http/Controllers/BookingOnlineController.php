@@ -83,7 +83,7 @@ public function createMidTransTransaction(Request $request)
                             ->where('MetodeVerifikasi','=','AUTO')->first();
     $midtransclientkey = "";
     $MetodePembayaranAutoID = -1;
-    dd($midtransdata->ClientKey);
+    // dd($midtransdata->ClientKey);
     if ($midtransdata) {
         $midtransclientkey = $midtransdata->ClientKey;
         $MetodePembayaranAutoID = $midtransdata->id;

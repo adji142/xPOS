@@ -417,7 +417,7 @@
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-        <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+        <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-qz748Jy7S9f3_srA"></script>
         <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
         <!-- * *                               SB Forms JS                               * *-->
         <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
