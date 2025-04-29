@@ -19,6 +19,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PelangganExport;
 use App\Models\User;
 use App\Models\DiscountVoucher;
+use App\Models\MetodePembayaran;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\KonfirmasiPembayaranMail;
