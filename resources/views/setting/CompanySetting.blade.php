@@ -2131,10 +2131,17 @@ var oCompany;
 							else{
 								// order_id
 								// $('#NomorRefrensiPembayaran').val(result.order_id)
+
+								// Metode Pembayaran :
+
+								var PaymentMethodgateWay = result.payment_type;
+								if (result.va_numbers) {
+									PaymentMethodgateWay += "_"+result.payment_type+"#"+result.va_numbers[0]["bank"]+"#"+result.va_numbers[0]["va_number"]
+								}
 								console.log(result);
 								var xData = {
 									"BaseReff" : NoTransaksi,
-									"MetodePembayaran" : result.payment_type+"#"+result.va_numbers[0]["bank"]+"#"+result.va_numbers[0]["va_number"],
+									"MetodePembayaran" : PaymentMethodgateWay,
 									"NoReff" : result.order_id,
 									"Keterangan" : result.transaction_id,
 									"TotalBayar" : TotalPembelian
