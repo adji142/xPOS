@@ -85,7 +85,7 @@ public function createMidTransTransaction(Request $request)
     $MetodePembayaranAutoID = -1;
     // dd($midtransdata->ClientKey);
     if ($midtransdata) {
-        $midtransclientkey = $midtransdata->ClientKey;
+        $midtransclientkey = $midtransdata->ServerKey;
         $MetodePembayaranAutoID = $midtransdata->id;
     }
 
