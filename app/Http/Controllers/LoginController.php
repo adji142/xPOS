@@ -454,14 +454,6 @@ class LoginController extends Controller
                 $errorMessage = "Gagal Menimpan Tagihan ";
                 goto jump;
             }
-
-            // Send Email
-            $data = [
-                'title' => 'Email Konfirmasi',
-                'message' => 'Terimakasih telah melakukan pendaftaran di DSTechSmart PoS, Silahkan melakukan konfirmasi Melalui link berikut untuk mulai menggunakan Aplikasi : '. url('/')."/konfirmasi/".$KonfirmasiID
-            ];
-        
-            Mail::to($request->input('email'))->send(new SendMail($data,"Email Konfirmasi"));
         } catch (\Exception $e) {
             $errorCount +=1;
             $errorMessage = "Internal Error: ".$e->getMessage();
@@ -478,6 +470,21 @@ class LoginController extends Controller
             DB::commit();
             alert()->success('Success','Data Langganan Berhasil disimpan, Silahkan Melakukan Konfirmasi Email dengan klik link yang dikirim di email, Periksa Inbox dan folder Spam / junk');
             return redirect('/');
+        }
+
+        try{
+            // Send Email
+            $data = [
+                'title' => 'Email Konfirmasi',
+                'message' => 'Terimakasih telah melakukan pendaftaran di DSTechSmart PoS, Silahkan melakukan konfirmasi Melalui link berikut untuk mulai menggunakan Aplikasi : '. url('/')."/konfirmasi/".$KonfirmasiID
+            ];
+        
+            Mail::to($request->input('email'))->send(new SendMail($data,"Email Konfirmasi"));
+        }
+        catch (\Exception $e) {
+            Log::debug($e->getMessage());
+            alert()->info('Info',$e->getMessage());
+            return redirect()->back();
         }
     }
 
