@@ -44,12 +44,22 @@ class BookingOnlineController extends Controller
         $paketTransaksi = Paket::where('RecordOwnerID','=',$idE)->get();
         $user= User::where('RecordOwnerID','=',$idE)->first();
 
+        $midtransdata = MetodePembayaran::where('RecordOwnerID','=',$jsonData['kodePartner'])
+                            ->where('MetodeVerifikasi','=','AUTO')->first();
+        $midtransclientkey = "";
+        $MetodePembayaranAutoID = -1;
+        // dd($midtransdata->ClientKey);
+        if ($midtransdata) {
+            $midtransclientkey = $midtransdata->ServerKey;
+            $MetodePembayaranAutoID = $midtransdata->id;
+        }
+
         //dd($company);
 
         //dd($paketTransaksi);
 
 
-        return view('Transaksi.Penjualan.PoS.BookingOnline', compact('company', 'titikLampu','gallery','paketTransaksi','user'));
+        return view('Transaksi.Penjualan.PoS.BookingOnline', compact('company', 'titikLampu','gallery','paketTransaksi','user', 'midtransclientkey'));
     }
 
     public function getData()
