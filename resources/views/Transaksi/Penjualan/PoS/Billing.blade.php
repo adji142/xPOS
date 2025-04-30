@@ -164,6 +164,15 @@ License: You must have a valid license purchased only from themeforest(the above
 
 				<div class="topbar justify-content-end">
 					<div class="topbar-item folder-data">
+						<div id="btOpenListBooking" class="btn btn-icon  w-auto h-auto btn-clean d-flex align-items-center py-0 me-3">
+							<span class="symbol symbol-35  symbol-light-success">
+								<a href="{{ route('bookinglist') }}" target="_blank" class="btn btn-warning">Booking Online List</a>
+							</span>
+						</div>
+				 
+					</div>
+
+					<div class="topbar-item folder-data">
 						<div id="btOpenCustDisplay" class="btn btn-icon  w-auto h-auto btn-clean d-flex align-items-center py-0 me-3">
 							<span class="symbol symbol-35  symbol-light-success">
 								<span class="symbol-label font-size-h5 ">
@@ -175,35 +184,34 @@ License: You must have a valid license purchased only from themeforest(the above
 						</div>
 				 
 					</div>
-				 <div class="dropdown">
-					 <div class="topbar-item" data-bs-toggle="dropdown" data-display="static">
-						 <div class="btn btn-icon w-auto h-auto btn-clean d-flex align-items-center py-0">
-						 
-							 <span class="symbol symbol-35 symbol-light-success">
-								 <span class="symbol-label font-size-h5 ">
-									 <svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-person-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-										 <path fill-rule="evenodd" d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
-									 </svg>
-								 </span>
-							 </span>
-						 </div>
-					 </div>
- 
-					 <div class="dropdown-menu dropdown-menu-right" style="min-width: 150px;">
- 
- 
-						 <a href="{{ route('logout') }}" class="dropdown-item">
-							 <span class="svg-icon svg-icon-xl svg-icon-primary me-2">
-								 <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-power">
-									 <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-									 <line x1="12" y1="2" x2="12" y2="12"></line>
-								 </svg>
-							 </span>
-							 Logout
-						 </a>
-					 </div>
- 
-				 </div>
+
+					<div class="dropdown">
+						<div class="topbar-item" data-bs-toggle="dropdown" data-display="static">
+							<div class="btn btn-icon w-auto h-auto btn-clean d-flex align-items-center py-0">
+							
+								<span class="symbol symbol-35 symbol-light-success">
+									<span class="symbol-label font-size-h5 ">
+										<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-person-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+											<path fill-rule="evenodd" d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
+										</svg>
+									</span>
+								</span>
+							</div>
+						</div>
+	
+						<div class="dropdown-menu dropdown-menu-right" style="min-width: 150px;">
+							<a href="{{ route('logout') }}" class="dropdown-item">
+								<span class="svg-icon svg-icon-xl svg-icon-primary me-2">
+									<svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-power">
+										<path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+										<line x1="12" y1="2" x2="12" y2="12"></line>
+									</svg>
+								</span>
+								Logout
+							</a>
+						</div>
+	
+					</div>
 				</div>
 		 
 				</div>
