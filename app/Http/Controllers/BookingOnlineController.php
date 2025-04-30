@@ -44,7 +44,7 @@ class BookingOnlineController extends Controller
         $paketTransaksi = Paket::where('RecordOwnerID','=',$idE)->get();
         $user= User::where('RecordOwnerID','=',$idE)->first();
 
-        $midtransdata = MetodePembayaran::where('RecordOwnerID','=',$jsonData['kodePartner'])
+        $midtransdata = MetodePembayaran::where('RecordOwnerID','=',$idE)
                             ->where('MetodeVerifikasi','=','AUTO')->first();
         $midtransclientkey = "";
         $MetodePembayaranAutoID = -1;
