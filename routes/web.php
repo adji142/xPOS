@@ -67,6 +67,7 @@ use App\Http\Controllers\EnvController;
 use App\Http\Controllers\PaketController;
 use App\Http\Controllers\TableOrderController;
 use App\Http\Controllers\BookingOnlineController;
+use App\Http\Controllers\DocumentOutputController;
 
 /*
 |--------------------------------------------------------------------------
@@ -588,7 +589,7 @@ Route::post('/delivery/editJson', [DeliveryNoteController::class, 'editJson'])->
 Route::post('/delivery/readheader', [DeliveryNoteController::class, 'ViewHeader'])->name('delivery-readheader')->middleware('auth');
 Route::post('/delivery/readdetail', [DeliveryNoteController::class, 'ViewDetail'])->name('delivery-readdetail')->middleware('auth');
 Route::post('/delivery/editdeliverystatus', [DeliveryNoteController::class, 'EditDeliveryStatus'])->name('delivery-editdeliverystatus')->middleware('auth');
-
+Route::post('/delivery/findheader', [DeliveryNoteController::class, 'FindHeader'])->name('delivery-findheader')->middleware('auth');
 /*
 |--------------------------------------------------------------------------
 | Pembayaran Penjualan
@@ -996,3 +997,15 @@ Route::get('/get-Bookings', [BookingOnlineController::class, 'getBookings'])->na
 Route::get('/booking/get-detailBooking/{noTransaksi}', [BookingOnlineController::class, 'getBookingDetail'])->name('booking-getDetailBooking');
 Route::get('/booking/get-meja-by-transaksi/{noTransaksi}', [BookingOnlineController::class, 'getMejaByTransaksi'])->name('booking-getMejaByTransaksi');
 Route::post('/booking/insert-tableorderheader', [BookingOnlineController::class, 'insertTableOrder'])->name('booking-insertTableorderheader');
+
+
+/*
+|--------------------------------------------------------------------------
+| Document Controller
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/document', [DocumentOutputController::class,'index'])->name('document')->middleware('auth');
+Route::post('/sendemail', [DocumentOutputController::class,'SendEmail'])->name('sendemail')->middleware('auth');
+Route::post('/sendwa', [DocumentOutputController::class,'SendWhatsApp'])->name('sendwa')->middleware('auth');
+Route::get('/download-pdf/{file}', [DocumentOutputController::class, 'downloadPdf'])->name('download-pdf');

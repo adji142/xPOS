@@ -18,7 +18,7 @@ class OrderPenjualanHeader extends Migration
             $table->string('NoTransaksi');
             $table->datetime('TglTransaksi');
             $table->date('TglJatuhTempo');
-            $table->string('NoReff');
+            $table->string('NoReff')->nullable();
             $table->string('KodePelanggan');
             $table->string('KodeTermin');
             $table->string('Termin');
@@ -29,7 +29,8 @@ class OrderPenjualanHeader extends Migration
             $table->double('TotalRetur');
             $table->double('TotalPembayaran');
             $table->string('Status');
-            $table->string('Keterangan');
+            $table->longtext('Keterangan')->nullable();
+            $table->longtext('SyaratDanKetentuan')->nullable();
             $table->string('CreatedBy');
             $table->string('UpdatedBy');
             $table->string('RecordOwnerID');

@@ -100,10 +100,33 @@
 	
 </div>
 
+<div class="modal fade" id="webViewModal" tabindex="-1" aria-labelledby="webViewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="webViewModalLabel">Web View</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="height: 500px;">
+        <iframe src="" width="100%" height="100%" frameborder="0"></iframe>
+      </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id='btnPrint' >Cetak</button>
+            <button type="button" class="btn btn-success" id='btnEmail'>Kirim Email</button>
+            <button type="button" class="btn btn-warning" id='btnWhatsApp'>Kirim Pesan WhatsApp</button>
+        </div>
+
+    </div>
+  </div>
+</div>
+
+
 @endsection
 
 @push('scripts')
 <script type="text/javascript">
+    const documentBaseUrl = "{{ route('document') }}";
 	jQuery(document).ready(function() {
 		var now = new Date();
     	var day = ("0" + now.getDate()).slice(-2);
@@ -118,6 +141,124 @@
         GetHeader();
 		bindGridDetail([]);
 	});
+
+    jQuery('#btnPrint').on('click', function () {
+        const iframeSrc = $('#webViewModal iframe').attr('src');
+        if (iframeSrc) {
+            window.open(iframeSrc, '_blank');
+        }
+    });
+
+    jQuery('#btnEmail').on('click', function () {
+        const btn = $(this);
+        const originalHtml = btn.html(); // Simpan isi tombol awal
+        btn.html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Sedang proses...');
+        btn.prop('disabled', true); // Nonaktifkan tombol sementara
+
+        const iframeSrc = $('#webViewModal iframe').attr('src');
+        const url = new URL(iframeSrc, window.location.origin);
+        const nomor = url.searchParams.get('NomorTransaksi');
+        const tipe = url.searchParams.get('TipeTransaksi');
+
+        if (!nomor || !tipe) {
+            alert("Data transaksi tidak lengkap.");
+            btn.html(originalHtml);
+            btn.prop('disabled', false);
+            return;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: "{{ route('sendemail') }}",
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+            },
+            data: {
+                NomorTransaksi: nomor,
+                TipeTransaksi: tipe
+            },
+            success: function(response) {
+                // alert("Email berhasil dikirim.");
+                Swal.fire({
+                    html: "Email berhasil dikirim!",
+                    icon: "success",
+                    title: "Horray...",
+                    // text: "Data berhasil disimpan! <br> " + response.Kembalian,
+                }).then((result)=>{
+                    btn.html(originalHtml);
+                    btn.prop('disabled', false); // Aktifkan kembali tombol
+                });
+            },
+            error: function(xhr, status, error) {
+                // alert("Gagal mengirim email.");
+                Swal.fire({
+                    icon: "error",
+                    title: "Opps...",
+                    text: response.message,
+                }).then((result)=>{
+                    btn.html(originalHtml);
+                    btn.prop('disabled', false); // Aktifkan kembali tombol
+                });
+            }
+        });
+
+    });
+
+    jQuery('#btnWhatsApp').on('click', function () {
+        const btn = $(this);
+        const originalHtml = btn.html(); // Simpan isi tombol awal
+        btn.html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Sedang proses...');
+        btn.prop('disabled', true); // Nonaktifkan tombol sementara
+
+        const iframeSrc = $('#webViewModal iframe').attr('src');
+        const url = new URL(iframeSrc, window.location.origin);
+        const nomor = url.searchParams.get('NomorTransaksi');
+        const tipe = url.searchParams.get('TipeTransaksi');
+
+        if (!nomor || !tipe) {
+            alert("Data transaksi tidak lengkap.");
+            btn.html(originalHtml);
+            btn.prop('disabled', false);
+            return;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: "{{ route('sendwa') }}",
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+            },
+            data: {
+                NomorTransaksi: nomor,
+                TipeTransaksi: tipe
+            },
+            success: function(response) {
+                if (response.whatsappurl != "") {
+                    window.open(response.whatsappurl, '_blank');
+                } else {
+                    // alert("Gagal mengirim pesan WhatsApp.");
+                    Swal.fire({
+                        icon: "error",
+                        title: "Opps...",
+                        text: "Gagal mengirim pesan WhatsApp.",
+                    })
+                }
+                btn.html(originalHtml);
+                btn.prop('disabled', false); // Aktifkan kembali tombol
+            },
+            error: function(xhr, status, error) {
+                // alert("Gagal mengirim WA.");
+                Swal.fire({
+                    icon: "error",
+                    title: "Opps...",
+                    text: "Gagal mengirim pesan WhatsApp. " + error,
+                })
+                btn.html(originalHtml);
+                btn.prop('disabled', false); // Aktifkan kembali tombol
+            }
+        });
+
+    });
 
     function GetHeader() {
         $.ajax({
@@ -226,25 +367,13 @@
                     format: { type: 'fixedPoint', precision: 2 }
                 },
                 {
-                    dataField: "TotalPembayaran",
-                    caption: "diBayar",
-                    allowEditing:false,
-                    format: { type: 'fixedPoint', precision: 2 }
-                },
-                {
-                    dataField: "TotalHutang",
-                    caption: "Piutang",
-                    allowEditing:false,
-                    format: { type: 'fixedPoint', precision: 2 }
-                },
-                {
                     caption: "Action",
                     fixed: true,
                     cellTemplate: function(cellElement, cellInfo) {
                         var link = "openjualan/form/"+cellInfo.data.NoTransaksi;
+                        var linkCetak = "";
                         LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit' >Edit</a>";
-
-                        // LinkAccess += "<a href = '#' class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btCopyToFaktur' >Buat Faktur Pembelian</a>";
+                        LinkAccess += "<button class='btn btn-outline-success font-weight-bold me-1 mb-1' onclick=\"showCetakModal('" + cellInfo.data.NoTransaksi + "')\">Cetak</button>";
 
                         cellElement.append(LinkAccess);
                     }
@@ -260,6 +389,13 @@
 
 
 	}
+
+    function showCetakModal(noTransaksi) {
+        var url = documentBaseUrl + "?NomorTransaksi=" + encodeURIComponent(noTransaksi) + "&TipeTransaksi=OrderPenjualan";
+        jQuery('#webViewModal iframe').attr('src', url);
+        jQuery('#webViewModal').modal({backdrop: 'static', keyboard: false})
+        jQuery('#webViewModal').modal('show');
+    }
 
 	function bindGridDetail(data) {
 		var dataGridInstance = jQuery("#gridContainerDetail").dxDataGrid({

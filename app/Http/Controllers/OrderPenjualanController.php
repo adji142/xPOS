@@ -15,6 +15,7 @@ use App\Models\Termin;
 use App\Models\ItemMaster;
 use App\Models\Satuan;
 use App\Models\DocumentNumbering;
+use App\Models\Company;
 
 class OrderPenjualanController extends Controller
 {
@@ -75,7 +76,7 @@ class OrderPenjualanController extends Controller
 		orderpenjualandetail.Qty,orderpenjualandetail.QtyKonversi, orderpenjualandetail.Harga, 
 		orderpenjualandetail.Discount, orderpenjualandetail.HargaNet, orderpenjualandetail.Satuan, 
 		orderpenjualandetail.VatPercent, itemmaster.HargaPokokPenjualan,
-        orderpenjualandetail.Qty - SUM(COALESCE(faktur.Qty,0)) OutStanding";
+        orderpenjualandetail.Qty - SUM(COALESCE(faktur.Qty,0)) OutStanding, orderpenjualandetail.VatTotal, orderpenjualandetail.QtyKonversi ";
    		$model = OrderPenjualanDetail::selectRaw($sql)
     				->leftJoin('itemmaster', function ($value){
     					$value->on('orderpenjualandetail.KodeItem','=','itemmaster.KodeItem')
@@ -98,7 +99,7 @@ class OrderPenjualanController extends Controller
               })
     				->where('orderpenjualandetail.NoTransaksi',$NoTransaksi)
     				->where('orderpenjualandetail.RecordOwnerID',Auth::user()->RecordOwnerID)
-            ->groupBy("orderpenjualandetail.NoUrut", "orderpenjualandetail.KodeItem", "itemmaster.NamaItem", "orderpenjualandetail.Qty",'orderpenjualandetail.QtyKonversi', "orderpenjualandetail.Harga", "orderpenjualandetail.Discount", "orderpenjualandetail.HargaNet", 'orderpenjualandetail.Satuan', "orderpenjualandetail.VatPercent","orderpenjualandetail.Qty", "itemmaster.HargaPokokPenjualan");
+            ->groupBy("orderpenjualandetail.NoUrut", "orderpenjualandetail.KodeItem", "itemmaster.NamaItem", "orderpenjualandetail.Qty",'orderpenjualandetail.QtyKonversi', "orderpenjualandetail.Harga", "orderpenjualandetail.Discount", "orderpenjualandetail.HargaNet", 'orderpenjualandetail.Satuan', "orderpenjualandetail.VatPercent","orderpenjualandetail.Qty", "itemmaster.HargaPokokPenjualan", "orderpenjualandetail.VatTotal", "orderpenjualandetail.QtyKonversi");
         $data['data']= $model->get();
         return response()->json($data);
     }
@@ -135,16 +136,19 @@ class OrderPenjualanController extends Controller
 						        ->where('orderpenjualandetail.RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 		$satuan = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
-	    return view("Transaksi.Penjualan.OrderPenjualan-Input2",[
+		$oCompany = Company::where('KodePartner', Auth::user()->RecordOwnerID)->first();
+
+	    return view("Transaksi.Penjualan.OrderPenjualan-Input3",[
 	        'pelanggan' => $pelanggan,
 	        'termin' => $termin,
 	        'item' => $item,
 	        'orderheader' => $orderheader,
 	        'orderdetail' => $orderdetail,
-	        'satuan' => $satuan
+	        'satuan' => $satuan,
+			'ppnpercent' => $oCompany->PPN,
+			'ppninclude' => $oCompany->isHargaJualIncludePPN,
 	    ]);
     }
-
 
   public function storeJson(Request $request){
 		$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
@@ -182,6 +186,7 @@ class OrderPenjualanController extends Controller
 			$model->Keterangan = $jsonData['Keterangan'];
 			$model->CreatedBy = Auth::user()->name;
 			$model->UpdatedBy = "";
+			$model->SyaratDanKetentuan = $jsonData['SyaratDanKetentuan'];
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
    
            $save = $model->save();
@@ -215,6 +220,7 @@ class OrderPenjualanController extends Controller
       				$modelDetail->Harga = $key['Harga'];
               $modelDetail->VatPercent = $key['VatPercent'];
       				$modelDetail->Discount = $key['Discount'];
+					$modelDetail->VatTotal = $key['VatTotal'];
 
 				if ($key['Discount'] ==0) {
 					$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
@@ -225,10 +231,6 @@ class OrderPenjualanController extends Controller
 					$modelDetail->HargaNet = $HargaGros - $diskon;
 				}
 
-        if ($key['VatPercent'] > 0) {
-          $NilaiTax = (100 + $key['VatPercent']) / 100;
-          $modelDetail->HargaNet *= $NilaiTax;
-        }
 				$modelDetail->LineStatus = 'O';
 				$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
@@ -289,6 +291,7 @@ class OrderPenjualanController extends Controller
                 									'TotalPembayaran' => $jsonData['TotalPembayaran'],
                 									'Status' => $jsonData['Status'],
                 									'Keterangan' => $jsonData['Keterangan'],
+													'SyaratDanKetentuan' => $jsonData['SyaratDanKetentuan'],
                 									'UpdatedBy' => Auth::user()->name
                                ]
                            );
@@ -320,6 +323,7 @@ class OrderPenjualanController extends Controller
                 $modelDetail->Harga = $key['Harga'];
                 $modelDetail->VatPercent = $key['VatPercent'];
                 $modelDetail->Discount = $key['Discount'];
+				$modelDetail->VatTotal = $key['VatTotal'];
 
                 if ($key['Discount'] ==0) {
                   $modelDetail->HargaNet = $key['Qty'] * $key['Harga'];

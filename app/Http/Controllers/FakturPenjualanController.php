@@ -240,8 +240,9 @@ class FakturPenjualanController extends Controller
 
 		$satuan = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 		$gudang = Gudang::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
-
-	    return view("Transaksi.Penjualan.FakturPenjualan-Input2",[
+		$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
+		
+	    return view("Transaksi.Penjualan.FakturPenjualan-Input3",[
 	        'pelanggan' => $pelanggan,
 	        'termin' => $termin,
 	        'item' => $item,
@@ -250,7 +251,9 @@ class FakturPenjualanController extends Controller
 	        'fakturheader' => $fakturheader,
 	        'fakturdetail' => $fakturdetail,
 	        'satuan' => $satuan,
-	        'gudang' => $gudang
+	        'gudang' => $gudang,
+			'ppnpercent' => $oCompany->PPN,
+			'ppninclude' => $oCompany->isHargaJualIncludePPN,
 	    ]);
 	}
 

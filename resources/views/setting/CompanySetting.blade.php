@@ -400,6 +400,8 @@
 					                            					<option value="slip1" {{ count($company) > 0 ? $company[0]['DefaultSlip'] == "slip1"? "selected" : '' :""}} >Slip 1</option>
 					                            					<option value="slip2" {{ count($company) > 0 ? $company[0]['DefaultSlip'] == "slip2"? "selected" : '' :""}} >Slip 2</option>
 					                            					<option value="slip3" {{ count($company) > 0 ? $company[0]['DefaultSlip'] == "slip3"? "selected" : '' :""}} >Slip 3</option>
+																	<option value="slip4" {{ count($company) > 0 ? $company[0]['DefaultSlip'] == "slip4"? "selected" : '' :""}} >Slip 4</option>
+																	<option value="slip5" {{ count($company) > 0 ? $company[0]['DefaultSlip'] == "slip5"? "selected" : '' :""}} >Slip 5</option>
 					                            				</select>
 					                            			</fieldset>
 					                            		</div>
@@ -782,74 +784,6 @@
 													</div>
 												</div>
 
-												<div class="tab-pane fade " id="printer" role="tabpanel" aria-labelledby="printer-tab">
-													<div class="form-group row">
-														<div class="col-md-4">
-					                            			<label  class="text-body">Printer Register</label>
-					                            			<fieldset class="form-group mb-4">
-					                            				<select name="NamaPosPrinter" id="NamaPosPrinter" class="js-example-basic-single js-states form-control bg-transparent">
-					                            					<option value="-1">Pilih Printer</option>
-																	@foreach($printer as $ko)
-																		<option {{ count($company) > 0 ? $company[0]['NamaPosPrinter'] == $ko->DeviceAddress ? "selected" : '' :""}} value="{{ $ko->DeviceAddress }}">
-					                                                        {{ $ko->NamaPrinter. ' > '. $ko->PrinterInterface }}
-					                                                    </option>
-																	@endforeach
-					                            				</select>
-					                            			</fieldset>
-					                            			
-					                            		</div>
-
-					                            		<div class="col-md-3">
-					                            			<label  class="text-body">Lebar Kertas</label>
-					                            			<fieldset class="form-group mb-3">
-					                            				<select name="LebarKertas" id="LebarKertas" class="js-example-basic-single js-states form-control bg-transparent">
-					                            					<option value="48">48</option>
-					                            					<option value="58">58</option>
-					                            					<option value="80">80</option>
-					                            				</select>
-					                            			</fieldset>
-					                            		</div>
-														<!--
-					                            		<div class="col-md-3">
-					                            			<fieldset class="form-group mb-3">
-					                            				<button type="button" class="btn btn-warning">Test Print</button>
-					                            			</fieldset>
-					                            		</div>
-					                            		<div class="col-md-3">
-					                            			<fieldset class="form-group mb-3">
-					                            				<button type="button" class="btn btn-warning" id="testPrintUSB">Test Print Usb</button>
-					                            			</fieldset>
-					                            		</div> -->
-
-					                            		<!-- <a href="{{ url('companysetting/testprint') }}">Test Print</a> -->
-					                            		<div class="col-md-12">
-					                            			<label  class="text-body">Keterangan Footer</label>
-					                            			<fieldset class="form-group mb-12">
-					                            				<textarea class="form-control" id="FooterNota" name="FooterNota" rows="3" placeholder="Masukan Alamat">{{ count($company) > 0 ? $company[0]['FooterNota'] : '' }}</textarea>
-					                            			</fieldset>
-					                            		</div>
-
-														<div class="col-md-4">
-					                            			<label  class="text-body">Format Faktur</label>
-					                            			<fieldset class="form-group mb-3">
-					                            				<select name="DefaultSlip" id="DefaultSlip" class="js-example-basic-single js-states form-control bg-transparent">
-					                            					<option value="slip1" {{ count($company) > 0 ? $company[0]['DefaultSlip'] == "slip1"? "selected" : '' :""}} >Slip 1</option>
-					                            					<option value="slip2" {{ count($company) > 0 ? $company[0]['DefaultSlip'] == "slip2"? "selected" : '' :""}} >Slip 2</option>
-					                            					<option value="slip3" {{ count($company) > 0 ? $company[0]['DefaultSlip'] == "slip3"? "selected" : '' :""}} >Slip 3</option>
-					                            				</select>
-					                            			</fieldset>
-					                            		</div>
-
-														<div class="col-md-8">
-															<label  class="text-body">Preview</label>
-															<fieldset class="form-group mb-3">
-																<img src="#" id="PreviewImageSlip" width="100%">
-															</fieldset>
-														</div>
-
-													</div>
-												</div>
-
 
 
 												<div class="tab-pane fade " id="hiburan" role="tabpanel" aria-labelledby="hiburan-tab">
@@ -857,7 +791,7 @@
 														<div class="col-md-12">
 					                            			<label  class="text-body">Pajak Hiburan (%)</label>
 					                            			<fieldset class="form-group mb-4">
-					                            				<input type="number" class="form-control" step="0.01" id="PajakHiburan" name="PajakHiburan" placeholder="Masukan Pajak Hiburan" value="{{ count($company) > 0 ? $company[0]['PajakHiburan'] : 0 }}" >
+					                            				<input type="number" class="form-control" step="0.01" id="PajakHiburan" name="PajakHiburan" placeholder="Masukan Pajak Hiburan" value="{{ count($company) > 0 ? $company[0]['PajakHiburan'] : "0" }}" >
 					                            			</fieldset>
 					                            			
 					                            		</div>
@@ -865,7 +799,7 @@
 														<div class="col-md-12">
 					                            			<label  class="text-body">Warning Waktu Hampir Habis</label>
 					                            			<fieldset class="form-group mb-4">
-					                            				<input type="number" class="form-control" step="1" id="WarningTimer" name="WarningTimer" placeholder="Masukan Warning Hampir Habis" value="{{ count($company) > 0 ? $company[0]['WarningTimer'] : 0 }}" >
+					                            				<input type="number" class="form-control" step="1" id="WarningTimer" name="WarningTimer" placeholder="Masukan Warning Hampir Habis" value="{{ count($company) > 0 ? $company[0]['WarningTimer'] : "0" }}" >
 					                            			</fieldset>
 					                            			
 					                            		</div>

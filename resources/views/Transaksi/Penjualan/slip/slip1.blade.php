@@ -21,15 +21,15 @@
               <div class="row">
                 <div class="col-lg-6">
                   <div class="invoice-logo">
-                    <img width="100" src="{{ $faktur[0]['icon'] }}" alt="Invoice logo">
+                    <img width="100" src="{{ $data[0]['icon'] }}" alt="Invoice logo">
                   </div>
                 </div>
                 <div class="col-lg-6">
                   <div class="invoice-from">
                     <ul class="list-unstyled text-right">
-                      <li>{{ $faktur[0]["NamaPartner"] }}</li>
-                      <li>{{ $faktur[0]["AlamatTagihan"] }}</li>
-                      <li>VAT Number {{ $faktur[0]["NPWP"] }}</li>
+                      <li>{{ $data[0]["NamaPartner"] }}</li>
+                      <li>{{ $data[0]["AlamatTagihan"] }}</li>
+                      <li>VAT Number {{ $data[0]["NPWP"] }}</li>
                     </ul>
                   </div>
                 </div>
@@ -38,13 +38,13 @@
                     <div class="well">
                       <ul class="list-unstyled mb0">
                         <li>
-                          <strong>Invoice</strong> #{{ $faktur[0]["NoTransaksi"] }}
+                          <strong>Invoice</strong> #{{ $data[0]["NoTransaksi"] }}
                         </li>
                         <li>
-                          <strong>Tanggal:</strong> {{ $faktur[0]["TglTransaksi"] }}
+                          <strong>Tanggal:</strong> {{ $data[0]["TglTransaksi"] }}
                         </li>
                         <li>
-                          <strong>Tanggal Jatuh tempo:</strong> {{ $faktur[0]["TglJatuhTempo"] }}
+                          <strong>Tanggal Jatuh tempo:</strong> {{ $data[0]["TglJatuhTempo"] }}
                         </li>
                       </ul>
                     </div>
@@ -54,8 +54,8 @@
                       <li>
                         <strong>Ditagihkan Kepada :</strong>
                       </li>
-                      <li>{{ $faktur[0]["NamaPelanggan"] }}</li>
-                      <li>{{ $faktur[0]["Alamat"] }}</li>
+                      <li>{{ $data[0]["NamaPelanggan"] }}</li>
+                      <li>{{ $data[0]["Alamat"] }}</li>
                     </ul>
                   </div>
                   <div class="invoice-items">
@@ -65,14 +65,16 @@
                           <tr>
                             <th class="per70 text-center">Description</th>
                             <th class="per5 text-center">Qty</th>
+                            <th class="per5 text-center">Satuan</th>
                             <th class="per25 text-center">Total</th>
                           </tr>
                         </thead>
                         <tbody>
-                            @foreach($faktur as $v)
+                            @foreach($data as $v)
                                 <tr>
                                     <td>{{ $v['NamaItem'] }}</td>
                                     <td class="text-center">{{ number_format($v['Qty']) }}</td>
+                                    <td>{{ $v['Satuan'] }}</td>
                                     <td class="text-center">{{ number_format($v['HargaNet']) }}</td>
                                 </tr>
                             @endforeach
@@ -80,26 +82,26 @@
                         <tfoot>
                           <tr>
                             <th colspan="2" class="text-right">Sub Total:</th>
-                            <th class="text-center">{{ number_format($faktur[0]["TotalTransaksi"]) }}</th>
+                            <th class="text-center">{{ number_format($data[0]["SubTotal"]) }}</th>
                           </tr>
                           <tr>
                             <th colspan="2" class="text-right">VAT:</th>
-                            <th class="text-center">{{ number_format($faktur[0]["Pajak"]) }}</th>
+                            <th class="text-center">{{ number_format($data[0]["Pajak"]) }}</th>
                           </tr>
                           <tr>
                             <th colspan="2" class="text-right">Discount:</th>
-                            <th class="text-center">{{ number_format($faktur[0]["Potongan"]) }}</th>
+                            <th class="text-center">{{ number_format($data[0]["Diskon"]) }}</th>
                           </tr>
                           <tr>
                             <th colspan="2" class="text-right">Total:</th>
-                            <th class="text-center">{{ number_format($faktur[0]["TotalPembelian"]) }}</th>
+                            <th class="text-center">{{ number_format($data[0]["Total"]) }}</th>
                           </tr>
                         </tfoot>
                       </table>
                     </div>
                   </div>
                   <div class="invoice-footer mt25">
-                    <p class="text-center">Generated on Monday, {{ date("Y-M-d H:i:s") }} 
+                    <p class="text-center">Generated on , {{ date("Y-M-d H:i:s") }} 
                     </p>
                   </div>
                 </div>

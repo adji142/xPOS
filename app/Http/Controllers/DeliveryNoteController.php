@@ -91,7 +91,10 @@ class DeliveryNoteController extends Controller
 			
 			$NoTransaksi = $request->input('NoTransaksi');
 
-			$sql = "deliverynotedetail.NoUrut, deliverynotedetail.KodeItem, itemmaster.NamaItem, deliverynotedetail.Qty, deliverynotedetail.Harga, deliverynotedetail.Discount, deliverynotedetail.HargaNet, deliverynotedetail.KodeGudang, deliverynotedetail.Satuan, COALESCE(ret.QtyRetur,0) QtyRetur, deliverynotedetail.QtyKonversi, itemmaster.VatPercent, deliverynotedetail.HargaPokokPenjualan ";
+			$sql = "deliverynotedetail.NoUrut, deliverynotedetail.KodeItem, itemmaster.NamaItem, deliverynotedetail.Qty, 
+					deliverynotedetail.Harga, deliverynotedetail.Discount, deliverynotedetail.HargaNet, 
+					deliverynotedetail.KodeGudang, deliverynotedetail.Satuan, COALESCE(ret.QtyRetur,0) QtyRetur, 
+					deliverynotedetail.QtyKonversi, itemmaster.VatPercent, deliverynotedetail.HargaPokokPenjualan, deliverynotedetail.VatTotal ";
 			$model = DeliveryNoteDetail::selectRaw($sql)
 					->leftJoin('itemmaster', function ($value){
 						$value->on('deliverynotedetail.KodeItem','=','itemmaster.KodeItem')
@@ -166,8 +169,9 @@ class DeliveryNoteController extends Controller
 
 		$satuan = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 		$gudang = Gudang::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+		$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
 
-	    return view("Transaksi.Penjualan.DeliveryNote-Input",[
+	    return view("Transaksi.Penjualan.DeliveryNote-Input2",[
 	        'pelanggan' => $pelanggan,
 	        'termin' => $termin,
 	        'item' => $item,
@@ -176,7 +180,9 @@ class DeliveryNoteController extends Controller
 	        'deliveryheader' => $deliveryheader,
 	        'deliverydetail' => $deliverydetail,
 	        'satuan' => $satuan,
-	        'gudang' => $gudang
+	        'gudang' => $gudang,
+			'ppnpercent' => $oCompany->PPN,
+			'ppninclude' => $oCompany->isHargaJualIncludePPN,
 	    ]);
 	}
 
@@ -221,6 +227,7 @@ class DeliveryNoteController extends Controller
 			$model->DeliveryStatus = $jsonData['DeliveryStatus'];
 			$model->KeteranganPengiriman = "Dokumen Pengiriman dibuat";
 			$model->Keterangan = $jsonData['Keterangan'];
+			$model->SyaratDanKetentuan = $jsonData['SyaratDanKetentuan'];
 			$model->RecordOwnerID = Auth::user()->RecordOwnerID;
 			$model->CreatedBy = Auth::user()->name;
 			$model->UpdatedBy = "";
@@ -282,18 +289,13 @@ class DeliveryNoteController extends Controller
 				$modelDetail->Satuan = $key['Satuan'];
 				$modelDetail->Harga = $key['Harga'];
 				$modelDetail->Discount = $key['Discount'];
-				if ($key['Discount'] ==0) {
-					$modelDetail->HargaNet = $key['QtyKirim'] * $key['Harga'];
-				}
-				else{
-					$HargaGros = $key['QtyKirim'] * $key['Harga'];
-					$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
-					$modelDetail->HargaNet = $HargaGros - $diskon;
-				}
+				$modelDetail->HargaNet = $key['HargaNet'];
 				$modelDetail->HargaPokokPenjualan = $oItemMaster->HargaPokokPenjualan;
 				$modelDetail->LineStatus = 'O';
 				$modelDetail->KodeGudang = $key['KodeGudang'];
 				$modelDetail->Keterangan = "";
+				$modelDetail->VatPercent = $key['VatPercent'];
+				$modelDetail->VatTotal = $key['VatTotal'];
 				$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
 				$save = $modelDetail->save();
@@ -446,6 +448,7 @@ class DeliveryNoteController extends Controller
 									'Status' => $jsonData['Status'],
 									'DeliveryStatus' => $jsonData['DeliveryStatus'],
 									'Keterangan' => $jsonData['Keterangan'],
+									'SyaratDanKetentuan' => $jsonData['SyaratDanKetentuan'],
 									'RecordOwnerID' => Auth::user()->RecordOwnerID,
 									'UpdatedBy' => Auth::user()->name
                                	]
@@ -512,14 +515,9 @@ class DeliveryNoteController extends Controller
 						$modelDetail->Satuan = $key['Satuan'];
 						$modelDetail->Harga = $key['Harga'];
 						$modelDetail->Discount = $key['Discount'];
-						if ($key['Discount'] ==0) {
-							$modelDetail->HargaNet = $key['QtyKirim'] * $key['Harga'];
-						}
-						else{
-							$HargaGros = $key['QtyKirim'] * $key['Harga'];
-							$diskon = $HargaGros - ($HargaGros * $key['Discount'] / 100);
-							$modelDetail->HargaNet = $HargaGros - $diskon;
-						}
+						$modelDetail->HargaNet = $key['HargaNet'];
+						$modelDetail->VatPercent = $key['VatPercent'];
+						$modelDetail->VatTotal = $key['VatTotal'];
 
 						$modelDetail->HargaPokokPenjualan = $oItemMaster->HargaPokokPenjualan;
 						$modelDetail->LineStatus = 'O';

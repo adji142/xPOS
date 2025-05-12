@@ -36,19 +36,15 @@
           <div class="card">
             <div class="card-body">
               <div class="invoice-title">
-                <h4 class="float-end font-size-15">Invoice #{{ $faktur[0]["NoTransaksi"] }}
+                <h4 class="float-end font-size-15">#{{ $data[0]["NoTransaksi"] }}
                 </h4>
                 <div class="mb-4">
-                  <h2 class="mb-1 text-muted">{{ $faktur[0]["NamaPartner"] }}</h2>
+                  <h2 class="mb-1 text-muted">{{ $data[0]["NamaPartner"] }}</h2>
                 </div>
                 <div class="text-muted">
-                  <p class="mb-1">{{ $faktur[0]["AlamatTagihan"] }}</p>
-                  <p class="mb-1">
-                    <i class="uil uil-envelope-alt me-1"></i>
-                    {{ $faktur[0]["CompanyEmail"] }}
-                  </p>
+                  <p class="mb-1">{{ $data[0]["AlamatTagihan"] }}</p>
                   <p>
-                    <i class="uil uil-phone me-1"></i> {{ $faktur[0]["NoHP"] }}
+                    <i class="uil uil-phone me-1"></i> {{ $data[0]["NoTlp"] }}
                   </p>
                 </div>
               </div>
@@ -57,34 +53,34 @@
                 <div class="col-sm-6">
                   <div class="text-muted">
                     <h5 class="font-size-16 mb-3">Ditagihkan Kepada:</h5>
-                    <h5 class="font-size-15 mb-2">{{ $faktur[0]["NamaPelanggan"] }}</h5>
-                    <p class="mb-1">{{ $faktur[0]["Alamat"] }}</p>
+                    <h5 class="font-size-15 mb-2">{{ $data[0]["NamaPelanggan"] }}</h5>
+                    <p class="mb-1">{{ $data[0]["Alamat"] }}</p>
                     <p class="mb-1">
-                        {{ $faktur[0]["Email"] }}
+                        {{ $data[0]["Email"] }}
                     </p>
-                    <p>{{ $faktur[0]["NoTlp1"] }}</p>
+                    <p>{{ $data[0]["NoTlp1"] }}</p>
                   </div>
                 </div>
                 <div class="col-sm-6">
                   <div class="text-muted text-sm-end">
                     <div>
-                      <h5 class="font-size-15 mb-1">No. Invoice:</h5>
-                      <p>#{{ $faktur[0]["NoTransaksi"] }}</p>
+                      <h5 class="font-size-15 mb-1">No. Doc:</h5>
+                      <p>#{{ $data[0]["NoTransaksi"] }}</p>
                     </div>
                     <div class="mt-4">
-                      <h5 class="font-size-15 mb-1">Tgl. Invoice:</h5>
-                      <p>{{ $faktur[0]["TglTransaksi"] }}</p>
+                      <h5 class="font-size-15 mb-1">Tgl. Doc:</h5>
+                      <p>{{ $data[0]["TglTransaksi"] }}</p>
                     </div>
                     <div class="mt-4">
                       <h5 class="font-size-15 mb-1">Tgl. Jatuh Tempo:</h5>
-                      <p>{{ $faktur[0]["TglJatuhTempo"] }}</p>
+                      <p>{{ $data[0]["TglJatuhTempo"] }}</p>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="py-2">
                 <h5 class="font-size-15">Order Summary</h5>
-                <div class="table-responsive">
+                <div>
                   <table class="table align-middle table-nowrap table-centered mb-0">
                     <thead>
                       <tr>
@@ -97,7 +93,7 @@
                     </thead>
                     <tbody>
                         <?php $LineNumber = 0; ?>
-					    @foreach($faktur as $v)
+					    @foreach($data as $v)
                             <tr>
                                 <th scope="row">{{$LineNumber +1}}</th>
                                 <td>
@@ -114,20 +110,20 @@
                       
                       <tr>
                         <th scope="row" colspan="4" class="text-end">Sub Total</th>
-                        <td class="text-end">{{ number_format($faktur[0]['TotalTransaksi']) }}</td>
+                        <td class="text-end">{{ number_format($data[0]['SubTotal']) }}</td>
                       </tr>
                       <tr>
                         <th scope="row" colspan="4" class="border-0 text-end"> Discount :</th>
-                        <td class="border-0 text-end">- {{ number_format($faktur[0]['Potongan']) }}</td>
+                        <td class="border-0 text-end">- {{ number_format($data[0]['Diskon']) }}</td>
                       </tr>
                       <tr>
                         <th scope="row" colspan="4" class="border-0 text-end"> Tax</th>
-                        <td class="border-0 text-end">{{ number_format($faktur[0]['Pajak']) }}</td>
+                        <td class="border-0 text-end">{{ number_format($data[0]['Pajak']) }}</td>
                       </tr>
                       <tr>
                         <th scope="row" colspan="4" class="border-0 text-end">Total</th>
                         <td class="border-0 text-end">
-                          <h4 class="m-0 fw-semibold">{{ number_format($faktur[0]['TotalPembelian']) }}</h4>
+                          <h4 class="m-0 fw-semibold">{{ number_format($data[0]['Total']) }}</h4>
                         </td>
                       </tr>
                     </tbody>

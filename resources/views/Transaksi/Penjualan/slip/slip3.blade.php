@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Invoice with ribbon - Bootdey.com</title>
+    <title>Invoice</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
     <style type="text/css">
@@ -142,26 +142,26 @@
               <div class="row">
                 <div class="col-sm-6 top-left">
                   {{-- <i class="fa fa-rocket"></i> --}}
-				  <img src = "{{ $faktur[0]["icon"]}}" width="30%">
+				          <img src = "{{ $data[0]["icon"]}}" width="30%">
                 </div>
                 <div class="col-sm-6 top-right">
-                  <h3 class="marginright">INVOICE-{{ $faktur[0]["NoTransaksi"] }}</h3>
-                  <span class="marginright">{{ $faktur[0]["TglTransaksi"] }}</span>
+                  <h3 class="marginright">Document-{{ $data[0]["NoTransaksi"] }}</h3>
+                  <span class="marginright">{{ $data[0]["TglTransaksi"] }}</span>
                 </div>
               </div>
               <hr>
               <div class="row">
                 <div class="col-xs-4 from">
-                  <p class="lead marginbottom">{{ $faktur[0]["NamaPartner"] }}</p>
-                  <p>{{ $faktur[0]["AlamatTagihan"] }}</p>
-                  <p>Phone: {{ $faktur[0]["NoHP"] }}</p>
+                  <p class="lead marginbottom">{{ $data[0]["NamaPartner"] }}</p>
+                  <p>{{ $data[0]["AlamatTagihan"] }}</p>
+                  <p>Phone: {{ $data[0]["NoTlp"] }}</p>
                   </p>
                 </div>
                 <div class="col-xs-4 to">
-                  <p class="lead marginbottom">Pelanggan : {{ $faktur[0]["NamaPelanggan"] }}</p>
-                  <p>{{ $faktur[0]["Alamat"] }}</p>
-                  <p>Phone: {{ $faktur[0]["NoTlpPelanggan"] }}</p>
-                  <p>Email: {{ $faktur[0]["Email"] }}
+                  <p class="lead marginbottom">Pelanggan : {{ $data[0]["NamaPelanggan"] }}</p>
+                  <p>{{ $data[0]["Alamat"] }}</p>
+                  <p>Phone: {{ $data[0]["NoTlpPelanggan"] }}</p>
+                  <p>Email: {{ $data[0]["Email"] }}
                   </p>
                 </div>
                 {{-- <div class="col-xs-4 text-right payment-details">
@@ -187,7 +187,7 @@
                   </thead>
                   <tbody>
 					<?php $LineNumber = 0; ?>
-					@foreach($faktur as $v)
+					@foreach($data as $v)
 						<tr>
 							<td class="text-center">{{$LineNumber +1}}</td>
 							<td>{{ $v['NamaItem'] }}</td>
@@ -214,22 +214,22 @@
 						<tr>
 							<td>SubTotal</td>
 							<td>:</td>
-							<td>{{ number_format($faktur[0]["TotalTransaksi"]) }}</td>
+							<td>{{ number_format($data[0]["SubTotal"]) }}</td>
 						</tr>
 						<tr>
 							<td>Discount</td>
 							<td>:</td>
-							<td>{{ number_format($faktur[0]["Potongan"]) }}</td>
+							<td>{{ number_format($data[0]["Diskon"]) }}</td>
 						</tr>
 						<tr>
 							<td>VAT</td>
 							<td>:</td>
-							<td>{{ number_format($faktur[0]["Pajak"]) }}</td>
+							<td>{{ number_format($data[0]["Pajak"]) }}</td>
 						</tr>
 						<tr>
 							<td>Total</td>
 							<td>:</td>
-							<td>{{ number_format($faktur[0]["TotalPembelian"]) }}</td>
+							<td>{{ number_format($data[0]["Total"]) }}</td>
 						</tr>
 					</table>
                 </div>

@@ -89,7 +89,7 @@
                             				<select name="KodePelanggan" id="KodePelanggan" class="js-example-basic-single js-states form-control bg-transparent" >
 												<option value="-1">Pilih Pelanggan</option>
 												@foreach($pelanggan as $ko)
-													<option value="{{ $ko->KodePelanggan }}">
+													<option value="{{ $ko->KodePelanggan }}" {{ count($deliveryheader) > 0 ? $deliveryheader[0]['KodePelanggan'] == $ko->KodePelanggan ? "selected" : '' :""}}>
                                                         {{ $ko->NamaPelanggan }}
                                                     </option>
 												@endforeach

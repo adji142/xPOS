@@ -90,52 +90,7 @@ class CompanyController extends Controller
     }
     public function View(Request $request)
     {
-    	// Test Printer
-
-    	// exec("print /d:USB001: D:\testprinting.txt");
-        // try {
-            
-            $clientOS = "";
-            // dd($clientOS);
-            
-            // if ($clientOS == "Windows") {
-            //     $xprinters = Printing::printers();
-            //     dd($xprinters);
-            //     $printers = shell_exec('wmic printer get name');
-            //     $printerList = explode("\n", $printers);
-            //     $printerList = array_filter(array_map('trim', $printerList));
-            //     array_shift($printerList);
-
-            //     foreach ($printerList as $printername) {
-            //         $exist = Printer::where('DeviceName','=',$printername)
-            //             ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
-
-            //         if (count($exist) > 0) {
-            //             goto skip;
-            //         }
-            //         // echo $printer . "<br>";
-            //         $model = new Printer;
-            //         $model->NamaPrinter = $printername;
-            //         $model->PrinterInterface = 'USB';
-            //         $model->DeviceName = $printername;
-            //         $model->DeviceAddress = $printername;
-            //         $model->PrinterToken = '-';
-            //         $model->Used = 0;
-            //         $model->RecordOwnerID = Auth::user()->RecordOwnerID;
-
-            //         $save = $model->save();
-            //         skip:
-            //     }
-            //     // var_dump($printerList);
-            //     // echo $printerList[0];
-            
-            // }
-        // } catch (\Exception $e) {
-        //     alert()->error('Error',$e->getMessage());
-        // }
-        // catch (\Throwable $th) {
-        //     alert()->error('Error',"Server tidak support shell_exec ". $th->getMessage());
-        // }
+        $clientOS = "";
 
         $company = Company::Where('KodePartner','=',Auth::user()->RecordOwnerID)
                         ->leftJoin('subscriptionheader', 'company.KodePaketLangganan', 'subscriptionheader.NoTransaksi')
@@ -151,15 +106,16 @@ class CompanyController extends Controller
         $title = 'Delete Data Perusahaan !';
         $text = "Are you sure you want to delete ?";
         confirmDelete($title, $text);
+        // dd($company);
         return view("setting.CompanySetting",[
             'company' => $company,
             'printer' => $printer,
-                'gudang' => $gudang,
-                'temin' => $temin,
-                'clientOS' => $clientOS,
-                'itemjasa' => $itemjasa,
-                'BookingURLString' => $BookingURLString
-            ]);
+            'gudang' => $gudang,
+            'temin' => $temin,
+            'clientOS' => $clientOS,
+            'itemjasa' => $itemjasa,
+            'BookingURLString' => $BookingURLString
+        ]);
     }
     public function edit(Request $request){
     	Log::debug($request->all());
@@ -213,8 +169,8 @@ class CompanyController extends Controller
                                     'ImageCustDisplay4' => empty($request->input('ImageCustDisplay4Base64')) ? "" : $request->input('ImageCustDisplay4Base64'),
                                     'PromoDsiplay' => empty($request->input('PromoDsiplay')) ? "" : $request->input('PromoDsiplay'),
                                     'RunningText' => empty($request->input('RunningText')) ? "" : $request->input('RunningText'),
-                                    'PajakHiburan' => empty($request->input('PajakHiburan')) ? "" : $request->input('PajakHiburan'),
-                                    'WarningTimer' => empty($request->input('WarningTimer')) ? "" : $request->input('WarningTimer'),
+                                    'PajakHiburan' => empty($request->input('PajakHiburan')) ? "0" : $request->input('PajakHiburan'),
+                                    'WarningTimer' => empty($request->input('WarningTimer')) ? "0" : $request->input('WarningTimer'),
                                     'ItemHiburan' => empty($request->input('ItemHiburan')) ? "" : $request->input('ItemHiburan'),
                                     'BannerBooking' => empty($request->input('BannerBookingBase64')) ? "" : $request->input('BannerBookingBase64'),
                                     'HeadlineBanner' => empty($request->input('HeadlineBanner')) ? "" : $request->input('HeadlineBanner'),
