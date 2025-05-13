@@ -457,7 +457,7 @@ class DocumentOutputController extends Controller
             $pdfPath = storage_path('app/public/invoices/' . $fileName);
             $pdf->save($pdfPath);
 
-            $encodedFileName = base64_encode($TipeTransaksi . "_" . $RecordOwnerID . "_" . $NomorTransaksi);
+            $encodedFileName = base64_encode($TipeTransaksi . "_" . $RecordOwnerID . "_" . $NomorTransaksi.'_'.$timestamp);
             $pdfUrl = route('download-pdf', ['file' => $encodedFileName]);
 
             // // Render Blade dan encode HTML sebelum ke DomPDF
