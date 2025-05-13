@@ -459,7 +459,7 @@ class DocumentOutputController extends Controller
             // $pdfUrl = route('download-pdf', ['file' => $encodedFileName]);
 
             // Render Blade dan encode HTML sebelum ke DomPDF
-            $html = view('Transaksi.Penjualan.slip.' . $oCompany->DefaultSlip, $viewData)->render();
+            $html = view('Transaksi.Penjualan.slip.' . $oCompany->DefaultSlip, $oParamEmail)->render();
             $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
 
             $pdf = PDF::loadHTML($html);
