@@ -9,7 +9,8 @@ use Carbon\Carbon;
 use DB;
 use Log;
 use Illuminate\Support\Facades\Mail;
-use PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 
 use App\Models\Company;
@@ -448,12 +449,32 @@ class DocumentOutputController extends Controller
                 'NomorTransaksi' => $NomorTransaksi,
             ];
 
-            $pdf = PDF::loadView('Transaksi.Penjualan.slip.'.$oCompany->DefaultSlip, $oParamEmail);
+            // $pdf = PDF::loadView('Transaksi.Penjualan.slip.'.$oCompany->DefaultSlip, $oParamEmail);
+
+            // $fileName = $TipeTransaksi . "_" . $RecordOwnerID . "_" . $NomorTransaksi . ".pdf";
+            // $pdfPath = storage_path('app/public/invoices/' . $fileName);
+            // $pdf->save($pdfPath);
+
+            // $encodedFileName = base64_encode($TipeTransaksi . "_" . $RecordOwnerID . "_" . $NomorTransaksi);
+            // $pdfUrl = route('download-pdf', ['file' => $encodedFileName]);
+
+            // Render Blade dan encode HTML sebelum ke DomPDF
+            $html = view('Transaksi.Penjualan.slip.' . $oCompany->DefaultSlip, $viewData)->render();
+            $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
+
+            $pdf = PDF::loadHTML($html);
 
             $fileName = $TipeTransaksi . "_" . $RecordOwnerID . "_" . $NomorTransaksi . ".pdf";
             $pdfPath = storage_path('app/public/invoices/' . $fileName);
+
+            // Pastikan folder ada
+            if (!file_exists(dirname($pdfPath))) {
+                mkdir(dirname($pdfPath), 0755, true);
+            }
+
             $pdf->save($pdfPath);
 
+            // Link publik
             $encodedFileName = base64_encode($TipeTransaksi . "_" . $RecordOwnerID . "_" . $NomorTransaksi);
             $pdfUrl = route('download-pdf', ['file' => $encodedFileName]);
 
