@@ -421,6 +421,13 @@ class DocumentOutputController extends Controller
                 return response()->json($data, 404);
             }
 
+            $data = $data->map(function ($item) {
+                foreach ($item as $key => $value) {
+                    $item[$key] = is_string($value) ? utf8_encode($value) : $value;
+                }
+                return $item;
+            });
+
             if(isset($data[0]['NoTlp1']) && $data[0]['NoTlp1'] == null){
                 $data['success'] = false;
                 $data['message'] = 'Nomor WhatsApp not found';
