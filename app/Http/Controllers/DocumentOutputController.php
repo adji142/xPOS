@@ -435,6 +435,13 @@ class DocumentOutputController extends Controller
                 return response()->json($data, 404);
             }
 
+            $data = $data->map(function ($item) {
+                foreach ($item as $key => $value) {
+                    $item[$key] = is_string($value) ? utf8_encode($value) : $value;
+                }
+                return $item;
+            });
+
             $oParamEmail = [
                 'data' => $data,
                 'TipeTransaksi' => $TipeTransaksi,
