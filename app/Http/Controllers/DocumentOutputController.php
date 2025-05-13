@@ -473,6 +473,9 @@ class DocumentOutputController extends Controller
             $data['whatsappurl'] = 'https://api.whatsapp.com/send?phone=' . $data[0]['NoTlp1'] . '&text=' . urlencode($whatsappMessage);
         } catch (\Throwable $th) {
             //throw $th;
+            Log::error('SendWhatsApp Error: ' . $th->getMessage(), [
+                'trace' => $th->getTraceAsString()
+            ]);
             $data['success'] = false;
             $data['message'] = 'Failed to send email: '.$th->getMessage();
         }
