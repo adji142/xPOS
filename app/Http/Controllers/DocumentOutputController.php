@@ -451,7 +451,9 @@ class DocumentOutputController extends Controller
 
             $pdf = PDF::loadView('Transaksi.Penjualan.slip.'.$oCompany->DefaultSlip, $oParamEmail);
 
-            $fileName = $TipeTransaksi . "_" . $RecordOwnerID . "_" . $NomorTransaksi . ".pdf";
+            $timestamp = now()->timestamp; 
+
+            $fileName = $TipeTransaksi . "_" . $RecordOwnerID . "_" . $NomorTransaksi.'_'.$timestamp . ".pdf";
             $pdfPath = storage_path('app/public/invoices/' . $fileName);
             $pdf->save($pdfPath);
 
