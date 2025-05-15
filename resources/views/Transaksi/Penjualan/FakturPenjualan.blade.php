@@ -313,6 +313,53 @@
         jQuery('#webViewModal').modal('show');
     }
 
+    function voidTransaksi(NoTransaksi) {
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Data ini akan dihapus secara permanen!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    async:false,
+                    type: 'post',
+                    url: "{{route('fpenjualan-void')}}",
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+                    },
+                    data: {
+                        'NoTransaksi' : NoTransaksi
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log(response.message)
+                        if(response.success == true){
+                            Swal.fire({
+                                icon: "success",
+                                title: "Sukses",
+                                text: "Data Berhasil dibatalkan",
+                            }).then((value)=>{
+                                location.reload();
+                            });
+                        }
+                        else{
+                            Swal.fire({
+                                icon: "error",
+                                title: "Opps...",
+                                text: "Gagal Membatalkan Transaksi " + response.message,
+                            })
+                        }
+                    }
+                })
+            }
+        });
+    }
+
 	function bindGridHeader(data) {
 		var dataGridInstance = jQuery("#gridContainerHeader").dxDataGrid({
 			allowColumnResizing: true,
@@ -418,6 +465,10 @@
                         }else{
                             // LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit'>Edit</a>";
                             LinkAccess += "<button class='btn btn-outline-success font-weight-bold me-1 mb-1' onclick=\"showCetakModal('" + cellInfo.data.NoTransaksi + "')\">Cetak</button>";
+                        }
+
+                        if (cellInfo.data.StatusDocument == "OPEN") {
+                            LinkAccess += "<button class='btn btn-outline-danger font-weight-bold me-1 mb-1' onclick=\"voidTransaksi('" + cellInfo.data.NoTransaksi + "')\">Void</button>";
                         }
                         
 

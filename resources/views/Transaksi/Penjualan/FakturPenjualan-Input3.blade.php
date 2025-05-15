@@ -382,7 +382,7 @@
     });
 
     // Hitung otomatis saat input berubah
-    jQuery('#tableDetailItem').on('input change', '.qty, .harga, .diskon', function () {
+    jQuery('#tableDetailItem').on('input change', '.qtyfaktur, .harga, .diskon', function () {
         let row = jQuery(this).closest('tr');
         calculateRowTotal(row);
         updateSummary();

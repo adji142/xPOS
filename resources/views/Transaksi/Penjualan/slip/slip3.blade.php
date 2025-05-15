@@ -177,7 +177,7 @@
                   <thead>
                     <tr>
                       <th class="text-center" style="width:5%">#</th>
-                      <th style="width:30%">Item</th>
+                      <th style="width:30%">Deskripsi</th>
                       <th class="text-right" style="width:15%">Jumlah</th>
                       <th class="text-right" style="width:15%">Harga</th>
 					  <th class="text-right" style="width:15%">Diskon</th>

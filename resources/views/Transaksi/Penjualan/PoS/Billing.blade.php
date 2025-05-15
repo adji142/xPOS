@@ -1810,58 +1810,147 @@ License: You must have a valid license purchased only from themeforest(the above
 					_durasiPaket = filteredData[0]["DurasiPaket"];
 				}
 				else{
+
 					var _diferentMinutes = 0;
 					jQuery('#dtJamSelesai_Detail').text(genfnFormatingDate(Now.toISOString()));
 
-					const differenceInMilliseconds = (filteredData[0]["JamSelesai"] == null ? Now : _JamSelesaiPaket) - _JamMulaiPaket;
+					// Waktu selesai aktual: jika belum ada, gunakan waktu sekarang
+					const actualJamSelesai = (filteredData[0]["JamSelesai"] == null ? Now : _JamSelesaiPaket);
 
-					if (filteredPaket[0]["AkhirJamNormal"] == null) {
-						_diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
-						_NewHargaNormal = _diferentMinutes * filteredPaket[0]["HargaNormal"];
-						_TextTotalHargaNormal = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
+					// Hitung total durasi: dari mulai sampai selesai
+					const differenceInMilliseconds = actualJamSelesai - _JamMulaiPaket;
+					const totalDurasiMenit = Math.floor(differenceInMilliseconds / (1000 * 60));
+
+					// Jika waktu selesai melewati batas maksimal harga normal
+					if (actualJamSelesai > _maxPaketNormal && _maxPaketNormal <= _maxPaketBaru) {
+						// Hitung durasi normal: dari mulai sampai maksimal harga normal
+						const durasiNormalMenit = Math.floor((_maxPaketNormal - _JamMulaiPaket) / (1000 * 60));
+
+						// Hitung durasi baru: dari maksimal harga normal sampai waktu selesai
+						const durasiBaruMenit = Math.floor((actualJamSelesai - _maxPaketNormal) / (1000 * 60));
+
+						// Hitung harga total masing-masing bagian
+						_NewHargaNormal = durasiNormalMenit * filteredPaket[0]["HargaNormal"];
+						_NewHargaBaru = durasiBaruMenit * filteredPaket[0]["HargaBaru"];
+
+						_TextTotalHargaNormal = durasiNormalMenit.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
+						_TextTotalHargaBaru = durasiBaruMenit.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaBaru + " = ";
+
+						// Hitung pajak
 						if (_ppnPercent > 0) {
-							_PPnNormal += (_ppnPercent / 100) * (_NewHargaNormal);	
+							_PPnNormal = (_ppnPercent / 100) * _NewHargaNormal;
+							_PPnBaru = (_ppnPercent / 100) * _NewHargaBaru;
 						}
 						if (_PajakHiburanPercent > 0) {
-							_PajakHiburanNormal = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * _diferentMinutes);	
+							_PajakHiburanNormal = (_PajakHiburanPercent / 100) * _NewHargaNormal;
+							_PajakHiburanBaru = (_PajakHiburanPercent / 100) * _NewHargaBaru;
 						}
-					}
-					else{
-						if (Now < _maxPaketNormal) {
-							_diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
-							_NewHargaNormal = _diferentMinutes * filteredPaket[0]["HargaNormal"];
-							_TextTotalHargaNormal = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
-							if (_ppnPercent > 0) {
-								_PPnNormal += (_ppnPercent / 100) * (_NewHargaNormal);	
-							}
-							if (_PajakHiburanPercent > 0) {
-								_PajakHiburanNormal = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * _diferentMinutes);	
-							}
+
+						// Set durasi masing-masing
+						_durasiPaketLama = durasiNormalMenit;
+						_durasiPaketBaru = durasiBaruMenit;
+
+						console.log("Durasi Normal: " + durasiNormalMenit + " menit");
+						console.log("Durasi Baru: " + durasiBaruMenit + " menit");
+
+					} else {
+						// Jika semua waktu masih di bawah _maxPaketNormal
+						_diferentMinutes = totalDurasiMenit;
+
+						_NewHargaNormal = _diferentMinutes * filteredPaket[0]["HargaNormal"];
+						_TextTotalHargaNormal = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
+
+						if (_ppnPercent > 0) {
+							_PPnNormal = (_ppnPercent / 100) * _NewHargaNormal;
 						}
-						else if (Now > _maxPaketNormal && _maxPaketNormal <= _maxPaketBaru) {
-							_diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
-							_NewHargaBaru = _diferentMinutes * filteredPaket[0]["HargaBaru"];
-							_TextTotalHargaBaru = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaBaru + " = ";
-							if (_ppnPercent > 0) {
-								_PPnBaru += (_ppnPercent / 100) * (_NewHargaBaru);	
-							}
-
-							if (_PajakHiburanPercent > 0) {
-								_PajakHiburanBaru = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaBaru"] * _diferentMinutes);	
-							}
-
-							const diffPaketLama = _maxPaketNormal - _JamMulaiPaket;
-
-							console.log("Akhir Jam Normal " + _maxPaketNormal);
-							console.log("Jam Mulai Paket " + _JamMulaiPaket);
-
-							_durasiPaketBaru = _diferentMinutes;
-							_durasiPaketLama = Math.floor(diffPaketLama / (1000 * 60));
+						if (_PajakHiburanPercent > 0) {
+							_PajakHiburanNormal = (_PajakHiburanPercent / 100) * _NewHargaNormal;
 						}
+
+						_durasiPaketLama = _diferentMinutes;
 					}
 
-					// if (_PajakHiburanPercent > 0) {
-					// 	_PajakHiburan = (_PajakHiburanPercent / 100) * (_NewHargaNormal + _NewHargaBaru);	
+					// var _diferentMinutes = 0;
+					// jQuery('#dtJamSelesai_Detail').text(genfnFormatingDate(Now.toISOString()));
+
+					// const differenceInMilliseconds = (filteredData[0]["JamSelesai"] == null ? Now : _JamSelesaiPaket) - _JamMulaiPaket;
+
+					// console.log('Now : ' + Now + " >> MaxPaketNormal : " + _maxPaketNormal);
+
+					// if (Now < _maxPaketNormal) {
+					// 	_diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
+					// 	_NewHargaNormal = _diferentMinutes * filteredPaket[0]["HargaNormal"];
+					// 	_TextTotalHargaNormal = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
+					// 	if (_ppnPercent > 0) {
+					// 		_PPnNormal += (_ppnPercent / 100) * (_NewHargaNormal);	
+					// 	}
+					// 	if (_PajakHiburanPercent > 0) {
+					// 		_PajakHiburanNormal = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * _diferentMinutes);	
+					// 	}
+					// }
+					// if (Now > _maxPaketNormal && _maxPaketNormal <= _maxPaketBaru) {
+					// 	_diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
+					// 	_NewHargaBaru = _diferentMinutes * filteredPaket[0]["HargaBaru"];
+					// 	_TextTotalHargaBaru = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaBaru + " = ";
+					// 	if (_ppnPercent > 0) {
+					// 		_PPnBaru += (_ppnPercent / 100) * (_NewHargaBaru);	
+					// 	}
+
+					// 	if (_PajakHiburanPercent > 0) {
+					// 		_PajakHiburanBaru = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaBaru"] * _diferentMinutes);	
+					// 	}
+
+					// 	const diffPaketLama = _maxPaketNormal - _JamMulaiPaket;
+
+					// 	console.log("Akhir Jam Normal " + _maxPaketNormal);
+					// 	console.log("Jam Mulai Paket " + _JamMulaiPaket);
+
+					// 	_durasiPaketBaru = _diferentMinutes;
+					// 	_durasiPaketLama = Math.floor(diffPaketLama / (1000 * 60));
+					// }
+					// if (filteredPaket[0]["AkhirJamNormal"] == null) {
+						// _diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
+						// _NewHargaNormal = _diferentMinutes * filteredPaket[0]["HargaNormal"];
+						// _TextTotalHargaNormal = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
+						// if (_ppnPercent > 0) {
+						// 	_PPnNormal += (_ppnPercent / 100) * (_NewHargaNormal);	
+						// }
+						// if (_PajakHiburanPercent > 0) {
+						// 	_PajakHiburanNormal = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * _diferentMinutes);	
+						// }
+					// }
+					// else{
+						// if (Now < _maxPaketNormal) {
+						// 	_diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
+						// 	_NewHargaNormal = _diferentMinutes * filteredPaket[0]["HargaNormal"];
+						// 	_TextTotalHargaNormal = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
+						// 	if (_ppnPercent > 0) {
+						// 		_PPnNormal += (_ppnPercent / 100) * (_NewHargaNormal);	
+						// 	}
+						// 	if (_PajakHiburanPercent > 0) {
+						// 		_PajakHiburanNormal = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * _diferentMinutes);	
+						// 	}
+						// }
+						// else if (Now > _maxPaketNormal && _maxPaketNormal <= _maxPaketBaru) {
+						// 	_diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
+						// 	_NewHargaBaru = _diferentMinutes * filteredPaket[0]["HargaBaru"];
+						// 	_TextTotalHargaBaru = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaBaru + " = ";
+						// 	if (_ppnPercent > 0) {
+						// 		_PPnBaru += (_ppnPercent / 100) * (_NewHargaBaru);	
+						// 	}
+
+						// 	if (_PajakHiburanPercent > 0) {
+						// 		_PajakHiburanBaru = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaBaru"] * _diferentMinutes);	
+						// 	}
+
+						// 	const diffPaketLama = _maxPaketNormal - _JamMulaiPaket;
+
+						// 	console.log("Akhir Jam Normal " + _maxPaketNormal);
+						// 	console.log("Jam Mulai Paket " + _JamMulaiPaket);
+
+						// 	_durasiPaketBaru = _diferentMinutes;
+						// 	_durasiPaketLama = Math.floor(diffPaketLama / (1000 * 60));
+						// }
 					// }
 
 					_SubTotal = _NewHargaNormal + _NewHargaBaru + _PPnBaru + _PPnNormal + _PajakHiburanNormal + _PajakHiburanBaru;
@@ -1881,7 +1970,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				// PPN
 				if(_PPnNormal > 0) {
 					oCustomerDisplay.push({
-						NamaItem: "PPN " + _ppnPercent + "%",
+						NamaItem: "PPN " + _ppnPercent + "% - " + filteredData[0]["NamaPaket"],
 						Qty: 1,
 						Harga: _PPnNormal
 					});
@@ -1906,7 +1995,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				// PPN
 				if(_PPnBaru > 0) {
 					oCustomerDisplay.push({
-						NamaItem: "PPN " + _ppnPercent + "%",
+						NamaItem: "PPN " + _ppnPercent + "% - " + filteredData[0]["NamaPaket"] + " Setelah Jam "+ filteredPaket[0]["AkhirJamNormal"],
 						Qty: 1,
 						Harga: _PPnBaru
 					});

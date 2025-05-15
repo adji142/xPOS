@@ -47,7 +47,7 @@ class FakturPembelianController extends Controller
    				CASE WHEN fakturpembelianheader.Status = 'C' THEN 'CLOSE' ELSE 
    					CASE WHEN fakturpembelianheader.Status = 'D' THEN 'CANCEL' ELSE '' END
    				END
-   			END AS StatusDocument ";
+   			END AS StatusDocument, '-' AS Keterangan ";
 	   	$model = FakturPembelianHeader::selectRaw($sql)
     				->leftJoin('terminpembayaran', function ($value){
     					$value->on('fakturpembelianheader.KodeTermin','=','terminpembayaran.id')

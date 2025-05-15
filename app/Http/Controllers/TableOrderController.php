@@ -24,6 +24,7 @@ class TableOrderController extends Controller
     public function View(Request $request)
     {
         $paket = Paket::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+
         $titiklampu = TitikLampu::selectRaw("titiklampu.*,
                             CASE WHEN COALESCE(titiklampu.status,0) = 0 THEN 'KOSONG' ELSE 
                                 CASE WHEN titiklampu.Status = 1 THEN 'AKTIF' ELSE 

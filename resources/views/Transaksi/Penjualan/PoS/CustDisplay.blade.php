@@ -229,7 +229,7 @@ License: You must have a valid license purchased only from themeforest(the above
         th, td {
             border: 1px solid #ccc;
             padding: 10px;
-            text-align: center;
+            text-align: right;
         }
         th {
             background-color: #f4f4f4;

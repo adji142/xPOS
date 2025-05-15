@@ -85,7 +85,7 @@
                     <thead>
                       <tr>
                         <th style="width: 70px;">No.</th>
-                        <th>Item</th>
+                        <th>Deskripsi</th>
                         <th>Price</th>
                         <th>Quantity</th>
                         <th class="text-end" style="width: 120px;">Total</th>

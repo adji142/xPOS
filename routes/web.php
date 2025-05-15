@@ -548,7 +548,7 @@ Route::post('/fpenjualan/retailPosFnb', [FakturPenjualanController::class, 'stor
 Route::post('/fpenjualan/editJsonPosFnb', [FakturPenjualanController::class, 'editJsonPoSFnB'])->name('fpenjualan-editJsonPosFnB')->middleware('auth');
 Route::get('/fpenjualan/custdisplay', [CustDisplayController::class, 'View'])->name('fpenjualan-custdisplay')->middleware('auth');
 Route::post('/fpenjualan/hiburanPoS', [FakturPenjualanController::class, 'storePoSHiburan'])->name('fpenjualan-hiburanPoS')->middleware('auth');
-
+Route::post('/fpenjualan/void', [FakturPenjualanController::class, 'void'])->name('fpenjualan-void')->middleware('auth');
 /*
 |--------------------------------------------------------------------------
 | Retur Penjualan

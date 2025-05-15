@@ -72,10 +72,10 @@
                             		</div>
 
                             		<div class="col-md-3">
-                            			<label  class="text-body">Supplier</label>
+                            			<label  class="text-body">Customer</label>
                             			<fieldset class="form-group mb-3">
                             				<select name="KodePelanggan" id="KodePelanggan" class="js-example-basic-single js-states form-control bg-transparent" >
-												<option value="">Pilih Supplier</option>
+												<option value="">Pilih Customer</option>
 												@foreach($pelanggan as $ko)
 													<option 
                                                         value="{{ $ko->KodePelanggan }}"

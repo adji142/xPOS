@@ -74,7 +74,7 @@
   <div class="details">
     <table>
       <tr>
-        <th>Produk</th>
+        <th>Deskripsi</th>
         <th>Qty</th>
         <th>Harga</th>
         <th>Disc</th>

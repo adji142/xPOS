@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use DB;
+use Illuminate\Support\Facades\DB;
 use Log;
 
 use App\Models\OrderPenjualanHeader;
@@ -35,6 +35,8 @@ use App\Models\MenuRestoHeader;
 use App\Models\MenuRestoDetail;
 use App\Models\MenuRestoVariant;
 use App\Models\MenuRestoAddon;
+use App\Models\JournalHeader;
+use App\Models\JournalDetail;
 
 class FakturPenjualanController extends Controller
 {
@@ -67,7 +69,7 @@ class FakturPenjualanController extends Controller
    						END
    					END
    				END
-   			END AS StatusDocument, fakturpenjualanheader.Transaksi, COUNT(*) TotalItems ";
+   			END AS StatusDocument, fakturpenjualanheader.Transaksi, COUNT(*) TotalItems, '-' Keterangan ";
 	   	$model = FakturPenjualanHeader::selectRaw($sql)
     				->leftJoin('terminpembayaran', function ($value){
     					$value->on('fakturpenjualanheader.KodeTermin','=','terminpembayaran.id')
@@ -4270,4 +4272,141 @@ class FakturPenjualanController extends Controller
 	// }
 	
    }
+
+   	public function void(Request $request)
+	{
+		$data = ['success' => false, 'message' => '', 'data' => []];
+		$NoTransaksi = $request->input('NoTransaksi');
+
+		try {
+			DB::beginTransaction();
+
+			// Ambil data faktur & detail berdasarkan NoTransaksi
+			$fakturDetails = FakturPenjualanHeader::select(
+				'fakturpenjualandetail.BaseReff',
+				'fakturpenjualandetail.NoUrut',
+				'fakturpenjualandetail.BaseLine',
+				'fakturpenjualandetail.KodeItem',
+				'fakturpenjualandetail.Qty',
+				'fakturpenjualandetail.QtyKonversi',
+				'fakturpenjualandetail.QtyRetur',
+				'fakturpenjualandetail.Satuan',
+				'fakturpenjualandetail.Harga',
+				'fakturpenjualandetail.Discount',
+				'fakturpenjualandetail.HargaNet',
+				'fakturpenjualandetail.LineStatus',
+				'fakturpenjualandetail.KodeGudang',
+				'fakturpenjualandetail.Keterangan',
+				'fakturpenjualandetail.VatPercent',
+				'fakturpenjualandetail.HargaPokokPenjualan',
+				'fakturpenjualandetail.Pajak',
+				'fakturpenjualandetail.PajakHiburan',
+				'fakturpenjualandetail.VatTotal',
+				'fakturpenjualandetail.RecordOwnerID'
+			)
+			->leftJoin('fakturpenjualandetail', function ($join) {
+				$join->on('fakturpenjualandetail.NoTransaksi', '=', 'fakturpenjualanheader.NoTransaksi')
+					->on('fakturpenjualandetail.RecordOwnerID', '=', 'fakturpenjualanheader.RecordOwnerID');
+			})
+			->where('fakturpenjualanheader.NoTransaksi', $NoTransaksi)
+			->where('fakturpenjualanheader.RecordOwnerID', Auth::user()->RecordOwnerID)
+			->get();
+
+			// 1. Update status header ke 'D'
+			DB::table('fakturpenjualanheader')
+				->where('NoTransaksi', $NoTransaksi)
+				->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+				->update(['Status' => 'D']);
+
+			// 2. Delete detail sebelumnya
+			DB::table('fakturpenjualandetail')
+				->where('NoTransaksi', $NoTransaksi)
+				->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+				->delete();
+
+			// 3. Insert ulang ke tableorderdetail
+			foreach ($fakturDetails as $detail) {
+				DB::table('fakturpenjualandetail')->insert([
+					'NoTransaksi'            => $NoTransaksi,
+					'BaseReff'               => $detail->BaseReff,
+					'NoUrut'                 => $detail->NoUrut,
+					'BaseLine'               => $detail->BaseLine,
+					'KodeItem'               => $detail->KodeItem,
+					'Qty'                    => $detail->Qty,
+					'QtyKonversi'            => $detail->QtyKonversi,
+					'QtyRetur'               => $detail->QtyRetur,
+					'Satuan'                 => $detail->Satuan,
+					'Harga'                  => $detail->Harga,
+					'Discount'               => $detail->Discount,
+					'HargaNet'               => $detail->HargaNet,
+					'LineStatus'             => $detail->LineStatus,
+					'KodeGudang'             => $detail->KodeGudang,
+					'Keterangan'             => $detail->Keterangan,
+					'VatPercent'             => $detail->VatPercent,
+					'HargaPokokPenjualan'    => $detail->HargaPokokPenjualan,
+					'Pajak'                  => $detail->Pajak,
+					'PajakHiburan'           => $detail->PajakHiburan,
+					'VatTotal'               => $detail->VatTotal,
+					'RecordOwnerID'          => $detail->RecordOwnerID,
+				]);
+			}
+
+			// 4. Update status Jurnal ke 'D'
+			DB::table('headerjurnal')
+				->where('NoReff', $NoTransaksi)
+				->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+				->where('KodeTransaksi', 'OINV')
+				->update(['StatusTransaksi' => 'D']);
+
+			
+			// 5. Insert Ulang Journal
+
+			$journalHeader = JournalHeader::where('NoReff', $NoTransaksi)
+								->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('KodeTransaksi', 'OINV')
+								->first();
+			$journalDetail = JournalDetail::where('NoTransaksi', $journalHeader->NoTransaksi)
+								->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+								->where('KodeTransaksi', 'OINV')
+								->get();
+
+			// 6. Delete Journal Detail
+
+			$bank = DB::table('detailjurnal')
+	                ->where('NoTransaksi','=', $journalHeader->NoTransaksi)
+	                ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+					->where('KodeTransaksi', 'OINV')
+	                ->delete();
+			
+			foreach ($journalDetail as $jrdetail) {
+				DB::table('detailjurnal')->insert([
+					'KodeTransaksi' => $jrdetail->KodeTransaksi,
+					'NoTransaksi' => $jrdetail->NoTransaksi,
+					'NoUrut' => $jrdetail->NoUrut,
+					'KodeRekening' => $jrdetail->KodeRekening,
+					'KodeRekeningBukuBesar' => $jrdetail->KodeRekeningBukuBesar,
+					'DK' => ($jrdetail->DK == 1) ? 2 : 1,
+					'KodeMataUang' => $jrdetail->KodeMataUang,
+					'Valas' => $jrdetail->Valas,
+					'NilaiTukar' => $jrdetail->NilaiTukar,
+					'Jumlah' => $jrdetail->Jumlah,
+					'Keterangan' => $jrdetail->Keterangan,
+					'HeaderKas' => $jrdetail->HeaderKas,
+					'RecordOwnerID' => Auth::user()->RecordOwnerID,
+					'created_at' => $jrdetail->created_at,
+				]);
+			}
+
+			DB::commit();
+
+			$data['success'] = true;
+			$data['message'] = 'Transaksi berhasil di-void dan data berhasil dipulihkan.';
+		} catch (\Exception $e) {
+			DB::rollBack();
+			$data['message'] = 'Gagal memproses: ' . $e->getMessage();
+		}
+
+		return response()->json($data);
+	}
+
 }
