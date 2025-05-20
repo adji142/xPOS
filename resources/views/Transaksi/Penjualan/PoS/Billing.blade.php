@@ -1809,152 +1809,58 @@ License: You must have a valid license purchased only from themeforest(the above
 					_TextTotalHargaNormal = filteredData[0]["DurasiPaket"] + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
 					_durasiPaket = filteredData[0]["DurasiPaket"];
 				}
-				else{
-
+				else {
 					var _diferentMinutes = 0;
-					jQuery('#dtJamSelesai_Detail').text(genfnFormatingDate(Now.toISOString()));
 
-					// Waktu selesai aktual: jika belum ada, gunakan waktu sekarang
-					const actualJamSelesai = (filteredData[0]["JamSelesai"] == null ? Now : _JamSelesaiPaket);
+					const actualJamSelesai = (filteredData[0]["JamSelesai"] == null ? Now : new Date(filteredData[0]["JamSelesai"]));
+					jQuery('#dtJamSelesai_Detail').text(genfnFormatingDate(actualJamSelesai.toISOString()));
 
-					// Hitung total durasi: dari mulai sampai selesai
 					const differenceInMilliseconds = actualJamSelesai - _JamMulaiPaket;
-					const totalDurasiMenit = Math.floor(differenceInMilliseconds / (1000 * 60));
+					const totalDurasiMenit = Math.abs(Math.floor(differenceInMilliseconds / (1000 * 60)));
 
-					// Jika waktu selesai melewati batas maksimal harga normal
 					if (actualJamSelesai > _maxPaketNormal && _maxPaketNormal <= _maxPaketBaru) {
-						// Hitung durasi normal: dari mulai sampai maksimal harga normal
-						const durasiNormalMenit = Math.floor((_maxPaketNormal - _JamMulaiPaket) / (1000 * 60));
+						const durasiNormalMenit = Math.abs(Math.floor((_maxPaketNormal - _JamMulaiPaket) / (1000 * 60)));
+						const durasiBaruMenit = Math.abs(Math.floor((actualJamSelesai - _maxPaketNormal) / (1000 * 60)));
 
-						// Hitung durasi baru: dari maksimal harga normal sampai waktu selesai
-						const durasiBaruMenit = Math.floor((actualJamSelesai - _maxPaketNormal) / (1000 * 60));
+						_NewHargaNormal = Math.abs(durasiNormalMenit * filteredPaket[0]["HargaNormal"]);
+						_NewHargaBaru = Math.abs(durasiBaruMenit * filteredPaket[0]["HargaBaru"]);
 
-						// Hitung harga total masing-masing bagian
-						_NewHargaNormal = durasiNormalMenit * filteredPaket[0]["HargaNormal"];
-						_NewHargaBaru = durasiBaruMenit * filteredPaket[0]["HargaBaru"];
+						_TextTotalHargaNormal = durasiNormalMenit + " " + filteredPaket[0]["JenisPaket"] + " * " + _HargaNormal + " = ";
+						_TextTotalHargaBaru = durasiBaruMenit + " " + filteredPaket[0]["JenisPaket"] + " * " + _HargaBaru + " = ";
 
-						_TextTotalHargaNormal = durasiNormalMenit.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
-						_TextTotalHargaBaru = durasiBaruMenit.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaBaru + " = ";
-
-						// Hitung pajak
 						if (_ppnPercent > 0) {
-							_PPnNormal = (_ppnPercent / 100) * _NewHargaNormal;
-							_PPnBaru = (_ppnPercent / 100) * _NewHargaBaru;
+							_PPnNormal = Math.abs((_ppnPercent / 100) * _NewHargaNormal);
+							_PPnBaru = Math.abs((_ppnPercent / 100) * _NewHargaBaru);
 						}
 						if (_PajakHiburanPercent > 0) {
-							_PajakHiburanNormal = (_PajakHiburanPercent / 100) * _NewHargaNormal;
-							_PajakHiburanBaru = (_PajakHiburanPercent / 100) * _NewHargaBaru;
+							_PajakHiburanNormal = Math.abs((_PajakHiburanPercent / 100) * _NewHargaNormal);
+							_PajakHiburanBaru = Math.abs((_PajakHiburanPercent / 100) * _NewHargaBaru);
 						}
 
-						// Set durasi masing-masing
 						_durasiPaketLama = durasiNormalMenit;
 						_durasiPaketBaru = durasiBaruMenit;
 
 						console.log("Durasi Normal: " + durasiNormalMenit + " menit");
 						console.log("Durasi Baru: " + durasiBaruMenit + " menit");
-
 					} else {
-						// Jika semua waktu masih di bawah _maxPaketNormal
+						// Semua durasi masih dalam rentang harga normal
 						_diferentMinutes = totalDurasiMenit;
 
-						_NewHargaNormal = _diferentMinutes * filteredPaket[0]["HargaNormal"];
-						_TextTotalHargaNormal = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
+						_NewHargaNormal = Math.abs(_diferentMinutes * filteredPaket[0]["HargaNormal"]);
+						_TextTotalHargaNormal = _diferentMinutes + " " + filteredPaket[0]["JenisPaket"] + " * " + _HargaNormal + " = ";
 
 						if (_ppnPercent > 0) {
-							_PPnNormal = (_ppnPercent / 100) * _NewHargaNormal;
+							_PPnNormal = Math.abs((_ppnPercent / 100) * _NewHargaNormal);
 						}
 						if (_PajakHiburanPercent > 0) {
-							_PajakHiburanNormal = (_PajakHiburanPercent / 100) * _NewHargaNormal;
+							_PajakHiburanNormal = Math.abs((_PajakHiburanPercent / 100) * _NewHargaNormal);
 						}
 
 						_durasiPaketLama = _diferentMinutes;
 					}
 
-					// var _diferentMinutes = 0;
-					// jQuery('#dtJamSelesai_Detail').text(genfnFormatingDate(Now.toISOString()));
-
-					// const differenceInMilliseconds = (filteredData[0]["JamSelesai"] == null ? Now : _JamSelesaiPaket) - _JamMulaiPaket;
-
-					// console.log('Now : ' + Now + " >> MaxPaketNormal : " + _maxPaketNormal);
-
-					// if (Now < _maxPaketNormal) {
-					// 	_diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
-					// 	_NewHargaNormal = _diferentMinutes * filteredPaket[0]["HargaNormal"];
-					// 	_TextTotalHargaNormal = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
-					// 	if (_ppnPercent > 0) {
-					// 		_PPnNormal += (_ppnPercent / 100) * (_NewHargaNormal);	
-					// 	}
-					// 	if (_PajakHiburanPercent > 0) {
-					// 		_PajakHiburanNormal = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * _diferentMinutes);	
-					// 	}
-					// }
-					// if (Now > _maxPaketNormal && _maxPaketNormal <= _maxPaketBaru) {
-					// 	_diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
-					// 	_NewHargaBaru = _diferentMinutes * filteredPaket[0]["HargaBaru"];
-					// 	_TextTotalHargaBaru = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaBaru + " = ";
-					// 	if (_ppnPercent > 0) {
-					// 		_PPnBaru += (_ppnPercent / 100) * (_NewHargaBaru);	
-					// 	}
-
-					// 	if (_PajakHiburanPercent > 0) {
-					// 		_PajakHiburanBaru = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaBaru"] * _diferentMinutes);	
-					// 	}
-
-					// 	const diffPaketLama = _maxPaketNormal - _JamMulaiPaket;
-
-					// 	console.log("Akhir Jam Normal " + _maxPaketNormal);
-					// 	console.log("Jam Mulai Paket " + _JamMulaiPaket);
-
-					// 	_durasiPaketBaru = _diferentMinutes;
-					// 	_durasiPaketLama = Math.floor(diffPaketLama / (1000 * 60));
-					// }
-					// if (filteredPaket[0]["AkhirJamNormal"] == null) {
-						// _diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
-						// _NewHargaNormal = _diferentMinutes * filteredPaket[0]["HargaNormal"];
-						// _TextTotalHargaNormal = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
-						// if (_ppnPercent > 0) {
-						// 	_PPnNormal += (_ppnPercent / 100) * (_NewHargaNormal);	
-						// }
-						// if (_PajakHiburanPercent > 0) {
-						// 	_PajakHiburanNormal = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * _diferentMinutes);	
-						// }
-					// }
-					// else{
-						// if (Now < _maxPaketNormal) {
-						// 	_diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
-						// 	_NewHargaNormal = _diferentMinutes * filteredPaket[0]["HargaNormal"];
-						// 	_TextTotalHargaNormal = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
-						// 	if (_ppnPercent > 0) {
-						// 		_PPnNormal += (_ppnPercent / 100) * (_NewHargaNormal);	
-						// 	}
-						// 	if (_PajakHiburanPercent > 0) {
-						// 		_PajakHiburanNormal = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * _diferentMinutes);	
-						// 	}
-						// }
-						// else if (Now > _maxPaketNormal && _maxPaketNormal <= _maxPaketBaru) {
-						// 	_diferentMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
-						// 	_NewHargaBaru = _diferentMinutes * filteredPaket[0]["HargaBaru"];
-						// 	_TextTotalHargaBaru = _diferentMinutes.toString() + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaBaru + " = ";
-						// 	if (_ppnPercent > 0) {
-						// 		_PPnBaru += (_ppnPercent / 100) * (_NewHargaBaru);	
-						// 	}
-
-						// 	if (_PajakHiburanPercent > 0) {
-						// 		_PajakHiburanBaru = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaBaru"] * _diferentMinutes);	
-						// 	}
-
-						// 	const diffPaketLama = _maxPaketNormal - _JamMulaiPaket;
-
-						// 	console.log("Akhir Jam Normal " + _maxPaketNormal);
-						// 	console.log("Jam Mulai Paket " + _JamMulaiPaket);
-
-						// 	_durasiPaketBaru = _diferentMinutes;
-						// 	_durasiPaketLama = Math.floor(diffPaketLama / (1000 * 60));
-						// }
-					// }
-
-					_SubTotal = _NewHargaNormal + _NewHargaBaru + _PPnBaru + _PPnNormal + _PajakHiburanNormal + _PajakHiburanBaru;
-					_durasiPaket = _diferentMinutes;
+					_SubTotal = Math.abs(_NewHargaNormal + _NewHargaBaru + _PPnBaru + _PPnNormal + _PajakHiburanNormal + _PajakHiburanBaru);
+					_durasiPaket = totalDurasiMenit;
 				}
 			}
 
