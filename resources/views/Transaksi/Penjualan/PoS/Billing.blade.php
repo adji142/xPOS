@@ -1812,53 +1812,72 @@ License: You must have a valid license purchased only from themeforest(the above
 				else {
 					var _diferentMinutes = 0;
 
+					// Gunakan JamSelesai dari data jika ada, jika tidak gunakan Now
 					const actualJamSelesai = (filteredData[0]["JamSelesai"] == null ? Now : new Date(filteredData[0]["JamSelesai"]));
 					jQuery('#dtJamSelesai_Detail').text(genfnFormatingDate(actualJamSelesai.toISOString()));
 
-					const differenceInMilliseconds = actualJamSelesai - _JamMulaiPaket;
-					const totalDurasiMenit = Math.abs(Math.floor(differenceInMilliseconds / (1000 * 60)));
+					const totalDurasiMenit = Math.abs(Math.floor((actualJamSelesai - _JamMulaiPaket) / (1000 * 60)));
 
-					if (actualJamSelesai > _maxPaketNormal && _maxPaketNormal <= _maxPaketBaru) {
+					if (_JamMulaiPaket < _maxPaketNormal) {
+						// Durasi Normal hanya dihitung dari mulai sampai maksimal normal
 						const durasiNormalMenit = Math.abs(Math.floor((_maxPaketNormal - _JamMulaiPaket) / (1000 * 60)));
-						const durasiBaruMenit = Math.abs(Math.floor((actualJamSelesai - _maxPaketNormal) / (1000 * 60)));
+
+						let endTimeForBaru = actualJamSelesai;
+						if (actualJamSelesai < _maxPaketNormal) {
+							// Tidak perlu hitung paket baru karena belum melewati batas
+							_NewHargaBaru = 0;
+							_PPnBaru = 0;
+							_PajakHiburanBaru = 0;
+							_durasiPaketBaru = 0;
+						} else {
+							// Durasi Baru dari _maxPaketNormal sampai actualJamSelesai
+							const durasiBaruMenit = Math.abs(Math.floor((actualJamSelesai - _maxPaketNormal) / (1000 * 60)));
+							_NewHargaBaru = Math.abs(durasiBaruMenit * filteredPaket[0]["HargaBaru"]);
+							_TextTotalHargaBaru = durasiBaruMenit + " " + filteredPaket[0]["JenisPaket"] + " * " + _HargaBaru + " = ";
+
+							if (_ppnPercent > 0) {
+								_PPnBaru = Math.abs((_ppnPercent / 100) * _NewHargaBaru);
+							}
+							if (_PajakHiburanPercent > 0) {
+								_PajakHiburanBaru = Math.abs((_PajakHiburanPercent / 100) * _NewHargaBaru);
+							}
+
+							_durasiPaketBaru = durasiBaruMenit;
+						}
 
 						_NewHargaNormal = Math.abs(durasiNormalMenit * filteredPaket[0]["HargaNormal"]);
-						_NewHargaBaru = Math.abs(durasiBaruMenit * filteredPaket[0]["HargaBaru"]);
-
 						_TextTotalHargaNormal = durasiNormalMenit + " " + filteredPaket[0]["JenisPaket"] + " * " + _HargaNormal + " = ";
-						_TextTotalHargaBaru = durasiBaruMenit + " " + filteredPaket[0]["JenisPaket"] + " * " + _HargaBaru + " = ";
 
 						if (_ppnPercent > 0) {
 							_PPnNormal = Math.abs((_ppnPercent / 100) * _NewHargaNormal);
-							_PPnBaru = Math.abs((_ppnPercent / 100) * _NewHargaBaru);
 						}
 						if (_PajakHiburanPercent > 0) {
 							_PajakHiburanNormal = Math.abs((_PajakHiburanPercent / 100) * _NewHargaNormal);
-							_PajakHiburanBaru = Math.abs((_PajakHiburanPercent / 100) * _NewHargaBaru);
 						}
 
 						_durasiPaketLama = durasiNormalMenit;
-						_durasiPaketBaru = durasiBaruMenit;
-
-						console.log("Durasi Normal: " + durasiNormalMenit + " menit");
-						console.log("Durasi Baru: " + durasiBaruMenit + " menit");
 					} else {
-						// Semua durasi masih dalam rentang harga normal
-						_diferentMinutes = totalDurasiMenit;
+						// Jika mulai langsung melewati _maxPaketNormal, semua dianggap harga baru
+						const durasiBaruMenit = totalDurasiMenit;
+						_NewHargaNormal = 0;
+						_PPnNormal = 0;
+						_PajakHiburanNormal = 0;
+						_durasiPaketLama = 0;
 
-						_NewHargaNormal = Math.abs(_diferentMinutes * filteredPaket[0]["HargaNormal"]);
-						_TextTotalHargaNormal = _diferentMinutes + " " + filteredPaket[0]["JenisPaket"] + " * " + _HargaNormal + " = ";
+						_NewHargaBaru = Math.abs(durasiBaruMenit * filteredPaket[0]["HargaBaru"]);
+						_TextTotalHargaBaru = durasiBaruMenit + " " + filteredPaket[0]["JenisPaket"] + " * " + _HargaBaru + " = ";
 
 						if (_ppnPercent > 0) {
-							_PPnNormal = Math.abs((_ppnPercent / 100) * _NewHargaNormal);
+							_PPnBaru = Math.abs((_ppnPercent / 100) * _NewHargaBaru);
 						}
 						if (_PajakHiburanPercent > 0) {
-							_PajakHiburanNormal = Math.abs((_PajakHiburanPercent / 100) * _NewHargaNormal);
+							_PajakHiburanBaru = Math.abs((_PajakHiburanPercent / 100) * _NewHargaBaru);
 						}
 
-						_durasiPaketLama = _diferentMinutes;
+						_durasiPaketBaru = durasiBaruMenit;
 					}
 
+					// Total akhir
 					_SubTotal = Math.abs(_NewHargaNormal + _NewHargaBaru + _PPnBaru + _PPnNormal + _PajakHiburanNormal + _PajakHiburanBaru);
 					_durasiPaket = totalDurasiMenit;
 				}
