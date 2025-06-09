@@ -460,20 +460,20 @@ License: You must have a valid license purchased only from themeforest(the above
 		const cart = JSON.parse(localStorage.getItem("PoSData"));
 		const tableBody = document.getElementById("tableBody");
 		tableBody.innerHTML = '';
-		console.log(cart);
-		for (let index = 0; index < cart.length; index++) {
+		// console.log(cart);
+		for (let index = 0; index < cart["data"].length; index++) {
 			// const element = array[index];
 			const newRow = document.createElement("tr");
 			
 			const cell1 = document.createElement("td");
-    		cell1.textContent = cart[index]['NamaItem'];
+    		cell1.textContent = cart["data"][index]['NamaItem'];
 
 			const cell2 = document.createElement("td");
-    		cell2.textContent = cart[index]['Qty'];
+    		cell2.textContent = cart["data"][index]['Qty'];
 
 			const cell3 = document.createElement("td");
 
-			let formattedAmount = parseFloat(cart[index]['Harga']).toLocaleString('en-US', {
+			let formattedAmount = parseFloat(cart["data"][index]['Harga']).toLocaleString('en-US', {
 				style: 'decimal',
 				minimumFractionDigits: 2,
 				maximumFractionDigits: 2
@@ -524,39 +524,18 @@ License: You must have a valid license purchased only from themeforest(the above
   		var _tempTotalServices = 0;
   		var _tempGrandTotal = 0;
 
-  		_tempTotalItem = data.length;
-		for (var i = 0; i < data.length; i++) {
-			
-			var _Total = data[i]['Qty'] * data[i]['Harga'];
-			var _diskonPerRow = 0;
-			_tempSubTotal += _Total;
-			if (data[i]['DiskonPersen'] > 0) {
-				_tempTotalDiskon += data[i]['Qty'] * data[i]['Harga'] * (data[i]['DiskonPersen'] / 100);
-				_diskonPerRow = data[i]['Qty'] * data[i]['Harga'] * (data[i]['DiskonPersen'] / 100);
-				// console.log(_TotalDiskon)
-			}
-			else if (data[i]['DiskonRp'] > 0) {
-				_tempTotalDiskon += data[i]['DiskonRp'];
-				_diskonPerRow = data[i]['DiskonRp'];
-			}
-
-			if (parseFloat(data[i]['VatPercent']) > 0) {
-				var Gross = _Total - _diskonPerRow;
-				var tax = (parseFloat(data[i]['VatPercent']) / 100) * Gross;
-				_tempTotalTax +=  tax;
-			}
-		}
+  		_tempTotalItem = data["data"].length;
 
 	    // Diskon Grup Customer
 
-		// console.log(_tempTotalTax)
+		console.log(_tempTotalTax)
 
 	    formatCurrency($('#_TotalItem'), _tempTotalItem);
-	    formatCurrency($('#_SubTotal'), _tempSubTotal);
-	    formatCurrency($('#_TotalDiskon'), _tempTotalDiskon);
-	    formatCurrency($('#_TotalServices'), _tempTotalServices);
-	    formatCurrency($('#_GrandTotal'), _tempSubTotal + _tempTotalServices - _tempTotalDiskon + _tempTotalTax);
-		formatCurrency($('#_TotalTax'), _tempTotalTax);
+	    formatCurrency($('#_SubTotal'), data["Total"]);
+	    formatCurrency($('#_TotalDiskon'), data["Discount"]);
+	    // formatCurrency($('#_TotalServices'), _tempTotalServices);
+	    formatCurrency($('#_GrandTotal'), data["Net"]);
+		formatCurrency($('#_TotalTax'), data["Tax"]);
 	}
 
 	function formatCurrency(input, amount) {

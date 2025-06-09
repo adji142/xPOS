@@ -278,7 +278,9 @@ public function getDiscountVoucher(Request $request)
 public function View(Request $request)
 {
     $listBooking = BookingOnline::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
-    return view('Transaksi.Penjualan.PoS.ListBookingOnline', compact('listBooking'));
+    $encodedRecordOwnerID = base64_encode(Auth::user()->RecordOwnerID);
+    $BookingURLString = url('booking/').'/'.$encodedRecordOwnerID;
+    return view('Transaksi.Penjualan.PoS.ListBookingOnline', compact('listBooking', 'BookingURLString'));
 }
 
 public function ViewGenerateVoucher(Request $request)

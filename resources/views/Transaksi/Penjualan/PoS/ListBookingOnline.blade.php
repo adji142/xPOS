@@ -86,6 +86,12 @@ License: You must have a valid license purchased only from themeforest(the above
 								<a href="{{ route('billing') }}" target="_blank" class="btn btn-warning">Kembali ke billing</a>
 							</span>
 						</div>
+
+                        <div id="btOpenListBooking" class="btn btn-icon  w-auto h-auto btn-clean d-flex align-items-center py-0 me-3">
+							<span class="symbol symbol-35  symbol-light-success">
+								<a href="{{ $BookingURLString }}" target="_blank" class="btn btn-warning">Web Booking</a>
+							</span>
+						</div>
 				 
 					</div>
               
