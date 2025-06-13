@@ -316,6 +316,8 @@ Route::post('/companysetting/importitem', [CompanyController::class, 'ImportItem
 Route::post('/companysetting/importharga', [CompanyController::class, 'ImportHargaJual'])->name('companysetting-importharga')->middleware('auth');
 Route::post('/companysetting/importpelanggan', [CompanyController::class, 'ImportPelanggan'])->name('companysetting-importpelanggan')->middleware('auth');
 Route::post('/companysetting/importsupplier', [CompanyController::class, 'ImportSupplier'])->name('companysetting-importsupplier')->middleware('auth');
+Route::post('/companysetting/updateSlip', [CompanyController::class, 'updateSlip'])->name('companysetting-updateSlip')->middleware('auth');
+Route::post('/companysetting/getcompanydetail', [CompanyController::class, 'getCompanyDetails'])->name('companysetting-getcompanydetail')->middleware('auth');
 
 
 // DocumentNumbering
@@ -523,7 +525,7 @@ Route::post('/openjualan/editJson', [OrderPenjualanController::class, 'editJson'
 Route::post('/openjualan/readheader', [OrderPenjualanController::class, 'ViewHeader'])->name('openjualan-readheader')->middleware('auth');
 Route::post('/openjualan/readdetail', [OrderPenjualanController::class, 'ViewDetail'])->name('openjualan-readdetail')->middleware('auth');
 Route::post('/openjualan/findheader', [OrderPenjualanController::class, 'FindHeader'])->name('openjualan-findheader')->middleware('auth');
-
+Route::post('/openjualan/delete', [OrderPenjualanController::class, 'Delete'])->name('openjualan-delete')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------
@@ -590,6 +592,7 @@ Route::post('/delivery/readheader', [DeliveryNoteController::class, 'ViewHeader'
 Route::post('/delivery/readdetail', [DeliveryNoteController::class, 'ViewDetail'])->name('delivery-readdetail')->middleware('auth');
 Route::post('/delivery/editdeliverystatus', [DeliveryNoteController::class, 'EditDeliveryStatus'])->name('delivery-editdeliverystatus')->middleware('auth');
 Route::post('/delivery/findheader', [DeliveryNoteController::class, 'FindHeader'])->name('delivery-findheader')->middleware('auth');
+Route::post('/delivery/delete', [DeliveryNoteController::class, 'Delete'])->name('delivery-delete')->middleware('auth');
 /*
 |--------------------------------------------------------------------------
 | Pembayaran Penjualan

@@ -71,7 +71,8 @@ class FakturPembelianController extends Controller
     				})
     				->whereBetween('fakturpembelianheader.TglTransaksi',[$TglAwal, $TglAkhir])
     				->where('fakturpembelianheader.RecordOwnerID',Auth::user()->RecordOwnerID);
-
+		
+		$model->where("fakturpembelianheader.Status", '<>' ,'D');
     	if ($KodeVendor != "") {
     		$model->where("fakturpembelianheader.KodeSupplier", $KodeVendor);
     	}

@@ -33,7 +33,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	<link href="{{asset('api/select2/select2.min.css')}}" rel="stylesheet" />
 
 	<link rel="shortcut icon" href="{{ asset('media/logos/favicon.ico')}}" />
-
+	{{-- <script src="https://www.youtube.com/iframe_api"></script> --}}
     {{-- Datatable --}}
     <link href="{{asset('api/datatable/jquery.dataTables.min.css')}}" rel="stylesheet" type="text/css" />
 	<style type="text/css">
@@ -293,6 +293,20 @@ License: You must have a valid license purchased only from themeforest(the above
 							<div class="row">
 								<div class="col-md-12" style="text-align: center;">
 									<div class="slider">
+										<div class="slides" id="slidesContainer"></div>
+										<div class="dots" id="dotsContainer"></div>
+									</div>
+								</div>	
+							</div>
+						</div>	
+					</div>
+				</div>
+				<div class="col-xl-5 col-lg-8 col-md-8" style ="display:none;">
+					<div class="card card-custom gutter-b bg-white border-0" >
+						<div class="card-body">
+							<div class="row">
+								<div class="col-md-12" style="text-align: center;">
+									<div class="slider">
 										<div class="slides">
 											@if ($company->ImageCustDisplay1 == null)
 											<div class="slide">
@@ -446,7 +460,7 @@ License: You must have a valid license purchased only from themeforest(the above
 <link href="{{ asset('devexpress/dx.light.css')}}" rel="stylesheet" type="text/css" />
 <script src="{{asset('devexpress/dx.all.js')}}"></script>
 <script src="{{asset('api/select2/select2.min.js')}}"></script>
-<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ $midtransclientkey }}"></script>
 <script>
 	const itemsDiv = document.getElementById("items");
 	const totalAmountSpan = document.getElementById("totalAmount");
@@ -456,38 +470,74 @@ License: You must have a valid license purchased only from themeforest(the above
 	let currentIndex = 0;
 	const slideCount = document.querySelectorAll('.slide').length;
 
+	// window.onload = function () {
+    //     if (window.opener && !window.opener.closed) {
+    //         window.opener.postMessage({ type: 'say-hello' }, '*');
+    //     }
+    // };
+	let autoPlayTimeout = null;
+	let mediaData = <?php echo json_encode($oImageData) ?>;
+	let ytPlayers = {}
+	let videoStarted = {};
+	
+
+	window.addEventListener('beforeunload', function (e) {
+		// Lakukan sesuatu sebelum halaman ditutup
+		if (window.opener && !window.opener.closed) {
+            window.opener.postMessage('customer-display-closed', '*');
+        }
+	});
+	window.addEventListener('message', function(event) {
+		// console.log(event);
+		if (event.data === 'paymentgateway') {
+			// document.getElementById('status').innerHTML = 'Status: <b>CLOSED</b>';
+			// _custdisplayopened = false;
+			const oData = JSON.parse(localStorage.getItem("paymentgatewaydata"));
+			PaymentGateWay(oData);
+		}
+	});
 	function updateDisplay() {
+		window.opener.postMessage({ type: 'say-hello' }, '*');
+
 		const cart = JSON.parse(localStorage.getItem("PoSData"));
 		const tableBody = document.getElementById("tableBody");
 		tableBody.innerHTML = '';
+		formatCurrency($('#_TotalItem'), 0);
+	    formatCurrency($('#_SubTotal'), 0);
+	    formatCurrency($('#_TotalDiskon'), 0);
+	    formatCurrency($('#_GrandTotal'), 0);
+		formatCurrency($('#_TotalTax'), 0);
 		// console.log(cart);
-		for (let index = 0; index < cart["data"].length; index++) {
-			// const element = array[index];
-			const newRow = document.createElement("tr");
-			
-			const cell1 = document.createElement("td");
-    		cell1.textContent = cart["data"][index]['NamaItem'];
+		if(cart.length > 0){
+			for (let index = 0; index < cart["data"].length; index++) {
+				// const element = array[index];
+				const newRow = document.createElement("tr");
+				
+				const cell1 = document.createElement("td");
+				cell1.textContent = cart["data"][index]['NamaItem'];
 
-			const cell2 = document.createElement("td");
-    		cell2.textContent = cart["data"][index]['Qty'];
+				const cell2 = document.createElement("td");
+				cell2.textContent = cart["data"][index]['Qty'];
 
-			const cell3 = document.createElement("td");
+				const cell3 = document.createElement("td");
 
-			let formattedAmount = parseFloat(cart["data"][index]['Harga']).toLocaleString('en-US', {
-				style: 'decimal',
-				minimumFractionDigits: 2,
-				maximumFractionDigits: 2
-			});
-    		cell3.textContent = formattedAmount;
-			
-			newRow.appendChild(cell1);
-			newRow.appendChild(cell2);
-			newRow.appendChild(cell3);
+				let formattedAmount = parseFloat(cart["data"][index]['Harga']).toLocaleString('en-US', {
+					style: 'decimal',
+					minimumFractionDigits: 2,
+					maximumFractionDigits: 2
+				});
+				cell3.textContent = formattedAmount;
+				
+				newRow.appendChild(cell1);
+				newRow.appendChild(cell2);
+				newRow.appendChild(cell3);
 
-			tableBody.appendChild(newRow);
-			
+				tableBody.appendChild(newRow);
+				
+			}
+			CalculateTotal(cart);
 		}
-		CalculateTotal(cart);
+		
 	}
 
 	 // Auto-slide function
@@ -550,13 +600,239 @@ License: You must have a valid license purchased only from themeforest(the above
         input.val(formattedAmount);
     }
 
+	function PaymentGateWay(oData){
+		console.log(oData);
+		fetch( "{{route('pembayaranpenjualan-createpayment')}}", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRF-TOKEN': '{{ csrf_token() }}'
+			},
+			body: JSON.stringify(oData)
+		})
+		.then(response => response.json())
+		.then(data => {
+			console.log(data);
+			if (data.snap_token) {
+				snap.pay(data.snap_token, {
+					onSuccess: function(result){
+						// console.log(result);
+						if(result.transaction_status == "cancel"){
+							// Swal.fire({
+							// 	icon: "error",
+							// 	title: "Opps...",
+							// 	text: "Pembayaran Dibatalkan",
+							// });
+							window.opener.postMessage('payment-cancel', '*');
+						}
+						else{
+							window.opener.postMessage('payment-success', '*');
+							// order_id
+							// jQuery('#txtRefrensi_Detail').val(result.order_id)
+							// SaveData(Status, ButonObject, ButtonDefaultText)
+						}
+						// Proses pembayaran sukses
+					},
+					onPending: function(result){
+						// console.log(result);
+						// Pembayaran tertunda
+					},
+					onError: function(result){
+						// console.log(result);
+						// Swal.fire({
+						// 	icon: "error",
+						// 	title: "Opps...",
+						// 	text: result,
+						// })
+						window.opener.postMessage('payment-error', '*');
+						localStorage.setItem('errorresult', result);
+						// Pembayaran gagal
+					},
+					onClose: function(){
+						console.log('customer closed the popup without finishing the payment');
+						window.opener.postMessage('no-pay', '*');
+					}
+				});
+			} else {
+				// alert('Error: ' + data.error);
+				// Swal.fire({
+				// 	icon: "error",
+				// 	title: "Opps...",
+				// 	text: data.error,
+				// })
+				window.opener.postMessage('data-error', data.error);
+				localStorage.setItem('errorresult', data.error);
+			}
+		})
+		.catch(error => console.error('Error:', error));
+	}
+
+	function extractYouTubeID(url) {
+		const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#&?]*).*/;
+		const match = url.match(regExp);
+		return (match && match[2].length === 11) ? match[2] : null;
+	}
+
+	function renderSlides() {
+		console.log("3. render Slide")
+		const slidesContainer = document.getElementById('slidesContainer');
+		const dotsContainer = document.getElementById('dotsContainer');
+
+		slidesContainer.innerHTML = '';
+		dotsContainer.innerHTML = '';
+		ytPlayers = {}; // Reset player cache
+
+		mediaData.forEach((item, index) => {
+			const slide = document.createElement('div');
+			slide.className = 'slide';
+
+			if (item.type === 'image') {
+				const img = document.createElement('img');
+				img.src = item.url;
+				slide.appendChild(img);
+			} else if (item.type === 'video') {
+				const videoId = extractYouTubeID(item.url);
+				const iframeContainer = document.createElement('div');
+				iframeContainer.id = `ytplayer-${index}`;
+				slide.appendChild(iframeContainer);
+				// Tunda sedikit agar DOM ter-render dulu
+				setTimeout(() => createYouTubePlayer(videoId, index), 0);
+			}
+
+				slidesContainer.appendChild(slide);
+
+				const dot = document.createElement('span');
+				dot.className = 'dot';
+				dot.dataset.index = index;
+				dot.addEventListener('click', () => {
+				currentIndex = index;
+				playMedia(index);
+			});
+			dotsContainer.appendChild(dot);
+		});
+
+		// Style container
+		slidesContainer.style.display = 'flex';
+		slidesContainer.style.transition = 'transform 0.7s ease-in-out';
+		document.querySelectorAll('.slide').forEach(slide => {
+			slide.style.flex = '0 0 100%';
+		});
+	}
+
+
+	function playMedia(index) {
+		clearTimeout(autoPlayTimeout);
+
+		const slidesContainer = document.getElementById('slidesContainer');
+		const slides = document.querySelectorAll('.slide');
+		const dots = document.querySelectorAll('.dot');
+
+		slidesContainer.style.transform = `translateX(-${index * 100}%)`;
+
+		dots.forEach((dot, i) => {
+			dot.classList.toggle('active', i === index);
+		});
+
+		// Stop semua video lain
+		Object.entries(ytPlayers).forEach(([i, player]) => {
+			i = parseInt(i);
+			if (player && player.stopVideo && i !== index) {
+			player.stopVideo();
+			}
+		});
+
+		const media = mediaData[index];
+
+		if (media.type === 'image') {
+			autoPlayTimeout = setTimeout(nextMedia, 5000);
+		} else if (media.type === 'video') {
+			const player = ytPlayers[index];
+			if (player && player.seekTo && player.playVideo) {
+			// Pastikan video mulai dari awal
+			player.seekTo(0);
+			player.playVideo();
+			}
+		}
+	}
+
+
+	function createYouTubePlayer(videoId, index) {
+		ytPlayers[index] = new YT.Player(`ytplayer-${index}`, {
+			height: '360',
+			width: '640',
+			videoId: videoId,
+			playerVars: {
+				autoplay: 0,
+				mute: 1,
+				controls: 0,
+				modestbranding: 1,
+				rel: 0,
+				enablejsapi: 1
+			},
+			events: {
+				onReady: (event) => {
+					if (index === currentIndex) {
+						event.target.playVideo();
+					}
+				},
+				onStateChange: (event) => {
+					const player = event.target;
+
+					const currentTime = player.getCurrentTime();
+					const duration = player.getDuration();
+
+					console.log(event.data + " >> " + currentTime + " >> " + duration)
+
+					if (event.data === YT.PlayerState.PLAYING) {
+						// Tandai bahwa video benar-benar mulai diputar
+						videoStarted[index] = true;
+					}
+
+					if (event.data === YT.PlayerState.ENDED) {
+						// Pastikan video benar-benar sudah mulai sebelumnya
+						if (videoStarted[index]) {
+							
+							if (Math.abs(currentTime - duration) <= 1) {
+								event.target.stopVideo();
+								nextMedia();
+							}
+						}
+					}
+				}
+			}
+		});
+	}
+
+
+	function nextMedia() {
+		currentIndex = (currentIndex + 1) % mediaData.length;
+		playMedia(currentIndex);
+	}
+
+	function loadYouTubeAPI() {
+		console.log("1. Load Youtube API")
+		if (!window.YT || !YT.Player) {
+			const tag = document.createElement('script');
+			tag.src = "https://www.youtube.com/iframe_api";
+			document.body.appendChild(tag);
+		}
+	}
+
+	window.onYouTubeIframeAPIReady = function () {
+		console.log("2. Youtube API Ready")
+		renderSlides();
+		playMedia(0);
+	};
+	
 	// Update display whenever localStorage changes
 	window.addEventListener("storage", updateDisplay);
 
 	// Initial load
 	updateDisplay();
+	loadYouTubeAPI();
+	// renderSlides();
 
-	setInterval(autoSlide, 3000);
+	// setInterval(autoSlide, 3000);
 	updateSlidePosition();
 </script>
 </html>

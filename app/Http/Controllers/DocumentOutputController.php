@@ -20,6 +20,8 @@ use App\Models\DeliveryNoteHeader;
 use App\Models\DeliveryNoteDetail;
 use App\Models\FakturPenjualanHeader;
 use App\Models\FakturPenjualanDetail;
+use App\Models\ReturPenjualanHeader;
+use App\Models\ReturPenjualanDetail;
 use App\Mail\InvoiceMail;
 use App\Models\PembayaranPenjualanHeader;
 use App\Models\PembayaranPenjualanDetail;
@@ -136,6 +138,39 @@ class DocumentOutputController extends Controller
                     ->leftJoin('company', 'company.KodePartner', '=', 'fakturpenjualanheader.RecordOwnerID')
                     ->where('fakturpenjualanheader.RecordOwnerID', $RecordOwnerID)
                     ->where('fakturpenjualanheader.NoTransaksi', $NomorTransaksi)
+                    ->get();
+                break;
+            case 'returpenjualan' :
+                $sql = "company.NamaPartner, company.AlamatTagihan, company.NPWP, company.NoTlp,
+                    returpenjualanheader.NoTransaksi, returpenjualanheader.TglTransaksi, returpenjualanheader.TglTransaksi,
+                    pelanggan.NamaPelanggan, pelanggan.Alamat, itemmaster.NamaItem, returpenjualandetail.Satuan,
+                    returpenjualandetail.Qty, returpenjualandetail.Harga, returpenjualandetail.HargaNet,
+                    0 Discount, returpenjualandetail.VatPercent,
+                    returpenjualanheader.TotalTransaksi AS SubTotal, 0 AS Diskon,
+                    returpenjualanheader.Pajak, returpenjualanheader.TotalPembelian AS Total,
+                    company.icon, pelanggan.Email, pelanggan.NoTlp1,
+                    'Faktur Penjualan' title, returpenjualanheader.Keterangan, '' as SyaratDanKetentuan";
+
+                return ReturPenjualanHeader::selectRaw($sql)
+                    ->leftJoin('returpenjualandetail', function ($join) {
+                        $join->on('returpenjualanheader.NoTransaksi', '=', 'returpenjualandetail.NoTransaksi')
+                            ->on('returpenjualanheader.RecordOwnerID', '=', 'returpenjualandetail.RecordOwnerID');
+                    })
+                    ->leftJoin('pelanggan', function ($join) {
+                        $join->on('returpenjualanheader.KodePelanggan', '=', 'pelanggan.KodePelanggan')
+                            ->on('returpenjualanheader.RecordOwnerID', '=', 'pelanggan.RecordOwnerID');
+                    })
+                    ->leftJoin('itemmaster', function ($join) {
+                        $join->on('returpenjualandetail.KodeItem', '=', 'itemmaster.KodeItem')
+                            ->on('returpenjualandetail.RecordOwnerID', '=', 'itemmaster.RecordOwnerID');
+                    })
+                    ->leftJoin('satuan', function ($join) {
+                        $join->on('returpenjualandetail.Satuan', '=', 'satuan.KodeSatuan')
+                            ->on('returpenjualandetail.RecordOwnerID', '=', 'satuan.RecordOwnerID');
+                    })
+                    ->leftJoin('company', 'company.KodePartner', '=', 'returpenjualanheader.RecordOwnerID')
+                    ->where('returpenjualanheader.RecordOwnerID', $RecordOwnerID)
+                    ->where('returpenjualanheader.NoTransaksi', $NomorTransaksi)
                     ->get();
                 break;
             case "pembayaranpenjualan":
@@ -369,12 +404,25 @@ class DocumentOutputController extends Controller
         $RecordOwnerID = Auth()->user()->RecordOwnerID;
         $NomorTransaksi = $request->query('NomorTransaksi');
         $TipeTransaksi = $request->query('TipeTransaksi');
+        $selectedFormat = $request->query('format');
+
+        // dd($selectedFormat);
 
         $oCompany = Company::where('KodePartner', $RecordOwnerID)->first();
 
         $data = $this->getSlipData($TipeTransaksi, $NomorTransaksi, $RecordOwnerID);
 
-        return view('Transaksi.Penjualan.slip.'.$oCompany->DefaultSlip,[
+        $format = "";
+
+        if($selectedFormat != null){
+            $format = $selectedFormat;
+        }
+        else{
+            $format = $oCompany->DefaultSlip;
+        }
+
+
+        return view('Transaksi.Penjualan.slip.'.$format,[
             'data' => $data,
             'TipeTransaksi' => $TipeTransaksi,
             'NomorTransaksi' => $NomorTransaksi,

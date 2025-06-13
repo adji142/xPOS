@@ -65,6 +65,8 @@ class ReturPenjualanController extends Controller
 					->whereBetween('returpenjualanheader.TglTransaksi',[$TglAwal, $TglAkhir])
     				->where('returpenjualanheader.RecordOwnerID',Auth::user()->RecordOwnerID);
 
+		$model->where("returpenjualanheader.Status", '<>', 'D');
+
     	if ($KodeVendor != "") {
     		$model->where("returpenjualanheader.KodePelanggan", $KodeVendor);
     	}

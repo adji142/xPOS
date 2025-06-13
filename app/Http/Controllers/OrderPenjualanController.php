@@ -53,7 +53,8 @@ class OrderPenjualanController extends Controller
     					->on('pelanggan.RecordOwnerID','=','orderpenjualanheader.RecordOwnerID');
     				})
     				->whereBetween('orderpenjualanheader.TglTransaksi',[$TglAwal, $TglAkhir])
-    				->where('orderpenjualanheader.RecordOwnerID',Auth::user()->RecordOwnerID);
+    				->where('orderpenjualanheader.RecordOwnerID',Auth::user()->RecordOwnerID)
+					->where('orderpenjualanheader.Status','<>', 'D');
 
     	if ($KodePelanggan != "") {
     		$model->where("orderpenjualanheader.KodePelanggan", $KodePelanggan);
@@ -370,4 +371,32 @@ class OrderPenjualanController extends Controller
        }
        return response()->json($data);
     }
+
+	public function Delete(Request $request){
+		$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+		try{
+			$model = OrderPenjualanHeader::where('NoTransaksi','=',$request->input('NoTransaksi'))
+           				->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
+			if($model){
+				$update = DB::table('orderpenjualanheader')
+                           ->where('NoTransaksi','=', $request->input('NoTransaksi'))
+                           ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                           ->update(
+                               [
+									'Status' => 'D',
+									'UpdatedBy' => Auth::user()->name
+                               ]
+                           );
+				$data['success'] = true;
+			}
+			else{
+				$data['success'] = false;
+				$data['message'] = 'Data Tidak dikenal';
+			}
+		} catch (Exception $e) {
+			$data['success'] = false;
+			$data['message'] = $e->getMessage();
+		}
+		return response()->json($data);
+	}
 }

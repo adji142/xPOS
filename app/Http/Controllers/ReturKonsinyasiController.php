@@ -61,6 +61,8 @@ class ReturKonsinyasiController extends Controller
 					})
 					->whereBetween('returkonsinyasiheader.TglTransaksi',[$TglAwal, $TglAkhir])
     				->where('returkonsinyasiheader.RecordOwnerID',Auth::user()->RecordOwnerID);
+		
+		$model->where("returkonsinyasiheader.Status", '<>' ,'D');
 
     	if ($KodeVendor != "") {
     		$model->where("returkonsinyasiheader.KodeSupplier", $KodeVendor);

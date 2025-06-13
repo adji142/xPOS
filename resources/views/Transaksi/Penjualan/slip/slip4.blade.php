@@ -79,11 +79,11 @@
   </table>
 </div>
 
-<div class="section">
+{{-- <div class="section">
   <p><strong>Terbilang:</strong><br>
     Empat Belas Juta Tujuh Ratus Lima Puluh Ribu Rupiah
   </p>
-</div>
+</div> --}}
 
 <div class="section">
   <table class="totals">

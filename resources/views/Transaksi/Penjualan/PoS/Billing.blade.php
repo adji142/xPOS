@@ -897,12 +897,90 @@ License: You must have a valid license purchased only from themeforest(the above
 <!--end::Body-->
 </html>
 <script type="text/javascript">
+	var _custdisplayopened = false;
+
     jQuery(function () {
 		var _billing = [];
 		var _dataPaket = [];
 
 		var _isFromBooking = false;
+		let displayWindow = null;
 
+		function closedWindow(){
+			
+			_custdisplayopened = localStorage.getItem("closedwindows");
+			console.log(_custdisplayopened);
+			// alert('Closed');
+		}
+		window.addEventListener('message', function(event) {
+			console.log(event);
+			if (event.data === 'customer-display-closed') {
+				// document.getElementById('status').innerHTML = 'Status: <b>CLOSED</b>';
+				_custdisplayopened = false;
+			}
+			else if(event.data === 'payment-cancel'){
+				Swal.fire({
+					icon: "error",
+					title: "Informasi",
+					text: "Pembayaran dibatalkan",
+				}).then((result) => {
+					location.reload();
+				});
+			}
+			else if(event.data === 'payment-success'){
+				Swal.fire({
+					icon: "success",
+					title: "Informasi",
+					text: "Pembayaran Berhasil",
+				}).then((result) => {
+					SaveData('C',$('#btBayar'),'Bayar')
+					location.reload();
+				});
+			}
+			else if(event.data === 'payment-error'){
+				Swal.fire({
+					icon: "error",
+					title: "Informasi",
+					text: "Pembayaran Gagal",
+				}).then((result) => {
+					location.reload();
+				});
+			}
+			else if(event.data === 'data-error'){
+				Swal.fire({
+					icon: "error",
+					title: "Informasi",
+					text: "Pembayaran Gagal",
+				}).then((result) => {
+					// SaveData('C',)
+					location.reload();
+				});
+			}
+			else if(event.data === 'no-pay'){
+				Swal.fire({
+					icon: "error",
+					title: "Informasi",
+					text: "Pembayaran tidak dilanjutkan",
+				}).then((result) => {
+					// SaveData('C',)
+					location.reload();
+				});
+			}
+
+			if(event.data.type == 'say-hello'){
+				_custdisplayopened = true;
+				displayWindow = event.source; // simpan referensinya lagi
+				console.log('Display terhubung ulang setelah refresh.');
+			}
+		});
+
+		window.onload = function () {
+			if (localStorage.getItem('displayOpen') === 'true') {
+				// Window tidak bisa diakses ulang langsung, tapi akan dapat postMessage dari display
+				console.log('Menunggu say-hello dari display...');
+			}
+		};
+		// window.addEventListener("closedwindows", closedWindow);
 		jQuery(document).ready(function() {
 			_billing = <?php echo $titiklampu ?>;
 			console.log(_billing);
@@ -1446,7 +1524,6 @@ License: You must have a valid license purchased only from themeforest(the above
 				}
 
 				if (parseFloat(jQuery('#txtGrandTotal_Detail').attr("originalvalue")) > 0) {
-					
 					PaymentGateWay('C',$('#btBayar'),'Bayar');
 				}
 				else{
@@ -1490,6 +1567,8 @@ License: You must have a valid license purchased only from themeforest(the above
 		});
 
 		$('#btOpenCustDisplay').click(function(){
+			
+			_custdisplayopened = true;
 			openCustomerDisplay();
 		});
 
@@ -1901,14 +1980,14 @@ License: You must have a valid license purchased only from themeforest(the above
 				});
 
 				// PPN
-				// if(_PPnNormal > 0) {
-				// 	oCustomerDisplay.push({
-				// 		KodeItem : 'Pajak',
-				// 		NamaItem: "PPN " + _ppnPercent + "% - " + filteredData[0]["NamaPaket"],
-				// 		Qty: 1,
-				// 		Harga: _PPnNormal
-				// 	});
-				// }
+				if(_PPnNormal > 0) {
+					oCustomerDisplay["data"].push({
+						KodeItem : 'Pajak',
+						NamaItem: "PPN " + _ppnPercent + "% - " + filteredData[0]["NamaPaket"],
+						Qty: 1,
+						Harga: _PPnNormal
+					});
+				}
 				// Pajak Hiburan
 				// if(_PajakHiburanNormal > 0){
 				// 	oCustomerDisplay.push({
@@ -1928,14 +2007,14 @@ License: You must have a valid license purchased only from themeforest(the above
 				});
 
 				// PPN
-				// if(_PPnBaru > 0) {
-				// 	oCustomerDisplay.push({
-				// 		KodeItem : 'Pajak',
-				// 		NamaItem: "PPN " + _ppnPercent + "% - " + filteredData[0]["NamaPaket"] + " Setelah Jam "+ filteredPaket[0]["AkhirJamNormal"],
-				// 		Qty: 1,
-				// 		Harga: _PPnBaru
-				// 	});
-				// }
+				if(_PPnBaru > 0) {
+					oCustomerDisplay["data"].push({
+						KodeItem : 'Pajak',
+						NamaItem: "PPN " + _ppnPercent + "% - " + filteredData[0]["NamaPaket"] + " Setelah Jam "+ filteredPaket[0]["AkhirJamNormal"],
+						Qty: 1,
+						Harga: _PPnBaru
+					});
+				}
 				// Pajak Hiburan
 				// if(_PajakHiburanNormal > 0){
 				// 	oCustomerDisplay.push({
@@ -2044,12 +2123,12 @@ License: You must have a valid license purchased only from themeforest(the above
 			formatCurrency($('#txtSubTotal_Detail'), _SubTotal);
 			formatCurrency($('#txtTotalMakanan_Detail'), _TotalMakanan);
 			formatCurrency($('#txtTotalPajak_Detail'), _PPnNormal + _PPnBaru + _PajakHiburanNormal + _PajakHiburanBaru);
-			formatCurrency($('#txtDiscountMember_Detail'), _DiscountMember);
+			formatCurrency($('#txtDiscountMember_Detail'), Math.floor(_DiscountMember));
 			formatCurrency($('#txtDiscountTable_Detail'), _DiscountTable);
 			formatCurrency($('#txtDiscountFnB_Detail'), _DiscountFnB);
-			formatCurrency($('#txtDiscount_Detail'), _Discount);
+			formatCurrency($('#txtDiscount_Detail'), Math.floor(_Discount));
 			formatCurrency($('#txtTotalUangMuka_Detail'), _TotalUangMuka);
-			formatCurrency($('#txtGrandTotal_Detail'), _SubTotal + _TotalMakanan+ - _Discount + _PajakHiburanNormal + _PajakHiburanBaru - _TotalUangMuka);
+			formatCurrency($('#txtGrandTotal_Detail'), _SubTotal + _TotalMakanan+ - Math.floor(_Discount) + _PajakHiburanNormal + _PajakHiburanBaru - _TotalUangMuka);
 			console.log(_SubTotal);
 			console.log(_TotalMakanan);
 			console.log(_Discount);
@@ -2059,7 +2138,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			console.log(_PajakHiburanBaru);
 			console.log(_TotalUangMuka);
 			if(filteredData[0]["StatusBooking"] == 'BOOKING'){
-				formatCurrency($('#txtJumlahBayar_Detail'), _SubTotal + _TotalMakanan+ - _Discount + _PPnNormal + _PPnBaru + _PajakHiburanNormal + _PajakHiburanBaru - _TotalUangMuka);
+				formatCurrency($('#txtJumlahBayar_Detail'), _SubTotal + _TotalMakanan+ - Math.floor(_Discount) + _PPnNormal + _PPnBaru + _PajakHiburanNormal + _PajakHiburanBaru - _TotalUangMuka);
 			}
 			else{
 				formatCurrency($('#txtJumlahBayar_Detail'), 0);
@@ -2070,11 +2149,20 @@ License: You must have a valid license purchased only from themeforest(the above
 
 			// parseFloat(jQuery('#txtSubTotal_Detail').attr("originalvalue"))
 
+			if(_PajakHiburanNormal + _PajakHiburanBaru > 0) {
+				oCustomerDisplay["data"].push({
+					KodeItem : 'Pajak',
+					NamaItem: "Pajak Hiburan : " + (_PajakHiburanNormal + _PajakHiburanBaru),
+					Qty: 1,
+					Harga: _PajakHiburanNormal + _PajakHiburanBaru
+				});
+			}
+
 			oCustomerDisplay['Total'] = _SubTotal;
 			oCustomerDisplay['Tax'] = _PPnNormal + _PPnBaru + _PajakHiburanNormal + _PajakHiburanBaru;
 			oCustomerDisplay['UangMuka'] = _TotalUangMuka;
-			oCustomerDisplay['Discount'] = _Discount;
-			oCustomerDisplay['Net'] = _SubTotal + _TotalMakanan+ - _Discount + _PajakHiburanNormal + _PajakHiburanBaru - _TotalUangMuka
+			oCustomerDisplay['Discount'] = Math.floor(_Discount);
+			oCustomerDisplay['Net'] = _SubTotal + _TotalMakanan+ - Math.floor(_Discount) + _PajakHiburanNormal + _PajakHiburanBaru - _TotalUangMuka
 
 			console.log(JSON.stringify(oCustomerDisplay))
 			
@@ -2511,7 +2599,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		}
 
 		function PaymentGateWay(Status, ButonObject, ButtonDefaultText) {
-
+			// _custdisplayopened
 			const oCompany = <?php echo $company ?>;
 			const filteredData = _billing.filter(item => item.NoTransaksi == jQuery('#txtNoTransaksi_Detail').val());
 
@@ -2663,62 +2751,70 @@ License: You must have a valid license purchased only from themeforest(the above
 				'Detail' : oDetail
 			}
 
-			fetch( "{{route('pembayaranpenjualan-createpayment')}}", {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-CSRF-TOKEN': '{{ csrf_token() }}'
-				},
-				body: JSON.stringify(oData)
-			})
-			.then(response => response.json())
-			.then(data => {
-				console.log(data);
-				if (data.snap_token) {
-					snap.pay(data.snap_token, {
-						onSuccess: function(result){
-							// console.log(result);
-							if(result.transaction_status == "cancel"){
+			console.log("Status Cust Display : " + _custdisplayopened)
+			if(_custdisplayopened){
+				// console.log('Cust Display Oppened');
+				localStorage.setItem('paymentgatewaydata', JSON.stringify(oData));
+				displayWindow.postMessage('paymentgateway', '*');
+			}
+			else{
+				fetch( "{{route('pembayaranpenjualan-createpayment')}}", {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-CSRF-TOKEN': '{{ csrf_token() }}'
+					},
+					body: JSON.stringify(oData)
+				})
+				.then(response => response.json())
+				.then(data => {
+					console.log(data);
+					if (data.snap_token) {
+						snap.pay(data.snap_token, {
+							onSuccess: function(result){
+								// console.log(result);
+								if(result.transaction_status == "cancel"){
+									Swal.fire({
+										icon: "error",
+										title: "Opps...",
+										text: "Pembayaran Dibatalkan",
+									})
+								}
+								else{
+									// order_id
+									jQuery('#txtRefrensi_Detail').val(result.order_id)
+									SaveData(Status, ButonObject, ButtonDefaultText)
+								}
+								// Proses pembayaran sukses
+							},
+							onPending: function(result){
+								// console.log(result);
+								// Pembayaran tertunda
+							},
+							onError: function(result){
+								// console.log(result);
 								Swal.fire({
 									icon: "error",
 									title: "Opps...",
-									text: "Pembayaran Dibatalkan",
+									text: result,
 								})
+								// Pembayaran gagal
+							},
+							onClose: function(){
+								console.log('customer closed the popup without finishing the payment');
 							}
-							else{
-								// order_id
-								jQuery('#txtRefrensi_Detail').val(result.order_id)
-								SaveData(Status, ButonObject, ButtonDefaultText)
-							}
-							// Proses pembayaran sukses
-						},
-						onPending: function(result){
-							// console.log(result);
-							// Pembayaran tertunda
-						},
-						onError: function(result){
-							// console.log(result);
-							Swal.fire({
-								icon: "error",
-								title: "Opps...",
-								text: result,
-							})
-							// Pembayaran gagal
-						},
-						onClose: function(){
-							console.log('customer closed the popup without finishing the payment');
-						}
-					});
-				} else {
-					// alert('Error: ' + data.error);
-					Swal.fire({
-						icon: "error",
-						title: "Opps...",
-						text: data.error,
-					})
-				}
-			})
-			.catch(error => console.error('Error:', error));
+						});
+					} else {
+						// alert('Error: ' + data.error);
+						Swal.fire({
+							icon: "error",
+							title: "Opps...",
+							text: data.error,
+						})
+					}
+				})
+				.catch(error => console.error('Error:', error));
+			}
 		}
 
 		function PrintStruk(NoTransaksi) {
@@ -2771,7 +2867,14 @@ License: You must have a valid license purchased only from themeforest(the above
 		function openCustomerDisplay() {
 			// Use Laravel's url() helper to generate the URL
 			const url = "{{ url('/fpenjualan/custdisplay') }}";
-			window.open(url, '_blank', 'width=1390,height=800,,scrollbars=no,toolbar=no,status=no,menubar=no');
+			displayWindow  = window.open(url, '_blank', 'width=1390,height=800,,scrollbars=no,toolbar=no,status=no,menubar=no');
+			localStorage.setItem('displayOpen', 'true');
+
+			const interval = setInterval(() => {
+				if (displayWindow && displayWindow.closed) {
+					clearInterval(interval);
+				}
+			}, 1000);
 		}
 	});
 

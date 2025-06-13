@@ -107,9 +107,22 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" style="height: 500px;">
+        <input type="hidden" id="NoTransaksiModal" name="NoTransaksiModal"/>
         <iframe src="" width="100%" height="100%" frameborder="0"></iframe>
       </div>
         <div class="modal-footer">
+            <div class="col-4  px-4">
+                <label  class="text-body">Format Slip</label>
+                <fieldset class="form-group mb-3">
+                    <select name="DefaultSlip" id="DefaultSlip" class="js-states form-control bg-transparent">
+                        <option value="slip1">Slip 1</option>
+                        <option value="slip2">Slip 2</option>
+                        <option value="slip3">Slip 3</option>
+                        <option value="slip4">Slip 4</option>
+                        <option value="slip5">Slip 5</option>
+                    </select>
+                </fieldset>
+            </div>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             <button type="button" class="btn btn-primary" id='btnPrint' >Cetak</button>
             <button type="button" class="btn btn-success" id='btnEmail'>Kirim Email</button>
@@ -258,6 +271,32 @@
 
     });
 
+    jQuery('#DefaultSlip').change(function () {
+        var NoTransaksi = jQuery('#NoTransaksiModal').val();
+        var format = jQuery('#DefaultSlip').val();
+        var url = documentBaseUrl + "?NomorTransaksi=" + encodeURIComponent(NoTransaksi) + "&TipeTransaksi=pembayaranpenjualan&format="+format;
+        jQuery('#webViewModal iframe').attr('src', url);
+
+        // Update Slip
+
+        $.ajax({
+            async:false,
+            type: 'post',
+            url: "{{route('companysetting-updateSlip')}}",
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+            },
+            data: {
+                'FieldName' : 'PaymentSlip',
+                'FieldValue' : format,
+            },
+            dataType: 'json',
+            success: function(response) {
+                console.log(response)
+            }
+        })
+    });
+
     function GetHeader() {
         $.ajax({
             async:false,
@@ -297,10 +336,34 @@
     }
 
     function showCetakModal(noTransaksi) {
+        jQuery('#NoTransaksiModal').val(noTransaksi);
         var url = documentBaseUrl + "?NomorTransaksi=" + encodeURIComponent(noTransaksi) + "&TipeTransaksi=pembayaranpenjualan";
         jQuery('#webViewModal iframe').attr('src', url);
         jQuery('#webViewModal').modal({backdrop: 'static', keyboard: false})
         jQuery('#webViewModal').modal('show');
+
+         $.ajax({
+            async:false,
+            type: 'post',
+            url: "{{route('companysetting-getcompanydetail')}}",
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+            },
+            data: {
+                'FieldName' : 'orderSlip',
+            },
+            dataType: 'json',
+            success: function(response) {
+                // console.log(response)
+
+                if (response.data['PaymentSlip'] === null || response.data['PaymentSlip'] === '') {
+                    console.log('PaymentSlip kosong atau null');
+                } else {
+                    console.log('PaymentSlip berisi:', response.data['PaymentSlip']);
+                    jQuery('#DefaultSlip').val(response.data['PaymentSlip']).change();
+                }
+            }
+        });
     }
     
 
@@ -378,8 +441,8 @@
                     fixed: true,
                     cellTemplate: function(cellElement, cellInfo) {
                         var link = "pembayaranpenjualan/form/"+cellInfo.data.NoTransaksi;
-                        LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit' >Edit</a>";
-                        LinkAccess += "<button class='btn btn-outline-success font-weight-bold me-1 mb-1' onclick=\"showCetakModal('" + cellInfo.data.NoTransaksi + "')\">Cetak</button>";
+                        LinkAccess = "<a href = "+link+" class='btn btn-outline-primary font-weight-bold me-1 mb-1' id = 'btEdit' ><i class='fas fa-edit'></i></a>";
+                        LinkAccess += "<button class='btn btn-outline-success font-weight-bold me-1 mb-1' onclick=\"showCetakModal('" + cellInfo.data.NoTransaksi + "')\"><i class='fas fa-print'></i></button>";
                         // LinkAccess += "<a href = '#' class='btn btn-outline-danger font-weight-bold me-1 mb-1' id = 'btCopyToFaktur' >Buat Faktur Pembelian</a>";
 
                         cellElement.append(LinkAccess);

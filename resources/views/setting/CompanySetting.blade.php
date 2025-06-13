@@ -704,7 +704,7 @@
 																</div>
 															</fieldset>
 														</div>
-														<div class="col-md-10">
+														<div class="col-md-12">
 					                            			<label  class="text-body">Running Text</label>
 					                            			<fieldset class="form-group mb-4">
 					                            				<input type="text" class="form-control" id="RunningText" name="RunningText" placeholder="Masukan Running Text" value="{{ count($company) > 0 ? $company[0]['RunningText'] : 0 }}" >
@@ -781,6 +781,46 @@
 															</div>
 
 														</div>
+
+														<div class="col-md-12">
+					                            			<label  class="text-body">Video 1</label>
+					                            			<fieldset class="form-group mb-4">
+					                            				<input type="text" class="form-control" id="VideoCustomerDisplay1" name="VideoCustomerDisplay1" placeholder="Masukan Link Video Google Drive" value="{{ count($company) > 0 ? $company[0]['VideoCustomerDisplay1'] : 0 }}" >
+																<small>*Masukan ID Video dari link Video Youtube Contoh : https://www.youtube.com/watch?v=<font color="red">IcJCYEZMpwA</font></small>
+															</fieldset>
+					                            		</div>
+
+														<div class="col-md-12">
+					                            			<label  class="text-body">Video 2</label>
+					                            			<fieldset class="form-group mb-4">
+					                            				<input type="text" class="form-control" id="VideoCustomerDisplay2" name="VideoCustomerDisplay2" placeholder="Masukan Link Video Google Drive" value="{{ count($company) > 0 ? $company[0]['VideoCustomerDisplay2'] : 0 }}" >
+																<small>*Masukan ID Video dari link Video Youtube Contoh : https://www.youtube.com/watch?v=<font color="red">IcJCYEZMpwA</font></small>
+															</fieldset>
+					                            		</div>
+
+														<div class="col-md-12">
+					                            			<label  class="text-body">Video 3</label>
+					                            			<fieldset class="form-group mb-4">
+					                            				<input type="text" class="form-control" id="VideoCustomerDisplay3" name="VideoCustomerDisplay3" placeholder="Masukan Link Video Google Drive" value="{{ count($company) > 0 ? $company[0]['VideoCustomerDisplay3'] : 0 }}" >
+																<small>*Masukan ID Video dari link Video Youtube Contoh : https://www.youtube.com/watch?v=<font color="red">IcJCYEZMpwA</font></small>
+															</fieldset>
+					                            		</div>
+
+														<div class="col-md-12">
+					                            			<label  class="text-body">Video 4</label>
+					                            			<fieldset class="form-group mb-4">
+					                            				<input type="text" class="form-control" id="VideoCustomerDisplay4" name="VideoCustomerDisplay4" placeholder="Masukan Link Video Google Drive" value="{{ count($company) > 0 ? $company[0]['VideoCustomerDisplay4'] : 0 }}" >
+																<small>*Masukan ID Video dari link Video Youtube Contoh : https://www.youtube.com/watch?v=<font color="red">IcJCYEZMpwA</font></small>
+															</fieldset>
+					                            		</div>
+
+														<div class="col-md-12">
+					                            			<label  class="text-body">Video 5</label>
+					                            			<fieldset class="form-group mb-4">
+					                            				<input type="text" class="form-control" id="VideoCustomerDisplay5" name="VideoCustomerDisplay5" placeholder="Masukan Link Video Google Drive" value="{{ count($company) > 0 ? $company[0]['VideoCustomerDisplay5'] : 0 }}" >
+																<small>*Masukan ID Video dari link Video Youtube Contoh : https://www.youtube.com/watch?v=<font color="red">IcJCYEZMpwA</font></small>
+															</fieldset>
+					                            		</div>
 													</div>
 												</div>
 

@@ -71,7 +71,8 @@ class DeliveryNoteController extends Controller
 	    					->on('pelanggan.RecordOwnerID','=','deliverynoteheader.RecordOwnerID');
 	    				})
 	    				->whereBetween('deliverynoteheader.TglTransaksi',[$TglAwal,$TglAkhir])
-	    				->where('deliverynoteheader.RecordOwnerID',Auth::user()->RecordOwnerID);
+	    				->where('deliverynoteheader.RecordOwnerID',Auth::user()->RecordOwnerID)
+						->where('deliverynoteheader.Status', '<>', 'D');
 	   	if ($KodePelanggan != "") {
     		$deliverynote->where("deliverynoteheader.KodePelanggan", $KodePelanggan);
     	}
@@ -719,5 +720,36 @@ class DeliveryNoteController extends Controller
 
    		return response()->json($data);
    	}
+
+	public function Delete(Request $request){
+		$data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+		try{
+			$model = DeliveryNoteHeader::where('NoTransaksi','=',$request->input('NoTransaksi'))
+           				->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
+			if($model){
+				$update = DB::table('deliverynoteheader')
+                           ->where('NoTransaksi','=', $request->input('NoTransaksi'))
+                           ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                           ->update(
+                               [
+									'Status' => 'D',
+									'UpdatedBy' => Auth::user()->name
+                               ]
+                           );
+				
+				// Jurnal balik
+
+				$data['success'] = true;
+			}
+			else{
+				$data['success'] = false;
+				$data['message'] = 'Data Tidak dikenal';
+			}
+		} catch (Exception $e) {
+			$data['success'] = false;
+			$data['message'] = $e->getMessage();
+		}
+		return response()->json($data);
+	}
 
 }

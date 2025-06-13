@@ -191,6 +191,11 @@ class CompanyController extends Controller
                                     'ImageGallery10' => empty($request->input('ImageGallery10Base64')) ? "" : $request->input('ImageGallery10Base64'),
                                     'ImageGallery11' => empty($request->input('ImageGallery11Base64')) ? "" : $request->input('ImageGallery11Base64'),
                                     'ImageGallery12' => empty($request->input('ImageGallery12Base64')) ? "" : $request->input('ImageGallery12Base64'),
+                                    'VideoCustomerDisplay1' => empty($request->input('VideoCustomerDisplay1')) ? "" : $request->input('VideoCustomerDisplay1'),
+                                    'VideoCustomerDisplay2' => empty($request->input('VideoCustomerDisplay2')) ? "" : $request->input('VideoCustomerDisplay2'),
+                                    'VideoCustomerDisplay3' => empty($request->input('VideoCustomerDisplay3')) ? "" : $request->input('VideoCustomerDisplay3'),
+                                    'VideoCustomerDisplay4' => empty($request->input('VideoCustomerDisplay4')) ? "" : $request->input('VideoCustomerDisplay4'),
+                                    'VideoCustomerDisplay5' => empty($request->input('VideoCustomerDisplay5')) ? "" : $request->input('VideoCustomerDisplay5'),
                 				]
                 			);
 
@@ -667,5 +672,36 @@ class CompanyController extends Controller
             $oTemp[] = $data;
         }
         return response()->json($oTemp);
+    }
+
+    public function getCompanyDetails(Request $request){
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+
+        try {
+           $oData = Company::where('KodePartner', Auth::user()->RecordOwnerID)->first();
+           $data['success'] = true;
+           $data['data'] = $oData;
+        } catch (\Throwable $th) {
+            $data['success'] = false;
+            $data['message'] = $th->getMessage();
+        }
+        return response()->json($data);
+        
+    }
+
+    public function updateSlip(Request $request){
+        $data = array('success' => false, 'message' => '', 'data' => array(), 'Kembalian' => "");
+        $FieldName = $request->input('FieldName');
+        $FieldValue = $request->input('FieldValue');
+
+        try {
+            DB::statement("UPDATE company SET ". $FieldName ." = '". $FieldValue ."' WHERE KodePartner = '". Auth::user()->RecordOwnerID. "'");
+            $data['success'] = true;
+        } catch (\Throwable $th) {
+            $data['success'] = false;
+            $data['message'] = $th->getMessage();
+        }
+
+        return response()->json($data);
     }
 }

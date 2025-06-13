@@ -93,7 +93,8 @@ class FakturPenjualanController extends Controller
     				})
     				->whereBetween(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'),[$TglAwal, $TglAkhir])
     				->where('fakturpenjualanheader.RecordOwnerID',Auth::user()->RecordOwnerID);
-
+		
+		$model->where("fakturpenjualanheader.Status", '<>', 'D');
     	if ($KodePelanggan != "") {
     		$model->where("fakturpenjualanheader.KodePelanggan", $KodePelanggan);
     	}

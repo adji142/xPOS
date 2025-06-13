@@ -652,6 +652,8 @@ class PembayaranPenjualanController extends Controller
             	'qris' => []
 			];
 
+			// dd($transaction);
+
 			try {
 				$snapToken = Snap::getSnapToken($transaction);
 				return response()->json(['snap_token' => $snapToken]);

@@ -63,7 +63,8 @@ class ReturPembelianController extends Controller
 					})
 					->whereBetween('returpembelianheader.TglTransaksi',[$TglAwal, $TglAkhir])
     				->where('returpembelianheader.RecordOwnerID',Auth::user()->RecordOwnerID);
-
+		
+		$model->where("returpembelianheader.Status", '<>' ,'D');
     	if ($KodeVendor != "") {
     		$model->where("returpembelianheader.KodeSupplier", $KodeVendor);
     	}
