@@ -138,6 +138,7 @@ function SimpanPembayaranJson(Request $request) {
 
     $jsonData = $request->json()->all();
     //dd($jsonData);
+    $isFinished = false;
     DB::beginTransaction(); // Mulai transaksi
     try {
         $NoTransaksi = "";
@@ -198,39 +199,21 @@ function SimpanPembayaranJson(Request $request) {
          // Update kuota voucher jika ada
          if (isset($jsonData['VoucherCode'])) {
            
-         $update = DB::table('discountvoucher')
-         ->where('VoucherCode', '=', $request->input('VoucherCode'))
-         ->update(['DiscountQuota' => 0]);
-       
-     if (!$update) {
-         throw new \Exception('Gagal menggunakan voucher Diskon.');
-     }
-    }
+            $update = DB::table('discountvoucher')
+            ->where('VoucherCode', '=', $request->input('VoucherCode'))
+            ->update(['DiscountQuota' => 0]);
+        
+            if (!$update) {
+                throw new \Exception('Gagal menggunakan voucher Diskon.');
+            }
+        }
 
         // Jika semuanya berhasil, commit transaksi
         DB::commit();
 
-         // Send Email
-         $booking = [
-            'Email' => $jsonData['Email'],
-            'NoTransaksi' => $NoTransaksi,
-            'TglBooking' => $jsonData['TglBooking'],
-            'JamMulai' => $jsonData['JamMulai'],
-            'JamSelesai' => $jsonData['JamSelesai']
-        ];
-
-  
-       
-$emailPelanggan = Pelanggan::where('KodePelanggan', $KodePelanggan)->first();
-//dd($data);
-
-if ($emailPelanggan) {
-  
-    Mail::to($emailPelanggan->Email)->send(new KonfirmasiPembayaranMail($booking, $emailPelanggan));
-}
-
         $data['success'] = true;
         $data['message'] = 'Data berhasil disimpan';
+        $isFinished = true;
         //return response()->json($data);
 
     } catch (\Exception $e) {
@@ -239,16 +222,78 @@ if ($emailPelanggan) {
         $data['message'] = $e->getMessage();
         
     }
+    
+    if($isFinished){
+        try {
+            // Send Email
+            $booking = [
+                'Email' => $jsonData['Email'],
+                'NoTransaksi' => $NoTransaksi,
+                'TglBooking' => $jsonData['TglBooking'],
+                'JamMulai' => $jsonData['JamMulai'],
+                'JamSelesai' => $jsonData['JamSelesai']
+            ];
+
+    
+        
+            $emailPelanggan = Pelanggan::where('KodePelanggan', $KodePelanggan)->first();
+            //dd($data);
+
+            if ($emailPelanggan) {
+            
+                Mail::to($emailPelanggan->Email)->send(new KonfirmasiPembayaranMail($booking, $emailPelanggan));
+            }
+        } catch (\Throwable $th) {
+            $data['message'] = $th->getMessage();
+        }
+    }
+    
     return response()->json($data);
 }
 
 public function getBookingsByDate(Request $request) {
     $tanggal = $request->input('tanggal');
     $idMeja = $request->input('idMeja'); 
+    $RecordOwnerID = $request->input('RecordOwnerID');
 
-       $bookings = BookingOnline::whereDate('TglBooking', $tanggal)
-        ->where('mejaID', $idMeja)
-        ->select('JamMulai', 'JamSelesai')
+    //    $bookings = BookingOnline::whereDate('TglBooking', $tanggal)
+    //     ->where('mejaID', $idMeja)
+    //     ->select('JamMulai', 'JamSelesai')
+    //     ->get();
+    
+    $bookings = DB::table('titiklampu as a')
+        ->leftJoin(DB::raw("(
+            SELECT 
+                x.mejaID,
+                CONCAT(CAST(x.TglBooking as date),' ',x.JamMulai) JamMulai,
+		        CONCAT(CAST(x.TglBooking AS DATE),' ',x.JamSelesai) JamSelesai,
+                x.RecordOwnerID,
+                'JAM' as JenisPaket
+            FROM bookingtableonline x
+            WHERE x.StatusTransaksi = 0
+            AND x.RecordOwnerID = '".$RecordOwnerID."'
+            
+            UNION ALL
+            
+            SELECT 
+                y.tableid as mejaID,
+                y.JamMulai,
+                COALESCE(y.JamSelesai, NOW()) as JamSelesai,
+                y.RecordOwnerID,
+                y.JenisPaket
+            FROM tableorderheader y
+            WHERE y.Status <> 0
+            AND y.RecordOwnerID = '".$RecordOwnerID."'
+        ) as b"), function($join) {
+            $join->on('a.id', '=', 'b.mejaID')
+                ->on('a.RecordOwnerID', '=', 'b.RecordOwnerID');
+        })
+        ->where('a.RecordOwnerID', $RecordOwnerID)
+        ->where('a.id', $idMeja)
+        ->whereNotNull('b.JamMulai')
+        ->where(DB::raw('CAST(b.JamMulai AS DATE)'), '=', $tanggal)
+        ->select('a.id', 'b.JamMulai', 'b.JamSelesai', 'a.RecordOwnerID', 'b.JenisPaket')
+        ->orderBy('a.id')
         ->get();
 
     return response()->json($bookings);

@@ -343,7 +343,8 @@
                                             <strong>Jam Akhir Booking:</strong>
                                             <input type="text" class="form-control w-75 text-center" name="jamSelesai" id="jamSelesai" step="60">
                                         </li>
-                                    
+                                        
+                                        <div id="crashInfo" class="text-danger text-center my-2"></div>
                                         <li class="list-group-item text-center fw-bold">---</li>
                                     
                                         <li class="list-group-item">
@@ -424,358 +425,430 @@
         <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
         <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
         <script>
-  function hitungTotal(event) {
-    let modal = event.target.closest(".modal");
-    let jamMulai = modal.querySelector("input[name='jamMulai']").value;
-    let jamSelesai = modal.querySelector("input[name='jamSelesai']").value;
-    let paketDipilih = modal.querySelector("input[name='paket']:checked");
-    let voucherCode = modal.querySelector("input[name='voucherCode']").value.trim();
-    var kodePartner = document.getElementById('kodePartner').value;
-    
 
-    if (!jamMulai || !jamSelesai || !paketDipilih) {
-        updateTotal(0, 0, 0);
-        return;
-    }
-
-    let harga = parseInt(paketDipilih.getAttribute("data-harga"));
-    let jenisPaket = paketDipilih.getAttribute("data-jenis");
-
-    // Konversi jam ke menit
-    let [jamAwal, menitAwal] = jamMulai.split(":").map(Number);
-    let [jamAkhir, menitAkhir] = jamSelesai.split(":").map(Number);
-    let totalMenit = (jamAkhir * 60 + menitAkhir) - (jamAwal * 60 + menitAwal);
-
-    let totalAsli = 0;
-    if (jenisPaket.toLowerCase() === "jam") {
-        let totalJam = Math.ceil(totalMenit / 60);
-        totalAsli = harga * totalJam;
-    } else if (jenisPaket.toLowerCase() === "menit") {
-        totalAsli = harga * totalMenit;
-    }
-
-    let totalDiskon = 0;
-    let totalSetelahDiskon = totalAsli;
-
-    console.log("Total Asli sebelum diskon:", totalAsli);
-
-    function updateTotal(finalTotal, discount, originalTotal) {
-        modal.querySelector("#totalAsli").innerText = originalTotal.toLocaleString("id-ID");
-        modal.querySelector("#totalDiskon").innerText = discount.toLocaleString("id-ID");
-        modal.querySelector("#totalTransaksi").innerText = finalTotal.toLocaleString("id-ID");
-    }
-
-    if (voucherCode === "") {
-        updateTotal(totalSetelahDiskon, totalDiskon, totalAsli);
-        return;
-    }
-
-    $.ajax({
-        url: `/booking/${kodePartner}/get-DiscountVoucher`,
-        type: 'GET',
-        data: { code: voucherCode, kodePartner: kodePartner },
-        dataType: 'json',
-        success: function (data) {
-            console.log("Response voucher:", data);
-            
-            if (data.success) {
-
-                let discountPercent = parseFloat(data.discountPercent) / 100;
-                let maximalDiscount = parseFloat(data.maximalDiscount);
-                let discountQuota = parseFloat(data.discountQuota);
-
-                console.log("Diskon persen:", discountPercent);
-                console.log("Maksimal diskon:", maximalDiscount);
-                console.log("Kuota diskon:", discountQuota);
-
-                if (discountQuota >= totalAsli) {
-                    let calculatedDiscount = totalAsli * discountPercent;
-                    totalDiskon = Math.min(calculatedDiscount, maximalDiscount);
-                    totalSetelahDiskon = totalAsli - totalDiskon;
-
-                    console.log("Diskon diterapkan:", totalDiskon);
-
-                  
-                } else {
-                    console.log("Kuota diskon tidak mencukupi, diskon tidak diterapkan.");
-                    
-                }
-            } else {
-                console.log("Kode voucher tidak valid atau tidak ditemukan.");
+            function hitungTotal(event) {
+                let modal = event.target.closest(".modal");
+                let jamMulai = modal.querySelector("input[name='jamMulai']").value;
+                let jamSelesai = modal.querySelector("input[name='jamSelesai']").value;
+                let paketDipilih = modal.querySelector("input[name='paket']:checked");
+                let voucherCode = modal.querySelector("input[name='voucherCode']").value.trim();
+                var kodePartner = document.getElementById('kodePartner').value;
                 
-            }
-            
-            updateTotal(totalSetelahDiskon, totalDiskon, totalAsli);
-           
 
-        },
-        error: function (xhr, status, error) {
-            console.error("Error fetching voucher data:", error);
-            updateTotal(totalSetelahDiskon, totalDiskon, totalAsli);
-        }
-    });
-}
+                if (!jamMulai || !jamSelesai || !paketDipilih) {
+                    updateTotal(0, 0, 0);
+                    return;
+                }
 
+                let harga = parseInt(paketDipilih.getAttribute("data-harga"));
+                let jenisPaket = paketDipilih.getAttribute("data-jenis");
 
+                // Konversi jam ke menit
+                let [jamAwal, menitAwal] = jamMulai.split(":").map(Number);
+                let [jamAkhir, menitAkhir] = jamSelesai.split(":").map(Number);
+                let totalMenit = (jamAkhir * 60 + menitAkhir) - (jamAwal * 60 + menitAwal);
 
-// Event listener untuk perubahan input
-document.addEventListener("change", function (event) {
-    if (
-        event.target.matches("input[name='jamMulai']") ||
-        event.target.matches("input[name='jamSelesai']") ||
-        event.target.matches("input[name='paket']") ||
-        event.target.matches("input[name='voucherCode']")
-    ) {
-        hitungTotal(event);
-    }
-});
+                let totalAsli = 0;
+                if (jenisPaket.toLowerCase() === "jam") {
+                    let totalJam = Math.ceil(totalMenit / 60);
+                    totalAsli = harga * totalJam;
+                } else if (jenisPaket.toLowerCase() === "menit") {
+                    totalAsli = harga * totalMenit;
+                }
 
+                let totalDiskon = 0;
+                let totalSetelahDiskon = totalAsli;
 
-document.addEventListener("DOMContentLoaded", function () {
-    flatpickr("#jamMulai", {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "H:i",  // 24-hour format: H = hour (00-23), i = minutes
-        time_24hr: true
-    });
-    flatpickr("#jamSelesai", {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "H:i",  // 24-hour format: H = hour (00-23), i = minutes
-        time_24hr: true
-    });
+                console.log("Total Asli sebelum diskon:", totalAsli);
 
-    document.querySelectorAll(".btn-success").forEach(button => {
-        button.addEventListener("click", function (event) {
-            var kodePartner = document.getElementById('kodePartner').value;
-            let modal = event.target.closest(".modal");
-            let modalId = modal.id; 
+                function updateTotal(finalTotal, discount, originalTotal) {
+                    modal.querySelector("#totalAsli").innerText = originalTotal.toLocaleString("id-ID");
+                    modal.querySelector("#totalDiskon").innerText = discount.toLocaleString("id-ID");
+                    modal.querySelector("#totalTransaksi").innerText = finalTotal.toLocaleString("id-ID");
+                }
 
-            let lampuId = modalId.replace("portfolioModal", "");
+                if (voucherCode === "") {
+                    updateTotal(totalSetelahDiskon, totalDiskon, totalAsli);
+                    return;
+                }
 
-            let formData = {
-    namaLengkap: modal.querySelector("input[name='namaLengkap']").value,
-    mejaID: lampuId,
-    email: modal.querySelector("input[name='email']").value,
-    noTelp: modal.querySelector("input[name='noTelp']").value,
-    tanggalBooking: modal.querySelector("input[name='tanggalbooking']").value,
-    jamMulai: modal.querySelector("input[name='jamMulai']").value,
-    jamSelesai: modal.querySelector("input[name='jamSelesai']").value,
-    paketid: modal.querySelector("input[name='paket']:checked")?.value || null,
-    ExtraRequest: modal.querySelector("textarea[name='extraRequest']").value,
-    totalPembelian: parseInt(modal.querySelector("#totalTransaksi").innerText.replace(/\D/g, "")),
-    totalAsli: parseInt(modal.querySelector("#totalAsli").innerText.replace(/\D/g, "")),
-    totalDiskon: parseInt(modal.querySelector("#totalDiskon").innerText.replace(/\D/g, "")),
-    voucherCode: modal.querySelector("input[name='voucherCode']").value,
-    kodePartner: kodePartner,
-};
-            
-            // Validasi hanya untuk field yang wajib diisi
-if (!formData.namaLengkap || !formData.email || 
-    !formData.tanggalBooking || !formData.jamMulai || !formData.jamSelesai || 
-    !formData.paketid) {
-    
-    Swal.fire({
-        icon: "warning",
-        title: "Oops...",
-        text: "Mohon isi semua data yang diperlukan!",
-    });
-    return;
-}
-            
-            let noTransaksi = "BOOKING"+Date.now(); // Contoh nomor transaksi unik
-            PaymentGateWay($(button), "Bayar", formData);
-        });
-    });
-});
-
-function PaymentGateWay(ButtonObject, ButtonDefaultText, formData) {
-    ButtonObject.text('Tunggu Sebentar.....');
-    ButtonObject.attr('disabled', true);
-
-    console.log("FormData:", formData);  // Debugging
-console.log("TotalPembelian:", formData.totalPembelian);
-
-    
-    let oData = {
-        'NoTransaksi': formData.NoTransaksi,
-        'TotalPembelian': formData.totalPembelian,
-        "kodePartner": formData.kodePartner,
-    };
-    
-    fetch("{{route('booking-create-gateway')}}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify(oData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.snap_token) {
-            snap.pay(data.snap_token, {
-                onSuccess: function (result) {
-                    if (result.transaction_status === "cancel") {
-                        ButtonObject.text('Bayar');
-                        ButtonObject.attr('disabled', false);
-                        Swal.fire({
-                            icon: "error",
-                            title: "Oops...",
-                            text: "Pembayaran Dibatalkan",
-                        });
-                    } else {
-                        let xData = {
-                            "NoTransaksi": formData.NoTransaksi,
-                            "TglBooking": formData.tanggalBooking,
-                            "Keterangan": result.payment_type + "#" + (result.va_numbers?.[0]?.bank || "") + "#" + (result.va_numbers?.[0]?.va_number || ""),
-                            "JamMulai": formData.jamMulai,
-                            "JamSelesai": formData.jamSelesai,
-                            "mejaID": formData.mejaID,
-                            "paketid": formData.paketid,
-                            "KodeSales": "-",
-                            "KodePelanggan": "-",
-                            "StatusTransaksi": 0,
-                            "ExtraRequest": formData.ExtraRequest,
-                            "TotalTransaksi": formData.totalAsli,
-                            "TotalTax": 0,
-                            "TotalDiskon": formData.totalDiskon,
-                            "TotalLainLain": 0,
-                            "NetTotal": formData.totalPembelian,
-                            "NamaPelanggan": formData.namaLengkap,
-                            "Email": formData.email,
-                            "NoTlp1": formData.noTelp,
-                            "VoucherCode" : formData.voucherCode,
-                            "kodePartner": formData.kodePartner,
-                        };
+                $.ajax({
+                    url: `/booking/${kodePartner}/get-DiscountVoucher`,
+                    type: 'GET',
+                    data: { code: voucherCode, kodePartner: kodePartner },
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log("Response voucher:", data);
                         
-                        fetch("{{route('booking-pay-gateway')}}", {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify(xData)
-                        })
-                        .then(response => response.json())
-                        .then(response => {
-                            if (response.success) {
-                                Swal.fire({
-                                    icon: "success",
-                                    title: 'Berhasil',
-                                    text: 'Pembayaran berhasil disimpan, Silahkan Cek Email Anda!',
-                                }).then(() => {
-                                    location.reload();
-                                });
+                        if (data.success) {
+
+                            let discountPercent = parseFloat(data.discountPercent) / 100;
+                            let maximalDiscount = parseFloat(data.maximalDiscount);
+                            let discountQuota = parseFloat(data.discountQuota);
+
+                            console.log("Diskon persen:", discountPercent);
+                            console.log("Maksimal diskon:", maximalDiscount);
+                            console.log("Kuota diskon:", discountQuota);
+
+                            if (discountQuota >= totalAsli) {
+                                let calculatedDiscount = totalAsli * discountPercent;
+                                totalDiskon = Math.min(calculatedDiscount, maximalDiscount);
+                                totalSetelahDiskon = totalAsli - totalDiskon;
+
+                                console.log("Diskon diterapkan:", totalDiskon);
+
+                            
                             } else {
-                                ButtonObject.text('Bayar');
-                                ButtonObject.attr('disabled', false);
-                                Swal.fire({
-                                    icon: "error",
-                                    title: 'Error',
-                                    text: response.message,
-                                });
+                                console.log("Kuota diskon tidak mencukupi, diskon tidak diterapkan.");
+                                
+                            }
+                        } else {
+                            console.log("Kode voucher tidak valid atau tidak ditemukan.");
+                            
+                        }
+                        
+                        updateTotal(totalSetelahDiskon, totalDiskon, totalAsli);
+                    
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching voucher data:", error);
+                        updateTotal(totalSetelahDiskon, totalDiskon, totalAsli);
+                    }
+                });
+            }
+
+
+
+            // Event listener untuk perubahan input
+            document.addEventListener("change", function (event) {
+                if (
+                    event.target.matches("input[name='jamMulai']") ||
+                    event.target.matches("input[name='jamSelesai']") ||
+                    event.target.matches("input[name='paket']") ||
+                    event.target.matches("input[name='voucherCode']")
+                ) {
+                    hitungTotal(event);
+                }
+            });
+
+
+            document.addEventListener("DOMContentLoaded", function () {
+
+                document.querySelectorAll(".btn-success").forEach(button => {
+                    button.addEventListener("click", function (event) {
+                        var kodePartner = document.getElementById('kodePartner').value;
+                        let modal = event.target.closest(".modal");
+                        let modalId = modal.id; 
+
+                        let lampuId = modalId.replace("portfolioModal", "");
+
+                        let formData = {
+                            namaLengkap: modal.querySelector("input[name='namaLengkap']").value,
+                            mejaID: lampuId,
+                            email: modal.querySelector("input[name='email']").value,
+                            noTelp: modal.querySelector("input[name='noTelp']").value,
+                            tanggalBooking: modal.querySelector("input[name='tanggalbooking']").value,
+                            jamMulai: modal.querySelector("input[name='jamMulai']").value,
+                            jamSelesai: modal.querySelector("input[name='jamSelesai']").value,
+                            paketid: modal.querySelector("input[name='paket']:checked")?.value || null,
+                            ExtraRequest: modal.querySelector("textarea[name='extraRequest']").value,
+                            totalPembelian: parseInt(modal.querySelector("#totalTransaksi").innerText.replace(/\D/g, "")),
+                            totalAsli: parseInt(modal.querySelector("#totalAsli").innerText.replace(/\D/g, "")),
+                            totalDiskon: parseInt(modal.querySelector("#totalDiskon").innerText.replace(/\D/g, "")),
+                            voucherCode: modal.querySelector("input[name='voucherCode']").value,
+                            kodePartner: kodePartner,
+                        };
+                    
+                                    // Validasi hanya untuk field yang wajib diisi
+                        if (!formData.namaLengkap || !formData.email || 
+                            !formData.tanggalBooking || !formData.jamMulai || !formData.jamSelesai || 
+                            !formData.paketid) {
+                            
+                            Swal.fire({
+                                icon: "warning",
+                                title: "Oops...",
+                                text: "Mohon isi semua data yang diperlukan!",
+                            });
+                            return;
+                        }
+                                    
+                        let noTransaksi = "BOOKING"+Date.now(); // Contoh nomor transaksi unik
+                        PaymentGateWay($(button), "Bayar", formData);
+                    });
+                });
+            });
+
+            function PaymentGateWay(ButtonObject, ButtonDefaultText, formData) {
+                ButtonObject.text('Tunggu Sebentar.....');
+                ButtonObject.attr('disabled', true);
+
+                console.log("FormData:", formData);  // Debugging
+                console.log("TotalPembelian:", formData.totalPembelian);
+
+                    
+                    let oData = {
+                        'NoTransaksi': formData.NoTransaksi,
+                        'TotalPembelian': formData.totalPembelian,
+                        "kodePartner": formData.kodePartner,
+                    };
+                    
+                    fetch("{{route('booking-create-gateway')}}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify(oData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.snap_token) {
+                            snap.pay(data.snap_token, {
+                                onSuccess: function (result) {
+                                    if (result.transaction_status === "cancel") {
+                                        ButtonObject.text('Bayar');
+                                        ButtonObject.attr('disabled', false);
+                                        Swal.fire({
+                                            icon: "error",
+                                            title: "Oops...",
+                                            text: "Pembayaran Dibatalkan",
+                                        });
+                                    } else {
+                                        let xData = {
+                                            "NoTransaksi": formData.NoTransaksi,
+                                            "TglBooking": formData.tanggalBooking,
+                                            "Keterangan": result.payment_type + "#" + (result.va_numbers?.[0]?.bank || "") + "#" + (result.va_numbers?.[0]?.va_number || ""),
+                                            "JamMulai": formData.jamMulai,
+                                            "JamSelesai": formData.jamSelesai,
+                                            "mejaID": formData.mejaID,
+                                            "paketid": formData.paketid,
+                                            "KodeSales": "-",
+                                            "KodePelanggan": "-",
+                                            "StatusTransaksi": 0,
+                                            "ExtraRequest": formData.ExtraRequest,
+                                            "TotalTransaksi": formData.totalAsli,
+                                            "TotalTax": 0,
+                                            "TotalDiskon": formData.totalDiskon,
+                                            "TotalLainLain": 0,
+                                            "NetTotal": formData.totalPembelian,
+                                            "NamaPelanggan": formData.namaLengkap,
+                                            "Email": formData.email,
+                                            "NoTlp1": formData.noTelp,
+                                            "VoucherCode" : formData.voucherCode,
+                                            "kodePartner": formData.kodePartner,
+                                        };
+                                        
+                                        fetch("{{route('booking-pay-gateway')}}", {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                            },
+                                            body: JSON.stringify(xData)
+                                        })
+                                        .then(response => response.json())
+                                        .then(response => {
+                                            if (response.success) {
+                                                Swal.fire({
+                                                    icon: "success",
+                                                    title: 'Berhasil',
+                                                    text: 'Pembayaran berhasil disimpan, Silahkan Cek Email Anda!',
+                                                }).then(() => {
+                                                    location.reload();
+                                                });
+                                            } else {
+                                                ButtonObject.text('Bayar');
+                                                ButtonObject.attr('disabled', false);
+                                                Swal.fire({
+                                                    icon: "error",
+                                                    title: 'Error',
+                                                    text: response.message,
+                                                });
+                                            }
+                                        });
+                                    }
+                                },
+                                onError: function (result) {
+                                    ButtonObject.text('Bayar');
+                                    ButtonObject.attr('disabled', false);
+                                    Swal.fire({
+                                        icon: "error",
+                                        title: "Oops...",
+                                        text: "Terjadi kesalahan saat pembayaran",
+                                    });
+                                },
+                                onClose: function () {
+                                    ButtonObject.text('Bayar');
+                                    ButtonObject.attr('disabled', false);
+                                    console.log('Pelanggan menutup popup pembayaran');
+                                }
+                            });
+                        } else {
+                            ButtonObject.text('Bayar');
+                            ButtonObject.attr('disabled', false);
+                            Swal.fire({
+                                icon: "error",
+                                title: "Oops...",
+                                text: data.error,
+                            });
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+            function formatDateToDMY_HM(date) {
+                const pad = (n) => n.toString().padStart(2, '0');
+                const day = pad(date.getDate());
+                const month = pad(date.getMonth() + 1); // getMonth() dimulai dari 0
+                const year = date.getFullYear();
+                const hours = pad(date.getHours());
+                const minutes = pad(date.getMinutes());
+
+                return `${day}/${month}/${year} ${hours}:${minutes}`;
+            }
+
+            $(document).ready(function () {
+                flatpickr("#jamMulai", {
+                    enableTime: true,
+                    noCalendar: true,
+                    dateFormat: "H:i",  // 24-hour format: H = hour (00-23), i = minutes
+                    time_24hr: true,
+                    // minTime: new Date().toTimeString().slice(0,5)
+                });
+                flatpickr("#jamSelesai", {
+                    enableTime: true,
+                    noCalendar: true,
+                    dateFormat: "H:i",  // 24-hour format: H = hour (00-23), i = minutes
+                    time_24hr: true,
+                    // minTime: new Date().toTimeString().slice(0,5)
+                });
+                let bookedSlots = {}; // Objek untuk menyimpan daftar jam yang sudah dibooking berdasarkan ID meja
+
+                // Event ketika tanggal booking diubah
+                $(document).on('change', 'input[name="tanggalbooking"]', function () {
+                    var selectedDate = $(this).val();
+                    var modal = $(this).closest('.modal-body');
+                    var idMeja = modal.find('input[name="idMeja"]').val();
+                    var bookingInfoContainer = modal.find('#bookingInfo');
+                    var kodePartner = document.getElementById('kodePartner').value;
+
+                    const today = new Date().toISOString().slice(0, 10); // format yyyy-mm-dd
+
+                    var jamMulaiInstance = modal.find('input[name="jamMulai"]')[0];
+                    var jamSelesaiInstance = modal.find('input[name="jamSelesai"]')[0];
+                    if (selectedDate === today) {
+                        const nowTime = new Date().toTimeString().slice(0, 5); // HH:mm
+                        jamMulaiInstance._flatpickr.set('minTime', nowTime);
+                        jamSelesaiInstance._flatpickr.set('minTime', nowTime);
+                    } else {
+                        jamMulaiInstance._flatpickr.set('minTime', null);
+                        jamSelesaiInstance._flatpickr.set('minTime', null);
+                    }
+
+                    bookingInfoContainer.html('');
+                    bookedSlots[idMeja] = []; // Reset daftar booking sebelumnya untuk meja ini
+
+                    if (selectedDate && idMeja) {
+                        $.ajax({
+                            url: `/booking/${kodePartner}/get-bookedtable`,
+                            type: 'GET',
+                            data: { tanggal: selectedDate, idMeja: idMeja, RecordOwnerID:kodePartner },
+                            success: function (data) {
+                                console.log(data);
+                                if (data.length > 0) {
+                                    var infoHtml = '<strong>Meja ini sudah dibooking:</strong><ul>';
+                                    data.forEach(function (booking) {
+                                        infoHtml += '<li>Jam ' + booking.JamMulai + ' - ' + booking.JamSelesai + '</li>';
+                                        bookedSlots[idMeja].push({ start: booking.JamMulai, end: booking.JamSelesai, JenisPaket:booking.JenisPaket }); // Simpan waktu booking untuk meja ini
+                                    });
+                                    infoHtml += '</ul>';
+                                    bookingInfoContainer.html(infoHtml);
+                                    // $('#btn-success').attr('disabled',true);
+                                    modal.find('#btn-success').prop('disabled', true);
+                                } else {
+                                    bookingInfoContainer.html('<strong>Meja ini masih tersedia di tanggal ini.</strong>');
+                                    // $('#btn-success').attr('disabled',false);
+                                    modal.find('#btn-success').prop('disabled', false);
+                                }
+                            },
+                            error: function () {
+                                bookingInfoContainer.html('<strong>Terjadi kesalahan saat mengambil data.</strong>');
+                                // $('#btn-success').attr('disabled',true);
+                                modal.find('#btn-success').prop('disabled', true);
                             }
                         });
                     }
-                },
-                onError: function (result) {
-                    ButtonObject.text('Bayar');
-                    ButtonObject.attr('disabled', false);
-                    Swal.fire({
-                        icon: "error",
-                        title: "Oops...",
-                        text: "Terjadi kesalahan saat pembayaran",
-                    });
-                },
-                onClose: function () {
-                    ButtonObject.text('Bayar');
-                    ButtonObject.attr('disabled', false);
-                    console.log('Pelanggan menutup popup pembayaran');
-                }
-            });
-        } else {
-            ButtonObject.text('Bayar');
-            ButtonObject.attr('disabled', false);
-            Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                text: data.error,
-            });
-        }
-    })
-    .catch(error => console.error('Error:', error));
-}
+                });
 
-$(document).ready(function () {
-    let bookedSlots = {}; // Objek untuk menyimpan daftar jam yang sudah dibooking berdasarkan ID meja
+                // Validasi input jam booking (Gunakan event delegation untuk semua modal)
+                $(document).on('change', 'input[name="jamMulai"], input[name="jamSelesai"]', function () {
+                    var modal = $(this).closest('.modal-body');
+                    var idMeja = modal.find('input[name="idMeja"]').val();
+                    var jamMulai = modal.find('input[name="jamMulai"]').val();
+                    var jamSelesai = modal.find('input[name="jamSelesai"]').val();
+                    var tanggal = modal.find('input[name="tanggalbooking"]').val();
 
-    // Event ketika tanggal booking diubah
-    $(document).on('change', 'input[name="tanggalbooking"]', function () {
-        var selectedDate = $(this).val();
-        var modal = $(this).closest('.modal-body');
-        var idMeja = modal.find('input[name="idMeja"]').val();
-        var bookingInfoContainer = modal.find('#bookingInfo');
-        var kodePartner = document.getElementById('kodePartner').value;
+                    var crashInfoContainer = modal.find('#crashInfo');
 
-        bookingInfoContainer.html('');
-        bookedSlots[idMeja] = []; // Reset daftar booking sebelumnya untuk meja ini
-
-        if (selectedDate && idMeja) {
-            $.ajax({
-                url: `/booking/${kodePartner}/get-bookedtable`,
-                type: 'GET',
-                data: { tanggal: selectedDate, idMeja: idMeja },
-                success: function (data) {
-                    if (data.length > 0) {
-                        var infoHtml = '<strong>Meja ini sudah dibooking:</strong><ul>';
-                        data.forEach(function (booking) {
-                            infoHtml += '<li>Jam ' + booking.JamMulai + ' - ' + booking.JamSelesai + '</li>';
-                            bookedSlots[idMeja].push({ start: booking.JamMulai, end: booking.JamSelesai }); // Simpan waktu booking untuk meja ini
-                        });
-                        infoHtml += '</ul>';
-                        bookingInfoContainer.html(infoHtml);
-                    } else {
-                        bookingInfoContainer.html('<strong>Meja ini masih tersedia di tanggal ini.</strong>');
+                    // ⏱️ Set minTime di jamSelesai jika pakai Flatpickr
+                    if (jamMulai) {
+                        var jamSelesaiInput = modal.find('input[name="jamSelesai"]')[0];
+                        if (jamSelesaiInput._flatpickr) {
+                            jamSelesaiInput._flatpickr.set('minTime', jamMulai);
+                        }
                     }
-                },
-                error: function () {
-                    bookingInfoContainer.html('<strong>Terjadi kesalahan saat mengambil data.</strong>');
-                }
+
+                    if (tanggal && jamMulai && jamSelesai) {
+                        var mulai = new Date(tanggal + 'T' + jamMulai + ':00');
+                        var selesai = new Date(tanggal + 'T' + jamSelesai + ':00');
+
+                        if (!bookedSlots[idMeja] || bookedSlots[idMeja].length === 0) {
+                            modal.find('#btn-success').prop('disabled', false);
+                            return;
+                        }
+
+                        var conflicts = false;
+                        console.log(bookedSlots);
+                        for (let i = 0; i < bookedSlots[idMeja].length; i++) {
+                            let booking = bookedSlots[idMeja][i];
+
+                            // ✅ Jika JenisPaket = 'Menit', langsung blokir booking
+                            if (booking.JenisPaket === 'MENIT') {
+                                alert('Meja ini Sudah dipakai');
+                                modal.find('input[name="jamMulai"]').val('');
+                                modal.find('input[name="jamSelesai"]').val('');
+                                modal.find('#btn-success').prop('disabled', true);
+                                return;
+                            }
+
+                            var bookedStart = new Date(booking.start + ':00');
+                            var bookedEnd = new Date(booking.end + ':00');
+
+                            if (
+                                (mulai >= bookedStart && mulai < bookedEnd) ||
+                                (selesai > bookedStart && selesai <= bookedEnd) ||
+                                (mulai <= bookedStart && selesai >= bookedEnd)
+                            ) {
+                                conflicts = true;
+                                // crashInfo
+                                crashInfoContainer.html('Waktu yang dipilih bertabrakan dengan booking lain (' + formatDateToDMY_HM(bookedStart) + ' - ' + formatDateToDMY_HM(bookedEnd) + ').');
+                                // alert('Waktu yang dipilih bertabrakan dengan booking lain (' + formatDateToDMY_HM(bookedStart) + ' - ' + formatDateToDMY_HM(bookedEnd) + ').');
+                                // modal.find('input[name="jamMulai"]').val('');
+                                // modal.find('input[name="jamSelesai"]').val('');
+                                modal.find('#btn-success').prop('disabled', true);
+                                break;
+                            }
+                        }
+
+                        if (!conflicts) {
+                            modal.find('#btn-success').prop('disabled', false);
+                        }
+                    }
+                });
+
+
+
             });
-        }
-    });
-
-    // Validasi input jam booking (Gunakan event delegation untuk semua modal)
-    $(document).on('change', 'input[name="jamMulai"], input[name="jamSelesai"]', function () {
-        var modal = $(this).closest('.modal-body');
-        var idMeja = modal.find('input[name="idMeja"]').val();
-        var jamMulai = modal.find('input[name="jamMulai"]').val();
-        var jamSelesai = modal.find('input[name="jamSelesai"]').val();
-        var errorMessage = '';
-
-        if (jamMulai && jamSelesai) {
-            var mulai = jamMulai + ':00';
-            var selesai = jamSelesai + ':00';
-
-            for (let i = 0; i < bookedSlots[idMeja].length; i++) {
-                let bookedStart = bookedSlots[idMeja][i].start;
-                let bookedEnd = bookedSlots[idMeja][i].end;
-
-                // Cek apakah input waktu bentrok dengan booking yang ada
-                if ((mulai >= bookedStart && mulai < bookedEnd) || (selesai > bookedStart && selesai <= bookedEnd) || (mulai <= bookedStart && selesai >= bookedEnd)) {
-                    errorMessage = 'Waktu yang dipilih bertabrakan dengan booking lain (' + bookedStart + ' - ' + bookedEnd + ')';
-                    break;
-                }
-            }
-
-            if (errorMessage) {
-                alert(errorMessage);
-                $(this).val(''); // Kosongkan input yang salah
-            }
-        }
-    });
-});
 
 
         </script>
