@@ -509,7 +509,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	    formatCurrency($('#_GrandTotal'), 0);
 		formatCurrency($('#_TotalTax'), 0);
 		console.log(cart.length);
-		if(cart.data.length> 0){
+		if(cart && Array.isArray(cart.data) && cart.data.length > 0){
 			for (let index = 0; index < cart["data"].length; index++) {
 				// const element = array[index];
 				const newRow = document.createElement("tr");
