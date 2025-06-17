@@ -1894,6 +1894,23 @@ License: You must have a valid license purchased only from themeforest(the above
 
 					_TextTotalHargaNormal = filteredData[0]["DurasiPaket"] + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
 					_durasiPaket = filteredData[0]["DurasiPaket"];
+
+					oCustomerDisplay["data"].push({
+						KodeItem : 'Paket',
+						NamaItem: filteredData[0]["NamaPaket"] + " " + _durasiPaket + " " + filteredPaket[0]["JenisPaket"],
+						Qty: _durasiPaket,
+						Harga: filteredPaket[0]["HargaNormal"]
+					});
+
+					// PPN
+					if(_PPnNormal > 0) {
+						oCustomerDisplay["data"].push({
+							KodeItem : 'Pajak',
+							NamaItem: "PPN " + _ppnPercent + "% - " + filteredData[0]["NamaPaket"],
+							Qty: 1,
+							Harga: _PPnNormal
+						});
+					}
 				}
 				else {
 					var _diferentMinutes = 0;

@@ -500,6 +500,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		window.opener.postMessage({ type: 'say-hello' }, '*');
 
 		const cart = JSON.parse(localStorage.getItem("PoSData"));
+		console.log(cart)
 		const tableBody = document.getElementById("tableBody");
 		tableBody.innerHTML = '';
 		formatCurrency($('#_TotalItem'), 0);
@@ -507,8 +508,8 @@ License: You must have a valid license purchased only from themeforest(the above
 	    formatCurrency($('#_TotalDiskon'), 0);
 	    formatCurrency($('#_GrandTotal'), 0);
 		formatCurrency($('#_TotalTax'), 0);
-		// console.log(cart);
-		if(cart.length > 0){
+		console.log(cart.length);
+		if(cart.data.length> 0){
 			for (let index = 0; index < cart["data"].length; index++) {
 				// const element = array[index];
 				const newRow = document.createElement("tr");
