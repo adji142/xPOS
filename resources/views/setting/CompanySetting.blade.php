@@ -231,7 +231,7 @@
 					                            			</fieldset>
 					                            		</div>
 
-					                            		<div class="col-md-6">
+					                            		<div class="col-md-4">
 					                            			<label  class="text-body">Telepon</label>
 					                            			<fieldset class="form-group mb-3">
 					                            				<input type="text" class="form-control" id="NoTlp" name="NoTlp" placeholder="Masukan Nomor Telephone" value="{{ count($company) > 0 ? $company[0]['NoTlp'] : '' }}"  >
@@ -239,10 +239,18 @@
 					                            			
 					                            		</div>
 
-					                            		<div class="col-md-6">
+					                            		<div class="col-md-4">
 					                            			<label  class="text-body">No. HP</label>
 					                            			<fieldset class="form-group mb-3">
 					                            				<input type="text" class="form-control" id="NoHP" name="NoHP" placeholder="Masukan Nomor Handphone" value="{{ count($company) > 0 ? $company[0]['NoHP'] : '' }}"  >
+					                            			</fieldset>
+					                            			
+					                            		</div>
+
+														<div class="col-md-4">
+					                            			<label  class="text-body">Email</label>
+					                            			<fieldset class="form-group mb-3">
+					                            				<input type="text" class="form-control" id="Email" name="Email" placeholder="Masukan Nomor Email" value="{{ count($company) > 0 ? $company[0]['Email'] == '' ? $userdata->email : $company[0]['Email'] : '' }}"  >
 					                            			</fieldset>
 					                            			
 					                            		</div>
@@ -1173,6 +1181,15 @@
 																</fieldset>
 															</div>
 
+															<div class="col-md-12">
+																<label  class="text-body">Term and Condition</label>
+																<fieldset class="form-group mb-12">
+																	<div id="TermAndConditionBookingOnline">
+																		{!! count($company) > 0 ? $company[0]['TermAndConditionBookingOnline'] : '' !!}
+																	</div>
+																</fieldset>
+															</div>
+
 
 														</div>
 
@@ -1246,6 +1263,10 @@ var oCompany;
 		const quill_AboutUs = new Quill('#AboutUs', {
 			theme: 'snow'
 		});
+
+		const quill_TermAndConditionBookingOnline = new Quill('#TermAndConditionBookingOnline', {
+			theme:'snow'
+		})
 		jQuery(document).ready(function () {
 
 			// 
@@ -1367,6 +1388,7 @@ var oCompany;
 			var SubHeadlineBanner = quill_SubHeadlineBanner.root.innerHTML;
 			var TermAndCondition = quill_TermAndCondition.root.innerHTML;
 			var AboutUs = quill_AboutUs.root.innerHTML;
+			var TermAndConditionBookingOnline = quill_TermAndConditionBookingOnline.root.innerHTML;
 			
 
 			formData.push({ name: "BannerHeader1", value: BannerHeader1 });
@@ -1380,6 +1402,7 @@ var oCompany;
 			formData.push({ name: "SubHeadlineBanner", value: SubHeadlineBanner });
 			formData.push({ name: "TermAndCondition", value: TermAndCondition });
 			formData.push({ name: "AboutUs", value: AboutUs });
+			formData.push({ name: "TermAndConditionBookingOnline", value:TermAndConditionBookingOnline});
 
 			$.ajax({
 				url: actionUrl,

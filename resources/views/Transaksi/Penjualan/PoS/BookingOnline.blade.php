@@ -329,7 +329,7 @@
                                     
                                         <li class="list-group-item d-flex align-items-center justify-content-between">
                                             <strong>Pilih Tanggal Booking:</strong>
-                                            <input type="date" class="form-control w-75 text-center" name="tanggalbooking" id="tanggalbooking">
+                                            <input type="date" class="form-control w-75 text-center" name="tanggalbooking" id="tanggalbooking" min="{{ $today }}">
                                         </li>
                                     
                                         <div id="bookingInfo" class="text-danger text-center my-2"></div>
@@ -385,8 +385,18 @@
                                             <strong class="fs-6">Total Diskon: Rp <span id="totalDiskon" class="fs-6 text-warning">0</span></strong>
                                             <strong class="fs-4">Total Setelah Diskon: Rp <span id="totalTransaksi" class="fs-3 fw-bold text-success">0</span></strong>
                                         </li>
-                                                                               
+                                        
+                                        <li class="list-group-item d-flex flex-column">
+                                            <strong>Term and Condition</strong>
+                                            <div> {!! $company->TermAndConditionBookingOnline !!} </div>
+                                            <input type="checkbox" name="AcceptTermAndConditionBookingOnline" id="AcceptTermAndConditionBookingOnline">
+                                            <label for="terms"> Setuju dengan syarat diatas</label>
+
+                                            <div class="voucherInfo text-danger text-center my-2"></div>
+                                        </li>
                                     </ul>
+
+
                                     
                                     <div class="d-flex justify-content-center gap-3 mt-4">
                                         <button class="btn btn-success btn-lg text-uppercase" id="btn-success" type="button">
@@ -534,7 +544,7 @@
 
 
             document.addEventListener("DOMContentLoaded", function () {
-
+                
                 document.querySelectorAll(".btn-success").forEach(button => {
                     button.addEventListener("click", function (event) {
                         var kodePartner = document.getElementById('kodePartner').value;
@@ -559,6 +569,7 @@
                             voucherCode: modal.querySelector("input[name='voucherCode']").value,
                             kodePartner: kodePartner,
                         };
+                        var isAccepted = modal.querySelector('input[name="AcceptTermAndConditionBookingOnline"]');
                     
                                     // Validasi hanya untuk field yang wajib diisi
                         if (!formData.namaLengkap || !formData.email || 
@@ -569,6 +580,15 @@
                                 icon: "warning",
                                 title: "Oops...",
                                 text: "Mohon isi semua data yang diperlukan!",
+                            });
+                            return;
+                        }
+
+                        if(!isAccepted.checked){
+                            Swal.fire({
+                                icon: "warning",
+                                title: "Oops...",
+                                text: "Anda belum Menyetujui Term and Condition",
                             });
                             return;
                         }
@@ -707,6 +727,27 @@
                 return `${day}/${month}/${year} ${hours}:${minutes}`;
             }
 
+            function SetEnableCommand() {
+                var modal = $(this).closest('.modal-body');
+                var namaLengkap = modal.find('input[name="namaLengkap"]').val();
+                var email = modal.find('input[name="email"]').val();
+                var noTelp = modal.find('input[name="noTelp"]').val();
+
+                var isAccepted = modal.find('input[name="AcceptTermAndConditionBookingOnline"]').is(':checked');
+
+                var isValid = true;
+
+                if (isEmpty(namaLengkap) || isEmpty(email) || isEmpty(noTelp) || !isAccepted) {
+                    isValid = false;
+                }
+                console.log(isValid);
+
+                modal.find('#btn-success').prop('disabled', isValid);
+            }
+            function isEmpty(value) {
+                return typeof value === 'undefined' || value.trim() === '';
+            }
+
             $(document).ready(function () {
                 flatpickr("#jamMulai", {
                     enableTime: true,
@@ -724,6 +765,7 @@
                 });
                 let bookedSlots = {}; // Objek untuk menyimpan daftar jam yang sudah dibooking berdasarkan ID meja
 
+                SetEnableCommand()
                 // Event ketika tanggal booking diubah
                 $(document).on('change', 'input[name="tanggalbooking"]', function () {
                     var selectedDate = $(this).val();
@@ -754,7 +796,8 @@
                             type: 'GET',
                             data: { tanggal: selectedDate, idMeja: idMeja, RecordOwnerID:kodePartner },
                             success: function (data) {
-                                console.log(data);
+                                // console.log(data);
+                                SetEnableCommand()
                                 if (data.length > 0) {
                                     var infoHtml = '<strong>Meja ini sudah dibooking:</strong><ul>';
                                     data.forEach(function (booking) {
@@ -782,12 +825,13 @@
 
                 // Validasi input jam booking (Gunakan event delegation untuk semua modal)
                 $(document).on('change', 'input[name="jamMulai"], input[name="jamSelesai"]', function () {
+                    SetEnableCommand();
                     var modal = $(this).closest('.modal-body');
                     var idMeja = modal.find('input[name="idMeja"]').val();
                     var jamMulai = modal.find('input[name="jamMulai"]').val();
                     var jamSelesai = modal.find('input[name="jamSelesai"]').val();
                     var tanggal = modal.find('input[name="tanggalbooking"]').val();
-
+                    
                     var crashInfoContainer = modal.find('#crashInfo');
 
                     // ⏱️ Set minTime di jamSelesai jika pakai Flatpickr

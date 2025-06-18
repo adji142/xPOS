@@ -40,6 +40,10 @@ use App\Exports\PenggunaAplikasiExport;
 use App\Models\ItemMaster;
 use App\Models\InvoicePenggunaHeader;
 use App\Models\InvoicePenggunaDetail;
+use App\Models\Permission;
+use App\Models\PermissionRole;
+use App\Models\UserRole;
+use App\Models\User;
 
 use App\Mail\SendMail;
 use Illuminate\Support\Facades\Mail;
@@ -101,6 +105,19 @@ class CompanyController extends Controller
         $itemjasa = ItemMaster::where('TypeItem','=','4')
                         ->where('RecordOwnerID', '=', Auth::user()->RecordOwnerID)
                         ->get();
+
+        $userdata = UserRole::selectRaw("users.*")
+                ->leftJoin('users', function ($value){
+                    $value->on('userrole.userid','=','users.id')
+                    ->on('userrole.RecordOwnerID','=','users.RecordOwnerID');
+                })
+                ->leftJoin('roles', function ($value){
+                    $value->on('roles.id','=','userrole.roleid')
+                    ->on('roles.RecordOwnerID','=','userrole.RecordOwnerID');
+                })
+                ->where('roles.RoleName', 'SuperAdmin')
+                ->where('userrole.RecordOwnerID', Auth::user()->RecordOwnerID)
+                ->first();
         $encodedRecordOwnerID = base64_encode(Auth::user()->RecordOwnerID);
         $BookingURLString = url('booking/').'/'.$encodedRecordOwnerID;
         $title = 'Delete Data Perusahaan !';
@@ -114,7 +131,8 @@ class CompanyController extends Controller
             'temin' => $temin,
             'clientOS' => $clientOS,
             'itemjasa' => $itemjasa,
-            'BookingURLString' => $BookingURLString
+            'BookingURLString' => $BookingURLString,
+            'userdata' => $userdata
         ]);
     }
     public function edit(Request $request){
@@ -196,6 +214,8 @@ class CompanyController extends Controller
                                     'VideoCustomerDisplay3' => empty($request->input('VideoCustomerDisplay3')) ? "" : $request->input('VideoCustomerDisplay3'),
                                     'VideoCustomerDisplay4' => empty($request->input('VideoCustomerDisplay4')) ? "" : $request->input('VideoCustomerDisplay4'),
                                     'VideoCustomerDisplay5' => empty($request->input('VideoCustomerDisplay5')) ? "" : $request->input('VideoCustomerDisplay5'),
+                                    'TermAndConditionBookingOnline' => $request->input('TermAndConditionBookingOnline'),
+                                    'Email' => $request->input('Email')
                 				]
                 			);
 

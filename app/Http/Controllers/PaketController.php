@@ -81,6 +81,7 @@ class PaketController extends Controller
             $model->DiskonFnB = $request->input('DiskonFnB');
             $model->JenisPaket = $request->input('JenisPaket');
             $model->DurasiPaket = $request->input('DurasiPaket');
+            $model->BisaDipesan = $request->input('BisaDipesan');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -129,6 +130,7 @@ class PaketController extends Controller
                                     'DiskonFnB' => $request->input('DiskonFnB'),
                                     'JenisPaket' => $request->input('JenisPaket'),
                                     'DurasiPaket' => $request->input('DurasiPaket'),
+                                    'BisaDipesan' => $request->input('BisaDipesan'),
                                     'RecordOwnerID' => Auth::user()->RecordOwnerID
                 				]
                 			);

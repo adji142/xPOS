@@ -41,7 +41,8 @@ class BookingOnlineController extends Controller
         $gallery = Company::select('ImageGallery1', 'ImageGallery2', 'ImageGallery3','ImageGallery4','ImageGallery5','ImageGallery6','ImageGallery7','ImageGallery8','ImageGallery9','ImageGallery10','ImageGallery11','ImageGallery12')
         ->where('KodePartner', $idE)
         ->get();
-        $paketTransaksi = Paket::where('RecordOwnerID','=',$idE)->get();
+        $paketTransaksi = Paket::where('RecordOwnerID','=',$idE)
+                            ->where(DB::RAW("COALESCE(BisaDipesan, 'N')"), 'Y')->get();
         $user= User::where('RecordOwnerID','=',$idE)->first();
 
         $midtransdata = MetodePembayaran::where('RecordOwnerID','=',$idE)
@@ -53,13 +54,14 @@ class BookingOnlineController extends Controller
             $midtransclientkey = $midtransdata->ServerKey;
             $MetodePembayaranAutoID = $midtransdata->id;
         }
+        $today = date('Y-m-d');
 
         //dd($company);
 
         //dd($paketTransaksi);
 
 
-        return view('Transaksi.Penjualan.PoS.BookingOnline', compact('company', 'titikLampu','gallery','paketTransaksi','user', 'midtransclientkey'));
+        return view('Transaksi.Penjualan.PoS.BookingOnline', compact('company', 'titikLampu','gallery','paketTransaksi','user', 'midtransclientkey', 'today'));
     }
 
     public function getData()

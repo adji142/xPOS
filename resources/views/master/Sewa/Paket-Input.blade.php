@@ -109,25 +109,36 @@
 	                            			</fieldset>
 	                            		</div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-3">
 	                            			<label  class="text-body">Diskon Table</label>
 	                            			<fieldset class="form-group mb-3">
 	                            				<input type="number" class="form-control" id="DiskonTable" name="DiskonTable" placeholder="Masukan Diskon Table" value="{{ count($paket) > 0 ? $paket[0]['DiskonTable'] : '' }}" >
 	                            			</fieldset>
 	                            		</div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-3">
 	                            			<label  class="text-body">Diskon FnB</label>
 	                            			<fieldset class="form-group mb-3">
 	                            				<input type="number" class="form-control" id="DiskonFnB" name="DiskonFnB" placeholder="Masukan Diskon FnB" value="{{ count($paket) > 0 ? $paket[0]['DiskonFnB'] : '' }}" >
 	                            			</fieldset>
 	                            		</div>
 
-                                        <div class="col-md-12">
+                                        <div class="col-md-3">
 	                            			<label  class="text-body">Durasi Paket</label>
 	                            			<fieldset class="form-group mb-3">
 	                            				<input type="number" class="form-control" id="DurasiPaket" name="DurasiPaket" value="{{ count($paket) > 0 ? $paket[0]['DurasiPaket'] : '1' }}" readonly>
                                                 <p><small class="text-muted" id="SatuanDurasi">Menit.</small></p>
+	                            			</fieldset>
+	                            		</div>
+
+										<div class="col-md-3">
+	                            			<label  class="text-body">Bisa Pesan Online ? </label>
+	                            			<fieldset class="form-group mb-3">
+												<select name="BisaDipesan" id="BisaDipesan" class="js-example-basic-single js-states form-control bg-transparent" >
+                                                    <option value="">Bisa Pesan Online ? </option>
+                                                    <option value="Y" {{ 'Y' == (count($paket) > 0 ? $paket[0]['BisaDipesan'] : '') ? 'selected' : '' }}>YA</option>
+                                                    <option value="N" {{ 'N' == (count($paket) > 0 ? $paket[0]['BisaDipesan'] : '') ? 'selected' : '' }}>TIDAK</option>
+                                                </select>
 	                            			</fieldset>
 	                            		</div>
 
