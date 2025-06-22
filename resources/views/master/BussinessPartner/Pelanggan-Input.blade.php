@@ -54,10 +54,18 @@
                             	@endif
                             		@csrf
 	                            	<div class="form-group row">
-	                            		<div class="col-md-12">
+	                            		<div class="col-md-3">
 	                            			<label  class="text-body">Kode Pelanggan</label>
 	                            			<fieldset class="form-group mb-3">
 	                            				<input type="text" class="form-control" id="KodePelanggan" name="KodePelanggan" placeholder="<AUTO>" value="{{ count($pelanggan) > 0 ? $pelanggan[0]['KodePelanggan'] : '' }}" readonly="" >
+	                            			</fieldset>
+	                            			
+	                            		</div>
+
+										<div class="col-md-8">
+	                            			<label  class="text-body">Pelanggan ID</label>
+	                            			<fieldset class="form-group mb-3">
+	                            				<input type="text" class="form-control" id="PelangganID" name="PelangganID" placeholder="Masukan ID Pelanggan" value="{{ count($pelanggan) > 0 ? $pelanggan[0]['PelangganID'] : '' }}" >
 	                            			</fieldset>
 	                            			
 	                            		</div>

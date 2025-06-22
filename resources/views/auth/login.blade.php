@@ -92,10 +92,15 @@ License: You must have a valid license purchased only from themeforest(the above
 				 
 			</div>
 			<div class="form-group row ">
-				<div class="col-12">
+				<div class="col-6">
 					<button type="submit" class="btn btn-primary text-white font-weight-bold w-100 py-3 mt-3">
 						Login
 					</button>
+				</div>
+				<div class="col-6">
+					<a href="{{ route('daftar') }}" class="btn btn-warning text-white font-weight-bold w-100 py-3 mt-3">
+						Daftar
+					</a>
 				</div>
 			</div>
 	</form>

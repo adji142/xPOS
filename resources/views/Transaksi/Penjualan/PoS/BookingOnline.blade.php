@@ -754,6 +754,14 @@
                     noCalendar: true,
                     dateFormat: "H:i",  // 24-hour format: H = hour (00-23), i = minutes
                     time_24hr: true,
+                    minuteIncrement: 60,
+                    onChange: function(selectedDates, dateStr, instance) {
+                        const hour = selectedDates[0].getHours();
+                        if (hour % 1 !== 0) { // hanya izinkan jam kelipatan 2
+                            alert("Hanya boleh pilih jam kelipatan 1.");
+                            instance.clear(); // reset input
+                        }
+                    }
                     // minTime: new Date().toTimeString().slice(0,5)
                 });
                 flatpickr("#jamSelesai", {
@@ -761,6 +769,7 @@
                     noCalendar: true,
                     dateFormat: "H:i",  // 24-hour format: H = hour (00-23), i = minutes
                     time_24hr: true,
+                    minuteIncrement: 60,
                     // minTime: new Date().toTimeString().slice(0,5)
                 });
                 let bookedSlots = {}; // Objek untuk menyimpan daftar jam yang sudah dibooking berdasarkan ID meja

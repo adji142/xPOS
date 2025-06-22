@@ -327,7 +327,7 @@ public function View(Request $request)
     $listBooking = BookingOnline::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
     $encodedRecordOwnerID = base64_encode(Auth::user()->RecordOwnerID);
     $BookingURLString = url('booking/').'/'.$encodedRecordOwnerID;
-    return view('Transaksi.Penjualan.PoS.ListBookingOnline', compact('listBooking', 'BookingURLString'));
+    return view('Transaksi.Penjualan.PoS.ListBookingOnlineV2', compact('listBooking', 'BookingURLString'));
 }
 
 public function ViewGenerateVoucher(Request $request)
@@ -391,6 +391,35 @@ public function getListVoucher()
         $query = BookingOnline::join('pelanggan', 'bookingtableonline.KodePelanggan', '=', 'pelanggan.KodePelanggan')
         ->join('titiklampu', 'bookingtableonline.mejaID', '=', 'titiklampu.id') 
         ->where('bookingtableonline.RecordOwnerID', Auth::user()->RecordOwnerID)
+        ->where('bookingtableonline.StatusTransaksi', '0')
+        ->orderBy('bookingtableonline.created_at', 'desc')
+        ->select(
+            'bookingtableonline.*', 
+            'pelanggan.NamaPelanggan', 
+            'pelanggan.Email', 
+            'pelanggan.NoTlp1', 
+            'titiklampu.NamaTitikLampu' ,
+            DB::raw("CASE 
+                    WHEN bookingtableonline.StatusTransaksi = 0 THEN 'WAITING' 
+                    WHEN bookingtableonline.StatusTransaksi = 1 THEN 'CHECK IN' 
+                    ELSE 'UNKNOWN' 
+                 END AS StatusTransaksi")
+        );
+        
+
+        //dd($query->toSql(), $query->getBindings());
+
+        $bookings = $query->get();
+
+        return response()->json($bookings);
+    }
+
+    public function getBookingsList(Request $request){
+        $query = BookingOnline::join('pelanggan', 'bookingtableonline.KodePelanggan', '=', 'pelanggan.KodePelanggan')
+        ->join('titiklampu', 'bookingtableonline.mejaID', '=', 'titiklampu.id') 
+        ->where('bookingtableonline.RecordOwnerID', Auth::user()->RecordOwnerID)
+        ->whereBetween('bookingtableonline.TglBooking', [$request->input('TglAwal'), $request->input('TglAkhir')])
+        ->where('bookingtableonline.StatusTransaksi', '0')
         ->orderBy('bookingtableonline.created_at', 'desc')
         ->select(
             'bookingtableonline.*', 

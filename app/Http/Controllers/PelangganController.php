@@ -135,6 +135,7 @@ class PelangganController extends Controller
 			$model->Alamat = $request->input('Alamat');
 			$model->Keterangan = $request->input('Keterangan');
             $model->Status = $request->input('Status');
+            $model->PelangganID = $request->input('PelangganID');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -182,6 +183,7 @@ class PelangganController extends Controller
             $model->Alamat = $request->input('Alamat');
             $model->Keterangan = $request->input('Keterangan');
             $model->Status = $request->input('Status');
+            $model->PelangganID = $request->input('PelangganID');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -236,7 +238,8 @@ class PelangganController extends Controller
 									'NoTlp2' => $request->input('NoTlp2'),
 									'Alamat' => $request->input('Alamat'),
 									'Keterangan' => $request->input('Keterangan'),
-                                    'Status' => $request->input('Status')
+                                    'Status' => $request->input('Status'),
+                                    'PelangganID' => $request->input('PelangganID')
                 				]
                 			);
 

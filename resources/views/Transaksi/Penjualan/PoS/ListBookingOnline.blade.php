@@ -139,6 +139,21 @@ License: You must have a valid license purchased only from themeforest(the above
                         <h4 class="mb-0">Daftar Booking Online</h4>
                     </div>
                     <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label  class="text-body">Tanggal Awal</label>
+                                <input type="date" name="TglAwal" id="TglAwal" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label  class="text-body">Tanggal Akhir</label>
+                                <input type="date" name="TglAkhir" id="TglAkhir" class="form-control">
+                            </div>
+
+                            <div class="col-md-3">
+                                <br>
+                                <button class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1" id="btSearch">Cari Data</button>
+                            </div>
+                        </div>
                         <div class="table-responsive"> <!-- Tambahkan ini -->
                             <table id="bookingTableContainer" class="table table-striped">
                                 <thead>

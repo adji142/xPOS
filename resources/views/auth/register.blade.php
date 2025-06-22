@@ -370,10 +370,15 @@ License: You must have a valid license purchased only from themeforest(the above
                     <small><input id="chkApprove" type="checkbox"> Saya telah Membaca dan Menyetuji <a href="#" data-bs-toggle="modal" data-bs-target="#TnCModal">Syarat dan Ketentuan</a></small>
                 </div>
                 <div class="form-group row ">
-                    <div class="col-12">
+                    <div class="col-6">
                         <button type="submit" class="btn btn-primary text-white font-weight-bold w-100 py-3 mt-3" id="btRegister">
                             Daftar
                         </button>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ route('login') }}" class="btn btn-warning text-white font-weight-bold w-100 py-3 mt-3" id="btRegister">
+                            Login
+                        </a>
                     </div>
                 </div>
         </form>

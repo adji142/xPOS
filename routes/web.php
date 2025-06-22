@@ -1000,7 +1000,7 @@ Route::get('/get-Bookings', [BookingOnlineController::class, 'getBookings'])->na
 Route::get('/booking/get-detailBooking/{noTransaksi}', [BookingOnlineController::class, 'getBookingDetail'])->name('booking-getDetailBooking');
 Route::get('/booking/get-meja-by-transaksi/{noTransaksi}', [BookingOnlineController::class, 'getMejaByTransaksi'])->name('booking-getMejaByTransaksi');
 Route::post('/booking/insert-tableorderheader', [BookingOnlineController::class, 'insertTableOrder'])->name('booking-insertTableorderheader');
-
+Route::post('/get-BookingsList', [BookingOnlineController::class, 'getBookingsList'])->name('booking-getBookingsList')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------
