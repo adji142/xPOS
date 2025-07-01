@@ -131,6 +131,12 @@
             thead.no-print-header {
                 display: none;
             }
+            body {
+                width: 58mm;
+                margin: 0;
+                font-family: monospace;
+                font-size: 11px;
+            }
         }
     </style>
 </head>

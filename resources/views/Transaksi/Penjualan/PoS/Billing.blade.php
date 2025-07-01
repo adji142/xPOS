@@ -224,136 +224,192 @@ License: You must have a valid license purchased only from themeforest(the above
 				<div class="col-xl-12 col-lg-8 col-md-8">
 				     <div class="">
 						<div class="card card-custom gutter-b bg-white border-0 table-contentpos">
-							<div class="card-body" >
-                                <div class="row">
-									@if (count($titiklampu) > 0)
-										@foreach ($titiklampu as $item)
-											<div class="col-xl-3 col-lg-8 col-md-8">
-												<div class="card card-custom gutter-b bg-white border-0 table-contentpos">
-													<div class="card-header align-items-center  border-0">
-														<div class="card-title mb-0">
-															<h3 class="card-label text-body font-weight-bold mb-0">{{ $item->NamaTitikLampu }}</h3>
-														</div>
-														<div class="card-toolbar">
-															<button class="btn p-0" type="button" id="dropdownMenuButton1"
-																data-bs-toggle="dropdown" aria-haspopup="true"
-																aria-expanded="false">
-																<span class="svg-icon">
-																	<svg width="20px" height="20px" viewBox="0 0 16 16"
-																		class="bi bi-three-dots text-body" fill="currentColor"
-																		xmlns="http://www.w3.org/2000/svg">
-																		<path fill-rule="evenodd"
-																			d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
-																	</svg>
-																</span>
-															</button>
-															<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton1">
-																@if ($item->Status == -1)
-																	<a class="disabled-link dropdown-item btPilihPaket_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Pilih Paket</a>
-																	<a class="disabled-link dropdown-item btCheckOut_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Check Out</a>
-																	<a class="dropdown-item btTambahMakanan_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Makanan</a>
-																	<a class="dropdown-item btDetail_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Detail</a>
-																@endif
 
-																@if ($item->Status == 0)
-																	<a class="dropdown-item btPilihPaket_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Pilih Paket</a>
-																	<a class="disabled-link dropdown-item btCheckOut_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Check Out</a>
-																	<a class="disabled-link dropdown-item btTambahMakanan_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Makanan</a>
-																	<a class="disabled-link dropdown-item btDetail_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Detail</a>
-																@endif
+							@if (count($kelompoklampu) > 0)
+								@foreach ($kelompoklampu as $tl)
+									<div class="card-header align-items-center  border-bottom-dark px-0" style="justify-content: center !important;">
+										<div class="card-title mb-0">
+											<strong>
+												<h3 class="card-label mb-0 font-weight-bold">{{ $tl->NamaKelompok }}</h3>
+											</strong>
+										</div>
+									</div>
 
-																@if ($item->Status == 1 || $item->Status == 2)
-																	<a class="disabled-link dropdown-item btPilihPaket_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Pilih Paket</a>
-																	<a class="dropdown-item btCheckOut_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Check Out</a>
-																	<a class="dropdown-item btTambahMakanan_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Makanan</a>
-																	<a class="dropdown-item btDetail_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Detail</a>
-																@endif
-
-																@if ($item->NoTransaksi != "" && $item->JenisPaket == "JAM")
-																	<a class="dropdown-item btTambahJam_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Jam</a>
-																@else
-																	<a class="disabled-link dropdown-item btTambahJam_{{ $item->id }}" href="#" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">Tambah Jam</a>
-																@endif
-															</div>
-														</div>
-													</div>
-													<div class="card-body" >
-
-														@if ($item->Status == 0)
-															<button class="btn btn-success text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
-														@endif
-
-														@if ($item->Status == 1)
-															<button class="btn btn-danger text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
-														@endif
-
-														@if ($item->Status == 2)
-															<button class="btn btn-warning text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
-														@endif
-
-														@if ($item->Status == -1)
-															<button class="btn btn-warning text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
-														@endif
-
-														<ul class="list-group scrollbar-1">
-															<li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2">
-																<div class="list-left d-flex align-items-center">
-																	<span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-success text-white me-2">
-																		<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-credit-card-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-																			<path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1H0V4z"/>
-																			<path fill-rule="evenodd" d="M0 7v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7H0zm3 2a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1H3z"/>
-																		</svg>
-																		</span>
-																	<div class="list-content">
-																	<span class="list-title text-body">Paket</span>
+									<div class="card-body" >
+										<div class="row">
+											@if (count($titiklampu) > 0)
+												@foreach ($titiklampu as $item)
+													@if ($item->KelompokLampu == $tl->KodeKelompok)
+														<div class="col-xl-3 col-lg-8 col-md-8">
+															<div class="card card-custom gutter-b bg-white border-0 table-contentpos">
+																<div class="card-header align-items-center  border-0">
+																	<div class="card-title mb-0">
+																		<h3 class="card-label text-body font-weight-bold mb-0">{{ $item->NamaTitikLampu }}</h3>
 																	</div>
 																</div>
-																<span id="lblPaketTransaksi{{ $item->id }}">-</span>
-															</li>
-															<li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2">
-																<div class="list-left d-flex align-items-center">
-																	<span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-primary text-white me-2">
-																		<svg width="20px" height="20px" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-																			<path d="M3 2v12s6.333-2.833 10.666-6C9.333 4.833 3 2 3 2z" fill="white" overflow="visible" style="marker:none" color="#000000"/>
-																		</svg>
-																	</span>
-																	<div class="list-content">
-																		<span class="list-title text-body">Mulai</span>
+																<div class="card-body" >
+
+																	@if ($item->Status == 0)
+																		<button class="btn btn-success text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
+																	@endif
+
+																	@if ($item->Status == 1)
+																		<button class="btn btn-danger text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
+																	@endif
+
+																	@if ($item->Status == 99)
+																		<button class="btn btn-warning text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
+																	@endif
+
+																	@if ($item->Status == -1)
+																		<button class="btn btn-warning text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
+																	@endif
+
+																	<ul class="list-group scrollbar-1">
+																		<li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2">
+																			<div class="list-left d-flex align-items-center">
+																				<span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-success text-white me-2">
+																					<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-credit-card-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+																						<path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1H0V4z"/>
+																						<path fill-rule="evenodd" d="M0 7v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7H0zm3 2a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1H3z"/>
+																					</svg>
+																					</span>
+																				<div class="list-content">
+																				<span class="list-title text-body">Paket</span>
+																				</div>
+																			</div>
+																			<span id="lblPaketTransaksi{{ $item->id }}">-</span>
+																		</li>
+																		<li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2">
+																			<div class="list-left d-flex align-items-center">
+																				<span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-primary text-white me-2">
+																					<svg width="20px" height="20px" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+																						<path d="M3 2v12s6.333-2.833 10.666-6C9.333 4.833 3 2 3 2z" fill="white" overflow="visible" style="marker:none" color="#000000"/>
+																					</svg>
+																				</span>
+																				<div class="list-content">
+																					<span class="list-title text-body">Mulai</span>
+																				</div>
+																			</div>
+																			<span id="lblMulai{{ $item->id }}">-</span>
+																		</li>
+
+																		<li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2">
+																			<div class="list-left d-flex align-items-center">
+																				<span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-secondary text-white me-2">
+																					<svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+																						<path d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z" fill="#FFFFFF"/>
+																					</svg>
+																				</span>
+																			<div class="list-content">
+																				<span class="list-title text-body">Selesai</span>
+																			</div>
+																			</div>
+																			<span id="lblSelesai{{ $item->id }}">-</span>
+																		</li>
+																	</ul>
+																	<div class="col-xl-3 col-lg-8 col-md-8  clock-main">
+																		<div class="clock">
+																			<div id="clock_{{ $item->id }}">
+
+																			</div>
+																		</div>
 																	</div>
-																</div>
-																<span id="lblMulai{{ $item->id }}">-</span>
-															</li>
 
-															<li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2">
-																<div class="list-left d-flex align-items-center">
-																	<span class="d-flex align-items-center justify-content-center rounded svg-icon w-45px h-45px bg-secondary text-white me-2">
-																		<svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-																			<path d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z" fill="#FFFFFF"/>
-																		</svg>
-																	</span>
-																<div class="list-content">
-																	<span class="list-title text-body">Selesai</span>
-																</div>
-																</div>
-																<span id="lblSelesai{{ $item->id }}">-</span>
-															</li>
-														</ul>
-														<div class="col-xl-3 col-lg-8 col-md-8  clock-main">
-															<div class="clock">
-																<div id="clock_{{ $item->id }}">
+																	<hr>
+																	
+																	<center>
+																		@if ($item->Status == -1)
+																			<div class ="row">
+																				<div class="col-xl-4 col-lg-12 col-md-12 ">
+																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH PAKET</button>
+																				</div>
+																				<div class="col-xl-4 col-lg-12 col-md-12">
+																					<button disabled class="btn btn-danger text-white font-weight-bold w-100 py-3 item-dropdown btCheckOut_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">CHECKOUT</button>
+																				</div>
+																				<div class="col-xl-4 col-lg-12 col-md-12">
+																					<button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btDetail_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">DETAIL</button>
+																				</div>
+																			</div>
+																			<br>
+																			<div class="row">
+																				<div class="col-xl-12 col-lg-12 col-md-12">
+																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH MAKANAN</button>
+																				</div>
+																			</div>
+																		@endif
 
+																		@if ($item->Status == 0)
+																			<div class ="row">
+																				<div class="col-xl-4 col-lg-12 col-md-12 ">
+																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH PAKET</button>
+																				</div>
+																				<div class="col-xl-4 col-lg-12 col-md-12">
+																					<button disabled class="btn btn-danger text-white font-weight-bold w-100 py-3 item-dropdown btCheckOut_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">CHECKOUT</button>
+																				</div>
+																				<div class="col-xl-4 col-lg-12 col-md-12">
+																					<button disabled class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btDetail_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">DETAIL</button>
+																				</div>
+																			</div>
+																			<br>
+																			<div class="row">
+																				<div class="col-xl-12 col-lg-12 col-md-12">
+																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH MAKANAN</button>
+																				</div>
+																			</div>
+																		@endif
+
+																		@if ($item->Status == 1 || $item->Status == 99)
+																			<div class ="row">
+																				<div class="col-xl-4 col-lg-12 col-md-12 ">
+																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH PAKET</button>
+																				</div>
+																				<div class="col-xl-4 col-lg-12 col-md-12">
+																					<button class="btn btn-danger text-white font-weight-bold w-100 py-3 item-dropdown btCheckOut_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">CHECKOUT</button>
+																				</div>
+																				<div class="col-xl-4 col-lg-12 col-md-12">
+																					<button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btDetail_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">DETAIL</button>
+																				</div>
+																			</div>
+																			<br>
+																			<div class="row">
+																				<div class="col-xl-12 col-lg-12 col-md-12">
+																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH MAKANAN</button>
+																				</div>
+																			</div>
+																		@endif
+
+																		@if ($item->NoTransaksi != "" && $item->JenisPaket == "JAM")
+																			<br>
+																			<div class="row">
+																				<div class="col-xl-12 col-lg-12 col-md-12">
+																					<button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH JAM</button>
+																				</div>
+																			</div>
+																		@else
+																			<br>
+																			<div class="row">
+																				<div class="col-xl-12 col-lg-12 col-md-12">
+																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH JAM</button>
+																				</div>
+																			</div>
+																		@endif
+																	</center>
+																	
 																</div>
 															</div>
 														</div>
-													</div>
-												</div>
-											</div>
-										@endforeach
-									@else
-										<center><h3 class="card-label mb-0 font-weight-bold text-body ">Belum Ada Data Meja / Titik Lampu</h3></center>
-									@endif
-                                </div>
-							</div>
+														
+													@endif
+												@endforeach
+											@else
+												<center><h3 class="card-label mb-0 font-weight-bold text-body ">Belum Ada Data Meja / Titik Lampu</h3></center>
+											@endif
+										</div>
+									</div>	
+
+								@endforeach
+							@endif
 						</div>	
 					</div>	
 				</div>
@@ -463,9 +519,9 @@ License: You must have a valid license purchased only from themeforest(the above
 														<input type="number" class="form-control" id="DurasiPaket" name="DurasiPaket" min="1" value="1">
 													</fieldset>
 												</div>
-												<div class="col-md-12">
+												<div class="col-md-9">
 													<label  class="text-body">Member</label>
-													<fieldset class="form-group mb-12">
+													<fieldset class="form-group mb-9">
 														<select name="KodePelanggan" id="KodePelanggan" class="js-example-basic-single js-states form-control bg-transparent" >
 															<option value="">Pilih Member</option>
 															@foreach ($pelanggan as $plg)
@@ -474,7 +530,83 @@ License: You must have a valid license purchased only from themeforest(the above
 														</select>
 													</fieldset>
 												</div>
+												<div class="col-md-3">
+													<label  class="text-body"></label>
+													<fieldset class="form-group mb-9">
+														<button type="button" class="btn btn-primary" id="btTambahMember">Tambah Member</button>
+													</fieldset>
+												</div>
 											</div>
+
+											{{-- <div class="form-group row" id="PembayaranSection">
+												<div class="col-md-12">
+													<div class="table-responsive" id="printableTable">
+														<table class="display" style="width:100%" id="tblDetailFnB">
+															<tr>
+																<td style="text-align: right">Jam Mulai</td>
+																<td>:</td>
+																<td id="dtJamMulai_Paket"></td>
+															</tr>
+															<tr>
+																<td style="text-align: right">Jam Selesai</td>
+																<td>:</td>
+																<td id="dtJamSelesai_Paket"></td>
+															</tr>
+															<tr>
+																<td style="text-align: right">Total Harga</td>
+																<td>:</td>
+																<td id="dtTotalHargaNormal_Paket" style="text-align: right"></td>
+															</tr>
+															<tr>
+																<td style="text-align: right">Total PPN</td>
+																<td>:</td>
+																<td id="dtTotalPPN_Paket" style="text-align: right"></td>
+															</tr>
+															<tr>
+																<td style="text-align: right">Total Pajak Hiburan</td>
+																<td>:</td>
+																<td id="dtTotalPajakHiburan_Paket" style="text-align: right"></td>
+															</tr>
+															<tr>
+																<td style="text-align: right">Sub Total </td>
+																<td>:</td>
+																<td id="dtSubTotal_Paket" style="text-align: right"></td>
+																<input type="hidden" id="txtSubTotal_Paket"  name = "txtSubTotal_Paket" step ="0.01" style="display:none;"> 
+															</tr>
+														</table>
+													</div>
+												</div>
+												<div class="col-md-6">
+													<label  class="text-body">Metode Pembayaran</label>
+													<fieldset class="form-group mb-12">
+														<select name="cboMetodePembayaran_Paket" id="cboMetodePembayaran_Paket" class="cboMetodePembayaran_Paket js-states form-control bg-transparent" >
+															<option value="">Pilih Metode Pembayaran</option>
+															@foreach ($metodepembayaran as $mtd)
+																<option value="{{ $mtd->id }}">{{ $mtd->NamaMetodePembayaran }}</option>
+															@endforeach
+														</select>
+													</fieldset>
+												</div>
+												<div class="col-md-6">
+													<label  class="text-body">Refrensi</label>
+													<fieldset class="form-group mb-12">
+														<input type="text" class="form-control" id="txtRefrensi_Paket" name="txtRefrensi_Paket">
+													</fieldset>
+												</div>
+												<div class="col-md-6">
+													<label  class="text-body">Jumlah Bayar</label>
+													<fieldset class="form-group mb-12">
+														<input type="text" class="form-control" id="txtJumlahBayar_Paket" name="txtJumlahBayar_Paket">
+													</fieldset>
+												</div>
+												<div class="col-md-6">
+													<label  class="text-body">Kembalian</label>
+													<fieldset class="form-group mb-12">
+														<input type="text" class="form-control" id="txtJumlahKembalian_Paket" name="txtJumlahKembalian_Paket" readonly>
+													</fieldset>
+												</div>
+											</div> --}}
+
 										</div>
 									</div>
 								</div>
@@ -877,6 +1009,116 @@ License: You must have a valid license purchased only from themeforest(the above
 	  </div>
 	</div>
 </div>
+
+<div class="modal fade" id="webViewModal" tabindex="-1" aria-labelledby="webViewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="webViewModalLabel">Web View</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="height: 500px;">
+        <input type="hidden" id="NoTransaksiModal" name="NoTransaksiModal"/>
+        <iframe src="" width="100%" height="100%" frameborder="0"></iframe>
+      </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-success" id='btnEmail'>Kirim Email</button>
+            <button type="button" class="btn btn-warning" id='btnWhatsApp'>Kirim Pesan WhatsApp</button>
+        </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade text-left" id="LookupTambahMember" tabindex="-1" role="dialog" aria-labelledby="myModalLabel11" style="display: none;" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-scrollable modal-xl" role="document">
+		<form id="frmTambahMember">
+			<div class="modal-content">
+				<div class="modal-header">
+				  	<h3 class="modal-title" id="myModalLabel11">Tambah Member</h3>
+					<button type="button" class="close rounded-pill btn btn-sm btn-icon btn-light btn-hover-primary m-0" data-bs-dismiss="modal" aria-label="Close">
+						<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+							<path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+						</svg>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="form-group row">
+						<div class="col-md-12">
+							<div class="row">
+								<div class="col-md-12 col-12">
+									<div class="card card-custom gutter-b bg-white border-0">
+										<div class="card-body">
+											<div class="form-group row">
+												<div class="col-md-3">
+													<label  class="text-body">Kode Member</label>
+													<fieldset class="form-group mb-12">
+														<input type="text" class="form-control" id="txtKodeMember_TambahMember" name="txtKodeMember_TambahMember" placeholder="<AUTO>" readonly>
+													</fieldset>
+												</div>
+
+												<div class="col-md-5">
+													<label  class="text-body">Nama Member</label>
+													<fieldset class="form-group mb-12">
+														<input type="text" class="form-control" id="txtNamaMember_TambahMember" name="txtNamaMember_TambahMember" placeholder="Nama lengkap member">
+													</fieldset>
+												</div>
+
+												<div class="col-md-4">
+													<label  class="text-body">Grup Pelanggan</label>
+													<fieldset class="form-group mb-3">
+														<select name="ModalKodeGrupPelanggan" id="ModalKodeGrupPelanggan" class="js-example-basic-single js-states form-control bg-transparent" name="state" required="">
+															<option value="">Pilih Kelompok Pelanggan</option>
+															@foreach($gruppelanggan as $ko)
+																<option value="{{ $ko->KodeGrup }}">
+																	{{ $ko->NamaGrup }}
+																</option>
+															@endforeach
+															
+														</select>
+													</fieldset>
+													
+												</div>
+
+												<div class="col-md-6">
+													<label  class="text-body">No Tlp</label>
+													<fieldset class="form-group mb-12">
+														<input type="text" class="form-control" id="txtNoTlp_TambahMember" name="txtNoTlp_TambahMember" placeholder="Nomor telepon aktif">
+													</fieldset>
+												</div>
+												<div class="col-md-6">
+													<label  class="text-body">Email</label>
+													<fieldset class="form-group mb-12">
+														<input type="text" class="form-control" id="txtEmail_TambahMember" name="txtEmail_TambahMember" placeholder="Email aktif">
+													</fieldset>
+												</div>
+
+												<div class="col-md-12">
+													<label  class="text-body">Alamat</label>
+													<fieldset class="form-group mb-12">
+														<input type="text" class="form-control" id="txtAlamat_TambahMember" name="txtAlamat_TambahMember" placeholder="Alamat lengkap">
+													</fieldset>
+												</div>
+
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-primary ms-1" id="btSimpanMember" data-bs-dismiss="modal">
+						<span class="">Tambah Member</span>
+					</button>
+				</div> 	
+			</div>
+		</form>
+	</div>	  	  
+</div>
+
 @extends('parts.generaljs')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{{ asset('js/plugin.bundle.min.js')}}"></script>
@@ -898,6 +1140,7 @@ License: You must have a valid license purchased only from themeforest(the above
 </html>
 <script type="text/javascript">
 	var _custdisplayopened = false;
+	const documentBaseUrl = "{{ route('document') }}";
 
     jQuery(function () {
 		var _billing = [];
@@ -987,13 +1230,18 @@ License: You must have a valid license purchased only from themeforest(the above
 			jQuery('.js-example-basic-single').select2({
 				dropdownParent: $('#LookupPilihPaket')
 			});
+
+			jQuery('#ModalKodeGrupPelanggan').select2({
+				dropdownParent: $('#LookupTambahMember')
+			});
+
 			$.each(_billing,function (k,v) {
 				if (v['NoTransaksi'] != "") {
 					jQuery('#lblPaketTransaksi'+v['id']).text(v["NamaPaket"]);
 
 					if(v['StatusBooking'] == 'BOOKING'){
 						// function SetTimer(tableid, TimerType ,EndTime, StartTime, NoTransaksi, JenisPaket, Status) {
-						if(v['Status'] == 1 || v['Status'] == 2){
+						if(v['Status'] == 1 || v['Status'] == 99){
 							SetTimer(v['id'],0,v['JamSelesai'], v['JamMulai'], v['NoTransaksi'], v['JenisPaket'], v['Status']);
 						}
 						
@@ -1002,7 +1250,7 @@ License: You must have a valid license purchased only from themeforest(the above
 					}
 					else{
 						if (v['JamSelesai'] != null) {
-							if (v['Status'] == 1 || v['Status'] == 2) {
+							if (v['Status'] == 1 || v['Status'] == 99) {
 								SetTimer(v['id'],0,v['JamSelesai'], v['JamMulai'], v['NoTransaksi'], v['JenisPaket'], v['Status']);
 								jQuery('#lblMulai'+v['id']).text(stringtoDateTime(v["JamMulai"]));
 								jQuery('#lblSelesai'+v['id']).text(stringtoDateTime(v["JamSelesai"]));	
@@ -1033,13 +1281,133 @@ License: You must have a valid license purchased only from themeforest(the above
 			// Fill Datatable
 			localStorage.setItem('PoSData', JSON.stringify([]));
 		});
+
+		jQuery('#btTambahMember').on('click', function () {
+			jQuery('#LookupTambahMember').modal({backdrop: 'static', keyboard: false})
+			jQuery('#LookupTambahMember').modal('show');
+		});
+
+		jQuery('#webViewModal').on('hidden.bs.modal', function () {
+			location.reload(); // reload seluruh halaman
+		});
+		jQuery('#btnEmail').on('click', function () {
+			const btn = $(this);
+			const originalHtml = btn.html(); // Simpan isi tombol awal
+			btn.html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Sedang proses...');
+			btn.prop('disabled', true); // Nonaktifkan tombol sementara
+
+			const iframeSrc = $('#webViewModal iframe').attr('src');
+			const url = new URL(iframeSrc, window.location.origin);
+			const nomor = url.searchParams.get('NomorTransaksi');
+			const tipe = url.searchParams.get('TipeTransaksi');
+
+			if (!nomor || !tipe) {
+				alert("Data transaksi tidak lengkap.");
+				btn.html(originalHtml);
+				btn.prop('disabled', false);
+				return;
+			}
+
+			$.ajax({
+				type: 'POST',
+				url: "{{ route('sendemail') }}",
+				headers: {
+					'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+				},
+				data: {
+					NomorTransaksi: nomor,
+					TipeTransaksi: tipe
+				},
+				success: function(response) {
+					// alert("Email berhasil dikirim.");
+					Swal.fire({
+						html: "Email berhasil dikirim!",
+						icon: "success",
+						title: "Horray...",
+						// text: "Data berhasil disimpan! <br> " + response.Kembalian,
+					}).then((result)=>{
+						btn.html(originalHtml);
+						btn.prop('disabled', false); // Aktifkan kembali tombol
+					});
+				},
+				error: function(xhr, status, error) {
+					// alert("Gagal mengirim email.");
+					Swal.fire({
+						icon: "error",
+						title: "Opps...",
+						text: response.message,
+					}).then((result)=>{
+						btn.html(originalHtml);
+						btn.prop('disabled', false); // Aktifkan kembali tombol
+					});
+				}
+			});
+
+		});
+
+		jQuery('#btnWhatsApp').on('click', function () {
+			const btn = $(this);
+			const originalHtml = btn.html(); // Simpan isi tombol awal
+			btn.html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Sedang proses...');
+			btn.prop('disabled', true); // Nonaktifkan tombol sementara
+
+			const iframeSrc = $('#webViewModal iframe').attr('src');
+			const url = new URL(iframeSrc, window.location.origin);
+			const nomor = url.searchParams.get('NomorTransaksi');
+			const tipe = url.searchParams.get('TipeTransaksi');
+
+			if (!nomor || !tipe) {
+				alert("Data transaksi tidak lengkap.");
+				btn.html(originalHtml);
+				btn.prop('disabled', false);
+				return;
+			}
+
+			$.ajax({
+				type: 'POST',
+				url: "{{ route('sendwa') }}",
+				headers: {
+					'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+				},
+				data: {
+					NomorTransaksi: nomor,
+					TipeTransaksi: tipe
+				},
+				success: function(response) {
+					if (response.whatsappurl != "") {
+						window.open(response.whatsappurl, '_blank');
+					} else {
+						// alert("Gagal mengirim pesan WhatsApp.");
+						Swal.fire({
+							icon: "error",
+							title: "Opps...",
+							text: "Gagal mengirim pesan WhatsApp.",
+						})
+					}
+					btn.html(originalHtml);
+					btn.prop('disabled', false); // Aktifkan kembali tombol
+				},
+				error: function(xhr, status, error) {
+					// alert("Gagal mengirim WA.");
+					Swal.fire({
+						icon: "error",
+						title: "Opps...",
+						text: "Gagal mengirim pesan WhatsApp. " + error,
+					})
+					btn.html(originalHtml);
+					btn.prop('disabled', false); // Aktifkan kembali tombol
+				}
+			});
+
+		});
+
 		$('#LookupDetailOrder').on('shown.bs.modal', function () {
 			$('#cboMetodePembayaran_Detail').select2({
 				dropdownParent: $(this) // Attach to the opened modal
 			});
 		});
 
-		jQuery(document).on('click', '.dropdown-item', function(e) {
+		jQuery(document).on('click', '.item-dropdown', function(e) {
 			e.preventDefault();
 			const clickedClass = $(this).attr('class');
 			const itemId = clickedClass.match(/_(\d+)/)[1];
@@ -1208,6 +1576,13 @@ License: You must have a valid license purchased only from themeforest(the above
 					jQuery('#paketid').append(newOption);
 				});
 			}
+
+			if (jQuery('#JenisPaket').val() == "MENIT") {
+				jQuery('#PembayaranSection').hide();
+			}
+			else{
+				jQuery('#PembayaranSection').show();
+			}
 		});
 
 		jQuery('#paketid').change(function () {
@@ -1219,6 +1594,16 @@ License: You must have a valid license purchased only from themeforest(the above
 				jQuery('#JamHargaNormal').val(filteredData[0]["AkhirJamNormal"]);
 				jQuery('#JamHargaBaru').val(filteredData[0]["AkhirJamPerubahanHarga"]);
 			}
+
+			if (jQuery('#JenisPaket').val() != "MENIT") {
+				// GenerateTotal();
+				jQuery('#btMulaiBermain').text('Next >>');
+			}
+		});
+
+		jQuery('#DurasiPaket').change(function () {
+			// console.log(jQuery('#DurasiPaket').val());
+			GenerateTotal();
 		});
 
 		jQuery('#frmPilihPaket').on('submit', function(e) {
@@ -1228,11 +1613,11 @@ License: You must have a valid license purchased only from themeforest(the above
 
 			e.preventDefault();
 			jQuery('#frmPilihPaket').find(':disabled').prop('disabled', false);
-
 			const formData = new FormData(this);
 			formData.append('Status', '1');
 
 			$.ajax({
+				async:false,
 				url: "{{route('billing-store')}}",
 				type: 'post',
 				data: formData,
@@ -1244,13 +1629,38 @@ License: You must have a valid license purchased only from themeforest(the above
 				success: function(response) {
 					// console.log('Form submitted successfully:', response);
 					if (response.success) {
-						Swal.fire({
-	                      icon: "success",
-	                      title: "Sukses",
-	                      text: "Data Berhasil disimpan, Selamat Bermain",
-	                    }).then((result) => {
-						  location.reload();
-						});
+						if (jQuery('#JenisPaket').val() != "MENIT") {
+							$.ajax({
+								async:false,
+								url: "{{route('billing-repopulate')}}",
+								type: 'post',
+								data: formData,
+								processData: false, // Prevent jQuery from automatically processing the data
+								contentType: false,
+								headers: {
+									'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+								},
+								success: function(oBilling) {
+									_billing = oBilling.data;
+									jQuery('#btCloseModalDetails').css('display', 'none');
+									jQuery('#LookupPilihPaket').modal('hide');
+									fnDetails(response.NoTransaksi, []);
+
+									jQuery('#LookupDetailOrder').modal({backdrop: 'static', keyboard: false})
+		    						jQuery('#LookupDetailOrder').modal('show');
+								}
+							});
+						}
+						else{
+							Swal.fire({
+								icon: "success",
+								title: "Sukses",
+								text: "Data Berhasil disimpan, Selamat Bermain",
+							}).then((result) => {
+								location.reload();
+								
+							});
+						}
 					}
 					else{
 						Swal.fire({
@@ -1343,6 +1753,75 @@ License: You must have a valid license purchased only from themeforest(the above
 
 						jQuery('#LookupTambahDurasiPaket').modal({backdrop: 'static', keyboard: false})
 		    			jQuery('#LookupTambahDurasiPaket').modal('show');
+					});
+				}
+			});
+		});
+
+		jQuery('#frmTambahMember').on('submit', function(e) {
+			// 
+			jQuery('#btTambahMember').text('Tunggu Sebentar');
+			jQuery('#btTambahMember').attr('disabled',true);
+
+			e.preventDefault();
+			jQuery('#frmTambahMember').find(':disabled').prop('disabled', false);
+
+			const formData = new FormData(this);
+			formData.append('NamaPelanggan', jQuery('#txtNamaMember_TambahMember').val());
+			formData.append('NoTlp1', jQuery('#txtNoTlp_TambahMember').val());
+			formData.append('Email', jQuery('#txtEmail_TambahMember').val());
+			formData.append('Alamat', jQuery('#txtAlamat_TambahMember').val());
+			formData.append('Status', 1);
+			formData.append('KodeGrupPelanggan', jQuery('#ModalKodeGrupPelanggan').val());
+
+			$.ajax({
+				url: "{{route('pelanggan-storeJson')}}",
+				type: 'post',
+				data: formData,
+				processData: false, // Prevent jQuery from automatically processing the data
+        		contentType: false,
+				headers: {
+					'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+				},
+				success: function(response) {
+					// console.log('Form submitted successfully:', response);
+					if (response.success) {
+						jQuery('#LookupTambahMember').modal('hide');
+                    	var newOption = $('<option>', {
+			            	value: response.LastTRX,
+			            	text: jQuery('#txtNamaMember_TambahMember').val()
+			          	});
+			          	jQuery('#KodePelanggan').append(newOption);
+			          	jQuery('#KodePelanggan').val(response.LastTRX).trigger('change');
+					}
+					else{
+						Swal.fire({
+							icon: "error",
+							title: "Opps...",
+							text: response.message,
+						}).then((result) => {
+						//   location.reload();
+							jQuery('#btTambahMember').text('Tambah Member');
+							jQuery('#btTambahMember').attr('disabled',false);
+
+							jQuery('#LookupTambahMember').modal({backdrop: 'static', keyboard: false})
+		    				jQuery('#LookupTambahMember').modal('show');
+						});
+					}
+				},
+				error: function(xhr) {
+					// console.error('An error occurred:', xhr.responseText);
+					Swal.fire({
+						icon: "error",
+						title: "Opps...",
+						text: response.message,
+					}).then((result) => {
+					//   location.reload();
+						jQuery('#btTambahMember').text('Tambah Member');
+						jQuery('#btTambahMember').attr('disabled',false);
+
+						jQuery('#LookupTambahMember').modal({backdrop: 'static', keyboard: false})
+		    			jQuery('#LookupTambahMember').modal('show');
 					});
 				}
 			});
@@ -1492,6 +1971,27 @@ License: You must have a valid license purchased only from themeforest(the above
 			SetEnableCommand();
 		});
 
+		jQuery('#txtJumlahBayar_Paket').on('input', function () {
+			let value = jQuery(this).val();
+			let numericValue = value.replace(/[^0-9.]/g, '');
+
+			const formatter = new Intl.NumberFormat('en-US', {
+				style: 'decimal',
+				maximumFractionDigits: 2,
+			});
+
+			if (numericValue) {
+				$(this).val(formatter.format(numericValue));
+				$(this).attr("originalvalue", value.replace(",",""));
+
+				var kembalian = $(this).attr("originalvalue") - jQuery('#txtSubTotal_Paket').val();
+				console.log(kembalian);
+				jQuery('#txtJumlahKembalian_Paket').val(formatter.format(kembalian));
+				jQuery('#txtJumlahKembalian_Paket').attr(kembalian);
+			}
+			SetEnableCommand();
+		});
+
 		jQuery('#txtJumlahBayar_Detail').on('focus', function() {
 			jQuery(this).val(jQuery(this).attr('originalvalue'));
 			SetEnableCommand();
@@ -1512,6 +2012,16 @@ License: You must have a valid license purchased only from themeforest(the above
 			const metodepembayaran = <?php echo $metodepembayaran ?>;
 			const filteredData = metodepembayaran.filter(item => item.id == jQuery('#cboMetodePembayaran_Detail').val());
 			const midtransclientkey = "<?php echo $midtransclientkey ?>";
+			const JenisPaket = jQuery('#dtJenisPaket_Detail').first().text();
+
+			var StatusDocument = 'C';
+
+			if(JenisPaket != 'MENIT'){
+				StatusDocument = 'O';
+			}
+
+			console.log(JenisPaket + " >> " + StatusDocument);
+
 
 			if (filteredData[0]['MetodeVerifikasi'] == "AUTO") {
 				if (midtransclientkey == "") {
@@ -1524,15 +2034,15 @@ License: You must have a valid license purchased only from themeforest(the above
 				}
 
 				if (parseFloat(jQuery('#txtGrandTotal_Detail').attr("originalvalue")) > 0) {
-					PaymentGateWay('C',$('#btBayar'),'Bayar');
+					PaymentGateWay(StatusDocument,$('#btBayar'),'Bayar');
 				}
 				else{
-					SaveData('C',$('#btBayar'),'Bayar');
+					SaveData(StatusDocument,$('#btBayar'),'Bayar');
 				}
 				
 			}
 			else{
-				SaveData('C',$('#btBayar'),'Bayar');
+				SaveData(StatusDocument,$('#btBayar'),'Bayar');
 			}
 		});
 
@@ -1571,6 +2081,14 @@ License: You must have a valid license purchased only from themeforest(the above
 			_custdisplayopened = true;
 			openCustomerDisplay();
 		});
+
+		function showCetakModal(noTransaksi) {
+			var url = documentBaseUrl + "?NomorTransaksi=" + encodeURIComponent(noTransaksi) + "&TipeTransaksi=PoS&format=slipthermal48";
+			jQuery('#webViewModal iframe').attr('src', url);
+			jQuery('#webViewModal').modal({backdrop: 'static', keyboard: false})
+			jQuery('#webViewModal').modal('show');
+			jQuery('#NoTransaksiModal').val(noTransaksi);
+		}
 
 		function SetTimer(tableid, TimerType ,EndTime, StartTime, NoTransaksi, JenisPaket, Status) {
 
@@ -1714,6 +2232,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		function fnCheckOut(NoTransaksi, JenisPaket) {
 			// GeneratePaket()
 			const filteredData = _billing.filter(item => item.NoTransaksi == NoTransaksi);
+			console.log(filteredData);
 
 			if(filteredData[0]["StatusBooking"] == 'BOOKING'){
 				JenisPaket = 'JAM';
@@ -1728,7 +2247,8 @@ License: You must have a valid license purchased only from themeforest(the above
 				},
 				data: {
 					'txtNoTransaksi_CheckOut':NoTransaksi,
-					"txtJenisPaket_CheckOut": JenisPaket
+					"txtJenisPaket_CheckOut": JenisPaket,
+					"TotalPembayaran" : filteredData[0]["TotalPembayaran"]
 				},
 				success: function(response) {
 					if (response.success == true) {
@@ -1810,7 +2330,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			
 			// console.log(NoTransaksi);
 			console.log(filteredData);
-			console.log(filteredPaket);
+			// console.log(filteredPaket);
 
 			jQuery('#txtNoTransaksi_Detail').val(NoTransaksi);
 			jQuery('#dtJenisPaket_Detail').text(filteredData[0]["JenisPaket"]);
@@ -1979,11 +2499,12 @@ License: You must have a valid license purchased only from themeforest(the above
 
 						_durasiPaketBaru = durasiBaruMenit;
 					}
-
 					// Total akhir
 					_SubTotal = Math.abs(_NewHargaNormal + _NewHargaBaru + _PPnBaru + _PPnNormal + _PajakHiburanNormal + _PajakHiburanBaru);
 					_durasiPaket = totalDurasiMenit;
 				}
+
+				_TotalUangMuka= filteredData[0]["TotalPembayaran"];
 			}
 
 
@@ -2579,23 +3100,24 @@ License: You must have a valid license purchased only from themeforest(the above
 							minimumFractionDigits: 2,
 							maximumFractionDigits: 2
 						});
-						Swal.fire({
-							title: "KEMBALIAN "+formattedAmount,
-							text: "Cetak Struk ?",
-							icon: "warning",
-							showCancelButton: true,
-							confirmButtonColor: "#3085d6",
-							cancelButtonColor: "#d33",
-							confirmButtonText: "Cetak",
-							cancelButtonText: "Tidak Cetak"
-						}).then((result) => {
-							if (result.isConfirmed) {
-								PrintStruk(response.LastTRX);
-							}
-							else{
-								location.reload();
-							}
-						});
+						PrintStruk(response.LastTRX);
+						// Swal.fire({
+						// 	title: "KEMBALIAN "+formattedAmount,
+						// 	text: "Cetak Struk ?",
+						// 	icon: "warning",
+						// 	showCancelButton: true,
+						// 	confirmButtonColor: "#3085d6",
+						// 	cancelButtonColor: "#d33",
+						// 	confirmButtonText: "Cetak",
+						// 	cancelButtonText: "Tidak Cetak"
+						// }).then((result) => {
+						// 	if (result.isConfirmed) {
+						// 		PrintStruk(response.LastTRX);
+						// 	}
+						// 	else{
+						// 		location.reload();
+						// 	}
+						// });
 					}
 					else{
 						Swal.fire({
@@ -2613,6 +3135,175 @@ License: You must have a valid license purchased only from themeforest(the above
 
 			ButonObject.text(ButtonDefaultText);
 			ButonObject.attr('disabled',false);
+		}
+
+		function GenerateTotal() {
+			const oCompany = <?php echo $company ?>;
+			const filteredData = _billing.filter(item => item.NoTransaksi == jQuery('#txtNoTransaksi_Detail').val());
+
+			const now = new Date();
+	    	const day = ("0" + now.getDate()).slice(-2);
+	    	const month = ("0" + (now.getMonth() + 1)).slice(-2);
+	    	const hours = now.getHours().toString().padStart(2, '0');
+			const minutes = now.getMinutes().toString().padStart(2, '0');
+			const seconds = now.getSeconds().toString().padStart(2, '0');
+
+	    	const firstDay = now.getFullYear()+"-"+month+"-01";
+	    	const NowDay = now.getFullYear()+"-"+month+"-"+day;
+
+	    	const _Tanggal = NowDay;
+	    	const _Jam = hours+":"+minutes+":"+seconds;
+
+			var oDetail = [];
+
+			var NoUrut = 0;
+
+			if (oCompany[0]["ItemHiburan"] == null || oCompany[0]["ItemHiburan"] == "") {
+				alert('Setting Item Hiburan');
+				return;
+			}
+
+			var DurasiLama = jQuery('#DurasiPaket').val();
+			var SatuanDurasiLama = "JAM";
+			var HargaNormal = jQuery('#HargaNormal').val();
+			var HargaBaru = jQuery('#HargaBaru').val();
+			var TotalTransaksi = HargaNormal * DurasiLama;
+
+			var PPNPercent = oCompany[0]["PPN"];
+			var PajakHiburanPercent = oCompany[0]["PajakHiburan"];
+
+			var PPNTotal = 0;
+			var PajakHiburanTotal = 0;
+
+			var GrandTotal = 0;
+
+			if (PPNTotal > 0) {
+				PPNTotal = (PPNPercent / 100) * TotalTransaksi;
+			}
+
+			if(PajakHiburanPercent > 0){
+				PajakHiburanTotal = (PajakHiburanPercent / 100) * TotalTransaksi;
+			}
+
+			GrandTotal = TotalTransaksi + PPNTotal + PajakHiburanTotal;
+
+			// jQuery('#txtJumlahBayar_Paket').val(GrandTotal);
+			var _TextTotalHargaNormal = DurasiLama + " " +  jQuery('#JenisPaket').val() + " * " + HargaNormal + " = ";
+			var _TanggalSelesai = _Tanggal;
+			var _JamSelesai = (parseInt(hours) + parseInt(DurasiLama))+":"+minutes+":"+seconds;
+
+			if(parseInt(hours) + parseInt(DurasiLama) >= 24){
+				_TanggalSelesai = now.getFullYear()+"-"+month+"-"+(parseInt(day) + 1);
+				_JamSelesai = (parseInt(hours) + parseInt(DurasiLama) - 24)+":"+minutes+":"+seconds;
+			}
+			jQuery('#dtJamMulai_Paket').text(genfnFormatingDate(_Tanggal + " " + _Jam));
+			jQuery('#dtJamSelesai_Paket').text(genfnFormatingDate(_TanggalSelesai + " " + _JamSelesai));
+			jQuery('#dtTotalHargaNormal_Paket').text(_TextTotalHargaNormal + new Intl.NumberFormat('id-ID', {style: 'currency',currency: 'IDR',}).format(TotalTransaksi));
+			jQuery('#dtTotalPPN_Paket').text(new Intl.NumberFormat('id-ID', {style: 'currency',currency: 'IDR',}).format(PPNTotal));
+			jQuery('#dtTotalPajakHiburan_Paket').text(new Intl.NumberFormat('id-ID', {style: 'currency',currency: 'IDR',}).format(PajakHiburanTotal));
+			jQuery('#dtSubTotal_Paket').text(new Intl.NumberFormat('id-ID', {style: 'currency',currency: 'IDR',}).format(GrandTotal));
+			jQuery('#txtSubTotal_Paket').val(GrandTotal)
+			formatCurrency($('#txtJumlahBayar_Paket'), GrandTotal);
+
+		}
+
+		function Bayardidepan(Status, ButonObject, ButtonDefaultText){
+			const oCompany = <?php echo $company ?>;
+			const filteredData = _billing.filter(item => item.NoTransaksi == jQuery('#txtNoTransaksi_Detail').val());
+
+			const now = new Date();
+	    	const day = ("0" + now.getDate()).slice(-2);
+	    	const month = ("0" + (now.getMonth() + 1)).slice(-2);
+	    	const hours = now.getHours().toString().padStart(2, '0');
+			const minutes = now.getMinutes().toString().padStart(2, '0');
+			const seconds = now.getSeconds().toString().padStart(2, '0');
+
+	    	const firstDay = now.getFullYear()+"-"+month+"-01";
+	    	const NowDay = now.getFullYear()+"-"+month+"-"+day;
+
+	    	const _Tanggal = NowDay;
+	    	const _Jam = hours+":"+minutes+":"+seconds;
+
+			var oDetail = [];
+
+			var NoUrut = 0;
+
+			if (oCompany[0]["ItemHiburan"] == null || oCompany[0]["ItemHiburan"] == "") {
+				alert('Setting Item Hiburan');
+				return;
+			}
+
+			var DurasiLama = jQuery('#DurasiPaket').val();
+			var SatuanDurasiLama = "JAM";
+			var HargaNormal = jQuery('#HargaNormal').val();
+			var HargaBaru = jQuery('#HargaBaru').val();
+			var TotalTransaksi = HargaNormal * DurasiLama;
+
+			var PPNPercent = oCompany[0]["PPN"];
+			var PajakHiburanPercent = oCompany[0]["PajakHiburan"];
+
+			var PPNTotal = 0;
+			var PajakHiburanTotal = 0;
+
+			var GrandTotal = 0;
+
+			if (PPNTotal > 0) {
+				PPNTotal = (PPNPercent / 100) * TotalTransaksi;
+			}
+
+			if(PajakHiburan > 0){
+				PajakHiburanTotal = (PajakHiburanPercent / 100) * TotalTransaksi;
+			}
+
+			GrandTotal = TotalTransaksi + PPNTotal + PajakHiburanTotal;
+
+
+			var oItem = {
+				'NoUrut' : 0,
+				'KodeItem' : oCompany[0]["ItemHiburan"],
+				'Qty' : DurasiLama,
+				'QtyKonversi' : DurasiLama,
+				'Satuan' : SatuanDurasiLama,
+				'Harga' : HargaNormal,
+				'Discount' : 0,
+				'HargaNet' : DurasiLama * HargaNormal,
+				'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
+				'BaseLine' : -1,
+				'KodeGudang' : oCompany[0]['GudangPoS'],
+				'LineStatus': 'O',
+				'VatPercent' : 0,
+				'HargaPokokPenjualan' : HargaNormal,
+			}
+			oDetail.push(oItem);
+			NoUrut += 1;
+
+
+			// Header
+			var oData = {
+				'NoTransaksi' : "",
+				'TglTransaksi' : _Tanggal + " " + _Jam,
+				'TglJatuhTempo' : _Tanggal,
+				'NoReff' : 'POS',
+				'KodeSales' : jQuery('#KodeSales').val(),
+				'KodePelanggan' : jQuery('#KodePelanggan').val(),
+				'KodeTermin' : oCompany[0]['TerminBayarPoS'],
+				'Termin' : 0,
+				'TotalTransaksi' : TotalTransaksi,
+				'Potongan' : 0,
+				'Pajak' : PPNTotal,
+				'PajakHiburan' : PajakHiburanTotal,
+				'Pembulatan' : 0,
+				'TotalPembelian' : GrandTotal,
+				'TotalRetur' : 0,
+				'TotalPembayaran' : GrandTotal,
+				'Status' : Status,
+				'Keterangan' : '',
+				'MetodeBayar' : jQuery('#cboMetodePembayaran_Paket').val(),
+				'ReffPembayaran' : $('#txtRefrensi_Paket').val(),
+				'Detail' : oDetail
+			}
+
+			console.log(oData);
 		}
 
 		function PaymentGateWay(Status, ButonObject, ButtonDefaultText) {
@@ -2842,8 +3533,17 @@ License: You must have a valid license purchased only from themeforest(the above
 			url += "/fpenjualan/printthermal/"+NoTransaksi;
 			// console.log(url);
 			// // window.location.href = url.toString();
-			window.open(url, "_blank");
-			location.reload();
+			// window.open(url, "_blank");
+			// location.reload();
+
+			const win = window.open(url, '_blank', 'width=800,height=600');
+			win.onload = function () {
+				win.print();
+				win.onafterprint = function () {
+					win.close();
+				};
+			};
+			showCetakModal(NoTransaksi);
 		}
 
 		function SetEnableCommand() {

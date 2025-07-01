@@ -63,7 +63,7 @@
 	                            			
 	                            		</div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
 	                            			<label  class="text-body">Controller</label>
 	                            			<fieldset class="form-group mb-3">
                                                 <select name="ControllerID" id="ControllerID" class="js-example-basic-single js-states form-control bg-transparent">
@@ -78,7 +78,7 @@
 	                            			
 	                            		</div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
 	                            			<label  class="text-body">Digital Input Port</label>
 	                            			<fieldset class="form-group mb-3">
                                                 <select name="DigitalInput" id="DigitalInput" class="js-example-basic-single js-states form-control bg-transparent">
@@ -86,6 +86,21 @@
                                                     @for ($i = 1; $i < 11; $i++)
                                                     <option value="{{ $i }}" {{ $i == (count($titiklampu) > 0 ? $titiklampu[0]['DigitalInput'] : '') ? 'selected' : '' }}>{{ $i }}</option>
                                                     @endfor
+                                                </select>
+	                            			</fieldset>
+	                            			
+	                            		</div>
+
+										<div class="col-md-4">
+	                            			<label  class="text-body">Kelompok Lampu</label>
+	                            			<fieldset class="form-group mb-3">
+                                                <select name="KelompokLampu" id="KelompokLampu" class="js-example-basic-single js-states form-control bg-transparent">
+                                                    <option value="">Pilih Kelompok Lampu</option>
+                                                    @foreach($kelompoklampu as $ko)
+                                                        <option value="{{ $ko->KodeKelompok }}" {{ $ko->KodeKelompok == (count($titiklampu) > 0 ? $titiklampu[0]['KelompokLampu'] : '') ? 'selected' : '' }}>
+                                                            {{ $ko->NamaKelompok }}
+                                                        </option>
+                                                    @endforeach
                                                 </select>
 	                            			</fieldset>
 	                            			

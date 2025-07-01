@@ -62,13 +62,35 @@
 	                            			
 	                            		</div>
 
-										<div class="col-md-8">
+										<div class="col-md-9">
 	                            			<label  class="text-body">Pelanggan ID</label>
 	                            			<fieldset class="form-group mb-3">
 	                            				<input type="text" class="form-control" id="PelangganID" name="PelangganID" placeholder="Masukan ID Pelanggan" value="{{ count($pelanggan) > 0 ? $pelanggan[0]['PelangganID'] : '' }}" >
 	                            			</fieldset>
 	                            			
 	                            		</div>
+
+										<div class="col-md-12">
+	                            			<fieldset class="form-group mb-3">
+	                            				<center>
+													<div class="row">
+														<div class="col-md-4">
+														</div>
+														<div class="col-md-4">
+															<svg id="barcode"></svg>	
+														</div>
+
+														<div class="col-md-4">
+															<div id="qrcode"></div>
+														</div>
+
+													</div>
+												</center>
+	                            			</fieldset>
+	                            			
+	                            		</div>
+
+
 	                            		
 	                            		<div class="col-md-12">
 	                            			<label  class="text-body">Nama Pelanggan</label>
@@ -220,6 +242,7 @@
 	// jQuery(document).ready(function() {
 	// 	jQuery('.js-example-basic-multiple').select2();
 	// });
+	let qr;
 	jQuery(function () {
 		jQuery(document).ready(function() {
 			jQuery('.js-example-basic-single').select2();
@@ -231,6 +254,15 @@
 			$('#KotaID').val(xData[0]['KotaID']).trigger('change');
 			$('#KecID').val(xData[0]['KecID']).trigger('change');
 			$('#KelID').val(xData[0]['KelID']).trigger('change');
+			qr = new QRCode(document.getElementById("qrcode"), {
+				width: 128,
+				height: 128
+			});
+
+			Generatebarcode()
+		});
+		jQuery('#PelangganID').on('input', function () {
+			Generatebarcode()
 		});
 		jQuery('#ProvID').change(function () {
 			console.log('Test masuk')
@@ -337,7 +369,21 @@
                     }
                 }
             });
-		})
+		});
+
+		function Generatebarcode() {
+			const value = jQuery('#PelangganID').val();
+			JsBarcode('#barcode', value, {
+				format: 'CODE128',
+				displayValue: true,
+				fontSize: 16
+			});
+
+			console.log(qr);
+
+			qr.clear();
+      		qr.makeCode(value);
+		}
 
 	})
 </script>

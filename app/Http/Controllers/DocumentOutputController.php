@@ -395,6 +395,45 @@ class DocumentOutputController extends Controller
                     ->where('returkonsinyasiheader.NoTransaksi', $NomorTransaksi)
                     ->get();
                 break;
+            case "PoS":
+                $sql = "company.NamaPartner, company.AlamatTagihan, company.NPWP, company.NoTlp,
+                    fakturpenjualanheader.NoTransaksi, DATE_FORMAT(fakturpenjualanheader.TglTransaksi, '%d-%m-%Y %H:%i') TglTransaksi, fakturpenjualanheader.TglJatuhTempo,
+                    pelanggan.NamaPelanggan, pelanggan.Alamat, itemmaster.NamaItem, fakturpenjualandetail.Satuan,
+                    fakturpenjualandetail.Qty, fakturpenjualandetail.Harga, fakturpenjualandetail.HargaNet,
+                    fakturpenjualandetail.Discount, fakturpenjualandetail.VatPercent,
+                    fakturpenjualanheader.TotalTransaksi AS SubTotal, fakturpenjualanheader.Potongan AS Diskon,
+                    fakturpenjualanheader.Pajak, fakturpenjualanheader.TotalPembelian AS Total,
+                    company.icon, pelanggan.Email, pelanggan.NoTlp1,
+                    'Faktur Penjualan' title, fakturpenjualanheader.Keterangan, fakturpenjualanheader.SyaratDanKetentuan,
+                    fakturpenjualanheader.TotalPembayaran, fakturpenjualanheader.TotalPembayaran - fakturpenjualanheader.TotalPembelian AS Kembalian, 
+                    metodepembayaran.NamaMetodePembayaran, fakturpenjualanheader.ReffPembayaran, company.FooterNota ";
+
+                return FakturPenjualanHeader::selectRaw($sql)
+                    ->leftJoin('fakturpenjualandetail', function ($join) {
+                        $join->on('fakturpenjualanheader.NoTransaksi', '=', 'fakturpenjualandetail.NoTransaksi')
+                            ->on('fakturpenjualanheader.RecordOwnerID', '=', 'fakturpenjualandetail.RecordOwnerID');
+                    })
+                    ->leftJoin('pelanggan', function ($join) {
+                        $join->on('fakturpenjualanheader.KodePelanggan', '=', 'pelanggan.KodePelanggan')
+                            ->on('fakturpenjualanheader.RecordOwnerID', '=', 'pelanggan.RecordOwnerID');
+                    })
+                    ->leftJoin('itemmaster', function ($join) {
+                        $join->on('fakturpenjualandetail.KodeItem', '=', 'itemmaster.KodeItem')
+                            ->on('fakturpenjualandetail.RecordOwnerID', '=', 'itemmaster.RecordOwnerID');
+                    })
+                    ->leftJoin('satuan', function ($join) {
+                        $join->on('fakturpenjualandetail.Satuan', '=', 'satuan.KodeSatuan')
+                            ->on('fakturpenjualandetail.RecordOwnerID', '=', 'satuan.RecordOwnerID');
+                    })
+                    ->leftJoin('metodepembayaran', function ($join) {
+                        $join->on('fakturpenjualanheader.MetodeBayar', '=', 'metodepembayaran.id')
+                            ->on('fakturpenjualanheader.RecordOwnerID', '=', 'metodepembayaran.RecordOwnerID');
+                    })  
+                    ->leftJoin('company', 'company.KodePartner', '=', 'fakturpenjualanheader.RecordOwnerID')
+                    ->where('fakturpenjualanheader.RecordOwnerID', $RecordOwnerID)
+                    ->where('fakturpenjualanheader.NoTransaksi', $NomorTransaksi)
+                    ->get();
+                break;
             default:
                 return response()->json(['error' => 'Invalid transaction type'], 400);
         }

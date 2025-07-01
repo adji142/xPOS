@@ -49,6 +49,7 @@
 												<th>Nama Titik Lampu</th>
                                                 <th>Nama Controller</th>
                                                 <th>Digital Input</th>
+												<th>Kelompok Lampu</th>
 												<th class=" no-sort text-end">Action</th>
 											</tr>
 										</thead>
@@ -59,6 +60,7 @@
 													<td>{{ $v['NamaTitikLampu'] }}</td>
 													<td>{{ $v['NamaController'] }}</td>
                                                     <td>{{ $v['DigitalInput'] }}</td>
+													<td>{{ $v['NamaKelompok'] }}</td>
 													<td>
 														<div class="card-toolbar text-end">
 															<button class="btn p-0 shadow-none" type="button" id="dropdowneditButton1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

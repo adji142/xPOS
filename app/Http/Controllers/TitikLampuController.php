@@ -15,6 +15,7 @@ use ZipArchive;
 use App\Models\Company;
 use App\Models\TitikLampu;
 use App\Models\MasterController;
+use App\Models\KelompokLampu;
 
 class TitikLampuController extends Controller
 {
@@ -24,10 +25,14 @@ class TitikLampuController extends Controller
         $keyword = $request->input('keyword');
         $ControllerID = $request->input('ControllerID');
 
-        $titiklampu = TitikLampu::selectRaw("titiklampu.*,mastercontroller.NamaController")
+        $titiklampu = TitikLampu::selectRaw("titiklampu.*,mastercontroller.NamaController, tkelompoklampu.NamaKelompok")
                 ->join('mastercontroller', function ($value)  {
                     $value->on('titiklampu.ControllerID','=','mastercontroller.id')
                     ->on('titiklampu.RecordOwnerID','=','mastercontroller.RecordOwnerID');
+                })
+                ->leftjoin('tkelompoklampu', function ($value)  {
+                    $value->on('titiklampu.KelompokLampu','=','tkelompoklampu.KodeKelompok')
+                    ->on('titiklampu.RecordOwnerID','=','tkelompoklampu.RecordOwnerID');
                 })
                 ->Where(function ($query) use($keyword, $field) {
                     for ($i = 0; $i < count($field); $i++){
@@ -60,10 +65,12 @@ class TitikLampuController extends Controller
     {
         $controller = MasterController::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
     	$titiklampu = TitikLampu::where('id','=',$id)->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
-        
+        $kelompoklampu = KelompokLampu::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+
         return view("controller.titiklampu-Input",[
             'titiklampu' => $titiklampu,
-            'controller' => $controller
+            'controller' => $controller,
+            'kelompoklampu' => $kelompoklampu
         ]);
     }
 
@@ -81,6 +88,7 @@ class TitikLampuController extends Controller
             $model->NamaTitikLampu = $request->input('NamaTitikLampu');
             $model->DigitalInput = $request->input('DigitalInput');
             $model->ControllerID = $request->input('ControllerID');
+            $model->KelompokLampu = $request->input('KelompokLampu');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -123,6 +131,7 @@ class TitikLampuController extends Controller
                 					'NamaTitikLampu'=>$request->input('NamaTitikLampu'),
                                     'DigitalInput'=>$request->input('DigitalInput'),
                                     'ControllerID'=>$request->input('ControllerID'),
+                                    'KelompokLampu'=>$request->input('KelompokLampu'),
                 				]
                 			);
 
@@ -153,6 +162,7 @@ class TitikLampuController extends Controller
             $model->DigitalInput = $request->input('DigitalInput');
             $model->ControllerID = $request->input('ControllerID');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+            $model->KelompokLampu = $request->input('KelompokLampu');
 
             $save = $model->save();
 
@@ -187,6 +197,7 @@ class TitikLampuController extends Controller
                                     'NamaTitikLampu'=>$request->input('NamaTitikLampu'),
                                     'DigitalInput'=>$request->input('DigitalInput'),
                                     'ControllerID'=>$request->input('ControllerID'),
+                                    'KelompokLampu'=>$request->input('KelompokLampu'),
                                 ]
                             );
 

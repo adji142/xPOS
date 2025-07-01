@@ -68,6 +68,7 @@ use App\Http\Controllers\PaketController;
 use App\Http\Controllers\TableOrderController;
 use App\Http\Controllers\BookingOnlineController;
 use App\Http\Controllers\DocumentOutputController;
+use App\Http\Controllers\KelompokLampuController;
 
 /*
 |--------------------------------------------------------------------------
@@ -978,7 +979,8 @@ Route::post('/billing/checkout', [TableOrderController::class, 'CheckOut'])->nam
 Route::post('/billing/addfnb', [TableOrderController::class, 'AddFnB'])->name('billing-addfnb')->middleware('auth');
 Route::post('/billing/readfnb', [TableOrderController::class, 'ReadTableOrderFnB'])->name('billing-readfnb')->middleware('auth');
 Route::post('/billing/warning', [TableOrderController::class, 'NotifHampirHabis'])->name('billing-warning')->middleware('auth');
-
+Route::post('/billing/repopulate', [TableOrderController::class, 'ReadTitikLampu'])->name('billing-repopulate')->middleware('auth');
+Route::get('/billing/self-service', [TableOrderController::class,'ViewSelfService'])->name('billing-self-service')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------
@@ -1012,3 +1014,24 @@ Route::get('/document', [DocumentOutputController::class,'index'])->name('docume
 Route::post('/sendemail', [DocumentOutputController::class,'SendEmail'])->name('sendemail')->middleware('auth');
 Route::post('/sendwa', [DocumentOutputController::class,'SendWhatsApp'])->name('sendwa')->middleware('auth');
 Route::get('/download-pdf/{file}', [DocumentOutputController::class, 'downloadPdf'])->name('download-pdf');
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Kelompok Lampu
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/kelompoklampu', [KelompokLampuController::class,'View'])->name('kelompoklampu')->middleware('auth');
+Route::get('/kelompoklampu/form/{id}', [KelompokLampuController::class,'Form'])->name('kelompoklampu-form')->middleware('auth');
+Route::post('/kelompoklampu/store', [KelompokLampuController::class, 'store'])->name('kelompoklampu-store')->middleware('auth');
+Route::post('/kelompoklampu/edit', [KelompokLampuController::class, 'edit'])->name('kelompoklampu-edit')->middleware('auth');
+Route::delete('/kelompoklampu/delete/{id}', [KelompokLampuController::class, 'deletedata'])->name('kelompoklampu-delete')->middleware('auth');
+// json
+Route::post('/kelompoklampu/read', [KelompokLampuController::class, 'ViewJson'])->name('kelompoklampu-ViewJson')->middleware('auth');
+Route::post('/kelompoklampu/storeJson', [KelompokLampuController::class, 'storeJson'])->name('kelompoklampu-storeJson')->middleware('auth');
+Route::post('/kelompoklampu/editJson', [KelompokLampuController::class, 'editJson'])->name('kelompoklampu-editJson')->middleware('auth');
+// end json
+Route::delete('/kelompoklampu/delete/{id}', [KelompokLampuController::class, 'deletedata'])->name('kelompoklampu-delete')->middleware('auth');
+Route::get('/kelompoklampu/export', [KelompokLampuController::class,'Export'])->name('kelompoklampu-export')->middleware('auth');

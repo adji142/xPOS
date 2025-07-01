@@ -1228,39 +1228,85 @@ class FakturPenjualanController extends Controller
 					goto jump;
 				}
 
-				$BaseReffTableOrder = $key['BaseReff'];
-				$modelDetail = new FakturPenjualanDetail;
-           		$modelDetail->NoTransaksi = $NoTransaksi;
-				$modelDetail->NoUrut = $key['NoUrut'];
-				$modelDetail->KodeItem = $key['KodeItem'];
-				$modelDetail->Qty = $key['Qty'];
-				$modelDetail->QtyKonversi = $key['QtyKonversi'];
-				$modelDetail->QtyRetur = 0;
-				$modelDetail->Satuan = $key['Satuan'];
-				$modelDetail->Harga = $key['Harga'];
-				$modelDetail->Discount = $key['Discount'];
+				$oExistingData = FakturPenjualanDetail::selectRaw('fakturpenjualandetail.BaseReff, SUM(fakturpenjualandetail.Qty) as Qty')
+									->leftJoin('itemmaster', function ($value)  {
+										$value->on('itemmaster.KodeItem','=','fakturpenjualandetail.KodeItem')
+										->on('itemmaster.RecordOwnerID','=','fakturpenjualandetail.RecordOwnerID');
+									})
+									->where('fakturpenjualandetail.KodeItem', $key['KodeItem'])
+									->where('itemmaster.TypeItem',4)
+									->where('fakturpenjualandetail.BaseReff', $key['BaseReff'])
+									->groupBy('fakturpenjualandetail.BaseReff')
+									->first();
 
-				$modelDetail->BaseReff = $key['BaseReff'];
-				$modelDetail->BaseLine = $key['BaseLine'];
-				$modelDetail->KodeGudang = $key['KodeGudang'];
+				if($oExistingData){
+					if($key['Qty'] - $oExistingData->Qty > 0){
+						$BaseReffTableOrder = $key['BaseReff'];
+						$modelDetail = new FakturPenjualanDetail;
+						$modelDetail->NoTransaksi = $NoTransaksi;
+						$modelDetail->NoUrut = $key['NoUrut'];
+						$modelDetail->KodeItem = $key['KodeItem'];
+						$modelDetail->Qty = $key['Qty'] - $oExistingData->Qty;
+						$modelDetail->QtyKonversi = $key['QtyKonversi'];
+						$modelDetail->QtyRetur = 0;
+						$modelDetail->Satuan = $key['Satuan'];
+						$modelDetail->Harga = $key['Harga'];
+						$modelDetail->Discount = $key['Discount'];
 
-				$HargaGros = $key['Qty'] * $key['Harga'];
-				$modelDetail->HargaNet = $HargaGros - floatval($key['Discount']);
-				$modelDetail->LineStatus = $key['LineStatus'];
-				$modelDetail->VatPercent = $key['VatPercent'];
-				$modelDetail->HargaPokokPenjualan = $key['HargaPokokPenjualan'];
-				$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
-				$modelDetail->Pajak = $key['Pajak'];
-				$modelDetail->PajakHiburan = $key['PajakHiburan'];
-				$save = $modelDetail->save();
+						$modelDetail->BaseReff = $key['BaseReff'];
+						$modelDetail->BaseLine = $key['BaseLine'];
+						$modelDetail->KodeGudang = $key['KodeGudang'];
 
-				if (!$save) {
-					$data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
-					$errorCount += 1;
-					goto jump;
+						$HargaGros = $key['Qty'] * $key['Harga'];
+						$modelDetail->HargaNet = $HargaGros - floatval($key['Discount']);
+						$modelDetail->LineStatus = $key['LineStatus'];
+						$modelDetail->VatPercent = $key['VatPercent'];
+						$modelDetail->HargaPokokPenjualan = $key['HargaPokokPenjualan'];
+						$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+						$modelDetail->Pajak = $key['Pajak'];
+						$modelDetail->PajakHiburan = $key['PajakHiburan'];
+						$save = $modelDetail->save();
+
+						if (!$save) {
+							$data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
+							$errorCount += 1;
+							goto jump;
+						}
+					}
 				}
+				else{
+					$BaseReffTableOrder = $key['BaseReff'];
+					$modelDetail = new FakturPenjualanDetail;
+					$modelDetail->NoTransaksi = $NoTransaksi;
+					$modelDetail->NoUrut = $key['NoUrut'];
+					$modelDetail->KodeItem = $key['KodeItem'];
+					$modelDetail->Qty = $key['Qty'];
+					$modelDetail->QtyKonversi = $key['QtyKonversi'];
+					$modelDetail->QtyRetur = 0;
+					$modelDetail->Satuan = $key['Satuan'];
+					$modelDetail->Harga = $key['Harga'];
+					$modelDetail->Discount = $key['Discount'];
 
+					$modelDetail->BaseReff = $key['BaseReff'];
+					$modelDetail->BaseLine = $key['BaseLine'];
+					$modelDetail->KodeGudang = $key['KodeGudang'];
 
+					$HargaGros = $key['Qty'] * $key['Harga'];
+					$modelDetail->HargaNet = $HargaGros - floatval($key['Discount']);
+					$modelDetail->LineStatus = $key['LineStatus'];
+					$modelDetail->VatPercent = $key['VatPercent'];
+					$modelDetail->HargaPokokPenjualan = $key['HargaPokokPenjualan'];
+					$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+					$modelDetail->Pajak = $key['Pajak'];
+					$modelDetail->PajakHiburan = $key['PajakHiburan'];
+					$save = $modelDetail->save();
+
+					if (!$save) {
+						$data['message'] = "Gagal Menyimpan Data Detail di Row ".$key->NoUrut;
+						$errorCount += 1;
+						goto jump;
+					}
+				}
 
 				skip:
 			}
@@ -1268,9 +1314,13 @@ class FakturPenjualanController extends Controller
 			// Update Table Order
 			if ($BaseReffTableOrder != "") {
 				DB::table('tableorderheader')
-					->where('RecordOwnerID', Auth::user()->RecordOwnerID)
-					->where('NoTransaksi', $BaseReffTableOrder)
-					->update(['Status' => 0]);
+				->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+				->where('NoTransaksi', $BaseReffTableOrder)
+				->where(function ($query) {
+					$query->where('JenisPaket', 'MENIT')
+						->orWhere('Status', -1);
+				})
+				->update(['Status' => 0]);
 			}
 
 			// Pembayaran
