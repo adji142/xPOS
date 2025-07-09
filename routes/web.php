@@ -69,7 +69,7 @@ use App\Http\Controllers\TableOrderController;
 use App\Http\Controllers\BookingOnlineController;
 use App\Http\Controllers\DocumentOutputController;
 use App\Http\Controllers\KelompokLampuController;
-
+use App\Http\Controllers\QueueManagementController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -1035,3 +1035,6 @@ Route::post('/kelompoklampu/editJson', [KelompokLampuController::class, 'editJso
 // end json
 Route::delete('/kelompoklampu/delete/{id}', [KelompokLampuController::class, 'deletedata'])->name('kelompoklampu-delete')->middleware('auth');
 Route::get('/kelompoklampu/export', [KelompokLampuController::class,'Export'])->name('kelompoklampu-export')->middleware('auth');
+
+Route::get('/queue/{id}', [QueueManagementController::class,'index'])->name('queue-management')->middleware('auth');
+Route::post('/queue/getData', [QueueManagementController::class, 'handleQueue'])->name('queue-getData')->middleware('auth');

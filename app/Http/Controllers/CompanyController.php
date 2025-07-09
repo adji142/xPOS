@@ -120,6 +120,7 @@ class CompanyController extends Controller
                 ->first();
         $encodedRecordOwnerID = base64_encode(Auth::user()->RecordOwnerID);
         $BookingURLString = url('booking/').'/'.$encodedRecordOwnerID;
+        $QueueURLString = url('queue/').'/'.$encodedRecordOwnerID;
         $title = 'Delete Data Perusahaan !';
         $text = "Are you sure you want to delete ?";
         confirmDelete($title, $text);
@@ -132,7 +133,8 @@ class CompanyController extends Controller
             'clientOS' => $clientOS,
             'itemjasa' => $itemjasa,
             'BookingURLString' => $BookingURLString,
-            'userdata' => $userdata
+            'userdata' => $userdata,
+            'QueueURLString' => $QueueURLString
         ]);
     }
     public function edit(Request $request){
