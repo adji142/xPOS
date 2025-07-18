@@ -11,6 +11,8 @@ use App\Http\Controllers\FakturPenjualanController;
 use App\Http\Controllers\TableOrderController;
 use App\Http\Controllers\MasterControllerController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\BookingOnlineController;
+use App\Http\Controllers\DiscountVoucherController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -48,3 +50,7 @@ Route::post('checkCommand',[MasterControllerController::class,'CheckCommand']);
 Route::post('releaseCommand',[MasterControllerController::class,'DeviceCommand']);
 
 Route::post('/sendreminder', [CompanyController::class, 'CheckSubscriptionStatus'])->name('sendreminder');
+
+Route::post('/getjadwal', [BookingOnlineController::class, 'getjadwalMeja'])->name('booking-getjadwal');
+
+Route::post('/discountvoucher/cekdiscount', [DiscountVoucherController::class, 'checkVoucher'])->name('discountvoucher-cekdiscount');

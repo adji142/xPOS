@@ -30,6 +30,188 @@ use Midtrans\Snap;
 
 class BookingOnlineController extends Controller
 {
+    public function indexRev2($id){
+        $idE = base64_decode($id); // ⬅️ decode di sini
+        $company = Company::where('KodePartner','=',$idE)->first();
+        $gallery = Company::select('ImageGallery1', 'ImageGallery2', 'ImageGallery3','ImageGallery4','ImageGallery5','ImageGallery6','ImageGallery7','ImageGallery8','ImageGallery9','ImageGallery10','ImageGallery11','ImageGallery12')
+                    ->where('KodePartner', $idE)
+                    ->get();
+        $paketTransaksi = Paket::where('RecordOwnerID','=',$idE)
+                            ->where(DB::RAW("COALESCE(BisaDipesan, 'N')"), 'Y')->get();
+        $user= User::where('RecordOwnerID','=',$idE)->first();
+
+        $midtransdata = MetodePembayaran::where('RecordOwnerID','=',$idE)
+                            ->where('MetodeVerifikasi','=','AUTO')->first();
+        $midtransclientkey = "";
+        $MetodePembayaranAutoID = -1;
+        // dd($midtransdata->ClientKey);
+        if ($midtransdata) {
+            $midtransclientkey = $midtransdata->ServerKey;
+            $MetodePembayaranAutoID = $midtransdata->id;
+        }
+
+        $galleryImages = [];
+        $videoDisplay = [];
+
+        $galleryImages[] = [
+            'slot' => -1,
+            'url' => $company->BannerBooking
+        ];
+
+        // Loop dari 1 sampai 12
+        
+        for ($i = 1; $i <= 12; $i++) {
+            $field = "ImageGallery{$i}";
+
+            if (!empty($company->$field)) {
+                $galleryImages[] = [
+                    'slot' => $i,
+                    'url' => $company->$field
+                ];
+            }
+        }
+
+        for ($i = 1; $i <= 5; $i++) {
+            $field = "VideoCustomerDisplay{$i}";
+            if (!empty($company->$field)) {
+                $videoDisplay[] = $company->$field;
+            }
+            
+        }
+        
+
+        switch ($company->DefaultLandingPages) {
+            case 'bo1':
+                $this->index($id);
+                break;
+            case 'bo2':
+                return view("Transaksi.Penjualan.PoS.BookingOnline_2",[
+                    'company' => $company, 
+                    'gallery' => $gallery,
+                    'paketTransaksi' => $paketTransaksi,
+                    'user' => $user, 
+                    'midtransclientkey' => $midtransclientkey,
+                    'galleryImages' => $galleryImages,
+                    'videoDisplay' => $videoDisplay,
+                    'hargaMinimal'=> $paketTransaksi->min('HargaNormal'),
+                    'Tahun' => Carbon::now()->year
+                ]);
+
+                break;
+            default:
+                $this->index($id);
+                break;
+        }
+
+
+    }
+    public function getjadwalMeja(Request $request){
+        $mejaData = [];
+
+        $RecordOwnerID = $request->input('RecordOwnerID');
+        $PaketID = $request->input('PaketID');
+        $tanggalBooking = $request->input('TglBooking');
+
+        $company = Company::where('KodePartner','=', $RecordOwnerID)->first();
+
+        $jamMulai = Carbon::createFromFormat('H:i:s', $company->JamAwalBooking);
+        $jamSelesai = Carbon::createFromFormat('H:i:s', $company->JamAkhirBooking);
+
+        $now = Carbon::now(); // waktu saat ini
+
+        // Kalau jam selesai lebih kecil, tambahkan 1 hari
+        if ($jamSelesai->lessThan($jamMulai)) {
+            $jamSelesai->addDay();
+        }
+
+        $selisihJam = $jamSelesai->diffInHours($jamMulai);
+
+        $paketTransaksi = Paket::where('RecordOwnerID','=',$RecordOwnerID)
+                            ->where(DB::RAW("COALESCE(BisaDipesan, 'N')"), 'Y')
+                            ->where('id', $PaketID)->first();
+
+        if ($paketTransaksi) {
+            
+            // Ambil semua TitikLampu yang BisaDipesan = 1
+            $semuaTitik = TitikLampu::where('BisaDipesan', 1)
+                            ->where('RecordOwnerID', '=', $RecordOwnerID)->get();
+
+            foreach ($semuaTitik as $titik) {
+                $start = $jamMulai->copy();
+                $jadwal = [];
+
+                while ($start < $jamSelesai) {
+                    $next = $start->copy()->addHour();
+                    $jamString = $start->format('H:i') . ' - ' . $next->format('H:i');
+                    $fullStart = Carbon::parse($tanggalBooking . ' ' . $start->format('H:i:s'));
+                    $fullEnd = Carbon::parse($tanggalBooking . ' ' . $next->format('H:i:s'));
+
+                    // Harga dinamis berdasarkan jam
+
+                    $harga = $paketTransaksi->HargaNormal;
+                    // $hour = (int)$start->format('H');
+                    // if ($hour < 14) {
+                    //     $harga = 100000;
+                    // } elseif ($hour < 16) {
+                    //     $harga = 160000;
+                    // } else {
+                    //     $harga = 260000;
+                    // }
+
+                    // Cek Booking
+                    $adaBooking = BookingOnline::where('TglBooking', $tanggalBooking)
+                        ->where('mejaID', $titik->id)
+                        ->where(function ($q) use ($start, $next) {
+                            $q->whereBetween('JamMulai', [$start->format('H:i:s'), $next->format('H:i:s')])
+                            ->orWhereBetween('JamSelesai', [$start->format('H:i:s'), $next->format('H:i:s')])
+                            ->orWhere(function ($q2) use ($start, $next) {
+                                $q2->where('JamMulai', '<=', $start->format('H:i:s'))
+                                    ->where('JamSelesai', '>=', $next->format('H:i:s'));
+                            });
+                        })->exists();
+
+                    // Cek Order
+                    $adaOrder = TableOrderHeader::where('TglTransaksi', $tanggalBooking)
+                        ->where('tableid', $titik->id)
+                        ->where(function ($q) use ($start, $next) {
+                            $q->whereBetween('JamMulai', [$start->format('H:i:s'), $next->format('H:i:s')])
+                            ->orWhereBetween('JamSelesai', [$start->format('H:i:s'), $next->format('H:i:s')])
+                            ->orWhere(function ($q2) use ($start, $next) {
+                                $q2->where('JamMulai', '<=', $start->format('H:i:s'))
+                                    ->where('JamSelesai', '>=', $next->format('H:i:s'));
+                            });
+                        })->exists();
+
+                    $slotSudahLewat = $fullEnd->lessThan($now);
+
+                    $status = ($adaBooking || $adaOrder || $slotSudahLewat) ? 'booked' : 'available';
+
+                    $jadwal[] = [
+                        'jam' => $jamString,
+                        'harga' => $harga,
+                        'status' => $status,
+                        'jammulai' => $start->format('H:i'),
+                        'jamselesai' => $next->format('H:i')
+                    ];
+
+                    $start = $next;
+                }
+
+                // Bisa disesuaikan: deskripsi & fitur dari KelompokLampu
+                $deskripsi = 'Meja standar dengan suasana santai';
+
+                $mejaData[] = [
+                    'id' => $titik->id,
+                    'nama' => $titik->NamaTitikLampu,
+                    'deskripsi' => $deskripsi,
+                    'fitur' => [],
+                    'jadwal' => $jadwal
+                ];
+            }
+        }
+
+        return response()->json($mejaData);
+    }
     public function index($id)
     {
 
@@ -418,7 +600,7 @@ public function getListVoucher()
         $query = BookingOnline::join('pelanggan', 'bookingtableonline.KodePelanggan', '=', 'pelanggan.KodePelanggan')
         ->join('titiklampu', 'bookingtableonline.mejaID', '=', 'titiklampu.id') 
         ->where('bookingtableonline.RecordOwnerID', Auth::user()->RecordOwnerID)
-        ->whereBetween('bookingtableonline.TglBooking', [$request->input('TglAwal'), $request->input('TglAkhir')])
+        ->whereBetween(DB::raw('CAST(bookingtableonline.TglBooking AS DATE)'), [$request->input('TglAwal'), $request->input('TglAkhir')])
         ->where('bookingtableonline.StatusTransaksi', '0')
         ->orderBy('bookingtableonline.created_at', 'desc')
         ->select(

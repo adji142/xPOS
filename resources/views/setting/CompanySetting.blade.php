@@ -870,7 +870,7 @@
 					                            		</div>
 
 														<div class="col-md-12">
-															<label class="text-body">Booking URL</label>
+															<label class="text-body">Queue System Link</label>
 															<fieldset class="form-group mb-3">
 																<input type="text" class="form-control" id="BookingURL" name="BookingURL"
 																	value="{{ $QueueURLString }}" readonly>
@@ -1198,8 +1198,29 @@
 																</fieldset>
 															</div>
 
+															<div class="col-md-4">
+																<label  class="text-body">Template Booking Online</label>
+																<fieldset class="form-group mb-3">
+																	<select name="DefaultLandingPages" id="DefaultLandingPages" class="js-example-basic-single js-states form-control bg-transparent">
+																		<option value="bo1" {{ count($company) > 0 ? $company[0]['DefaultLandingPages'] == "bo1"? "selected" : '' :""}} >Template 1</option>
+																		<option value="bo2" {{ count($company) > 0 ? $company[0]['DefaultLandingPages'] == "bo2"? "selected" : '' :""}} >Template 2</option>
+																	</select>
+																</fieldset>
+															</div>
 
-														</div>
+															<div class="col-md-8">
+																<label  class="text-body">Preview</label>
+																<fieldset class="form-group mb-3">
+																	<img src="#" id="PreviewImageTemplate" width="100%">
+																</fieldset>
+															</div>
+
+															<div class="col-md-6">
+																<label class="text-body">Default Thema Warna</label>
+																<fieldset class="form-group mb-3">
+																	<input type="color" class="form-control" id="DefaultLandingPageColor" name="DefaultLandingPageColor" value="{{ count($company) > 0 ? $company[0]['DefaultLandingPageColor'] : '' }}" >
+																</fieldset>
+															</div>
 
 													</div>
 												</div>
@@ -1300,9 +1321,11 @@ var oCompany;
 			jQuery('#TglAwal').val(firstDay);
 			jQuery('#TglAkhir').val(NowDay);
 
-			var slip = "{{ count($company) > 0 ? $company[0]['DefaultSlip'] : 'slip1' }}"
+			var slip = "{{ count($company) > 0 ? $company[0]['DefaultSlip'] : 'slip1' }}";
+			var template = "{{ count($company) > 0 ? $company[0]['DefaultLandingPages'] : 'bo1' }}";
 			jQuery('#LevelHarga').select2();
 			jQuery('#DefaultSlip').val(slip).trigger('change');
+			jQuery('#DefaultLandingPages').val(template).trigger('change');
 
 			oCompany = <?php echo $company ?>;
 			console.log(oCompany)
@@ -1486,6 +1509,14 @@ var oCompany;
 			console.log();
 			// var URL = "{{ asset("+FileName+")}}";
 			jQuery("#PreviewImageSlip").attr("src", url);
+		});
+
+		jQuery('#DefaultLandingPages').change(function () {
+			var BaseURL = "{{ asset('') }}";
+			var url = BaseURL+"images/bo/"+jQuery('#DefaultLandingPages').val()+".png";
+			console.log();
+			// var URL = "{{ asset("+FileName+")}}";
+			jQuery("#PreviewImageTemplate").attr("src", url);
 		});
 
 

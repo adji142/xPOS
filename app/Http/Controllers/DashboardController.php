@@ -52,6 +52,38 @@ class DashboardController extends Controller
                         ->get();
 
         $perbandinganharga = DB::select('CALL rsp_perbandinganhargasupplier(?, ?, ?)', [$awalTahun, $TglAkhir, Auth::user()->RecordOwnerID]);
+
+        // TopSpender
+
+        $topspender = FakturPenjualanHeader::selectRaw('pelanggan.NamaPelanggan, SUM(TotalPembelian) Total')
+                    ->leftJoin('pelanggan', function ($value){
+                        $value->on('pelanggan.KodePelanggan','=','fakturpenjualanheader.KodePelanggan')
+                        ->on('pelanggan.RecordOwnerID','=','fakturpenjualanheader.RecordOwnerID');
+                    })
+                    ->where('fakturpenjualanheader.RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                    ->whereBetween(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'),[$TglAwal, $TglAkhir])
+                    ->where('fakturpenjualanheader.Status','<>',DB::raw("'D'"))
+                    ->groupBy(DB::raw('pelanggan.NamaPelanggan'))
+                    ->orderByDesc(DB::raw('Total'))
+                    ->take(5)
+                    ->get();
+        
+        $topItemPerformance = FakturPenjualanDetail::selectRaw('itemmaster.NamaItem, itemmaster.Satuan , SUM(TotalPembelian) Total, SUM(Qty) AS Qty')
+                            ->leftJoin('fakturpenjualanheader', function ($value){
+                                $value->on('fakturpenjualanheader.NoTransaksi','=','fakturpenjualandetail.NoTransaksi')
+                                ->on('fakturpenjualanheader.RecordOwnerID','=','fakturpenjualandetail.RecordOwnerID');
+                            })
+                            ->leftJoin('itemmaster', function ($value){
+                                $value->on('itemmaster.KodeItem','=','fakturpenjualandetail.KodeItem')
+                                ->on('itemmaster.RecordOwnerID','=','fakturpenjualandetail.RecordOwnerID');
+                            })
+                            ->where('fakturpenjualanheader.RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->whereBetween(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'),[$TglAwal, $TglAkhir])
+                            ->where('fakturpenjualanheader.Status','<>',DB::raw("'D'"))
+                            ->groupBy(DB::raw('itemmaster.NamaItem, itemmaster.Satuan'))
+                            ->orderBy(DB::raw('itemmaster.NamaItem'))
+                            ->get();
+
         // var_dump($perbandinganharga);
     	return view("dashboard",[
             'daybyday' => $daybyday[0]['Total'],
@@ -59,7 +91,9 @@ class DashboardController extends Controller
             'ytd' => $ytd[0]['Total'],
             'stockMinimum' => $stockMinimum,
             'grafikpenjualan' => $grafikpenjualan,
-            'perbandinganharga' => $perbandinganharga
+            'perbandinganharga' => $perbandinganharga,
+            'topspender' => $topspender,
+            'topItemPerformance' => $topItemPerformance
         ]);
     }
 

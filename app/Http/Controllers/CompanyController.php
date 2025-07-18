@@ -217,7 +217,9 @@ class CompanyController extends Controller
                                     'VideoCustomerDisplay4' => empty($request->input('VideoCustomerDisplay4')) ? "" : $request->input('VideoCustomerDisplay4'),
                                     'VideoCustomerDisplay5' => empty($request->input('VideoCustomerDisplay5')) ? "" : $request->input('VideoCustomerDisplay5'),
                                     'TermAndConditionBookingOnline' => $request->input('TermAndConditionBookingOnline'),
-                                    'Email' => $request->input('Email')
+                                    'Email' => $request->input('Email'),
+                                    'DefaultLandingPageColor' => $request->input('DefaultLandingPageColor'),
+                                    'DefaultLandingPages' => $request->input('DefaultLandingPages')
                 				]
                 			);
 

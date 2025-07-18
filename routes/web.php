@@ -70,6 +70,7 @@ use App\Http\Controllers\BookingOnlineController;
 use App\Http\Controllers\DocumentOutputController;
 use App\Http\Controllers\KelompokLampuController;
 use App\Http\Controllers\QueueManagementController;
+use App\Http\Controllers\DiscountVoucherController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -988,7 +989,7 @@ Route::get('/billing/self-service', [TableOrderController::class,'ViewSelfServic
 |--------------------------------------------------------------------------
 |
 */
-Route::get('/booking/{id}', [BookingOnlineController::class,'index'])->name('booking-index');
+Route::get('/booking/{id}', [BookingOnlineController::class,'indexRev2'])->name('booking-index');
 Route::get('/booking', [BookingOnlineController::class, 'getData'])->name('booking');
 Route::post('/booking/create-gateway', [BookingOnlineController::class, 'createMidTransTransaction'])->name('booking-create-gateway');
 Route::post('/booking/pay-gateway', [BookingOnlineController::class, 'SimpanPembayaranJson'])->name('booking-pay-gateway');
@@ -1003,6 +1004,7 @@ Route::get('/booking/get-detailBooking/{noTransaksi}', [BookingOnlineController:
 Route::get('/booking/get-meja-by-transaksi/{noTransaksi}', [BookingOnlineController::class, 'getMejaByTransaksi'])->name('booking-getMejaByTransaksi');
 Route::post('/booking/insert-tableorderheader', [BookingOnlineController::class, 'insertTableOrder'])->name('booking-insertTableorderheader');
 Route::post('/get-BookingsList', [BookingOnlineController::class, 'getBookingsList'])->name('booking-getBookingsList')->middleware('auth');
+Route::post('/getjadwal', [BookingOnlineController::class, 'getjadwalMeja'])->name('booking-getjadwal')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------
@@ -1035,6 +1037,28 @@ Route::post('/kelompoklampu/editJson', [KelompokLampuController::class, 'editJso
 // end json
 Route::delete('/kelompoklampu/delete/{id}', [KelompokLampuController::class, 'deletedata'])->name('kelompoklampu-delete')->middleware('auth');
 Route::get('/kelompoklampu/export', [KelompokLampuController::class,'Export'])->name('kelompoklampu-export')->middleware('auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| Discount Voucher
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/discountvoucher', [DiscountVoucherController::class,'View'])->name('discountvoucher')->middleware('auth');
+Route::get('/discountvoucher/form/{id}', [DiscountVoucherController::class,'Form'])->name('discountvoucher-form')->middleware('auth');
+Route::post('/discountvoucher/store', [DiscountVoucherController::class, 'store'])->name('discountvoucher-store')->middleware('auth');
+Route::post('/discountvoucher/edit', [DiscountVoucherController::class, 'edit'])->name('discountvoucher-edit')->middleware('auth');
+Route::delete('/discountvoucher/delete/{id}', [DiscountVoucherController::class, 'deletedata'])->name('discountvoucher-delete')->middleware('auth');
+// json
+Route::post('/discountvoucher/read', [DiscountVoucherController::class, 'ViewJson'])->name('discountvoucher-ViewJson')->middleware('auth');
+Route::post('/discountvoucher/storeJson', [DiscountVoucherController::class, 'storeJson'])->name('discountvoucher-storeJson')->middleware('auth');
+Route::post('/discountvoucher/editJson', [DiscountVoucherController::class, 'editJson'])->name('discountvoucher-editJson')->middleware('auth');
+// end json
+Route::delete('/discountvoucher/delete/{id}', [DiscountVoucherController::class, 'deletedata'])->name('discountvoucher-delete')->middleware('auth');
+Route::get('/discountvoucher/export', [DiscountVoucherController::class,'Export'])->name('discountvoucher-export')->middleware('auth');
+
+
 
 Route::get('/queue/{id}', [QueueManagementController::class,'index'])->name('queue-management')->middleware('auth');
 Route::post('/queue/getData', [QueueManagementController::class, 'handleQueue'])->name('queue-getData')->middleware('auth');

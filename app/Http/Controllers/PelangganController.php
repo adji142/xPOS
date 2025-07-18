@@ -68,14 +68,11 @@ class PelangganController extends Controller
 
         $KodePelanggan = $request->input('KodePelanggan');
         $GrupPelanggan = $request->input('GrupPelanggan');
+        $Search        = $request->input('Search');
 
         $sql = "pelanggan.*, gruppelanggan.DiskonPersen";
         $pelanggan = Pelanggan::selectRaw($sql)
                         ->leftJoin('gruppelanggan', function ($value){
-                            $value->on('pelanggan.KodeGrupPelanggan','=','gruppelanggan.KodeGrup')
-                            ->on('pelanggan.RecordOwnerID','=','gruppelanggan.RecordOwnerID');
-                        })
-                        ->leftJoin('terminpembayaran', function ($value){
                             $value->on('pelanggan.KodeGrupPelanggan','=','gruppelanggan.KodeGrup')
                             ->on('pelanggan.RecordOwnerID','=','gruppelanggan.RecordOwnerID');
                         })
@@ -87,6 +84,10 @@ class PelangganController extends Controller
 
         if ($GrupPelanggan != "") {
             $pelanggan->where('pelanggan.KodeGrupPelanggan','=',$GrupPelanggan);
+        }
+
+        if (!empty($Search)) {
+            $pelanggan->whereRaw("CONCAT(COALESCE(pelanggan.KodePelanggan,''), ' ' , coalesce(pelanggan.NamaPelanggan,''), ' ', COALESCE(pelanggan.PelangganID,''),' ', COALESCE(pelanggan.Email,''),' ', COALESCE(pelanggan.NoTlp1,'')) LIKE ?", ['%'.$Search.'%']);
         }
 
         $data['success'] = true;
@@ -137,6 +138,8 @@ class PelangganController extends Controller
             $model->Status = $request->input('Status');
             $model->PelangganID = $request->input('PelangganID');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+            $model->AllowedDay = $request->input('AllowedDay');
+            $model->ValidUntil = $request->input('ValidUntil');
 
             $save = $model->save();
 
@@ -185,6 +188,8 @@ class PelangganController extends Controller
             $model->Status = $request->input('Status');
             $model->PelangganID = $request->input('PelangganID');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+            $model->AllowedDay = $request->input('AllowedDay');
+            $model->ValidUntil = $request->input('ValidUntil');
 
             $save = $model->save();
 
@@ -239,7 +244,9 @@ class PelangganController extends Controller
 									'Alamat' => $request->input('Alamat'),
 									'Keterangan' => $request->input('Keterangan'),
                                     'Status' => $request->input('Status'),
-                                    'PelangganID' => $request->input('PelangganID')
+                                    'PelangganID' => $request->input('PelangganID'),
+                                    'AllowedDay' => $request->input('AllowedDay'),
+                                    'ValidUntil' => $request->input('ValidUntil')
                 				]
                 			);
 

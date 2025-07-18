@@ -235,7 +235,9 @@
 		            },
 		            data: JSON.stringify(oData),
 		            success: function(response) {
-		            	if (response.success == true) {
+						console.log(response.original.success);
+						console.log(response.original);
+		            	if (response.original.success == true) {
 		            		Swal.fire({
 		                        html: "Data berhasil disimpan!",
 		                        icon: "success",
@@ -252,7 +254,7 @@
 		            		Swal.fire({
 		                      icon: "error",
 		                      title: "Opps...",
-		                      text: response.message,
+		                      text: response.original.message,
 		                    })
 		                    jQuery('#btSave').text('Save');
 		                    jQuery('#btSave').attr('disabled',false);

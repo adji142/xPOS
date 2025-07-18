@@ -162,11 +162,11 @@
                 <label  class="text-body">Format Slip</label>
                 <fieldset class="form-group mb-3">
                     <select name="DefaultSlip" id="DefaultSlip" class="js-states form-control bg-transparent">
-                        <option value="slip1">Slip 1</option>
-                        <option value="slip2">Slip 2</option>
-                        <option value="slip3">Slip 3</option>
-                        <option value="slip4">Slip 4</option>
-                        <option value="slip5">Slip 5</option>
+                        <option value="slipsj1">Slip 1</option>
+                        <option value="slipsj2">Slip 2</option>
+                        <option value="slipsj3">Slip 3</option>
+                        <option value="slipsj4">Slip 4</option>
+                        <option value="slipsj5">Slip 5</option>
                     </select>
                 </fieldset>
             </div>

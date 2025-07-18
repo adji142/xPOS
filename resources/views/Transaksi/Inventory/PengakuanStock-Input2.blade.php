@@ -268,7 +268,7 @@
 		            },
 		            data: JSON.stringify(oData),
 		            success: function(response) {
-		            	if (response.success == true) {
+		            	if (response.original.success == true) {
 		            		Swal.fire({
 		                        html: "Data berhasil disimpan!",
 		                        icon: "success",
@@ -285,7 +285,7 @@
 		            		Swal.fire({
 		                      icon: "error",
 		                      title: "Opps...",
-		                      text: response.message,
+		                      text: response.original.message,
 		                    })
 		                    jQuery('#btSave').text('Save');
 		                    jQuery('#btSave').attr('disabled',false);
@@ -303,7 +303,7 @@
 		            },
 		            data: JSON.stringify(oData),
 		            success: function(response) {
-		            	if (response.success == true) {
+		            	if (response.original.success == true) {
 		            		Swal.fire({
 		                        html: "Data berhasil disimpan!",
 		                        icon: "success",
@@ -320,7 +320,7 @@
 		            		Swal.fire({
 		                      icon: "error",
 		                      title: "Opps...",
-		                      text: response.message,
+		                      text: response.original.message,
 		                    })
 		                    jQuery('#btSave').text('Save');
 		                    jQuery('#btSave').attr('disabled',false);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
@@ -51,7 +52,7 @@ class LoginController extends Controller
         $kecamatan = Kecamatan::all();
         $tnc = TnCModel::first();
         // dd($kota);
-        return view("auth.register",[
+        return view("auth.registerv2",[
             'subscriptionheader' => $subscriptionheader,
             'provinsi' => $provinsi,
             'kota' => $kota,
@@ -200,6 +201,17 @@ class LoginController extends Controller
                 }
 
                 if (Auth::Attempt($data)) {
+                    $user = Auth::user();
+
+                    if ($user->current_session_id && Session::getHandler()->read($user->current_session_id)) {
+                        Auth::logout();
+                        throw new \Exception('Akun hanya bisa login di satu device saja');
+                        goto jump;
+                    }
+
+                    // Simpan session id saat ini
+                    $user->current_session_id = Session::getId();
+                    $user->save();
                     if ($RecordOwnerID == "999999") {
                         return redirect('dashboardadmin');
                     }
@@ -490,8 +502,15 @@ class LoginController extends Controller
 
     public function logout()
     {
+        $user = Auth::user();
+        if ($user) {
+            $user->current_session_id = null;
+            $user->save();
+        }
         auth()->user()->tokens()->delete();
         Auth::logout();
+        // $request->session()->invalidate();
+        // $request->session()->regenerateToken();
         return redirect('/');
     }
     

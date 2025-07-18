@@ -139,6 +139,46 @@
                         </div>
                     </div>
 
+                    <div class="col-lg-6 col-xl-6">
+                        <div class="card card-custom gutter-b bg-white border-0" >
+                            <div class="card-header align-items-center  border-0">
+                                <div class="card-title mb-0">
+                                    <h3 class="card-label mb-0 font-weight-bold text-body">Top Spender
+                                    </h3>
+                                </div>
+                            </div>
+                            <div class="card-body" >
+                                <div class="col-md-12">
+                                    <div class="dx-viewport demo-container">
+                                        <div id="data-grid-demo">
+                                              <div id="gridTopSpender"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-xl-6">
+                        <div class="card card-custom gutter-b bg-white border-0" >
+                            <div class="card-header align-items-center  border-0">
+                                <div class="card-title mb-0">
+                                    <h3 class="card-label mb-0 font-weight-bold text-body">Top Item
+                                    </h3>
+                                </div>
+                            </div>
+                            <div class="card-body" >
+                                <div class="col-md-12">
+                                    <div class="dx-viewport demo-container">
+                                        <div id="data-grid-demo">
+                                              <div id="gridTopItem"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
 
@@ -171,6 +211,8 @@
         generateGraph(grafikPJTanggal, grafikPJData);
         bindGridStockHabis(<?php echo $stockMinimum; ?>);
         bindGridPerbandinganStock(PerbandinganHarga);
+        bindGridTopSpender(<?php echo $topspender; ?>);
+        bindGridTopItem(<?php echo $topItemPerformance; ?>);
 	});
 
     function generateGraph(label, value) {
@@ -308,6 +350,85 @@
                 store:data
             },
         });
+    }
+
+    function bindGridTopSpender(data) {
+        jQuery("#gridTopSpender").dxDataGrid({
+            allowColumnResizing: true,
+            dataSource: data,
+            keyExpr: "NamaPelanggan",
+            showBorders: true,
+            allowColumnResizing: true,
+            columnAutoWidth: true,
+            showBorders: true,
+            paging: {
+                enabled: true,
+                pageSize: 10
+            },
+            searchPanel: {
+	            visible: true,
+	            width: 240,
+	            placeholder: "Search..."
+	        },
+            columns: [
+                {
+                    dataField: "NamaPelanggan",
+                    caption: "Pelanggan",
+                    allowEditing:false,
+                },
+                {
+                    dataField: "Total",
+                    caption: "Total Transaksi",
+                    allowEditing:false,
+                    format: { type: 'fixedPoint', precision: 2 },
+                },
+            ]
+        }).dxDataGrid('instance');
+    }
+
+    function bindGridTopItem(data) {
+        jQuery("#gridTopItem").dxDataGrid({
+            allowColumnResizing: true,
+            dataSource: data,
+            keyExpr: "NamaItem",
+            showBorders: true,
+            allowColumnResizing: true,
+            columnAutoWidth: true,
+            showBorders: true,
+            paging: {
+                enabled: true,
+                pageSize: 10
+            },
+            searchPanel: {
+	            visible: true,
+	            width: 240,
+	            placeholder: "Search..."
+	        },
+            columns: [
+                {
+                    dataField: "NamaItem",
+                    caption: "Item",
+                    allowEditing:false,
+                },
+                {
+                    dataField: "Qty",
+                    caption: "Qty",
+                    allowEditing:false,
+                    format: { type: 'fixedPoint', precision: 2 },
+                },
+                {
+                    dataField: "Satuan",
+                    caption: "",
+                    allowEditing:false,
+                },
+                {
+                    dataField: "Total",
+                    caption: "Total Transaksi",
+                    allowEditing:false,
+                    format: { type: 'fixedPoint', precision: 2 },
+                },
+            ]
+        }).dxDataGrid('instance');
     }
 </script>
 @endpush

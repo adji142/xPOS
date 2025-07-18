@@ -522,6 +522,10 @@ License: You must have a valid license purchased only from themeforest(the above
 												<div class="col-md-9">
 													<label  class="text-body">Member</label>
 													<fieldset class="form-group mb-9">
+														<input type="text" class="form-control" id="SearchMember" name="SearchMember" placeholder="Search Nama, ID, NoTlp atau Email">
+														<ul id="suggestionList" style="border: 1px solid #ccc; display: none; position: absolute; background: white; z-index: 999;"></ul>
+													</fieldset>
+													<fieldset class="form-group mb-9">
 														<select name="KodePelanggan" id="KodePelanggan" class="js-example-basic-single js-states form-control bg-transparent" >
 															<option value="">Pilih Member</option>
 															@foreach ($pelanggan as $plg)
@@ -2080,6 +2084,68 @@ License: You must have a valid license purchased only from themeforest(the above
 			
 			_custdisplayopened = true;
 			openCustomerDisplay();
+		});
+
+		jQuery('#SearchMember').on('blur keyup', function(){
+			
+		});
+
+		jQuery('#SearchMember').on('keyup', function() {
+			const keyword = $(this).val();
+
+			if (keyword.length < 2) {
+			$('#suggestionList').hide();
+			return;
+			}
+
+			$.ajax({
+				url: "{{ route('pelanggan-viewJson') }}",
+				type: 'post',
+				data: {
+					"KodePelanggan" : "",
+					"GrupPelanggan" : "",
+					"Search" : keyword
+				},
+				headers: {
+					'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+				},
+				success: function(response) {
+					const suggestions = response.data;
+					let html = '';
+
+					$('#suggestionList').empty();
+
+					if (suggestions.length > 0) {
+						suggestions.forEach(p => {
+							html += `<li data-kode="${p.KodePelanggan}" style="padding:5px; cursor:pointer;">${p.KodePelanggan} - ${p.NamaPelanggan}</li>`;
+						});
+					} else {
+						html = '<li style="padding:5px;">Tidak ditemukan</li>';
+					}
+
+					$('#suggestionList').html(html).show();
+				}
+			});
+		});
+
+		$('#suggestionList').on('click', 'li', function() {
+			const kode = $(this).data('kode');
+			const text = $(this).text();
+
+			$('#SearchMember').val(text);
+			$('#suggestionList').hide();
+
+			// Set ke combo box
+
+			jQuery('#KodePelanggan').val(kode).change();
+			$('#SearchMember').val('');
+			// $('#kodePelanggan').html(`<option value="${kode}" selected>${text}</option>`);
+		});
+
+		$(document).on('click', function(e) {
+			if (!$(e.target).closest('#SearchMember, #suggestionList').length) {
+			$('#suggestionList').hide();
+			}
 		});
 
 		function showCetakModal(noTransaksi) {
