@@ -61,18 +61,24 @@ class AppServiceProvider extends ServiceProvider
                                 $value->on("userrole.userid","=","users.id")
                                         ->on("userrole.RecordOwnerID","=","users.RecordOwnerID");
                             })
-                            ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
-                            ->Join('subscriptiondetail', function ($value){
-                                $value->on('permission.id','=','subscriptiondetail.PermissionID')
-                                ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
-                            })
-                            ->where("users.email","=",Auth::user()->email)
+                            ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner');
+                            if(Auth::user()->RecordOwnerID != "999999"){
+                                $oObject->Join('subscriptiondetail', function ($value){
+                                    $value->on('permission.id','=','subscriptiondetail.PermissionID')
+                                    ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
+                                });
+                            }
+
+                            $oObject->where("users.email","=",Auth::user()->email)
                             ->where("users.RecordOwnerID","=",Auth::user()->RecordOwnerID)
                             // ->where("permission.MenuInduk","=","0")
                             ->where("permission.Status","=","1")
                             ->where("permission.Level","=","1");
                 if (count($PermissionID) > 0) {
                     $oObject->whereIn("permission.id", $PermissionID);
+                }
+                if(Auth::user()->RecordOwnerID != "999999"){
+                    $oObject->where("permission.isSuperAdmin","=","0");
                 }
                
 
@@ -98,12 +104,16 @@ class AppServiceProvider extends ServiceProvider
                                 $value->on("userrole.userid","=","users.id")
                                         ->on("userrole.RecordOwnerID","=","users.RecordOwnerID");
                             })
-                            ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
-                            ->Join('subscriptiondetail', function ($value){
-                                $value->on('permission.id','=','subscriptiondetail.PermissionID')
-                                ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
-                            })
-                            ->where("users.email","=",Auth::user()->email)
+                            ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner');
+
+                            if(Auth::user()->RecordOwnerID != "999999"){
+                                $dt2->Join('subscriptiondetail', function ($value){
+                                    $value->on('permission.id','=','subscriptiondetail.PermissionID')
+                                    ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
+                                });
+                            }
+
+                            $dt2->where("users.email","=",Auth::user()->email)
                             ->where("users.RecordOwnerID","=",Auth::user()->RecordOwnerID)
                             // ->where("permission.MenuInduk","=","0")
                             ->where("permission.Status","=","1")
@@ -111,6 +121,9 @@ class AppServiceProvider extends ServiceProvider
                             ->where("permission.MenuInduk","=",$item->id);
                     if (count($PermissionID) > 0) {
                         $dt2->whereIn("permission.id", $PermissionID);
+                    }
+                    if(Auth::user()->RecordOwnerID != "999999"){
+                        $dt2->where("permission.isSuperAdmin","=","0");
                     }
                     $dt2 = $dt2->orderBy("permission.Order","asc")->get();
 
@@ -136,12 +149,15 @@ class AppServiceProvider extends ServiceProvider
                                     $value->on("userrole.userid","=","users.id")
                                             ->on("userrole.RecordOwnerID","=","users.RecordOwnerID");
                                 })
-                                ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner')
-                                ->Join('subscriptiondetail', function ($value){
-                                    $value->on('permission.id','=','subscriptiondetail.PermissionID')
-                                    ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
-                                })
-                                ->where("users.email","=",Auth::user()->email)
+                                ->leftJoin('company','permissionrole.RecordOwnerID', 'company.KodePartner');
+                                if(Auth::user()->RecordOwnerID != "999999"){
+                                    $dt3->Join('subscriptiondetail', function ($value){
+                                        $value->on('permission.id','=','subscriptiondetail.PermissionID')
+                                        ->on('subscriptiondetail.NoTransaksi','=','company.KodePaketLangganan');
+                                    });
+                                }
+                                
+                                $dt3->where("users.email","=",Auth::user()->email)
                                 ->where("users.RecordOwnerID","=",Auth::user()->RecordOwnerID)
                                 // ->where("permission.MenuInduk","=","0")
                                 ->where("permission.Status","=","1")
@@ -149,6 +165,9 @@ class AppServiceProvider extends ServiceProvider
                                 ->where("permission.MenuInduk","=",$key2->id);
                         if (count($PermissionID) > 0) {
                             $dt3->whereIn("permission.id", $PermissionID);
+                        }
+                        if(Auth::user()->RecordOwnerID != "999999"){
+                            $dt3->where("permission.isSuperAdmin","=","0");
                         }
 
                         //dd($dt3->toSql(), $dt3->getBindings());

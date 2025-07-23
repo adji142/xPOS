@@ -122,7 +122,7 @@
 										</span>
 									</a>
 								</li>
-
+								
 								<!-- Dynamic Menu -->
 								@foreach ($navbars as $lv1)
 									@if ($lv1['ParentType'] == 1)
@@ -374,6 +374,7 @@
 
 					<div class="nav nav-dark">
 						<a href="https://api.whatsapp.com/send/?phone=6282258493130&text=Saya%20ada%20kendala%20di%20PoS&type=phone_number&app_absent=0" target="_blank" class="nav-link pl-0 pr-0">Contact</a>
+						<a href="{{ route('faqUser') }}" class="nav-link pl-0 pr-0">Support & FaQ</a>
 					</div>
 
 				</div>

@@ -1,4 +1,4 @@
-@extends('partadmin.headeradmin')
+@extends('parts.header')
 	
 @section('content')
 <!--begin::Subheader-->
@@ -52,6 +52,7 @@
 												<th>Alamat</th>
 												<th>No. Tlp</th>
                                                 <th>No. Tlp Alternatif</th>
+                                                <th>Email</th>
                                                 <th>Nama PIC</th>
                                                 <th>Mulai Berlangganan</th>
                                                 <th>Selesai Berlangganan</th>
@@ -82,6 +83,7 @@
                                                                 @endif
 
                                                                 <button class="btn btn-outline-success" onclick="RubahPaket('{{ $v['KodePartner'] }}')">Rubah Paket</button>
+                                                                <button class="btn btn-outline-danger" onclick="RemovePartner('{{ $v['KodePartner'] }}')">Delete</button>
                                                             </th>
                                                             <th>{{ $v['KodePartner'] }}</th>
                                                             <th>{{ $v['NamaPartner'] }}</th>
@@ -99,6 +101,7 @@
                                                             <th>{{ $v['AlamatTagihan'] }}</th>
                                                             <th>{{ $v['NoTlp'] }}</th>
                                                             <th>{{ $v['NoHP'] }}</th>
+                                                            <th>{{ $v['email'] }}</th>
                                                             <th>{{ $v['NamaPIC'] }}</th>
                                                             <th>{{ $v['StartSubs'] }}</th>
                                                             <th>{{ $v['EndSubs'] }}</th>
@@ -602,6 +605,45 @@
 
         jQuery('#LookupRubahPaket').modal({backdrop: 'static', keyboard: false})
 		jQuery('#LookupRubahPaket').modal('show');
+    }
+    
+    function RemovePartner(partner) {
+         Swal.fire({
+            title: 'Yakin ingin menghapus?',
+            text: `Data dengan kode ${partner} akan dihapus permanen. user dan email, tidak akan bisa dipakai kembali, jika user ingin menggunakan email tersebut, silahkan melakukan reset password`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, hapus',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "{{route('penggunaaplikasi-remove')}}", // Ganti sesuai endpoint kamu
+                    type: 'POST',
+                    data: { KodePartner: partner },
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}' // Laravel
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire('Berhasil!', 'Data telah dihapus.', 'success').then((result)=>{
+                                location.reload();
+                            });
+                            // Optional: hapus elemen dari DOM
+                            // $(this).closest('tr').remove();
+                        } else {
+                            Swal.fire('Gagal!', response.message || 'Terjadi kesalahan.', 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        Swal.fire('Error!', 'Gagal menghapus data.', 'error');
+                        console.error(error);
+                    }
+                });
+            }
+        });
     }
 
     jQuery('#ModalKodePaketLangganan').change(function () {

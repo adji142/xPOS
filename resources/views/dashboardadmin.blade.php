@@ -1,4 +1,4 @@
-@extends('partadmin.headeradmin')
+@extends('parts.header')
 @section('content')
 
 <div class="subheader py-2 py-lg-6 subheader-solid">
@@ -99,6 +99,104 @@
 				</div>
 			</div>
 
+			<div class="row">
+				<div class="col-lg-4 col-xl-4">
+					<div class="card card-custom gutter-b bg-white border-0" >
+						<div class="card-header align-items-center  border-0">
+							<div class="card-title mb-0">
+								<h3 class="card-label mb-0 font-weight-bold text-body">Langganan Aktif
+								</h3>
+							</div>
+						</div>
+						<div class="card-body" >
+							<div class="col-md-12">
+								<div class="dx-viewport demo-container">
+									<div id="data-grid-demo">
+										<div id="gridHampirHabis"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-lg-4 col-xl-4">
+					<div class="card card-custom gutter-b bg-white border-0" >
+						<div class="card-header align-items-center  border-0">
+							<div class="card-title mb-0">
+								<h3 class="card-label mb-0 font-weight-bold text-body">Langganan Berakhir
+								</h3>
+							</div>
+						</div>
+						<div class="card-body" >
+							<div class="col-md-12">
+								<div class="dx-viewport demo-container">
+									<div id="data-grid-demo">
+										<div id="gridHabis"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-lg-4 col-xl-4">
+					<div class="card card-custom gutter-b bg-white border-0" >
+						<div class="card-header align-items-center  border-0">
+							<div class="card-title mb-0">
+								<h3 class="card-label mb-0 font-weight-bold text-body">Daftar Belum Bayar
+								</h3>
+							</div>
+						</div>
+						<div class="card-body" >
+							<div class="col-md-12">
+								<div class="dx-viewport demo-container">
+									<div id="data-grid-demo">
+										<div id="gridBelumBayar"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-lg-6 col-xl-6">
+					<div class="card card-custom gutter-b bg-white border-0" >
+						<div class="card-header align-items-center  border-0">
+							<div class="card-title mb-0">
+								<h3 class="card-label mb-0 font-weight-bold text-body">Pengguna Per Jenis Usaha
+								</h3>
+							</div>
+						</div>
+						<div class="card-body" >
+							<div class="col-md-12">
+								<div class="dx-viewport demo-container">
+									<div id="data-grid-demo">
+										<div id="gridPenggunaPerJenisUsaha"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-lg-6 col-xl-6">
+					<div class="card card-custom gutter-b bg-white border-0" >
+						<div class="card-header align-items-center  border-0">
+							<div class="card-title mb-0">
+								<h3 class="card-label mb-0 font-weight-bold text-body">Grafik Pengguna Per Jenis Usaha
+								</h3>
+							</div>
+						</div>
+						<div class="card-body pt-3" >
+							<div id="grafikPenggunaPerJenisUsaha"></div>
+						</div>
+					</div>
+					
+				</div>
+
+			</div>
+
 
 		</div>
 	</div>
@@ -118,9 +216,172 @@
             grafikPJTanggal.push(DataGrafikPenjualan[index]["Tanggal"]);
             grafikPJData.push(DataGrafikPenjualan[index]["Total"]);
         }
+		let chartData = @json($companyPerJenis);
+
+        let labels = chartData.map(item => item.JenisUsaha);
+        let series = chartData.map(item => item.jumlah);
 
 		generateGraph(grafikPJTanggal, grafikPJData);
+		bindGridHampirHabis(<?php echo $subshampirhabis; ?>);
+		bindGridHabis(<?php echo $subshabis; ?>);
+		bindGridBelumBayar(<?php echo $daftarbelumbayar; ?>);
+		bindGridPerJenisUsaha(<?php echo $companyPerJenis; ?>);
+
+		generatePenjualanPerUsaha(labels, series);
 	});
+
+	function bindGridHampirHabis(data) {
+        jQuery("#gridHampirHabis").dxDataGrid({
+            allowColumnResizing: true,
+            dataSource: data,
+            keyExpr: "NamaPartner",
+            showBorders: true,
+            allowColumnResizing: true,
+            columnAutoWidth: true,
+            showBorders: true,
+            paging: {
+                enabled: true,
+                pageSize: 10
+            },
+            searchPanel: {
+	            visible: true,
+	            width: 240,
+	            placeholder: "Search..."
+	        },
+            columns: [
+                {
+                    dataField: "NamaPartner",
+                    caption: "Partner",
+                    allowEditing:false,
+                },
+                {
+                    dataField: "NoTlp",
+                    caption: "Phone",
+                    allowEditing:false,
+                },
+                {
+                    dataField: "email",
+                    caption: "email",
+                    allowEditing:false,
+                },
+				{
+					dataField: "EndSubs",
+					caption: "Tgl. Selesai",
+					allowEditing: false
+				}
+            ]
+        }).dxDataGrid('instance');
+    }
+
+	function bindGridHabis(data) {
+        jQuery("#gridHabis").dxDataGrid({
+            allowColumnResizing: true,
+            dataSource: data,
+            keyExpr: "NamaPartner",
+            showBorders: true,
+            allowColumnResizing: true,
+            columnAutoWidth: true,
+            showBorders: true,
+            paging: {
+                enabled: true,
+                pageSize: 10
+            },
+            searchPanel: {
+	            visible: true,
+	            width: 240,
+	            placeholder: "Search..."
+	        },
+            columns: [
+                {
+                    dataField: "NamaPartner",
+                    caption: "Partner",
+                    allowEditing:false,
+                },
+                {
+                    dataField: "NoTlp",
+                    caption: "Phone",
+                    allowEditing:false,
+                },
+                {
+                    dataField: "email",
+                    caption: "email",
+                    allowEditing:false,
+                },
+            ]
+        }).dxDataGrid('instance');
+    }
+
+	function bindGridBelumBayar(data) {
+        jQuery("#gridBelumBayar").dxDataGrid({
+            allowColumnResizing: true,
+            dataSource: data,
+            keyExpr: "NamaPartner",
+            showBorders: true,
+            allowColumnResizing: true,
+            columnAutoWidth: true,
+            showBorders: true,
+            paging: {
+                enabled: true,
+                pageSize: 10
+            },
+            searchPanel: {
+	            visible: true,
+	            width: 240,
+	            placeholder: "Search..."
+	        },
+            columns: [
+                {
+                    dataField: "NamaPartner",
+                    caption: "Partner",
+                    allowEditing:false,
+                },
+                {
+                    dataField: "NoTlp",
+                    caption: "Phone",
+                    allowEditing:false,
+                },
+                {
+                    dataField: "email",
+                    caption: "email",
+                    allowEditing:false,
+                },
+            ]
+        }).dxDataGrid('instance');
+    }
+
+	function bindGridPerJenisUsaha(data) {
+        jQuery("#gridPenggunaPerJenisUsaha").dxDataGrid({
+            allowColumnResizing: true,
+            dataSource: data,
+            keyExpr: "JenisUsaha",
+            showBorders: true,
+            allowColumnResizing: true,
+            columnAutoWidth: true,
+            showBorders: true,
+            paging: {
+                enabled: true,
+                pageSize: 10
+            },
+            searchPanel: {
+	            visible: true,
+	            width: 240,
+	            placeholder: "Search..."
+	        },
+            columns: [
+                {
+                    dataField: "JenisUsaha",
+                    caption: "Jenis Usaha",
+                    allowEditing:false,
+                },
+                {
+                    dataField: "jumlah",
+                    caption: "Jumlah",
+                    allowEditing:false,
+					format: { type: 'fixedPoint', precision: 2 },
+                }
+            ]
+        }).dxDataGrid('instance');
+    }
 
 	function generateGraph(label, value) {
         
@@ -179,5 +440,32 @@
 		var chart = new ApexCharts(document.querySelector("#chart-4"), options);
 		chart.render();
     }
+	function generatePenjualanPerUsaha(label, value) {
+		let options = {
+            chart: {
+                type: 'donut',
+                height: 350
+            },
+            labels: label,
+            series: value,
+            legend: {
+                position: 'bottom'
+            },
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    chart: {
+                        width: 300
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }]
+        };
+
+        let chart = new ApexCharts(document.querySelector("#grafikPenggunaPerJenisUsaha"), options);
+        chart.render();
+	}
 </script>
 @endpush

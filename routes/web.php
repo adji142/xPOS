@@ -71,6 +71,7 @@ use App\Http\Controllers\DocumentOutputController;
 use App\Http\Controllers\KelompokLampuController;
 use App\Http\Controllers\QueueManagementController;
 use App\Http\Controllers\DiscountVoucherController;
+use App\Http\Controllers\SupportPageController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -761,6 +762,7 @@ Route::get('/penggunaaplikasi', [CompanyController::class,'AdminPelanggan'])->na
 Route::post('/penggunaaplikasi/suspend', [CompanyController::class, 'UpdateSuspend'])->name('penggunaaplikasi-suspend')->middleware('auth');
 Route::post('/penggunaaplikasi/rubahlangganan', [CompanyController::class, 'UpdatePaket'])->name('penggunaaplikasi-rubahlangganan')->middleware('auth');
 Route::get('/penggunaaplikasi/export', [CompanyController::class,'Export'])->name('penggunaaplikasi-export')->middleware('auth');
+Route::post('/penggunaaplikasi/remove', [CompanyController::class,'DeletePengguna'])->name('penggunaaplikasi-remove')->middleware('auth');
 /*
 |--------------------------------------------------------------------------
 | Invoice Pengguna - Admin
@@ -1062,3 +1064,24 @@ Route::get('/discountvoucher/export', [DiscountVoucherController::class,'Export'
 
 Route::get('/queue/{id}', [QueueManagementController::class,'index'])->name('queue-management')->middleware('auth');
 Route::post('/queue/getData', [QueueManagementController::class, 'handleQueue'])->name('queue-getData')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Support Page
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/faq', [SupportPageController::class,'View'])->name('faq')->middleware('auth');
+Route::get('/faqUser', [SupportPageController::class,'ViewUser'])->name('faqUser')->middleware('auth');
+Route::get('/faq/detail/{id}', [SupportPageController::class,'ViewUserDetail'])->name('faq-detail')->middleware('auth');
+Route::get('/faq/form/{id}', [SupportPageController::class,'Form'])->name('faq-form')->middleware('auth');
+Route::post('/faq/store', [SupportPageController::class, 'store'])->name('faq-store')->middleware('auth');
+Route::post('/faq/edit', [SupportPageController::class, 'edit'])->name('faq-edit')->middleware('auth');
+Route::delete('/faq/delete/{id}', [SupportPageController::class, 'deletedata'])->name('faq-delete')->middleware('auth');
+// json
+Route::post('/faq/read', [SupportPageController::class, 'ViewJson'])->name('faq-ViewJson')->middleware('auth');
+Route::post('/faq/storeJson', [SupportPageController::class, 'storeJson'])->name('faq-storeJson')->middleware('auth');
+Route::post('/faq/editJson', [SupportPageController::class, 'editJson'])->name('faq-editJson')->middleware('auth');
+// end json
+Route::delete('/faq/delete/{id}', [SupportPageController::class, 'deletedata'])->name('faq-delete')->middleware('auth');
+Route::get('/faq/export', [SupportPageController::class,'Export'])->name('faq-export')->middleware('auth');

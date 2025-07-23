@@ -1,4 +1,4 @@
-@extends('partadmin.headeradmin')
+@extends('parts.header')
 	
 @section('content')
 
@@ -7,7 +7,7 @@
 	<div class="container-fluid">
 		<nav aria-label="breadcrumb">
 			<ol class="breadcrumb bg-white mb-0 px-0 py-2">
-				<li class="breadcrumb-item active" aria-current="page">Bank</li>
+				<li class="breadcrumb-item active" aria-current="page">Paket Berlangganan</li>
 			</ol>
 		</nav>
 	</div>
@@ -24,7 +24,7 @@
 						<div class="card card-custom gutter-b bg-transparent shadow-none border-0" >
 							<div class="card-header align-items-center  border-bottom-dark px-0">
 								<div class="card-title mb-0">
-									<h3 class="card-label mb-0 font-weight-bold text-body">Bank 
+									<h3 class="card-label mb-0 font-weight-bold text-body">Paket Berlangganan 
 									</h3>
 								</div>
 							    <div class="icons d-flex">

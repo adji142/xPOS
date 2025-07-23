@@ -53,11 +53,11 @@ class CompanyController extends Controller
 {
 
     function AdminPelanggan(Request $request) {
-        if(Auth::user()->RecordOwnerID != '999999'){
-            auth()->user()->tokens()->delete();
-            Auth::logout();
-            return redirect('/');
-        }
+        // if(Auth::user()->RecordOwnerID != '999999'){
+        //     auth()->user()->tokens()->delete();
+        //     Auth::logout();
+        //     return redirect('/');
+        // }
         
         $Status = $request->input('Status');
 
@@ -77,12 +77,22 @@ class CompanyController extends Controller
                                         END
                                     END
                                 END
-                            END StatusSubscription ")
+                            END StatusSubscription, users.email ")
                         ->leftJoin('subscriptionheader','company.KodePaketLangganan','subscriptionheader.NoTransaksi')
                         ->leftJoinSub($subquery, 'inv', function ($join) {
                             // Bind the placeholder value during the join
                             $join->on('company.KodePartner', '=', 'inv.KodePelanggan');
                         })
+                        ->join('userrole', 'company.KodePartner', '=', 'userrole.RecordOwnerID')
+                        ->join('roles', function($join) {
+                            $join->on('userrole.roleid', '=', 'roles.id')
+                                ->on('userrole.RecordOwnerID', '=', 'roles.RecordOwnerID');
+                        })
+                        ->join('users', function($join) {
+                            $join->on('userrole.userid', '=', 'users.id')
+                                ->on('userrole.RecordOwnerID', '=', 'users.RecordOwnerID');
+                        })
+                        ->where('company.isActive', '!=', '-1')
                         // ->leftJoin('tagihanpenggunaheader', 'tagihanpenggunaheader.NoTransaksi','inv.NoTransaksi')
                         ->get();
         $subs = SubscriptionHeader::all();
@@ -363,6 +373,36 @@ class CompanyController extends Controller
             alert()->error('Error',$e->getMessage());
             return redirect()->back();
         }
+    }
+
+    public function DeletePengguna(Request $request){
+    	Log::debug($request->all());
+        $data = array('success' => false, 'data' => array(), 'message' => '');
+        try {
+
+            $model = Company::where('KodePartner','=',$request->input('KodePartner'));
+
+            if ($model) {
+                $update = DB::table('company')
+                        ->where('KodePartner','=',$request->input('KodePartner'))
+                        ->update(
+                            [
+                                // 'NamaGudang'=>$request->input('NamaGudang'),
+                                'isActive' => -1
+                            ]
+                        );
+                $data['success'] = true;
+            } else{
+                $data['success'] = false;
+                $data['message'] = 'Perusahaan not found.';
+            }
+        } catch (\Exception $e) {
+            Log::debug($e->getMessage());
+            $data['success'] = false;
+            $data['message'] = $e->getMessage();
+        }
+
+        return response()->json($data);
     }
 
     public function GenerateInitialData(Request $request){

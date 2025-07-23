@@ -12,6 +12,7 @@ use App\Models\FakturPenjualanHeader;
 use App\Models\FakturPenjualanDetail;
 use App\Models\ItemMaster;
 use App\Models\InvoicePenggunaHeader;
+use App\Models\Company;
 
 class DashboardController extends Controller
 {
@@ -124,11 +125,78 @@ class DashboardController extends Controller
                         ->groupBy(DB::raw('DATE(tagihanpenggunaheader.TglTransaksi)'))
                         ->orderBy(DB::raw('DATE(tagihanpenggunaheader.TglTransaksi)'))
                         ->get();
+
+        $subshampirhabis = Company::join('userrole', 'company.KodePartner', '=', 'userrole.RecordOwnerID')
+                            ->join('roles', function($join) {
+                                $join->on('userrole.roleid', '=', 'roles.id')
+                                    ->on('userrole.RecordOwnerID', '=', 'roles.RecordOwnerID');
+                            })
+                            ->join('users', function($join) {
+                                $join->on('userrole.userid', '=', 'users.id')
+                                    ->on('userrole.RecordOwnerID', '=', 'users.RecordOwnerID');
+                            })
+                            ->where('roles.RoleName', 'SuperAdmin')
+                            ->where(function($query) {
+                                $query->where('company.EndSubs', '>', DB::raw('NOW()'))
+                                    ->orWhereBetween('company.EndSubs', [
+                                        DB::raw('NOW()'),
+                                        DB::raw('DATE_ADD(NOW(), INTERVAL 7 DAY)')
+                                    ]);
+                            })
+                            ->select(
+                                'company.NamaPartner',
+                                'company.NamaPIC',
+                                'company.NoTlp',
+                                'users.email',
+                                'company.EndSubs'
+                            )->get();
+
+        $subshabis = Company::join('userrole', 'company.KodePartner', '=', 'userrole.RecordOwnerID')
+                            ->join('roles', function($join) {
+                                $join->on('userrole.roleid', '=', 'roles.id')
+                                    ->on('userrole.RecordOwnerID', '=', 'roles.RecordOwnerID');
+                            })
+                            ->join('users', function($join) {
+                                $join->on('userrole.userid', '=', 'users.id')
+                                    ->on('userrole.RecordOwnerID', '=', 'users.RecordOwnerID');
+                            })
+                            ->where('roles.RoleName', 'SuperAdmin')
+                            ->where(DB::raw('NOW()'), '>', DB::raw('EndSubs'))
+                            ->select(
+                                'company.NamaPartner',
+                                'company.NamaPIC',
+                                'company.NoTlp',
+                                'users.email'
+                            )->get();
+        $daftarbelumbayar = Company::join('userrole', 'company.KodePartner', '=', 'userrole.RecordOwnerID')
+                            ->join('roles', function($join) {
+                                $join->on('userrole.roleid', '=', 'roles.id')
+                                    ->on('userrole.RecordOwnerID', '=', 'roles.RecordOwnerID');
+                            })
+                            ->join('users', function($join) {
+                                $join->on('userrole.userid', '=', 'users.id')
+                                    ->on('userrole.RecordOwnerID', '=', 'users.RecordOwnerID');
+                            })
+                            ->whereNull('EndSubs')
+                            ->select(
+                                'company.NamaPartner',
+                                'company.NamaPIC',
+                                'company.NoTlp',
+                                'users.email'
+                            )->get();
+        $companyPerJenis = Company::select('JenisUsaha', DB::raw('COUNT(*) as jumlah'))
+                            ->groupBy('JenisUsaha')
+                            ->get();
+
         return view("dashboardadmin",[
             'daybyday' => $daybyday[0]['Total'],
             'mtd' => $mtd[0]['Total'],
             'ytd' => $ytd[0]['Total'],
             'grafikpenjualan' => $grafikpenjualan,
+            'subshampirhabis' => $subshampirhabis,
+            'subshabis' => $subshabis,
+            'daftarbelumbayar' => $daftarbelumbayar,
+            'companyPerJenis' => $companyPerJenis
         ]);
     }
 }
