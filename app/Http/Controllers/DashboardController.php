@@ -98,6 +98,53 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function filterOmzet(Request $request){
+        $range = $request->input('range', 'hari');
+        
+        switch ($range) {
+            case 'hari':
+                $grafikpenjualan = FakturPenjualanHeader::selectRaw("DATE(fakturpenjualanheader.TglTransaksi) Tanggal ,SUM(TotalPembelian) Total")
+                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                        ->whereDate(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'),today())
+                        ->where('Status','<>',DB::raw("'D'"))
+                        ->groupBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
+                        ->orderBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
+                        ->get();
+                break;
+            case 'minggu':
+                $grafikpenjualan = FakturPenjualanHeader::selectRaw("DATE(fakturpenjualanheader.TglTransaksi) Tanggal ,SUM(TotalPembelian) Total")
+                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                        ->whereBetween(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'), [now()->startOfWeek(), now()->endOfWeek()])
+                        ->where('Status','<>',DB::raw("'D'"))
+                        ->groupBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
+                        ->orderBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
+                        ->get();
+                break;
+            case 'bulan':
+                $grafikpenjualan = FakturPenjualanHeader::selectRaw("DATE(fakturpenjualanheader.TglTransaksi) Tanggal ,SUM(TotalPembelian) Total")
+                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                        ->whereMonth(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'), now()->month)
+                        ->where('Status','<>',DB::raw("'D'"))
+                        ->groupBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
+                        ->orderBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
+                        ->get();
+                break;
+            case 'tahun':
+                $grafikpenjualan = FakturPenjualanHeader::selectRaw("DATE(fakturpenjualanheader.TglTransaksi) Tanggal ,SUM(TotalPembelian) Total")
+                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                        ->whereYear(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'), now()->year)
+                        ->where('Status','<>',DB::raw("'D'"))
+                        ->groupBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
+                        ->orderBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
+                        ->get();
+                break;
+        }
+
+        return response()->json([
+            'grafik' => $grafikpenjualan
+        ]);
+    }
+
     function dashboardAdmin() {
         // dd(Auth::user()->RecordOwnerID);
         if(Auth::user()->RecordOwnerID != '999999'){

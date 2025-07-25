@@ -91,8 +91,20 @@
                                     <h3 class="card-label mb-0 font-weight-bold text-body">Grafik Omzet
                                     </h3>
                                 </div>
+                                <div class="form-group d-flex align-items-center">
+                                    <label class="me-2">Filter:</label>
+                                    <select id="rangeFilter" class="form-select form-select-sm w-auto">
+                                        <option value="hari">Harian</option>
+                                        <option value="minggu">Mingguan</option>
+                                        <option value="bulan">Bulanan</option>
+                                        <option value="tahun">Tahunan</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="card-body pt-3" >
+                                <span class="text-dark font-weight-bold font-size-h1 me-3" id="omzetDayByDay">
+                                    {{ number_format($daybyday) }}
+                                </span>
                                 <div id="chart-4"></div>
                             </div>
                         </div>
@@ -214,6 +226,68 @@
         bindGridTopSpender(<?php echo $topspender; ?>);
         bindGridTopItem(<?php echo $topItemPerformance; ?>);
 	});
+
+    $('#rangeFilter').on('change', function () {
+        const range = $(this).val();
+        $.ajax({
+            url: "{{ route('dashboard.filter') }}",
+            type: "GET",
+            data: { range: range },
+            beforeSend: function () {
+                $('#omzetDayByDay').text('Loading...');
+            },
+            success: function (res) {
+                $('#omzetDayByDay').text('');
+                // Update grafik
+                const label = res.grafik.map(g => g.Tanggal);
+                const value = res.grafik.map(g => g.Total);
+                updateGrafik(label, value);
+            },
+            error: function (err) {
+                $('#omzetDayByDay').text('');
+                alert('Gagal memuat data');
+            }
+        });
+    });
+
+    let chartInstance = null;
+    function updateGrafik(labels, values) {
+        if (chartInstance) chartInstance.destroy();
+
+        chartInstance = new ApexCharts(document.querySelector("#chart-4"), {
+        series: [{
+            name: 'Omzet',
+            data: values
+        }],
+        chart: {
+            height: 350,
+            type: 'line'
+        },
+        stroke: {
+            width: 7,
+            curve: 'smooth'
+        },
+        xaxis: {
+            categories: labels
+        },
+        title: {
+            text: 'Grafik Omzet',
+            align: 'left',
+            style: {
+            fontSize: "16px",
+            color: '#666'
+            }
+        },
+        markers: {
+            size: 4,
+            colors: ["#FFA41B"],
+            strokeColors: "#fff",
+            strokeWidth: 2
+        }
+        });
+
+        chartInstance.render();
+    }
 
     function generateGraph(label, value) {
         

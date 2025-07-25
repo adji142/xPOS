@@ -1797,6 +1797,9 @@ License: You must have a valid license purchased only from themeforest(the above
 			          	});
 			          	jQuery('#KodePelanggan').append(newOption);
 			          	jQuery('#KodePelanggan').val(response.LastTRX).trigger('change');
+
+						jQuery('#btTambahMember').text('Tambah Member');
+						jQuery('#btTambahMember').attr('disabled',false);
 					}
 					else{
 						Swal.fire({

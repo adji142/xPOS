@@ -384,7 +384,19 @@
     </div>
   </div>
 
-  
+  <!-- Modal Video Player -->
+  <div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body p-0">
+          <div class="ratio ratio-16x9">
+            <iframe id="videoFrame" src="" title="Video" allowfullscreen allow="autoplay"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -890,6 +902,16 @@
       // console.log(formData);
 
       PaymentGateWay($(this), 'Bayar', formData);
+    });
+
+    $('.video-card').on('click', function () {
+        const videoUrl = $(this).data('video') + '?autoplay=1';
+        $('#videoFrame').attr('src', videoUrl);
+    });
+
+    // Bersihkan iframe saat modal ditutup agar video berhenti
+    $('#videoModal').on('hidden.bs.modal', function () {
+        $('#videoFrame').attr('src', '');
     });
   });
 </script>

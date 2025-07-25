@@ -2,27 +2,43 @@
 
 @section('content')
 <style type="text/css">
-  .xContainer{
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    vertical-align: middle;
-  }
-  .image_result{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid black;
-    vertical-align: middle;
-    align-content: center;
-    width: 150px;
-    height: 200px;
-  }
-  .image_result img {
-    max-width: 100%;
-    height: 100%;
-  }
+	.xContainer{
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: center;
+		vertical-align: middle;
+	}
+	.image_result{
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		border: 1px solid black;
+		vertical-align: middle;
+		align-content: center;
+		width: 150px;
+		height: 200px;
+	}
+	.image_result img {
+		max-width: 100%;
+		height: 100%;
+	}
+
+	.ql-font span[data-value="sans-serif"]::before { content: 'Sans Serif'; }
+	.ql-font span[data-value="serif"]::before { content: 'Serif'; }
+	.ql-font span[data-value="monospace"]::before { content: 'Monospace'; }
+	.ql-font span[data-value="arial"]::before { content: 'Arial'; }
+	.ql-font span[data-value="comic-sans"]::before { content: 'Comic Sans'; }
+	.ql-font span[data-value="times-new-roman"]::before { content: 'Times New Roman'; }
+	.ql-font span[data-value="courier-new"]::before { content: 'Courier New'; }
+	.ql-font span[data-value="georgia"]::before { content: 'Georgia'; }
+
+	.ql-font-arial { font-family: Arial, sans-serif; }
+	.ql-font-comic-sans { font-family: 'Comic Sans MS', cursive, sans-serif; }
+	.ql-font-times-new-roman { font-family: 'Times New Roman', Times, serif; }
+	.ql-font-courier-new { font-family: 'Courier New', Courier, monospace; }
+	.ql-font-georgia { font-family: Georgia, serif; }
+
 </style>
 <div class="subheader py-2 py-lg-6 subheader-solid">
 	<div class="container-fluid">
@@ -76,6 +92,17 @@
 
 							<div class="form-group">
 								<label>Konten</label>
+								<div id="toolbar">
+									<select class="ql-font"></select>
+									<select class="ql-size"></select>
+									<button class="ql-bold"></button>
+									<button class="ql-italic"></button>
+									<button class="ql-underline"></button>
+									<button class="ql-image"></button>
+									<button class="ql-list" value="ordered"></button>
+									<button class="ql-list" value="bullet"></button>
+									<select class="ql-align"></select>
+								</div>
 								<div id="editor-container" style="height: 300px;">{!! isset($data[0]) ? $data[0]['Konten'] : '' !!}</div>
 								<textarea name="Konten" id="Konten" style="display: none">{!! isset($data[0]) ? $data[0]['Konten'] : '' !!}</textarea>
 							</div>
@@ -102,10 +129,49 @@
 @push('scripts')
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
+
 <script>
-  var quill = new Quill('#editor-container', {
-    theme: 'snow'
-  });
+	const Font = Quill.import('formats/font');
+	Font.whitelist = ['sans-serif', 'serif', 'monospace', 'arial', 'comic-sans', 'times-new-roman', 'courier-new', 'georgia'];
+	Quill.register(Font, true);
+
+	const Size = Quill.import('formats/size');
+	Size.whitelist = ['small', false, 'large', 'huge'];
+	Quill.register(Size, true);
+
+	// Inisialisasi Quill
+	const quill = new Quill('#editor-container', {
+		theme: 'snow',
+		modules: {
+		toolbar: {
+			container: "#toolbar",
+			handlers: {
+			image: function () {
+				const input = document.createElement('input');
+				input.setAttribute('type', 'file');
+				input.setAttribute('accept', 'image/*');
+				input.click();
+				input.onchange = () => {
+				const file = input.files[0];
+				const reader = new FileReader();
+				reader.onload = (e) => {
+					const range = quill.getSelection();
+					quill.insertEmbed(range.index, 'image', e.target.result);
+				};
+				reader.readAsDataURL(file);
+				};
+			}
+			}
+		},
+		imageResize: {
+			modules: ['Resize', 'DisplaySize']
+		}
+		}
+	});
+//   var quill = new Quill('#editor-container', {
+//     theme: 'snow'
+//   });
   $("form").submit(function () {
     $("#Konten").val(quill.root.innerHTML);
   });

@@ -163,7 +163,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			   <div class="col-xl-4 col-lg-3 col-md-12  order-lg-last order-second">
 
 				<div class="topbar justify-content-end">
-					<div class="topbar-item folder-data">
+					<div class="topbar-item folder-data" style="display:none;">
 						<div id="btOpenListBooking" class="btn btn-icon  w-auto h-auto btn-clean d-flex align-items-center py-0 me-3">
 							<span class="symbol symbol-35  symbol-light-success">
 								<a href="{{ route('bookinglist') }}" target="_blank" class="btn btn-warning">Booking Online List</a>
@@ -172,7 +172,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				 
 					</div>
 
-					<div class="topbar-item folder-data">
+					<div class="topbar-item folder-data" style="display:none;">
 						<div id="btOpenCustDisplay" class="btn btn-icon  w-auto h-auto btn-clean d-flex align-items-center py-0 me-3">
 							<span class="symbol symbol-35  symbol-light-success">
 								<span class="symbol-label font-size-h5 ">
@@ -1332,91 +1332,101 @@ License: You must have a valid license purchased only from themeforest(the above
 		});
 
 		jQuery('#frmPilihPaket').on('submit', function(e) {
-			// 
 			jQuery('#btMulaiBermain').text('Tunggu Sebentar');
-			jQuery('#btMulaiBermain').attr('disabled',true);
+			jQuery('#btMulaiBermain').attr('disabled', true);
 
 			e.preventDefault();
 			jQuery('#frmPilihPaket').find(':disabled').prop('disabled', false);
 			const formData = new FormData(this);
 			formData.append('Status', '1');
 
+			// ⏳ Show loading
+			Swal.fire({
+				icon: 'info',
+				title: 'Memproses...',
+				text: 'Mohon tunggu sebentar',
+				allowOutsideClick: false,
+				showConfirmButton: false,
+				didOpen: () => {
+					Swal.showLoading();
+				}
+			});
+
 			$.ajax({
 				url: "{{route('billing-store')}}",
 				type: 'post',
 				data: formData,
-				processData: false, // Prevent jQuery from automatically processing the data
-        		contentType: false,
+				processData: false,
+				contentType: false,
 				headers: {
-					'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+					'X-CSRF-TOKEN': '{{ csrf_token() }}'
 				},
 				success: function(response) {
-					// console.log('Form submitted successfully:', response);
 					if (response.success) {
 						if (jQuery('#JenisPaket').val() != "MENIT") {
 							$.ajax({
 								url: "{{route('billing-repopulate')}}",
 								type: 'post',
 								data: formData,
-								processData: false, // Prevent jQuery from automatically processing the data
+								processData: false,
 								contentType: false,
 								headers: {
-									'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+									'X-CSRF-TOKEN': '{{ csrf_token() }}'
 								},
 								success: function(oBilling) {
+									Swal.close(); // ✅ CLOSE LOADING
+
 									_billing = oBilling.data;
 									jQuery('#btCloseModalDetails').css('display', 'none');
 									jQuery('#LookupPilihPaket').modal('hide');
 									fnDetails(response.NoTransaksi, []);
 
-									jQuery('#LookupDetailOrder').modal({backdrop: 'static', keyboard: false})
-		    						jQuery('#LookupDetailOrder').modal('show');
+									jQuery('#LookupDetailOrder').modal({backdrop: 'static', keyboard: false});
+									jQuery('#LookupDetailOrder').modal('show');
+								},
+								error: function(xhr) {
+									Swal.close(); // ✅ CLOSE LOADING
+									Swal.fire('Error', 'Gagal ambil data billing.', 'error');
 								}
 							});
-						}
-						else{
+						} else {
+							Swal.close(); // ✅ CLOSE LOADING
 							Swal.fire({
 								icon: "success",
 								title: "Sukses",
 								text: "Data Berhasil disimpan, Selamat Bermain",
-							}).then((result) => {
-								location.reload();
-								
-							});
+							}).then(() => location.reload());
 						}
-					}
-					else{
+					} else {
+						Swal.close(); // ✅ CLOSE LOADING
 						Swal.fire({
 							icon: "error",
-							title: "Opps...",
+							title: "Oops...",
 							text: response.message,
-						}).then((result) => {
-						//   location.reload();
+						}).then(() => {
 							jQuery('#btMulaiBermain').text('Mulai Bermain');
-							jQuery('#btMulaiBermain').attr('disabled',false);
-
-							jQuery('#LookupPilihPaket').modal({backdrop: 'static', keyboard: false})
-		    				jQuery('#LookupPilihPaket').modal('show');
+							jQuery('#btMulaiBermain').attr('disabled', false);
+							jQuery('#LookupPilihPaket').modal({backdrop: 'static', keyboard: false});
+							jQuery('#LookupPilihPaket').modal('show');
 						});
 					}
 				},
 				error: function(xhr) {
-					// console.error('An error occurred:', xhr.responseText);
+					Swal.close(); // ✅ CLOSE LOADING
 					Swal.fire({
 						icon: "error",
-						title: "Opps...",
-						text: response.message,
-					}).then((result) => {
-					//   location.reload();
+						title: "Oops...",
+						text: "Terjadi kesalahan pada server.",
+					}).then(() => {
 						jQuery('#btMulaiBermain').text('Mulai Bermain');
-						jQuery('#btMulaiBermain').attr('disabled',false);
-
-						jQuery('#LookupPilihPaket').modal({backdrop: 'static', keyboard: false})
-		    			jQuery('#LookupPilihPaket').modal('show');
+						jQuery('#btMulaiBermain').attr('disabled', false);
+						jQuery('#LookupPilihPaket').modal({backdrop: 'static', keyboard: false});
+						jQuery('#LookupPilihPaket').modal('show');
 					});
 				}
 			});
 		});
+
 
 		jQuery('#frmUpdatePaket').on('submit', function(e) {
 			// 
@@ -1667,7 +1677,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			const filteredData = metodepembayaran.filter(item => item.id == jQuery('#cboMetodePembayaran_Detail').val());
 			const midtransclientkey = "<?php echo $midtransclientkey ?>";
 			const JenisPaket = jQuery('#dtJenisPaket_Detail').first().text();
-
+			
 			var StatusDocument = 'C';
 
 			if(JenisPaket != 'MENIT'){
@@ -2620,6 +2630,18 @@ License: You must have a valid license purchased only from themeforest(the above
 		}
 
 		function SaveData(Status, ButonObject, ButtonDefaultText) {
+
+			Swal.fire({
+				icon: 'info',
+				title: 'Memproses...',
+				text: 'Mohon tunggu sebentar Menyimpan data pembayaran',
+				allowOutsideClick: false,
+				showConfirmButton: false,
+				didOpen: () => {
+					Swal.showLoading();
+				}
+			});
+
 			ButonObject.text('Tunggu Sebentar.....');
   			ButonObject.attr('disabled',true);
 
@@ -2803,6 +2825,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				data: JSON.stringify(oData),
 				success: function(response) {
 					if (response.success == true) {
+						Swal.close();
 						let formattedAmount = parseFloat(response.Kembalian).toLocaleString('en-US', {
 							style: 'decimal',
 							minimumFractionDigits: 2,
@@ -2828,6 +2851,7 @@ License: You must have a valid license purchased only from themeforest(the above
 						PrintStruk(response.LastTRX);
 					}
 					else{
+						Swal.close();
 						Swal.fire({
 							icon: "error",
 							title: "Opps...",
@@ -3015,6 +3039,18 @@ License: You must have a valid license purchased only from themeforest(the above
 		}
 
 		function PaymentGateWay(Status, ButonObject, ButtonDefaultText) {
+
+			Swal.fire({
+				icon: 'info',
+				title: 'Memproses...',
+				text: 'Mohon tunggu sebentar Memanggil Pembayaran',
+				allowOutsideClick: false,
+				showConfirmButton: false,
+				didOpen: () => {
+					Swal.showLoading();
+				}
+			});
+
 			// _custdisplayopened
 			const oCompany = <?php echo $company ?>;
 			const filteredData = _billing.filter(item => item.NoTransaksi == jQuery('#txtNoTransaksi_Detail').val());
@@ -3188,6 +3224,7 @@ License: You must have a valid license purchased only from themeforest(the above
 					if (data.snap_token) {
 						snap.pay(data.snap_token, {
 							onSuccess: function(result){
+								Swal.close();
 								// console.log(result);
 								if(result.transaction_status == "cancel"){
 									Swal.fire({
@@ -3208,6 +3245,7 @@ License: You must have a valid license purchased only from themeforest(the above
 								// Pembayaran tertunda
 							},
 							onError: function(result){
+								Swal.close();
 								// console.log(result);
 								Swal.fire({
 									icon: "error",
@@ -3217,10 +3255,12 @@ License: You must have a valid license purchased only from themeforest(the above
 								// Pembayaran gagal
 							},
 							onClose: function(){
+								Swal.close();
 								console.log('customer closed the popup without finishing the payment');
 							}
 						});
 					} else {
+						Swal.close();
 						// alert('Error: ' + data.error);
 						Swal.fire({
 							icon: "error",
@@ -3233,25 +3273,51 @@ License: You must have a valid license purchased only from themeforest(the above
 			}
 		}
 
-		function PrintStruk(NoTransaksi) {
+		// function PrintStruk(NoTransaksi) {
 
-			// var link = "fpenjualan/printthermal/"+cellInfo.data.NoTransaksi;
+		// 	// var link = "fpenjualan/printthermal/"+cellInfo.data.NoTransaksi;
+		// 	let url = "{{ url('') }}";
+		// 	// url.searchParams.append('NoTransaksi', NoTransaksi);
+		// 	url += "/fpenjualan/printthermal/"+NoTransaksi;
+		// 	// console.log(url);
+		// 	// // window.location.href = url.toString();
+		// 	// window.open(url, "_blank");
+		// 	// location.reload();
+
+		// 	const win = window.open(url, '_blank', 'width=800,height=600');
+		// 	win.onload = function () {
+		// 		win.print();
+		// 		win.onafterprint = function () {
+		// 			win.close();
+		// 			location.reload();
+		// 		};
+		// 	};
+		// }
+
+		function PrintStruk(NoTransaksi) {
 			let url = "{{ url('') }}";
-			// url.searchParams.append('NoTransaksi', NoTransaksi);
-			url += "/fpenjualan/printthermal/"+NoTransaksi;
-			// console.log(url);
-			// // window.location.href = url.toString();
-			// window.open(url, "_blank");
-			// location.reload();
+			url += "/fpenjualan/printthermal/" + NoTransaksi;
 
 			const win = window.open(url, '_blank', 'width=800,height=600');
+
+			const checkClosedInterval = setInterval(function () {
+				if (win.closed) {
+					clearInterval(checkClosedInterval);
+					location.reload(); // ✅ Reload saat window ditutup manual
+				}
+			}, 500);
+
 			win.onload = function () {
 				win.print();
+
 				win.onafterprint = function () {
+					clearInterval(checkClosedInterval); // ⛔ Jangan dobel reload
 					win.close();
+					location.reload(); // ✅ Reload saat selesai print
 				};
 			};
 		}
+
 
 		function SetEnableCommand() {
 			var errorCount = 0;

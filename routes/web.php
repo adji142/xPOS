@@ -92,6 +92,7 @@ Route::get('/dashboardadmin', [DashboardController::class, 'dashboardAdmin'])->n
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 Route::get('/konfirmasi/{id}', [LoginController::class, 'Konfirmasi'])->name('konfirmasi');
 Route::post('/konfirmasi', [LoginController::class, 'KonfirmasiStore'])->name('konfirmasi-store');
+Route::get('/dashboard/filter', [DashboardController::class, 'filterOmzet'])->name('dashboard.filter');
 
 
 Route::get('/forgotpassword', [LoginController::class, 'forgotpassword'])->name('forgotpassword');

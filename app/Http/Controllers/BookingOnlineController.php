@@ -82,7 +82,34 @@ class BookingOnlineController extends Controller
 
         switch ($company->DefaultLandingPages) {
             case 'bo1':
-                $this->index($id);
+                $idE = base64_decode($id); // ⬅️ decode di sini
+                $company = Company::where('KodePartner','=',$idE)->first();
+                $titikLampu = TitikLampu::where('BisaDipesan', 1)
+                ->where('RecordOwnerID', $idE)
+                ->get();
+                $gallery = Company::select('ImageGallery1', 'ImageGallery2', 'ImageGallery3','ImageGallery4','ImageGallery5','ImageGallery6','ImageGallery7','ImageGallery8','ImageGallery9','ImageGallery10','ImageGallery11','ImageGallery12')
+                ->where('KodePartner', $idE)
+                ->get();
+                $paketTransaksi = Paket::where('RecordOwnerID','=',$idE)
+                                    ->where(DB::RAW("COALESCE(BisaDipesan, 'N')"), 'Y')->get();
+                $user= User::where('RecordOwnerID','=',$idE)->first();
+
+                $midtransdata = MetodePembayaran::where('RecordOwnerID','=',$idE)
+                                    ->where('MetodeVerifikasi','=','AUTO')->first();
+                $midtransclientkey = "";
+                $MetodePembayaranAutoID = -1;
+                // dd($midtransdata->ClientKey);
+                if ($midtransdata) {
+                    $midtransclientkey = $midtransdata->ServerKey;
+                    $MetodePembayaranAutoID = $midtransdata->id;
+                }
+                $today = date('Y-m-d');
+
+                //dd($company);
+
+                // dd($paketTransaksi);
+
+                return view('Transaksi.Penjualan.PoS.BookingOnline', compact('company', 'titikLampu','gallery','paketTransaksi','user', 'midtransclientkey', 'today'));
                 break;
             case 'bo2':
                 return view("Transaksi.Penjualan.PoS.BookingOnline_2",[
@@ -99,7 +126,9 @@ class BookingOnlineController extends Controller
 
                 break;
             default:
-                $this->index($id);
+                // $this->index($id);
+                // return redirect()->action([self::class, 'index'], ['id' => $id]);
+                return redirect()->action([BookingOnlineController::class, 'index'], ['id' => $id]);
                 break;
         }
 
@@ -214,7 +243,7 @@ class BookingOnlineController extends Controller
     }
     public function index($id)
     {
-
+        // dd($id);
         $idE = base64_decode($id); // ⬅️ decode di sini
         $company = Company::where('KodePartner','=',$idE)->first();
         $titikLampu = TitikLampu::where('BisaDipesan', 1)
@@ -240,8 +269,7 @@ class BookingOnlineController extends Controller
 
         //dd($company);
 
-        //dd($paketTransaksi);
-
+        // dd($paketTransaksi);
 
         return view('Transaksi.Penjualan.PoS.BookingOnline', compact('company', 'titikLampu','gallery','paketTransaksi','user', 'midtransclientkey', 'today'));
     }
