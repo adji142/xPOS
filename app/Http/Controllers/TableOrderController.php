@@ -162,6 +162,16 @@ class TableOrderController extends Controller
     {
         $paket = Paket::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
+        DB::table('tableorderheader')
+                    ->where('DocumentStatus','=', 'O')
+                    ->where('Status','=', '0')
+                    ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                    ->update(
+                        [
+                            'DocumentStatus'=>'C',
+                        ]
+                    );
+                    
         $titiklampu = TitikLampu::selectRaw("titiklampu.*,
                             CASE WHEN COALESCE(titiklampu.status,0) = 0 THEN 'KOSONG' ELSE 
                                 CASE WHEN titiklampu.Status = 1 THEN 'AKTIF' ELSE 
