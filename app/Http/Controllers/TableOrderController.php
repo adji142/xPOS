@@ -27,6 +27,16 @@ class TableOrderController extends Controller
     {
         $paket = Paket::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
+        DB::table('tableorderheader')
+                    ->where('DocumentStatus','=', 'O')
+                    ->where('Status','=', '0')
+                    ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                    ->update(
+                        [
+                            'DocumentStatus'=>'C',
+                        ]
+                    );
+
         $titiklampu = TitikLampu::selectRaw("titiklampu.*,
                             CASE WHEN COALESCE(titiklampu.status,0) = 0 THEN 'KOSONG' ELSE 
                                 CASE WHEN titiklampu.Status = 1 THEN 'AKTIF' ELSE 
@@ -65,7 +75,7 @@ class TableOrderController extends Controller
                             $value->on('titiklampu.id','=','tableorderheader.tableid')
                             ->on('titiklampu.RecordOwnerID','=','tableorderheader.RecordOwnerID')
                             // ->on(DB::raw("DATE_FORMAT(COALESCE(tableorderheader.JamSelesai, now()), '%Y-%m-%d')"),'>=',DB::raw("DATE_FORMAT(NOW(), '%Y-%m-%d')"))
-                            ->on('tableorderheader.Status','!=',DB::raw('0'));
+                            ->on('tableorderheader.DocumentStatus','!=',DB::raw("'C'"));
                         })
                         ->leftJoin('pakettransaksi', function ($value)  {
                             $value->on('tableorderheader.paketid','=','pakettransaksi.id')
@@ -190,7 +200,7 @@ class TableOrderController extends Controller
                             $value->on('titiklampu.id','=','tableorderheader.tableid')
                             ->on('titiklampu.RecordOwnerID','=','tableorderheader.RecordOwnerID')
                             // ->on(DB::raw("DATE_FORMAT(COALESCE(tableorderheader.JamSelesai, now()), '%Y-%m-%d')"),'>=',DB::raw("DATE_FORMAT(NOW(), '%Y-%m-%d')"))
-                            ->on('tableorderheader.Status','!=',DB::raw('0'));
+                            ->on('tableorderheader.DocumentStatus','!=',DB::raw("'C'"));
                         })
                         ->leftJoin('pakettransaksi', function ($value)  {
                             $value->on('tableorderheader.paketid','=','pakettransaksi.id')
@@ -239,7 +249,9 @@ class TableOrderController extends Controller
                     ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                     ->where('Status','=',1)
                     ->get();
-        $metodepembayaran = MetodePembayaran::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+        $metodepembayaran = MetodePembayaran::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->where('MetodeVerifikasi','AUTO')
+                            ->get();
         // $itemmaster = ItemMaster::selectRaw('KodeItem as id, NamaItem as text, Satuan, HargaJual')
         //                 ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
         //                 ->where('Active','=', 'Y')->get();
@@ -639,7 +651,7 @@ class TableOrderController extends Controller
                         $value->on('titiklampu.id','=','tableorderheader.tableid')
                         ->on('titiklampu.RecordOwnerID','=','tableorderheader.RecordOwnerID')
                         // ->on(DB::raw("DATE_FORMAT(COALESCE(tableorderheader.JamSelesai, now()), '%Y-%m-%d')"),'>=',DB::raw("DATE_FORMAT(NOW(), '%Y-%m-%d')"))
-                        ->on('tableorderheader.Status','!=',DB::raw('0'));
+                        ->on('tableorderheader.DocumentStatus','!=',DB::raw("'C'"));
                     })
                     ->leftJoin('pakettransaksi', function ($value)  {
                         $value->on('tableorderheader.paketid','=','pakettransaksi.id')

@@ -992,7 +992,7 @@ Route::get('/billing/self-service', [TableOrderController::class,'ViewSelfServic
 |--------------------------------------------------------------------------
 |
 */
-Route::get('/booking/{id}', [BookingOnlineController::class,'indexRev2'])->name('booking-index');
+Route::get('/booking/{id}', [BookingOnlineController::class,'indexRev2'])->name('booking-index');   
 Route::get('/booking', [BookingOnlineController::class, 'getData'])->name('booking');
 Route::post('/booking/create-gateway', [BookingOnlineController::class, 'createMidTransTransaction'])->name('booking-create-gateway');
 Route::post('/booking/pay-gateway', [BookingOnlineController::class, 'SimpanPembayaranJson'])->name('booking-pay-gateway');

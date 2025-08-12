@@ -1162,7 +1162,10 @@ class FakturPenjualanController extends Controller
 
 			$numberingData = new DocumentNumbering();
 
-			$NoTransaksi = $numberingData->GetNewDoc("POS","fakturpenjualanheader","NoTransaksi");
+			$NoTransaksi = empty($jsonData['NoTransaksi']) ? $numberingData->GetNewDoc("POS","fakturpenjualanheader","NoTransaksi") : $jsonData['NoTransaksi'];
+			// $NoTransaksi = $numberingData->GetNewDoc("POS","fakturpenjualanheader","NoTransaksi");
+			// $NoTransaksi = $jsonData['NoTransaksi'];
+
 
 			$data['LastTRX'] = $NoTransaksi;
 	        $model = new FakturPenjualanHeader;
@@ -1371,6 +1374,15 @@ class FakturPenjualanController extends Controller
 					$errorCount += 1;
 					goto jump;
 				}
+
+				$update = DB::table('tableorderheader')
+							->where('NoTransaksi','=', $NoTransaksi)
+							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+							->update(
+								[
+									'Status'=>1,
+								]
+							);
 			}
 
 			if ($oCompany->isPostingAkutansi == 1) {

@@ -1338,7 +1338,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			e.preventDefault();
 			jQuery('#frmPilihPaket').find(':disabled').prop('disabled', false);
 			const formData = new FormData(this);
-			formData.append('Status', '1');
+			formData.append('Status', '0');
 
 			// ⏳ Show loading
 			Swal.fire({
@@ -2376,7 +2376,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				}).format(_SubTotal)
 			);
 
-			formatCurrency($('#txtSubTotal_Detail'), _SubTotal);
+			formatCurrency($('#txtSubTotal_Detail'), _NewHargaNormal + _NewHargaBaru);
 			formatCurrency($('#txtTotalMakanan_Detail'), _TotalMakanan);
 			formatCurrency($('#txtTotalPajak_Detail'), _PPnNormal + _PPnBaru + _PajakHiburanNormal + _PajakHiburanBaru);
 			formatCurrency($('#txtDiscountMember_Detail'), Math.floor(_DiscountMember));
@@ -2384,7 +2384,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			formatCurrency($('#txtDiscountFnB_Detail'), _DiscountFnB);
 			formatCurrency($('#txtDiscount_Detail'), Math.floor(_Discount));
 			formatCurrency($('#txtTotalUangMuka_Detail'), _TotalUangMuka);
-			formatCurrency($('#txtGrandTotal_Detail'), _SubTotal + _TotalMakanan+ - Math.floor(_Discount) + _PajakHiburanNormal + _PajakHiburanBaru - _TotalUangMuka);
+			formatCurrency($('#txtGrandTotal_Detail'), _SubTotal + _TotalMakanan+ - Math.floor(_Discount) - _TotalUangMuka);
 			console.log(_SubTotal);
 			console.log(_TotalMakanan);
 			console.log(_Discount);
@@ -2789,7 +2789,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 			// Header
 			var oData = {
-				'NoTransaksi' : "",
+				'NoTransaksi' : jQuery('#txtNoTransaksi_Detail').val(),
 				'TglTransaksi' : _Tanggal + " " + _Jam,
 				'TglJatuhTempo' : _Tanggal,
 				'NoReff' : 'POS',

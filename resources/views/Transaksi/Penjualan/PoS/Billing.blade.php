@@ -1618,7 +1618,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			e.preventDefault();
 			jQuery('#frmPilihPaket').find(':disabled').prop('disabled', false);
 			const formData = new FormData(this);
-			formData.append('Status', '1');
+			formData.append('Status', '0');
 
 			$.ajax({
 				async:false,
@@ -2386,6 +2386,8 @@ License: You must have a valid license purchased only from themeforest(the above
 			const filteredData = _billing.filter(item => item.NoTransaksi == NoTransaksi);
 			const DataPaket = <?php echo $paket ?>;
 			const oCompany = <?php echo $company ?>;
+			console.log(NoTransaksi)
+			console.log(_billing);
 			const filteredPaket = DataPaket.filter(item => item.id == filteredData[0]['paketid']);
 
 			var oCustomerDisplay = {
@@ -2398,7 +2400,6 @@ License: You must have a valid license purchased only from themeforest(the above
 			};
 			
 			// console.log(NoTransaksi);
-			console.log(filteredData);
 			// console.log(filteredPaket);
 
 			jQuery('#txtNoTransaksi_Detail').val(NoTransaksi);
@@ -3128,7 +3129,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 			// Header
 			var oData = {
-				'NoTransaksi' : "",
+				'NoTransaksi' : jQuery('#txtNoTransaksi_Detail').val(),
 				'TglTransaksi' : _Tanggal + " " + _Jam,
 				'TglJatuhTempo' : _Tanggal,
 				'NoReff' : 'POS',
