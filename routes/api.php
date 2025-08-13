@@ -13,6 +13,7 @@ use App\Http\Controllers\MasterControllerController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\BookingOnlineController;
 use App\Http\Controllers\DiscountVoucherController;
+use App\Http\Controllers\PelangganController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -54,3 +55,5 @@ Route::post('/sendreminder', [CompanyController::class, 'CheckSubscriptionStatus
 Route::post('/getjadwal', [BookingOnlineController::class, 'getjadwalMeja'])->name('booking-getjadwal');
 
 Route::post('/discountvoucher/cekdiscount', [DiscountVoucherController::class, 'checkVoucher'])->name('discountvoucher-cekdiscount');
+
+Route::post('/pelanggan/viewJson', [PelangganController::class, 'ReadPelangganJson'])->name('pelanggan-viewJson');

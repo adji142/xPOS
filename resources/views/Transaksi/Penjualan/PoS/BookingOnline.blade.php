@@ -311,18 +311,18 @@
                                     {{-- <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p> --}}
                                     <ul class="list-group w-100">
                                         <li class="list-group-item d-flex align-items-center justify-content-between">
+                                            <strong >No HP:</strong>
+                                            <input type="tel" class="form-control w-75" name="noTelp" id="phoneNumber">
+                                        </li>
+
+                                        <li class="list-group-item d-flex align-items-center justify-content-between">
                                             <strong >Nama Lengkap:</strong>
-                                            <input type="text" class="form-control w-75" name="namaLengkap">
+                                            <input type="text" class="form-control w-75" name="namaLengkap" id ="namaLengkap">
                                         </li>
                                     
                                         <li class="list-group-item d-flex align-items-center justify-content-between">
                                             <strong >Email Address:</strong>
-                                            <input type="email" class="form-control w-75" name="email">
-                                        </li>
-                                    
-                                        <li class="list-group-item d-flex align-items-center justify-content-between">
-                                            <strong >No Telp:</strong>
-                                            <input type="tel" class="form-control w-75" name="noTelp">
+                                            <input type="email" class="form-control w-75" name="email" id= "emailaddress">
                                         </li>
                                     
                                         <li class="list-group-item text-center fw-bold">---</li>
@@ -775,6 +775,55 @@
                 let bookedSlots = {}; // Objek untuk menyimpan daftar jam yang sudah dibooking berdasarkan ID meja
 
                 SetEnableCommand()
+                
+                $(document).on('blur', 'input[name="noTelp"]', function () {
+                    const modal   = $(this).closest('.modal-body');
+                    const NomorHP = $.trim($(this).val());
+                    const Email   = modal.find('input[name="email"]').val();
+
+                    console.log('lostfocus:', NomorHP);
+
+                    if (!NomorHP) return;
+
+                    $.ajax({
+                        url: '/api/pelanggan/viewJson',
+                        method: 'POST',
+                        contentType: 'application/json; charset=UTF-8',
+                        dataType: 'json',
+                        headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        data: JSON.stringify({
+                        KodePelanggan: "",
+                        GrupPelanggan: "",
+                        Search: "",
+                        NoTlp1: NomorHP,
+                        Email: Email,
+                        RecordOwnerID: document.getElementById('kodePartner').value
+                        })
+                    })
+                    .done(function (resp) {
+                        // Lihat bentuk data sebenarnya
+                        console.log('resp:', resp);
+
+                        const rows = resp && resp.data ? resp.data : [];
+                        if (rows.length) {
+                        const row = rows[0];
+                        // Set email di modal ini
+                        modal.find('input[name="email"]').val(row.Email || '');
+                        // Set nama lengkap (coba by name dulu, fallback ke id)
+                        modal.find('input[name="namaLengkap"]').val(row.NamaPelanggan || '');
+                        $('#namaLengkap').val(row.NamaPelanggan || '');
+                        } else {
+                        console.log('Tidak ada data pelanggan untuk nomor ini');
+                        }
+                    })
+                    .fail(function (xhr) {
+                        console.error('AJAX error:', xhr.responseText || xhr.statusText);
+                        modal.find('#btn-success').prop('disabled', true);
+                    });
+                });
+
                 // Event ketika tanggal booking diubah
                 $(document).on('change', 'input[name="tanggalbooking"]', function () {
                     var selectedDate = $(this).val();

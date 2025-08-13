@@ -323,12 +323,13 @@
         <div class="modal-body">
 
           <div class="mb-3">
-            <label for="namaPelanggan" class="form-label">Nama Pelanggan</label>
-            <input type="text" class="form-control" id="namaPelanggan" name="namaPelanggan" required>
-          </div>
-          <div class="mb-3">
             <label for="telpPelanggan" class="form-label">Nomor Telepon</label>
             <input type="tel" class="form-control" id="telpPelanggan" name="telpPelanggan" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="namaPelanggan" class="form-label">Nama Pelanggan</label>
+            <input type="text" class="form-control" id="namaPelanggan" name="namaPelanggan" required>
           </div>
           <div class="mb-3">
             <label for="emailPelanggan" class="form-label">Email</label>
@@ -429,6 +430,7 @@
       },
       success: function (response) {
         mejaData = response; // asumsi response JSON punya field data
+        console.log(mejaData)
         renderMeja();
       },
       error: function (xhr) {
@@ -913,6 +915,44 @@
     $('#videoModal').on('hidden.bs.modal', function () {
         $('#videoFrame').attr('src', '');
     });
+
+    $('#telpPelanggan').on('blur', function(){
+      // console.log($('#telpPelanggan').val());
+      $.ajax({
+        url: '/api/pelanggan/viewJson',
+        method: 'POST',
+        contentType: 'application/json; charset=UTF-8',
+        dataType: 'json',
+        headers: {
+        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        data: JSON.stringify({
+        KodePelanggan: "",
+        GrupPelanggan: "",
+        Search: "",
+        NoTlp1: $('#telpPelanggan').val(),
+        Email: $('#emailPelanggan').val(),
+        RecordOwnerID: "{{ $company->KodePartner }}"
+        })
+    })
+    .done(function (resp) {
+        // Lihat bentuk data sebenarnya
+        console.log('resp:', resp);
+
+        const rows = resp && resp.data ? resp.data : [];
+        if (rows.length) {
+          const row = rows[0];
+          $('#namaPelanggan').val(row.NamaPelanggan || '');
+          $('#emailPelanggan').val(row.Email || '');
+        } else {
+          console.log('Tidak ada data pelanggan untuk nomor ini');
+        }
+    })
+    .fail(function (xhr) {
+        console.error('AJAX error:', xhr.responseText || xhr.statusText);
+        modal.find('#btn-success').prop('disabled', true);
+    });
+    })
   });
 </script>
 
@@ -922,28 +962,20 @@
     <div class="row">
       <!-- Company Info -->
       <div class="col-md-4 mb-3">
-        <h6 class="fw-bold">Centro Billiard & Lounge</h6>
-        <p class="small mb-1">Jl. Sukaraja No. 123, Jakarta Pusat</p>
-        <p class="small mb-0">Modern entertainment & sports center untuk semua kalangan.</p>
+        <h6 class="fw-bold">{{ $company->NamaPartner }}</h6>
+        <p class="small mb-1">{{ $company->AlamatTagihan }}</p>
       </div>
 
       <!-- Contact Info -->
       <div class="col-md-4 mb-3">
         <h6 class="fw-bold">Kontak Kami</h6>
-        <p class="small mb-1"><i class="bi bi-telephone-fill me-1"></i> 021-1234-5678</p>
-        <p class="small mb-1"><i class="bi bi-whatsapp me-1"></i> 0812-3456-7890</p>
-        <p class="small mb-0"><i class="bi bi-envelope-fill me-1"></i> info@centrobilliard.id</p>
+        <p class="small mb-1"><i class="bi bi-telephone-fill me-1"></i> {{ $company->NoTlp }}</p>
+        <p class="small mb-1"><i class="bi bi-whatsapp me-1"></i> {{ $company->NoHP }}</p>
       </div>
 
       <!-- Copyright -->
       <div class="col-md-4 mb-3 text-md-end text-center">
-        <h6 class="fw-bold">Ikuti Kami</h6>
-        <div class="mb-2">
-          <a href="#" class="text-decoration-none me-2"><i class="bi bi-facebook"></i></a>
-          <a href="#" class="text-decoration-none me-2"><i class="bi bi-instagram"></i></a>
-          <a href="#" class="text-decoration-none"><i class="bi bi-youtube"></i></a>
-        </div>
-        <div class="small text-muted">&copy; <span id="footerYear"> {{ $Tahun }} </span> Centro Billiard. All rights reserved.</div>
+        <div class="small text-muted">&copy; <span id="footerYear"> {{ $Tahun }} </span> {{ $company->NamaPartner }}. All rights reserved.</div>
       </div>
     </div>
   </div>

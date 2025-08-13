@@ -162,8 +162,13 @@ class BookingOnlineController extends Controller
         if ($paketTransaksi) {
             
             // Ambil semua TitikLampu yang BisaDipesan = 1
-            $semuaTitik = TitikLampu::where('BisaDipesan', 1)
-                            ->where('RecordOwnerID', '=', $RecordOwnerID)->get();
+            $semuaTitik = TitikLampu::selectRaw("titiklampu.*, tkelompoklampu.NamaKelompok, COALESCE(titiklampu.Deskripsi,'') AS 'Desc'")
+                            ->where('BisaDipesan', 1)
+                            ->leftJoin('tkelompoklampu', function ($value){
+                                $value->on('tkelompoklampu.KodeKelompok','=','titiklampu.KelompokLampu')
+                                ->on('tkelompoklampu.RecordOwnerID','=','titiklampu.RecordOwnerID');
+                            })
+                            ->where('titiklampu.RecordOwnerID', '=', $RecordOwnerID)->get();
 
             foreach ($semuaTitik as $titik) {
                 $start = $jamMulai->copy();
@@ -232,7 +237,8 @@ class BookingOnlineController extends Controller
                 $mejaData[] = [
                     'id' => $titik->id,
                     'nama' => $titik->NamaTitikLampu,
-                    'deskripsi' => $deskripsi,
+                    'deskripsi' => ($titik->Desc == "" ? $deskripsi : $titik->Desc) ,
+                    'KelompokMeja' => $titik->NamaKelompok,
                     'fitur' => [],
                     'jadwal' => $jadwal
                 ];

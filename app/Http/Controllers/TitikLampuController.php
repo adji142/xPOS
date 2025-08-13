@@ -89,6 +89,7 @@ class TitikLampuController extends Controller
             $model->DigitalInput = $request->input('DigitalInput');
             $model->ControllerID = $request->input('ControllerID');
             $model->KelompokLampu = $request->input('KelompokLampu');
+            $model->Deskripsi = $request->input('Deskripsi');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -132,6 +133,7 @@ class TitikLampuController extends Controller
                                     'DigitalInput'=>$request->input('DigitalInput'),
                                     'ControllerID'=>$request->input('ControllerID'),
                                     'KelompokLampu'=>$request->input('KelompokLampu'),
+                                    'Deskripsi' => $request->input('Deskripsi')
                 				]
                 			);
 
@@ -163,6 +165,7 @@ class TitikLampuController extends Controller
             $model->ControllerID = $request->input('ControllerID');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
             $model->KelompokLampu = $request->input('KelompokLampu');
+            $model->Deskripsi = $request->input('Deskripsi');
 
             $save = $model->save();
 
@@ -198,6 +201,7 @@ class TitikLampuController extends Controller
                                     'DigitalInput'=>$request->input('DigitalInput'),
                                     'ControllerID'=>$request->input('ControllerID'),
                                     'KelompokLampu'=>$request->input('KelompokLampu'),
+                                    'Deskripsi' => $request->input('Deskripsi')
                                 ]
                             );
 

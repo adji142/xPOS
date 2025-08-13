@@ -1,0 +1,2 @@
+ALTER TABLE `xpos`.`titiklampu` 
+ADD COLUMN `Deskripsi` longtext NULL AFTER `KelompokLampu`;

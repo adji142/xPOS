@@ -70,13 +70,25 @@ class PelangganController extends Controller
         $GrupPelanggan = $request->input('GrupPelanggan');
         $Search        = $request->input('Search');
 
+        $NoHP          = $request->input('NoTlp1');
+        $Email         = $request->input('Email');
+
+        $RecordOwnerID = "";
+
+        if(!empty($request->input('RecordOwnerID'))){
+            $RecordOwnerID = $request->input('RecordOwnerID');
+        }
+        else{
+            $RecordOwnerID =    Auth::user()->RecordOwnerID;
+        }
+
         $sql = "pelanggan.*, gruppelanggan.DiskonPersen";
         $pelanggan = Pelanggan::selectRaw($sql)
                         ->leftJoin('gruppelanggan', function ($value){
                             $value->on('pelanggan.KodeGrupPelanggan','=','gruppelanggan.KodeGrup')
                             ->on('pelanggan.RecordOwnerID','=','gruppelanggan.RecordOwnerID');
                         })
-                        ->where('pelanggan.RecordOwnerID','=',Auth::user()->RecordOwnerID);
+                        ->where('pelanggan.RecordOwnerID','=',$RecordOwnerID);
 
         if ($KodePelanggan != "") {
             $pelanggan->where('pelanggan.KodePelanggan','=',$KodePelanggan);
@@ -84,6 +96,13 @@ class PelangganController extends Controller
 
         if ($GrupPelanggan != "") {
             $pelanggan->where('pelanggan.KodeGrupPelanggan','=',$GrupPelanggan);
+        }
+        if(!empty($NoHP) ){
+            $pelanggan->where('pelanggan.NoTlp1','=',$NoHP);
+        }
+
+        if(!empty($Email) ){
+            $pelanggan->where('pelanggan.Email','=',$Email);
         }
 
         if (!empty($Search)) {

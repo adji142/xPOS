@@ -48,9 +48,9 @@
 						<div class="card card-custom gutter-b bg-white border-0" >
 							<div class="card-body" >
 								@if (count($titiklampu) > 0)
-                            		<form action="{{route('titiklampu-edit')}}" method="post">
+                            		<form action="{{route('titiklampu-editJson')}}" method="post">
                             	@else
-                                	<form action="{{route('titiklampu-store')}}" method="post">
+                                	<form action="{{route('titiklampu-storeJson')}}" method="post">
                             	@endif
                             		@csrf
 	                            	<div class="form-group row">
@@ -106,6 +106,15 @@
 	                            			
 	                            		</div>
 
+										<div class="col-md-12">
+											<label  class="text-body">Deskripsi</label>
+											<fieldset class="form-group mb-12">
+												<div id="Deskripsi">
+													{!! count($titiklampu) > 0 ? $titiklampu[0]['Deskripsi'] : '' !!}
+												</div>
+											</fieldset>
+										</div>
+
 	                            		<div class="col-md-12">
 	                            			<button type="submit" class="btn btn-success text-white font-weight-bold me-1 mb-1">Simpan</button>
 	                            		</div>
@@ -128,9 +137,58 @@
 @push('scripts')
 <script type="text/javascript">
 	$(function () {
+		const quill_Deskripsi = new Quill('#Deskripsi', {
+			theme: 'snow'
+		});
+
+
 		$(document).ready(function () {
 			$('#LevelHarga').select2();
-		})
+		});
+
+		jQuery('form').submit(function(e) {
+
+			e.preventDefault(); // Prevent default form submission
+
+			var form = $(this);
+			var formData = form.serializeArray();
+			var actionUrl = form.attr('action');
+			var submitButton = form.find("button[type='submit']");
+			submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Processing...');
+
+			var Deskripsi = quill_Deskripsi.root.innerHTML;
+			
+
+			formData.push({ name: "Deskripsi", value: Deskripsi });
+
+			$.ajax({
+				url: actionUrl,
+				type: 'POST',
+				data: formData,
+				dataType: 'json',
+				success: function(response) {
+					if(response.success == true){
+						swal.fire({
+							title: 'Success',
+							text: response.message,
+							icon: 'success',
+							confirmButtonText: 'OK'
+						}).then(function() {
+							window.location.href = "{{ route('titiklampu') }}";
+						});
+					} else {
+						swal.fire({
+							title: 'Error',
+							text: response.message,
+							icon: 'error',
+							confirmButtonText: 'OK'
+						}).then(function() {
+							submitButton.prop('disabled', false).html('Save');
+						});
+					}
+				},
+			});
+		});
 	})
 </script>
 @endpush
