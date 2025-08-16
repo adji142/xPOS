@@ -540,13 +540,15 @@ class PembayaranPenjualanController extends Controller
 				}
 
 				// Persediaan
-
+				if($oCompany->isPostingAkutansi == 0){
+					goto skipvalidasi;
+				}
 				$Setting = NEW SettingAccount();
 				$getSetting = $Setting->GetInventoryAccount($key["KodeItem"]);
 				
 				$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
 								->where('KodeRekening', $getSetting)->get();
-
+				// dd(count($validate));
 				if (count($validate) == 0) {
 					return response()->json(['error' => "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account"]);
 				}
@@ -633,7 +635,7 @@ class PembayaranPenjualanController extends Controller
 				return response()->json(['error' => "Akun Rekening Akutansi Pembayaran Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Metode Pembayaran"]);
 			}
 
-
+			skipvalidasi:
 
 			// Data transaksi yang akan dikirimkan ke Midtrans
 			$transaction_details = [

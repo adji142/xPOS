@@ -35,6 +35,7 @@ class SettingAccount extends Model
                       )->where('KodeItem',$KodeItem)
                       ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
                       ->first();
+      // dd($itemmaster);
       
       $oCompany = SettingAccount::selectRaw("COALESCE(InvAcctPersediaan,'') InvAcctPersediaan")
                   ->where('RecordOwnerID', Auth::user()->RecordOwnerID)->first();

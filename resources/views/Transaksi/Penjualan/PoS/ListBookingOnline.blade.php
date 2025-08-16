@@ -299,7 +299,11 @@ License: You must have a valid license purchased only from themeforest(the above
 <link href="{{ asset('devexpress/dx.light.css')}}" rel="stylesheet" type="text/css" />
 <script src="{{asset('devexpress/dx.all.js')}}"></script>
 <script src="{{asset('api/select2/select2.min.js')}}"></script>
-<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+@if (env('MIDTRANS_IS_PRODUCTION') == 'false')
+<script src="{{ env('MIDTRANS_DEV_URL') }}" data-client-key="{{ config('midtrans.client_key') }}"></script>
+@else
+<script src="{{ env('MIDTRANS_PROD_URL') }}" data-client-key="{{ config('midtrans.client_key') }}"></script>
+@endif
 <script src="{{asset('api/datatable/jquery.dataTables.min.js')}}"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">

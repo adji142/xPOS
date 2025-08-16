@@ -1,2 +1,1 @@
-ALTER TABLE `xpos`.`titiklampu` 
-ADD COLUMN `Deskripsi` longtext NULL AFTER `KelompokLampu`;
+ALTER TABLE `titiklampu` ADD COLUMN `Deskripsi` longtext NULL AFTER `KelompokLampu`;

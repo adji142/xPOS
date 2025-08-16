@@ -623,6 +623,50 @@ License: You must have a valid license purchased only from themeforest(the above
 														<input type="number" class="form-control" id="txtDurasiPaket_RubahDurasi" name="txtDurasiPaket_RubahDurasi" min="1" value="1">
 													</fieldset>
 												</div>
+												<div class="col-md-6">
+													<label  class="text-body">Harga / Jam</label>
+													<fieldset class="form-group mb-12">
+														<input type="text" class="form-control" id="txtHargaPerJam_TambahJam" name="txtHargaPerJam_TambahJam" readonly>
+													</fieldset>
+												</div>
+												<div class="col-md-6">
+													<label  class="text-body">Total Transaksi</label>
+													<fieldset class="form-group mb-12">
+														<input type="text" class="form-control" id="txtTotalTransaksi_TambahJam" name="txtTotalTransaksi_TambahJam" readonly>
+													</fieldset>
+												</div>
+												<div class="col-md-12">
+													<hr>
+												</div>
+												<div class="col-md-6">
+													<label  class="text-body">Metode Pembayaran</label>
+													<fieldset class="form-group mb-12">
+														<select name="cboMetodePembayaran_TambahJam" id="cboMetodePembayaran_TambahJam" class="cboMetodePembayaran_TambahJam js-states form-control bg-transparent" >
+															<option value="">Pilih Metode Pembayaran</option>
+															@foreach ($metodepembayaran as $mtd)
+																<option value="{{ $mtd->id }}">{{ $mtd->NamaMetodePembayaran }}</option>
+															@endforeach
+														</select>
+													</fieldset>
+												</div>
+												<div class="col-md-6">
+													<label  class="text-body">Refrensi</label>
+													<fieldset class="form-group mb-12">
+														<input type="text" class="form-control" id="txtRefrensi_TambahJam" name="txtRefrensi_TambahJam">
+													</fieldset>
+												</div>
+												<div class="col-md-6">
+													<label  class="text-body">Jumlah Bayar</label>
+													<fieldset class="form-group mb-12">
+														<input type="text" class="form-control" id="txtJumlahBayar_TambahJam" name="txtJumlahBayar_TambahJam">
+													</fieldset>
+												</div>
+												<div class="col-md-6">
+													<label  class="text-body">Kembalian</label>
+													<fieldset class="form-group mb-12">
+														<input type="text" class="form-control" id="txtJumlahKembalian_TambahJam" name="txtJumlahKembalian_TambahJam" readonly>
+													</fieldset>
+												</div>
 											</div>
 										</div>
 									</div>
@@ -983,7 +1027,12 @@ License: You must have a valid license purchased only from themeforest(the above
 <link href="{{ asset('devexpress/dx.light.css')}}" rel="stylesheet" type="text/css" />
 <script src="{{asset('devexpress/dx.all.js')}}"></script>
 <script src="{{asset('api/select2/select2.min.js')}}"></script>
-<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ $midtransclientkey }}"></script>
+
+@if (env('MIDTRANS_IS_PRODUCTION') == false)
+<script src="{{ env('MIDTRANS_DEV_URL') }}" data-client-key="{{ $midtransclientkey }}"></script>
+@else
+<script src="{{ env('MIDTRANS_PROD_URL') }}" data-client-key="{{ $midtransclientkey }}"></script>
+@endif
 <script src="{{asset('api/datatable/jquery.dataTables.min.js')}}"></script>
 
 </body>
@@ -1276,8 +1325,20 @@ License: You must have a valid license purchased only from themeforest(the above
 				console.log(`Detail clicked for item ID: ${itemId}`);
 			} else if (clickedClass.includes('btTambahJam')) {
 				// console.log(`Detail clicked for item ID: ${itemId}`);
-				jQuery('#txtNoTransaksi_RubahDurasi').val(NoTransaksi);
+				// jQuery('#txtNoTransaksi_RubahDurasi').val(NoTransaksi);
 				
+				console.log(`Detail clicked for item ID: ${itemId}`);
+				jQuery('#txtNoTransaksi_RubahDurasi').val(NoTransaksi);
+
+				const filteredBilling = _billing.filter(item => item.NoTransaksi == NoTransaksi);
+				const DataPaket = <?php echo $paket ?>;
+				const filteredPaket = DataPaket.filter(item => item.id == filteredBilling[0]['paketid']);
+
+				// console.log(filteredPaket)
+				jQuery('#txtHargaPerJam_TambahJam').val(formatNumber(filteredPaket[0]['HargaNormal']));
+				jQuery('#txtHargaPerJam_TambahJam').attr('originalvalue', filteredPaket[0]['HargaNormal']);
+				calculateTotalTambahJam();
+
 				jQuery('#LookupTambahDurasiPaket').modal({backdrop: 'static', keyboard: false})
 		    	jQuery('#LookupTambahDurasiPaket').modal('show');
 			}
@@ -1427,36 +1488,378 @@ License: You must have a valid license purchased only from themeforest(the above
 			});
 		});
 
+		jQuery(document).on('click', '.btTambahJam', function() {
+			const NoTransaksi = $(this).data('notransaksi');
+			const filteredBilling = _billing.filter(item => item.NoTransaksi == NoTransaksi);
+			const DataPaket = <?php echo $paket ?>;
+			const filteredPaket = DataPaket.filter(item => item.id == filteredBilling[0]['paketid']);
+			
+			jQuery('#txtHargaPerJam_TambahJam').val(formatNumber(filteredPaket[0]['HargaNormal']));
+			jQuery('#txtHargaPerJam_TambahJam').attr('originalvalue', filteredPaket[0]['HargaNormal']);
+			calculateTotalTambahJam();
+		});
+
+		jQuery('#txtDurasiPaket_RubahDurasi').on('input', function() {
+			calculateTotalTambahJam();
+		});
+
+
+		function calculateTotalTambahJam(){
+			const durasi = parseFloat(jQuery('#txtDurasiPaket_RubahDurasi').val()) || 0;
+			const harga = parseFloat(jQuery('#txtHargaPerJam_TambahJam').attr('originalvalue')) || 0;
+			const total = durasi * harga;
+
+			jQuery('#txtTotalTransaksi_TambahJam').val(formatNumber(total));
+			jQuery('#txtTotalTransaksi_TambahJam').attr('originalvalue', total);
+		}
+
+		jQuery('#cboMetodePembayaran_TambahJam').change(function () {
+			const metodepembayaran = <?php echo $metodepembayaran ?>;
+			const filteredData = metodepembayaran.filter(item => item.id == jQuery('#cboMetodePembayaran_TambahJam').val());
+			const midtransclientkey = "<?php echo $midtransclientkey ?>";
+
+			if (filteredData[0]['MetodeVerifikasi'] == "AUTO") {
+				if (midtransclientkey == "") {
+					Swal.fire({
+						icon: "error",
+						title: "Opps...",
+						text: "Client Key Midtrans belum di set, silahkan hubungi admin",
+					});
+					jQuery('#cboMetodePembayaran_TambahJam').val("").change();
+					return;
+				}
+				
+			}
+
+			if (filteredData[0]['TipePembayaran'] == "NON TUNAI") {
+				formatCurrency(jQuery('#txtJumlahBayar_TambahJam'), jQuery('#txtTotalTransaksi_TambahJam').attr('originalvalue'));
+				jQuery('#txtJumlahBayar_TambahJam').attr('readonly', true);
+			}
+			else{
+				formatCurrency(jQuery('#txtJumlahBayar_TambahJam'), "0");
+				jQuery('#txtJumlahBayar_TambahJam').attr('readonly', false);
+			}
+
+			SetEnableCommand();
+		});
 
 		jQuery('#frmUpdatePaket').on('submit', function(e) {
-			// 
-			jQuery('#btRubahDurasiPaket').text('Tunggu Sebentar');
-			jQuery('#btRubahDurasiPaket').attr('disabled',true);
-
 			e.preventDefault();
-			jQuery('#frmUpdatePaket').find(':disabled').prop('disabled', false);
+			
+			// SaveTambahJam(jQuery('#btRubahDurasiPaket'),'Tambah Jam');
+			const metodepembayaran = <?php echo $metodepembayaran ?>;
+			const filteredData = metodepembayaran.filter(item => item.id == jQuery('#cboMetodePembayaran_TambahJam').val());
+			const midtransclientkey = "<?php echo $midtransclientkey ?>";
 
-			const formData = new FormData(this);
+			console.log(filteredData)
+
+
+			if (filteredData[0]['MetodeVerifikasi'] == "AUTO") {
+				if (midtransclientkey == "") {
+					Swal.fire({
+						icon: "error",
+						title: "Opps...",
+						text: "Client Key Midtrans belum di set, silahkan hubungi admin",
+					});
+					return;
+				}
+
+				if (parseFloat(jQuery('#txtTotalTransaksi_TambahJam').attr("originalvalue")) > 0) {
+					PaymentGateWayTambahJam($('#btRubahDurasiPaket'),'Bayar');
+				}
+				else{
+					SaveTambahJam(jQuery('#btRubahDurasiPaket'),'Tambah Jam');
+				}
+				
+			}
+			else{
+				SaveTambahJam(jQuery('#btRubahDurasiPaket'),'Tambah Jam');
+			}
+		});
+
+		// jQuery('#frmUpdatePaket').on('submit', function(e) {
+		// 	// 
+		// 	jQuery('#btRubahDurasiPaket').text('Tunggu Sebentar');
+		// 	jQuery('#btRubahDurasiPaket').attr('disabled',true);
+
+		// 	e.preventDefault();
+		// 	jQuery('#frmUpdatePaket').find(':disabled').prop('disabled', false);
+
+		// 	const formData = new FormData(this);
+
+		// 	$.ajax({
+		// 		url: "{{route('billing-editdurasi')}}",
+		// 		type: 'post',
+		// 		data: formData,
+		// 		processData: false, // Prevent jQuery from automatically processing the data
+        // 		contentType: false,
+		// 		headers: {
+		// 			'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+		// 		},
+		// 		success: function(response) {
+		// 			// console.log('Form submitted successfully:', response);
+		// 			if (response.success) {
+		// 				Swal.fire({
+	    //                   icon: "success",
+	    //                   title: "Sukses",
+	    //                   text: "Data Berhasil disimpan, Selamat Melanjukan Permainan",
+	    //                 }).then((result) => {
+		// 				  location.reload();
+		// 				});
+		// 			}
+		// 			else{
+		// 				Swal.fire({
+		// 					icon: "error",
+		// 					title: "Opps...",
+		// 					text: response.message,
+		// 				}).then((result) => {
+		// 				//   location.reload();
+		// 					jQuery('#btRubahDurasiPaket').text('Tambah Paket');
+		// 					jQuery('#btRubahDurasiPaket').attr('disabled',false);
+
+		// 					jQuery('#LookupTambahDurasiPaket').modal({backdrop: 'static', keyboard: false})
+		//     				jQuery('#LookupTambahDurasiPaket').modal('show');
+		// 				});
+		// 			}
+		// 		},
+		// 		error: function(xhr) {
+		// 			// console.error('An error occurred:', xhr.responseText);
+		// 			Swal.fire({
+		// 				icon: "error",
+		// 				title: "Opps...",
+		// 				text: response.message,
+		// 			}).then((result) => {
+		// 			//   location.reload();
+		// 				jQuery('#btRubahDurasiPaket').text('Mulai Bermain');
+		// 				jQuery('#btRubahDurasiPaket').attr('disabled',false);
+
+		// 				jQuery('#LookupTambahDurasiPaket').modal({backdrop: 'static', keyboard: false})
+		//     			jQuery('#LookupTambahDurasiPaket').modal('show');
+		// 			});
+		// 		}
+		// 	});
+		// });
+
+		function PaymentGateWayTambahJam(ButonObject, ButtonDefaultText) {
+			// _custdisplayopened
+			const oCompany = <?php echo $company ?>;
+			const NoTransaksi = jQuery('#txtNoTransaksi_RubahDurasi').val();
+			const filteredData = _billing.filter(item => item.NoTransaksi == NoTransaksi);
+
+			const now = new Date();
+	    	const day = ("0" + now.getDate()).slice(-2);
+	    	const month = ("0" + (now.getMonth() + 1)).slice(-2);
+	    	const hours = now.getHours().toString().padStart(2, '0');
+			const minutes = now.getMinutes().toString().padStart(2, '0');
+			const seconds = now.getSeconds().toString().padStart(2, '0');
+
+	    	const NowDay = now.getFullYear()+"-"+month+"-"+day;
+	    	const _Tanggal = NowDay;
+	    	const _Jam = hours+":"+minutes+":"+seconds;
+
+			var oDetail = [];
+			const _ppnPercent = oCompany[0]["PPN"];
+			const durasi = parseFloat(jQuery('#txtDurasiPaket_RubahDurasi').val()) || 0;
+			const harga = parseFloat(jQuery('#txtHargaPerJam_TambahJam').attr('originalvalue')) || 0;
+			const total = durasi * harga;
+			let Pajak = 0;
+
+			var oItem = {
+				'NoUrut' : 0,
+				'KodeItem' : oCompany[0]["ItemHiburan"],
+				'Qty' : durasi,
+				'QtyKonversi' : durasi,
+				'Satuan' : 'JAM',
+				'Harga' : harga,
+				'Discount' : 0,
+				'HargaNet' : total + Pajak,
+				'BaseReff' : NoTransaksi,
+				'BaseLine' : -1,
+				'KodeGudang' : oCompany[0]['GudangPoS'],
+				'LineStatus': 'O',
+				'VatPercent' : _ppnPercent,
+				'HargaPokokPenjualan' : 0,
+				'Pajak' : Pajak,
+				'PajakHiburan' : 0,
+			}
+			oDetail.push(oItem);
+
+			var oData = {
+				'NoTransaksi' : "",
+				'TglTransaksi' : _Tanggal + " " + _Jam,
+				'TglJatuhTempo' : _Tanggal,
+				'NoReff' : 'POS-TAMBAHJAM',
+				'KodeSales' : filteredData.length > 0 ? filteredData[0]["KodeSales"] : '',
+				'KodePelanggan' : filteredData.length > 0 ? filteredData[0]["KodePelanggan"] : '',
+				'KodeTermin' : oCompany[0]['TerminBayarPoS'],
+				'Termin' : 0,
+				'TotalTransaksi' : total,
+				'Potongan' : 0,
+				'Pajak' : Pajak,
+				'PajakHiburan' : 0,
+				'Pembulatan' : 0,
+				'TotalPembelian' : total + Pajak,
+				'TotalRetur' : 0,
+				'TotalPembayaran' : parseFloat(jQuery('#txtJumlahBayar_TambahJam').attr("originalvalue")),
+				'Status' : 'C',
+				'Keterangan' : 'Tambah Jam',
+				'MetodeBayar' : jQuery('#cboMetodePembayaran_TambahJam').val(),
+				'ReffPembayaran' : $('#txtRefrensi_TambahJam').val(),
+				'Detail' : oDetail,
+				'Source': 'TAMBAHJAM'
+			}
+
+			console.log("Status Cust Display : " + _custdisplayopened)
+			if(_custdisplayopened){
+				// console.log('Cust Display Oppened');
+				localStorage.setItem('paymentgatewaydata', JSON.stringify(oData));
+				displayWindow.postMessage('paymentgateway', '*');
+			}
+			else{
+				fetch( "{{route('pembayaranpenjualan-createpayment')}}", {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-CSRF-TOKEN': '{{ csrf_token() }}'
+					},
+					body: JSON.stringify(oData)
+				})
+				.then(response => response.json())
+				.then(data => {
+					console.log(data);
+					if (data.snap_token) {
+						snap.pay(data.snap_token, {
+							onSuccess: function(result){
+								// console.log(result);
+								if(result.transaction_status == "cancel"){
+									Swal.fire({
+										icon: "error",
+										title: "Opps...",
+										text: "Pembayaran Dibatalkan",
+									})
+								}
+								else{
+									// order_id
+									jQuery('#txtRefrensi_TambahJam').val(result.order_id)
+									SaveTambahJam(ButonObject, ButtonDefaultText)
+								}
+								// Proses pembayaran sukses
+							},
+							onPending: function(result){
+								// console.log(result);
+								// Pembayaran tertunda
+							},
+							onError: function(result){
+								// console.log(result);
+								Swal.fire({
+									icon: "error",
+									title: "Opps...",
+									text: result,
+								})
+								// Pembayaran gagal
+							},
+							onClose: function(){
+								console.log('customer closed the popup without finishing the payment');
+							}
+						});
+					} else {
+						// alert('Error: ' + data.error);
+						Swal.fire({
+							icon: "error",
+							title: "Opps...",
+							text: data.error,
+						})
+					}
+				})
+				.catch(error => console.error('Error:', error));
+			}
+		}
+
+		function SaveTambahJam(ButonObject, ButtonDefaultText) {
+			ButonObject.text('Tunggu Sebentar.....');
+  			ButonObject.attr('disabled',true);
+
+			const oCompany = <?php echo $company ?>;
+			const NoTransaksi = jQuery('#txtNoTransaksi_RubahDurasi').val();
+			const filteredData = _billing.filter(item => item.NoTransaksi == NoTransaksi);
+
+			const now = new Date();
+	    	const day = ("0" + now.getDate()).slice(-2);
+	    	const month = ("0" + (now.getMonth() + 1)).slice(-2);
+	    	const hours = now.getHours().toString().padStart(2, '0');
+			const minutes = now.getMinutes().toString().padStart(2, '0');
+			const seconds = now.getSeconds().toString().padStart(2, '0');
+
+	    	const NowDay = now.getFullYear()+"-"+month+"-"+day;
+	    	const _Tanggal = NowDay;
+	    	const _Jam = hours+":"+minutes+":"+seconds;
+
+			var oDetail = [];
+			const _ppnPercent = oCompany[0]["PPN"];
+			const durasi = parseFloat(jQuery('#txtDurasiPaket_RubahDurasi').val()) || 0;
+			const harga = parseFloat(jQuery('#txtHargaPerJam_TambahJam').attr('originalvalue')) || 0;
+			const total = durasi * harga;
+			let Pajak = 0;
+
+			var oItem = {
+				'NoUrut' : 0,
+				'KodeItem' : oCompany[0]["ItemHiburan"],
+				'Qty' : durasi,
+				'QtyKonversi' : durasi,
+				'Satuan' : 'JAM',
+				'Harga' : harga,
+				'Discount' : 0,
+				'HargaNet' : total + Pajak,
+				'BaseReff' : NoTransaksi,
+				'BaseLine' : -1,
+				'KodeGudang' : oCompany[0]['GudangPoS'],
+				'LineStatus': 'O',
+				'VatPercent' : _ppnPercent,
+				'HargaPokokPenjualan' : 0,
+				'Pajak' : Pajak,
+				'PajakHiburan' : 0,
+			}
+			oDetail.push(oItem);
+
+			var oData = {
+				'NoTransaksi' : "",
+				'TglTransaksi' : _Tanggal + " " + _Jam,
+				'TglJatuhTempo' : _Tanggal,
+				'NoReff' : 'POS-TAMBAHJAM',
+				'KodeSales' : filteredData.length > 0 ? filteredData[0]["KodeSales"] : '',
+				'KodePelanggan' : filteredData.length > 0 ? filteredData[0]["KodePelanggan"] : '',
+				'KodeTermin' : oCompany[0]['TerminBayarPoS'],
+				'Termin' : 0,
+				'TotalTransaksi' : total,
+				'Potongan' : 0,
+				'Pajak' : Pajak,
+				'PajakHiburan' : 0,
+				'Pembulatan' : 0,
+				'TotalPembelian' : total + Pajak,
+				'TotalRetur' : 0,
+				'TotalPembayaran' : parseFloat(jQuery('#txtJumlahBayar_TambahJam').attr("originalvalue")),
+				'Status' : 'C',
+				'Keterangan' : 'Tambah Jam',
+				'MetodeBayar' : jQuery('#cboMetodePembayaran_TambahJam').val(),
+				'ReffPembayaran' : $('#txtRefrensi_TambahJam').val(),
+				'Detail' : oDetail,
+				'Source': 'TAMBAHJAM'
+			}
+
+			console.log(oData);
 
 			$.ajax({
-				url: "{{route('billing-editdurasi')}}",
-				type: 'post',
-				data: formData,
-				processData: false, // Prevent jQuery from automatically processing the data
-        		contentType: false,
+				async:false,
+				url: "{{route('fpenjualan-hiburanPoS')}}",
+				type: 'POST',
+				contentType: 'application/json',
 				headers: {
-					'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+					'X-CSRF-TOKEN': '{{ csrf_token() }}'
 				},
+				data: JSON.stringify(oData),
 				success: function(response) {
-					// console.log('Form submitted successfully:', response);
-					if (response.success) {
-						Swal.fire({
-	                      icon: "success",
-	                      title: "Sukses",
-	                      text: "Data Berhasil disimpan, Selamat Melanjukan Permainan",
-	                    }).then((result) => {
-						  location.reload();
-						});
+					if (response.success == true) {
+						PrintStruk(response.LastTRX);
 					}
 					else{
 						Swal.fire({
@@ -1464,32 +1867,26 @@ License: You must have a valid license purchased only from themeforest(the above
 							title: "Opps...",
 							text: response.message,
 						}).then((result) => {
-						//   location.reload();
-							jQuery('#btRubahDurasiPaket').text('Tambah Paket');
-							jQuery('#btRubahDurasiPaket').attr('disabled',false);
-
-							jQuery('#LookupTambahDurasiPaket').modal({backdrop: 'static', keyboard: false})
-		    				jQuery('#LookupTambahDurasiPaket').modal('show');
+							ButonObject.text(ButtonDefaultText);
+							ButonObject.attr('disabled',false);
 						});
 					}
 				},
-				error: function(xhr) {
-					// console.error('An error occurred:', xhr.responseText);
-					Swal.fire({
-						icon: "error",
-						title: "Opps...",
-						text: response.message,
-					}).then((result) => {
-					//   location.reload();
-						jQuery('#btRubahDurasiPaket').text('Mulai Bermain');
-						jQuery('#btRubahDurasiPaket').attr('disabled',false);
-
-						jQuery('#LookupTambahDurasiPaket').modal({backdrop: 'static', keyboard: false})
-		    			jQuery('#LookupTambahDurasiPaket').modal('show');
-					});
-				}
+                error: function(xhr, status, error) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Opps...",
+                        text: "Error: " + error,
+                    }).then((result) => {
+                        ButonObject.text(ButtonDefaultText);
+                        ButonObject.attr('disabled',false);
+                    });
+                }
 			});
-		});
+
+			ButonObject.text(ButtonDefaultText);
+			ButonObject.attr('disabled',false);
+		}
 
 		jQuery('#frmTambahMakanan').on('submit', function(e) {
 			// 
@@ -3203,7 +3600,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				'Detail' : oDetail
 			}
 
-			console.log("Status Cust Display : " + _custdisplayopened)
+			
 			if(_custdisplayopened){
 				// console.log('Cust Display Oppened');
 				localStorage.setItem('paymentgatewaydata', JSON.stringify(oData));
@@ -3272,27 +3669,6 @@ License: You must have a valid license purchased only from themeforest(the above
 				.catch(error => console.error('Error:', error));
 			}
 		}
-
-		// function PrintStruk(NoTransaksi) {
-
-		// 	// var link = "fpenjualan/printthermal/"+cellInfo.data.NoTransaksi;
-		// 	let url = "{{ url('') }}";
-		// 	// url.searchParams.append('NoTransaksi', NoTransaksi);
-		// 	url += "/fpenjualan/printthermal/"+NoTransaksi;
-		// 	// console.log(url);
-		// 	// // window.location.href = url.toString();
-		// 	// window.open(url, "_blank");
-		// 	// location.reload();
-
-		// 	const win = window.open(url, '_blank', 'width=800,height=600');
-		// 	win.onload = function () {
-		// 		win.print();
-		// 		win.onafterprint = function () {
-		// 			win.close();
-		// 			location.reload();
-		// 		};
-		// 	};
-		// }
 
 		function PrintStruk(NoTransaksi) {
 			let url = "{{ url('') }}";

@@ -37,7 +37,7 @@ class TableOrderController extends Controller
                         ]
                     );
 
-        $titiklampu = TitikLampu::selectRaw("titiklampu.*,
+        $titiklampu = TitikLampu::selectRaw("DISTINCT titiklampu.*,
                             CASE WHEN COALESCE(titiklampu.status,0) = 0 THEN 'KOSONG' ELSE 
                                 CASE WHEN titiklampu.Status = 1 THEN 'AKTIF' ELSE 
                                     CASE WHEN titiklampu.status = -1 THEN 'CHECKOUT' ELSE 
@@ -111,7 +111,9 @@ class TableOrderController extends Controller
                             $value->on('titiklampu.KelompokLampu','=','tkelompoklampu.KodeKelompok')
                             ->on('titiklampu.RecordOwnerID','=','tkelompoklampu.RecordOwnerID');
                         })
-                        ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)->get();
+                        ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
+                        ->where(DB::raw("COALESCE(fakturpenjualanheader.NoReff,'POS')"), 'POS')
+                        ->get();
         $titiklampuoption = TitikLampu::where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
                                 ->where('titiklampu.Status','=','0')->get();
         // $termin = $termin->paginate(4);
@@ -172,7 +174,7 @@ class TableOrderController extends Controller
                         ]
                     );
                     
-        $titiklampu = TitikLampu::selectRaw("titiklampu.*,
+        $titiklampu = TitikLampu::selectRaw("DISTINCT titiklampu.*,
                             CASE WHEN COALESCE(titiklampu.status,0) = 0 THEN 'KOSONG' ELSE 
                                 CASE WHEN titiklampu.Status = 1 THEN 'AKTIF' ELSE 
                                     CASE WHEN titiklampu.status = -1 THEN 'CHECKOUT' ELSE 
@@ -246,7 +248,9 @@ class TableOrderController extends Controller
                             $value->on('titiklampu.KelompokLampu','=','tkelompoklampu.KodeKelompok')
                             ->on('titiklampu.RecordOwnerID','=','tkelompoklampu.RecordOwnerID');
                         })
-                        ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)->get();
+                        ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
+                        ->where(DB::raw("COALESCE(fakturpenjualanheader.NoReff,'POS')"), 'POS')
+                        ->get();
         $titiklampuoption = TitikLampu::where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
                                 ->where('titiklampu.Status','=','0')->get();
         // $termin = $termin->paginate(4);
@@ -439,7 +443,7 @@ class TableOrderController extends Controller
                             ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                             ->update(
                                 [
-                                    'Status' => $Status ,
+                                    'Status' => 0 ,
                                     'JamSelesai' => DB::raw("CASE WHEN '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENIT' THEN NOW() ELSE JamSelesai END")
                                 ]
                             );

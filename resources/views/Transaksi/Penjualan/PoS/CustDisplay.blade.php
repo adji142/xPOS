@@ -460,7 +460,11 @@ License: You must have a valid license purchased only from themeforest(the above
 <link href="{{ asset('devexpress/dx.light.css')}}" rel="stylesheet" type="text/css" />
 <script src="{{asset('devexpress/dx.all.js')}}"></script>
 <script src="{{asset('api/select2/select2.min.js')}}"></script>
-<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ $midtransclientkey }}"></script>
+@if (env('MIDTRANS_IS_PRODUCTION') == false)
+<script src="{{ env('MIDTRANS_DEV_URL') }}" data-client-key="{{ $midtransclientkey }}"></script>
+@else
+<script src="{{ env('MIDTRANS_PROD_URL') }}" data-client-key="{{ $midtransclientkey }}"></script>
+@endif
 <script>
 	const itemsDiv = document.getElementById("items");
 	const totalAmountSpan = document.getElementById("totalAmount");

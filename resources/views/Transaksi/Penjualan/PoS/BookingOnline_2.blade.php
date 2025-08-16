@@ -7,7 +7,11 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css"/>
-  <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ $midtransclientkey }}"></script>
+  @if (env('MIDTRANS_IS_PRODUCTION') == false)
+<script src="{{ env('MIDTRANS_DEV_URL') }}" data-client-key="{{ $midtransclientkey }}"></script>
+@else
+<script src="{{ env('MIDTRANS_PROD_URL') }}" data-client-key="{{ $midtransclientkey }}"></script>
+@endif
     @php
         $defaultColor = $company->DefaultLandingPageColor;
         $themeColor = (!empty($defaultColor) && preg_match('/^#([A-Fa-f0-9]{6})$/', $defaultColor)) ? $defaultColor : '#0d6efd';
