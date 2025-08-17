@@ -519,66 +519,92 @@
 
   function renderMeja() {
     const $container = $('#mejaContainer').empty();
-    mejaData.forEach((meja, idx) => {
-      const $col = $('<div>').addClass('col-lg-6');
-      const $card = $('<div>').addClass('card card-custom');
-      const $body = $('<div>').addClass('card-body');
-      $body.append(`<h5>${meja.nama}</h5>`);
-      $body.append(`<p class="text-muted">${meja.deskripsi}</p>`);
 
-      const $fiturList = $('<ul class="list-unstyled">');
-      meja.fitur.forEach(f => $fiturList.append(`<li><i class="bi bi-dot"></i> ${f}</li>`));
-      $body.append($fiturList);
-      
-      const availableCount = meja.jadwal.filter(j => j.status === 'available').length;
+    // Group meja by KelompokMeja
+    const groupedMeja = mejaData.reduce((acc, meja) => {
+      const group = meja.KelompokMeja || 'Lainnya'; // Default group if not specified
+      if (!acc[group]) {
+        acc[group] = [];
+      }
+      acc[group].push(meja);
+      return acc;
+    }, {});
 
-      const $toggleBtn = $('<button>')
-        .addClass('btn btn-danger btn-sm mt-2')
-        .attr('data-bs-toggle', 'collapse')
-        .attr('data-bs-target', `#jadwal${idx}`)
-        .html(`${availableCount} Jadwal Tersedia <i class="bi bi-chevron-down"></i>`);
-      $body.append($toggleBtn);
+    // Render each group
+    for (const groupName in groupedMeja) {
+      // Add group title
+      $container.append(`<div class="col-12"><h4 class="text-primary mt-4">${groupName}</h4><hr></div>`);
 
-      const $jadwalDiv = $(`<div class="collapse mt-3" id="jadwal${idx}">`);
-      const $row = $('<div class="row g-2">');
+      const mejasInGroup = groupedMeja[groupName];
+      mejasInGroup.forEach((meja, idx) => {
+        const uniqueId = `${groupName.replace(/\s+/g, '-')}-${idx}`; // Create a unique ID for collapse
+        const $col = $('<div>').addClass('col-lg-6');
+        const $card = $('<div>').addClass('card card-custom');
+        const $body = $('<div>').addClass('card-body');
+        $body.append(`<h5>${meja.nama}</h5>`);
+        $body.append(`<p class="text-muted">${meja.deskripsi}</p>`);
 
-      meja.jadwal.forEach(j => {
-        const $slot = $('<div class="col-md-4">');
-        const $slotCard = $(`
-          <div class="border p-2 text-center slot-card">
-            <small>60 Menit</small><br><strong>${j.jam}</strong><br>Rp${j.harga.toLocaleString()}
-          </div>
-        `);
-
-        if (j.status === 'booked') {
-          $slotCard.addClass('bg-light text-muted').append('<br><em>Booked</em>');
-        } else {
-          $slotCard.on('click', function () {
-            // const selectedDate = currentSelectedDate.toISOString().split('T')[0];
-            const selectedDate = $('.date-btn.active').data('date');
-            const newItem = { id:meja.id,meja: meja.nama, jam: j.jam, harga: j.harga, date: selectedDate, jammulai:j.jammulai, jamselesai:j.jamselesai };
-            console.log(newItem);
-            if (cart.length > 0 && !isJamValid(j.jam)) {
-              alert('Anda hanya dapat memilih jadwal yang berurutan di hari yang sama.');
-              return;
-            }
-
-            $(this).toggleClass('selected');
-            cart.push(newItem);
-            updateCartUI();
-          });
+        const $fiturList = $('<ul class="list-unstyled">');
+        if(meja.fitur) {
+            meja.fitur.forEach(f => $fiturList.append(`<li><i class="bi bi-dot"></i> ${f}</li>`));
         }
+        $body.append($fiturList);
+        
+        const availableCount = meja.jadwal.filter(j => j.status === 'available').length;
 
-        $slot.append($slotCard);
-        $row.append($slot);
+        const $toggleBtn = $('<button>')
+          .addClass('btn btn-danger btn-sm mt-2')
+          .attr('data-bs-toggle', 'collapse')
+          .attr('data-bs-target', `#jadwal${uniqueId}`)
+          .html(`${availableCount} Jadwal Tersedia <i class="bi bi-chevron-down"></i>`);
+        $body.append($toggleBtn);
+
+        const $jadwalDiv = $(`<div class="collapse mt-3" id="jadwal${uniqueId}">`);
+        const $row = $('<div class="row g-2">');
+
+        meja.jadwal.forEach(j => {
+          const $slot = $('<div class="col-md-4">');
+          const $slotCard = $(`
+            <div class="border p-2 text-center slot-card">
+              <small>60 Menit</small><br><strong>${j.jam}</strong><br>Rp${j.harga.toLocaleString()}
+            </div>
+          `);
+
+          if (j.status === 'booked') {
+            $slotCard.addClass('bg-light text-muted').append('<br><em>Booked</em>');
+          } else {
+            $slotCard.on('click', function () {
+              const selectedDate = $('.date-btn.active').data('date');
+              const newItem = { id:meja.id,meja: meja.nama, jam: j.jam, harga: j.harga, date: selectedDate, jammulai:j.jammulai, jamselesai:j.jamselesai };
+              
+              if (cart.length > 0 && !isJamValid(j.jam)) {
+                alert('Anda hanya dapat memilih jadwal yang berurutan di hari yang sama.');
+                return;
+              }
+
+              $(this).toggleClass('selected');
+              // Simple add/remove from cart
+              const existingItemIndex = cart.findIndex(item => item.id === newItem.id && item.jam === newItem.jam);
+              if (existingItemIndex > -1) {
+                cart.splice(existingItemIndex, 1); // Remove if already selected
+              } else {
+                cart.push(newItem); // Add if not selected
+              }
+              updateCartUI();
+            });
+          }
+
+          $slot.append($slotCard);
+          $row.append($slot);
+        });
+
+        $jadwalDiv.append($row);
+        $body.append($jadwalDiv);
+        $card.append($body);
+        $col.append($card);
+        $container.append($col);
       });
-
-      $jadwalDiv.append($row);
-      $body.append($jadwalDiv);
-      $card.append($body);
-      $col.append($card);
-      $container.append($col);
-    });
+    }
   }
 
   function parseHour(jamStr) {
@@ -975,6 +1001,7 @@
         <h6 class="fw-bold">Kontak Kami</h6>
         <p class="small mb-1"><i class="bi bi-telephone-fill me-1"></i> {{ $company->NoTlp }}</p>
         <p class="small mb-1"><i class="bi bi-whatsapp me-1"></i> {{ $company->NoHP }}</p>
+        <p class="small mb-1"><i class="bi bi-envelope me-1"></i> {{ $userdata->email }}</p>
       </div>
 
       <!-- Copyright -->

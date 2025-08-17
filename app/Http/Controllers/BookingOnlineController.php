@@ -27,6 +27,7 @@ use App\Mail\SendMail;
 
 use Midtrans\Config;
 use Midtrans\Snap;
+use App\Models\UserRole;
 
 class BookingOnlineController extends Controller
 {
@@ -39,6 +40,20 @@ class BookingOnlineController extends Controller
         $paketTransaksi = Paket::where('RecordOwnerID','=',$idE)
                             ->where(DB::RAW("COALESCE(BisaDipesan, 'N')"), 'Y')->get();
         $user= User::where('RecordOwnerID','=',$idE)->first();
+
+
+        $userdata = UserRole::selectRaw("users.*")
+                ->leftJoin('users', function ($value){
+                    $value->on('userrole.userid','=','users.id')
+                    ->on('userrole.RecordOwnerID','=','users.RecordOwnerID');
+                })
+                ->leftJoin('roles', function ($value){
+                    $value->on('roles.id','=','userrole.roleid')
+                    ->on('roles.RecordOwnerID','=','userrole.RecordOwnerID');
+                })
+                ->where('roles.RoleName', 'SuperAdmin')
+                ->where('userrole.RecordOwnerID', $idE)
+                ->first();
 
         $midtransdata = MetodePembayaran::where('RecordOwnerID','=',$idE)
                             ->where('MetodeVerifikasi','=','AUTO')->first();
@@ -84,9 +99,14 @@ class BookingOnlineController extends Controller
             case 'bo1':
                 $idE = base64_decode($id); // ⬅️ decode di sini
                 $company = Company::where('KodePartner','=',$idE)->first();
-                $titikLampu = TitikLampu::where('BisaDipesan', 1)
-                ->where('RecordOwnerID', $idE)
-                ->get();
+                $titikLampu = TitikLampu::selectRaw("titiklampu.*, tkelompoklampu.NamaKelompok ")
+                                ->leftJoin('tkelompoklampu', function ($value){
+                                    $value->on('tkelompoklampu.KodeKelompok','=','titiklampu.KelompokLampu')
+                                    ->on('tkelompoklampu.RecordOwnerID','=','titiklampu.RecordOwnerID');
+                                })
+                                ->where('titiklampu.RecordOwnerID', $idE)
+                                ->where('titiklampu.BisaDipesan', 1)
+                                ->get();
                 $gallery = Company::select('ImageGallery1', 'ImageGallery2', 'ImageGallery3','ImageGallery4','ImageGallery5','ImageGallery6','ImageGallery7','ImageGallery8','ImageGallery9','ImageGallery10','ImageGallery11','ImageGallery12')
                 ->where('KodePartner', $idE)
                 ->get();
@@ -121,7 +141,8 @@ class BookingOnlineController extends Controller
                     'galleryImages' => $galleryImages,
                     'videoDisplay' => $videoDisplay,
                     'hargaMinimal'=> $paketTransaksi->min('HargaNormal'),
-                    'Tahun' => Carbon::now()->year
+                    'Tahun' => Carbon::now()->year,
+                    'userdata' => $userdata
                 ]);
 
                 break;

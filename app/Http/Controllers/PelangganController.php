@@ -157,7 +157,8 @@ class PelangganController extends Controller
             $model->Status = $request->input('Status');
             $model->PelangganID = $request->input('PelangganID');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
-            $model->AllowedDay = $request->input('AllowedDay');
+            $allowedDays = $request->input('AllowedDay');
+            $model->AllowedDay = is_array($allowedDays) ? implode(',', $allowedDays) : '';
             $model->ValidUntil = $request->input('ValidUntil');
 
             $save = $model->save();
@@ -207,7 +208,8 @@ class PelangganController extends Controller
             $model->Status = $request->input('Status');
             $model->PelangganID = $request->input('PelangganID');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
-            $model->AllowedDay = $request->input('AllowedDay');
+            $allowedDays = $request->input('AllowedDay');
+            $model->AllowedDay = is_array($allowedDays) ? implode(',', $allowedDays) : '';
             $model->ValidUntil = $request->input('ValidUntil');
 
             $save = $model->save();
@@ -264,7 +266,7 @@ class PelangganController extends Controller
 									'Keterangan' => $request->input('Keterangan'),
                                     'Status' => $request->input('Status'),
                                     'PelangganID' => $request->input('PelangganID'),
-                                    'AllowedDay' => $request->input('AllowedDay'),
+                                    'AllowedDay' => is_array($request->input('AllowedDay')) ? implode(',', $request->input('AllowedDay')) : '',
                                     'ValidUntil' => $request->input('ValidUntil')
                 				]
                 			);

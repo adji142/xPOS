@@ -17,6 +17,7 @@
 		<link href="{{asset('api/datatable/jquery.dataTables.min.css')}}" rel="stylesheet" type="text/css" />
 		<link href="{{asset('api/select2/select2.min.css')}}" rel="stylesheet" />
 		<link href="{{asset('api/multiple-select/multiple-select.min.css')}}" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 
 		<link rel="shortcut icon" href="{{ asset('media/logos/favicon.ico')}}" />

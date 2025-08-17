@@ -46,7 +46,7 @@ class DashboardController extends Controller
 
         $grafikpenjualan = FakturPenjualanHeader::selectRaw("DATE(fakturpenjualanheader.TglTransaksi) Tanggal ,SUM(TotalPembelian) Total")
                         ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                        ->whereBetween(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'),[$TglAwal, $TglAkhir])
+                        ->whereBetween(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'),[now()->startOfMonth(), now()->endOfMonth()])
                         ->where('Status','<>',DB::raw("'D'"))
                         ->groupBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
                         ->orderBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
@@ -103,39 +103,42 @@ class DashboardController extends Controller
         
         switch ($range) {
             case 'hari':
+                // Display data from the 1st to the end of the current month
                 $grafikpenjualan = FakturPenjualanHeader::selectRaw("DATE(fakturpenjualanheader.TglTransaksi) Tanggal ,SUM(TotalPembelian) Total")
                         ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                        ->whereDate(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'),today())
+                        ->whereBetween(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'), [now()->startOfMonth(), now()->endOfMonth()])
                         ->where('Status','<>',DB::raw("'D'"))
                         ->groupBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
                         ->orderBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
                         ->get();
                 break;
             case 'minggu':
-                $grafikpenjualan = FakturPenjualanHeader::selectRaw("DATE(fakturpenjualanheader.TglTransaksi) Tanggal ,SUM(TotalPembelian) Total")
+                // Display data from Monday to Sunday of the current week
+                $grafikpenjualan = FakturPenjualanHeader::selectRaw("DAYNAME(fakturpenjualanheader.TglTransaksi) Tanggal ,SUM(TotalPembelian) Total")
                         ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                        ->whereBetween(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'), [now()->startOfWeek(), now()->endOfWeek()])
+                        ->whereBetween(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'), [now()->startOfWeek(Carbon::MONDAY), now()->endOfWeek(Carbon::SUNDAY)])
                         ->where('Status','<>',DB::raw("'D'"))
-                        ->groupBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
-                        ->orderBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
+                        ->groupBy(DB::raw('DAYNAME(fakturpenjualanheader.TglTransaksi)'))
+                        ->orderBy(DB::raw('DAYOFWEEK(fakturpenjualanheader.TglTransaksi)'))
                         ->get();
                 break;
             case 'bulan':
-                $grafikpenjualan = FakturPenjualanHeader::selectRaw("DATE(fakturpenjualanheader.TglTransaksi) Tanggal ,SUM(TotalPembelian) Total")
+                // Display data from the beginning of the year to today, showing only the month names
+                $grafikpenjualan = FakturPenjualanHeader::selectRaw("MONTHNAME(fakturpenjualanheader.TglTransaksi) Tanggal ,SUM(TotalPembelian) Total")
                         ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                        ->whereMonth(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'), now()->month)
+                        ->whereBetween(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'), [now()->startOfYear(), now()])
                         ->where('Status','<>',DB::raw("'D'"))
-                        ->groupBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
-                        ->orderBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
+                        ->groupBy(DB::raw('MONTHNAME(fakturpenjualanheader.TglTransaksi)'))
+                        ->orderBy(DB::raw('MONTH(fakturpenjualanheader.TglTransaksi)'))
                         ->get();
                 break;
             case 'tahun':
-                $grafikpenjualan = FakturPenjualanHeader::selectRaw("DATE(fakturpenjualanheader.TglTransaksi) Tanggal ,SUM(TotalPembelian) Total")
+                // Display data per year from the first transaction date
+                $grafikpenjualan = FakturPenjualanHeader::selectRaw("YEAR(fakturpenjualanheader.TglTransaksi) Tanggal ,SUM(TotalPembelian) Total")
                         ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                        ->whereYear(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'), now()->year)
                         ->where('Status','<>',DB::raw("'D'"))
-                        ->groupBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
-                        ->orderBy(DB::raw('DATE(fakturpenjualanheader.TglTransaksi)'))
+                        ->groupBy(DB::raw('YEAR(fakturpenjualanheader.TglTransaksi)'))
+                        ->orderBy(DB::raw('YEAR(fakturpenjualanheader.TglTransaksi)'))
                         ->get();
                 break;
         }

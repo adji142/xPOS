@@ -98,6 +98,7 @@
 									<button class="ql-bold"></button>
 									<button class="ql-italic"></button>
 									<button class="ql-underline"></button>
+									<button class="ql-link"></button>
 									<button class="ql-image"></button>
 									<button class="ql-list" value="ordered"></button>
 									<button class="ql-list" value="bullet"></button>

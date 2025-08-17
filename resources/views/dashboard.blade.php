@@ -204,13 +204,11 @@
 
 
 @push('scripts')
-<script type="text/javascript">
+        <script type="text/javascript">
 
 	jQuery(document).ready(function() {
         var DataGrafikPenjualan = <?php echo $grafikpenjualan; ?>;
         var PerbandinganHarga = <?php echo json_encode($perbandinganharga); ?>;
-
-        console.log(PerbandinganHarga)
 
         var grafikPJTanggal = [];
         var grafikPJData = [];
@@ -220,7 +218,7 @@
             grafikPJData.push(DataGrafikPenjualan[index]["Total"]);
         }
 
-        generateGraph(grafikPJTanggal, grafikPJData);
+        generateGraph(grafikPJTanggal, grafikPJData, 'date');
         bindGridStockHabis(<?php echo $stockMinimum; ?>);
         bindGridPerbandinganStock(PerbandinganHarga);
         bindGridTopSpender(<?php echo $topspender; ?>);
@@ -241,7 +239,11 @@
                 // Update grafik
                 const label = res.grafik.map(g => g.Tanggal);
                 const value = res.grafik.map(g => g.Total);
-                updateGrafik(label, value);
+                var type = 'date';
+                if (range == 'minggu' || range == 'bulan' || range == 'tahun') {
+                    type = 'category';
+                }
+                updateGrafik(label, value, type);
             },
             error: function (err) {
                 $('#omzetDayByDay').text('');
@@ -251,10 +253,10 @@
     });
 
     let chartInstance = null;
-    function updateGrafik(labels, values) {
+    function updateGrafik(labels, values, type) {
         if (chartInstance) chartInstance.destroy();
 
-        chartInstance = new ApexCharts(document.querySelector("#chart-4"), {
+        var options = {
         series: [{
             name: 'Omzet',
             data: values
@@ -268,6 +270,7 @@
             curve: 'smooth'
         },
         xaxis: {
+            type: type,
             categories: labels
         },
         title: {
@@ -284,12 +287,13 @@
             strokeColors: "#fff",
             strokeWidth: 2
         }
-        });
+        };
 
+        chartInstance = new ApexCharts(document.querySelector("#chart-4"), options);
         chartInstance.render();
     }
 
-    function generateGraph(label, value) {
+    function generateGraph(label, value, type) {
         
         var options = {
         series: [{
@@ -305,7 +309,7 @@
             curve: 'smooth'
         },
         xaxis: {
-            type: 'date',
+            type: type,
             categories: label,
         },
         title: {
@@ -343,8 +347,8 @@
             },
         }
     };
-    var chart = new ApexCharts(document.querySelector("#chart-4"), options);
-    chart.render();
+    chartInstance = new ApexCharts(document.querySelector("#chart-4"), options);
+    chartInstance.render();
     }
 
     function bindGridStockHabis(data) {

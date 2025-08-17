@@ -1,0 +1,1 @@
+ALTER TABLE `pelanggan` MODIFY COLUMN `AllowedDay` varchar(55) NOT NULL AFTER `RecordOwnerID`,MODIFY COLUMN `ValidUntil` datetime(6) NOT NULL AFTER `AllowedDay`;

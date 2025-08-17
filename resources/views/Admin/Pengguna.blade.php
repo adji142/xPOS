@@ -69,21 +69,21 @@
                                                         <tr>
                                                             <th class=" no-sort text-end">
                                                                 @if ($v['Subscription'] == "Bill" && $v['StatusSubscription'=='Belum Bayar'])
-                                                                    <button class="btn btn-outline-primary" onclick="ShowDetail('{{ $v['KodePartner'] }}')">Buat Tagihan</button>
+                                                                    <button class="btn btn-outline-primary" onclick="ShowDetail('{{ $v['KodePartner'] }}')"  data-bs-toggle="tooltip" title="Buat Tagihan"><i class="bi bi-receipt"></i></button>
                                                                 @endif
 
                                                                 @if ($v['isSuspended'] == 0)
-                                                                    <button class="btn btn-outline-danger" onclick="Suspend('{{ $v['KodePartner'] }}')">Suspend</button>
+                                                                    <button class="btn btn-outline-danger btn-sm" onclick="Suspend('{{ $v['KodePartner'] }}')" data-bs-toggle="tooltip" title="Suspend"><i class="bi bi-pause-circle"></i></button>
                                                                 @else
-                                                                    <button class="btn btn-outline-warning" onclick="UnSuspend('{{ $v['KodePartner'] }}')">Buka Suspend</button>
+                                                                    <button class="btn btn-outline-warning btn-sm" onclick="UnSuspend('{{ $v['KodePartner'] }}')" data-bs-toggle="tooltip" title="Buka Suspend"><i class="bi bi-play-circle"></i></button>
                                                                 @endif
 
                                                                 @if ($v['StatusSubscription'] == "Perlu Aktivasi-danger")
-                                                                    <button class="btn btn-outline-success" onclick="Aktivasi('{{ $v['KodePartner'] }}')">Aktivasi</button>
+                                                                    <button class="btn btn-outline-success btn-sm" onclick="Aktivasi('{{ $v['KodePartner'] }}')" data-bs-toggle="tooltip" title="Aktivasi"><i class="bi bi-check-circle"></i></button>
                                                                 @endif
 
-                                                                <button class="btn btn-outline-success" onclick="RubahPaket('{{ $v['KodePartner'] }}')">Rubah Paket</button>
-                                                                <button class="btn btn-outline-danger" onclick="RemovePartner('{{ $v['KodePartner'] }}')">Delete</button>
+                                                                <button class="btn btn-outline-success btn-sm" onclick="RubahPaket('{{ $v['KodePartner'] }}')" data-bs-toggle="tooltip" title="Rubah Paket"><i class="bi bi-box-seam"></i></button>
+                                                                <button class="btn btn-outline-danger btn-sm" onclick="RemovePartner(\'{{ $v['KodePartner'] }}\' )" data-bs-toggle="tooltip" title="Delete"><i class="bi bi-trash"></i></button>
                                                             </th>
                                                             <th>{{ $v['KodePartner'] }}</th>
                                                             <th>{{ $v['NamaPartner'] }}</th>

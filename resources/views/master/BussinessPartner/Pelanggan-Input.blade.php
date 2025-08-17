@@ -205,28 +205,34 @@
 	                            			<fieldset class="form-group mb-12">
 	                            				<textarea class="form-control" id="Keterangan" name="Keterangan" rows="3" placeholder="Masukan Keterangan"></textarea>
 	                            			</fieldset>
-	                            		</div>
-
-										<div class="col-md-4">
-	                            			<label  class="text-body">Hari Spesial</label>
-	                            			<fieldset class="form-group mb-3">
-	                            				<select name="AllowedDay" id="AllowedDay" class="js-example-basic-single js-states form-control bg-transparent" name="AllowedDay" >
-													<option value="Monday" {{ count($pelanggan) > 0 ? $pelanggan[0]['AllowedDay'] == 'Monday' ? "selected" : '' :""}}>Senin</option>
-													<option value="Tuesday" {{ count($pelanggan) > 0 ? $pelanggan[0]['AllowedDay'] == 'Tuesday' ? "selected" : '' :""}}>Selasa</option>
-													<option value="Wednesday" {{ count($pelanggan) > 0 ? $pelanggan[0]['AllowedDay'] == 'Wednesday' ? "selected" : '' :""}}>Rabu</option>
-													<option value="Thursday" {{ count($pelanggan) > 0 ? $pelanggan[0]['AllowedDay'] == 'Thursday' ? "selected" : '' :""}}>Kamis</option>
-													<option value="Friday" {{ count($pelanggan) > 0 ? $pelanggan[0]['AllowedDay'] == 'Friday' ? "selected" : '' :""}}>Jumat</option>
-													<option value="Saturday" {{ count($pelanggan) > 0 ? $pelanggan[0]['AllowedDay'] == 'Saturday' ? "selected" : '' :""}}>Sabtu</option>
-													<option value="Sunday" {{ count($pelanggan) > 0 ? $pelanggan[0]['AllowedDay'] == 'Sunday' ? "selected" : '' :""}}>Minggu</option>
+																<select name="AllowedDay[]" id="AllowedDay" class="js-example-basic-single js-states form-control bg-transparent" multiple="multiple">
+													@php
+														$allowedDays = [];
+														if (count($pelanggan) > 0 && !empty($pelanggan[0]['AllowedDay'])) {
+															$allowedDays = explode(',', $pelanggan[0]['AllowedDay']);
+														}
+													@endphp
+													<option value="Monday" {{ in_array('Monday', $allowedDays) ? 'selected' : '' }}>Senin</option>
+													<option value="Tuesday" {{ in_array('Tuesday', $allowedDays) ? 'selected' : '' }}>Selasa</option>
+													<option value="Wednesday" {{ in_array('Wednesday', $allowedDays) ? 'selected' : '' }}>Rabu</option>
+													<option value="Thursday" {{ in_array('Thursday', $allowedDays) ? 'selected' : '' }}>Kamis</option>
+													<option value="Friday" {{ in_array('Friday', $allowedDays) ? 'selected' : '' }}>Jumat</option>
+													<option value="Saturday" {{ in_array('Saturday', $allowedDays) ? 'selected' : '' }}>Sabtu</option>
+													<option value="Sunday" {{ in_array('Sunday', $allowedDays) ? 'selected' : '' }}>Minggu</option>
 												</select>
+	</select>
 	                            			</fieldset>
 	                            		</div>
 
 										<div class="col-md-4">
 	                            			<label  class="text-body">Berlaku Sampai</label>
 	                            			<fieldset class="form-group mb-3">
-	                            				<input type="date" class="form-control" id="ValidUntil" name="ValidUntil" value="{{ old('ValidUntil', \Carbon\Carbon::parse($pelanggan[0]['ValidUntil'])->format('Y-m-d')) }}"> >
-	                            			</fieldset>
+												@if (count($pelanggan) > 0)
+	                            					<input type="date" class="form-control" id="ValidUntil" name="ValidUntil" value="{{ old('ValidUntil', \Carbon\Carbon::parse($pelanggan[0]['ValidUntil'])->format('Y-m>-d')) }}" >
+												@else
+	                            					<input type="date" class="form-control" id="ValidUntil" name="ValidUntil" >
+												@endif
+											</fieldset>
 	                            		</div>
 
 	                            		<div class="col-md-4">
