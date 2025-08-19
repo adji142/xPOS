@@ -218,7 +218,16 @@ License: You must have a valid license purchased only from themeforest(the above
 		   </div>
 	   </div>
    </header>
-   <div class="contentPOS">
+   <div class="contentPOS" style="
+    @if(isset($company) && $company[0]['TypeBackgraund'] == 'Color')
+        background-color: {{ $company[0]['Backgraund'] }};
+    @elseif(isset($company) && $company[0]['TypeBackgraund'] == 'Image')
+        background-image: url('{{ $company[0]['Backgraund'] }}');
+        background-size: auto;
+        background-repeat: repeat;
+        background-position: center;
+    @endif
+">
 	    <div class="container-fluid">
 			<div class="row">
 				<div class="col-xl-12 col-lg-8 col-md-8">

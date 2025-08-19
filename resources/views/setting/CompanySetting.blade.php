@@ -308,6 +308,23 @@
 					                            			</fieldset>
 					                            			
 					                            		</div>
+
+														<div class="col-md-6">
+															<label class="text-body">Type Background</label>
+															<fieldset class="form-group mb-3">
+																<select name="TypeBackgraund" id="TypeBackgraund" class="js-example-basic-single js-states form-control bg-transparent">
+																	<option value="Color" {{ count($company) > 0 && $company[0]['TypeBackgraund'] == 'Color' ? 'selected' : '' }}>Color</option>
+																	<option value="Image" {{ count($company) > 0 && $company[0]['TypeBackgraund'] == 'Image' ? 'selected' : '' }}>Image</option>
+																</select>
+															</fieldset>
+														</div>
+			
+														<div class="col-md-6">
+															<label class="text-body">Background</label>
+															<fieldset class="form-group mb-3" id="backgroundInput">
+																{{-- This content is generated dynamically by JavaScript --}}
+															</fieldset>
+														</div>
 													</div>
 												</div>
 
@@ -1400,6 +1417,9 @@ var oCompany;
 				]
 			});
 
+			// var initialType = jQuery('#TypeBackgraund').val();
+			updateBackgroundInput(oCompany[0]['TypeBackgraund']);
+
 		});
 
 		jQuery('form').submit(function(e) {
@@ -1478,6 +1498,69 @@ var oCompany;
 			if (jQuery(this).attr('readonly')) {
 				event.preventDefault();
 			}
+		});
+
+		// Function to update the background input field
+		function updateBackgroundInput(type) {
+			var backgroundInput = jQuery('#backgroundInput');
+			backgroundInput.empty(); // Clear current input
+
+			if (type === 'Image') {
+				var imageInputHTML = `
+					<fieldset class="form-group mb-3">
+						<textarea id="BackgraundBase64" name="BackgraundBase64" style="display: none;">{{ count($company) > 0 ? $company[0]['Backgraund'] : '' }}</textarea>
+						<input type="file" id="fileBackgraund" name="fileBackgraund" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+						<div class="xContainer">
+							<div id="BackgraundPreview" class="image_result_sample">
+								@if (count($company) > 0 && $company[0]['Backgraund'] != '')
+									<img src="{{$company[0]['Backgraund']}}">
+								@else
+									<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+								@endif
+							</div>
+						</div>
+					</fieldset>
+				`;
+				backgroundInput.append(imageInputHTML);
+
+				jQuery('#BackgraundPreview').click(function(){
+					$('#fileBackgraund').click();
+				});
+
+				jQuery("#fileBackgraund").change(function(){
+					var file = $(this)[0].files[0];
+					var img = new Image();
+					img.src = _URL.createObjectURL(file);
+					img.onload = function () {
+						// You can add width/height validation if needed
+					}
+					readURL(this, "BackgraundPreview");
+					encodeImagetoBase64(this, "BackgraundBase64");
+				});
+
+			} else { // Color
+				var input = jQuery('<input>').attr({
+					type: 'color',
+					class: 'form-control',
+					name: 'Backgraund',
+					id: 'Backgraund'
+				});
+
+				console.log(oCompany);
+				
+				if (oCompany && oCompany.length > 0 && oCompany[0]['TypeBackgraund'] === 'Color') {
+					input.val(oCompany[0]['Backgraund']);
+				}
+				else {
+					input.val('#ffffff'); // default color
+				}
+				backgroundInput.append(input);
+			}
+		}
+
+		// Event listener for when the selection changes
+		jQuery('#TypeBackgraund').on('change', function(){
+			updateBackgroundInput(jQuery(this).val());
 		});
 
 		jQuery('#btTestPrint').click(function () {

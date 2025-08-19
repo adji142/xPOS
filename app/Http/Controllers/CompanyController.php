@@ -229,7 +229,9 @@ class CompanyController extends Controller
                                     'TermAndConditionBookingOnline' => $request->input('TermAndConditionBookingOnline'),
                                     'Email' => $request->input('Email'),
                                     'DefaultLandingPageColor' => $request->input('DefaultLandingPageColor'),
-                                    'DefaultLandingPages' => $request->input('DefaultLandingPages')
+                                    'DefaultLandingPages' => $request->input('DefaultLandingPages'),
+                                    'TypeBackgraund' => $request->input('TypeBackgraund'),
+                                    'Backgraund' => empty($request->input('BackgraundBase64')) ? $request->input('Backgraund') : $request->input('BackgraundBase64')
                 				]
                 			);
 

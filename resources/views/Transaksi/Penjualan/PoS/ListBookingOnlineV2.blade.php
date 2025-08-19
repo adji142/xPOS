@@ -23,25 +23,6 @@
 	<div class="container-fluid">
 		<div class="row">
 			<div class="col-12 px-4">
-				<div class="row">
-					<div class="col-lg-12 col-xl-12 px-4">
-						<div class="card card-custom gutter-b bg-transparent shadow-none border-0" >
-							<div class="card-header align-items-center  border-bottom-dark px-0">
-								<div class="card-title mb-0">
-									<h3 class="card-label mb-0 font-weight-bold text-body">Booking List 
-									</h3>
-								</div>
-							    <div class="icons d-flex">
-									<a href="{{ url('delivery/form/-') }}" class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1">Tambah Data</a>
-								
-								</div>
-							</div>
-						
-						</div>
-
-
-					</div>
-				</div>
 
 				<div class="row">
 					<div class="col-12  px-4">

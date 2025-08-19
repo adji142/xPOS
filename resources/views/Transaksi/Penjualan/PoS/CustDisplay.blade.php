@@ -239,7 +239,16 @@ License: You must have a valid license purchased only from themeforest(the above
 <!--end::Head-->
 <!--begin::Body-->
 
-<body id="tc_body" class="header-fixed header-mobile-fixed subheader-enabled aside-enabled aside-fixed">
+<body id="tc_body" class="header-fixed header-mobile-fixed subheader-enabled aside-enabled aside-fixed" style="
+    @if(isset($company) && $company->TypeBackgraund == 'Color')
+        background-color: {{ $company->Backgraund }};
+    @elseif(isset($company) && $company->TypeBackgraund == 'Image')
+        background-image: url('{{ $company->Backgraund }}');
+        background-size: auto;
+        background-repeat: repeat;
+        background-position: center;
+    @endif
+">
     <header class="pos-header bg-white">
 		<div class="container-fluid">
 			<div class="row align-items-center">

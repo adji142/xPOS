@@ -123,7 +123,16 @@ License: You must have a valid license purchased only from themeforest(the above
 <!--end::Head-->
 <!--begin::Body-->
 
-<body id="tc_body" class="header-fixed header-mobile-fixed subheader-enabled aside-enabled aside-fixed">
+<body id="tc_body" class="header-fixed header-mobile-fixed subheader-enabled aside-enabled aside-fixed" style="
+    @if(isset($company) && $company[0]['TypeBackgraund'] == 'Color')
+        background-color: {{ $company[0]['Backgraund'] }};
+    @elseif(isset($company) && $company[0]['TypeBackgraund'] == 'Image')
+        background-image: url('{{ $company[0]['Backgraund'] }}');
+        background-size: auto;
+        background-repeat: repeat;
+        background-position: center;
+    @endif
+">
    <!-- Paste this code after body tag -->
    <!-- s -->
    <!-- pos header -->
