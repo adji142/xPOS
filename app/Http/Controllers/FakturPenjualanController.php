@@ -37,6 +37,7 @@ use App\Models\MenuRestoVariant;
 use App\Models\MenuRestoAddon;
 use App\Models\JournalHeader;
 use App\Models\JournalDetail;
+use App\Models\TableOrderFnB;
 
 class FakturPenjualanController extends Controller
 {
@@ -1354,6 +1355,20 @@ class FakturPenjualanController extends Controller
 										'JamSelesai' => DB::raw('DATE_ADD(JamMulai, INTERVAL DurasiPaket HOUR)')
 									]
 								);
+				}
+
+				if($jsonData['NoReff'] == "POS-FNB"){
+					$fnb = new TableOrderFnB();
+                    $fnb->NoTransaksi = $key['BaseReff'];
+                    $fnb->LineNumber = $key['NoUrut'];
+                    $fnb->KodeItem = $key['KodeItem'];
+                    $fnb->Qty = $key['Qty'];
+                    $fnb->Harga = $key['Harga'];
+                    $fnb->Tax = $key['Pajak'];
+                    $fnb->Discount = $key['Discount'];
+                    $fnb->LineTotal = $key['Qty'] * $key['HargaNet'];
+                    $fnb->RecordOwnerID = Auth::user()->RecordOwnerID;
+                    $fnb->save();
 				}
 
 				skip:

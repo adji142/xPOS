@@ -333,8 +333,13 @@ class TableOrderController extends Controller
             $model->DiscTotal = 0;// $request->input('DiscTotal');
             $model->NetTotal = 0;//$request->input('NetTotal');
             $model->JamMulai = Carbon::now();
-            if ($request->input('JenisPaket') != 'MENIT') {
+            if ($request->input('JenisPaket') == 'JAM') {
                 $model->JamSelesai = $currentDate->addHours($request->input('DurasiPaket'));
+                // var_dump($currentDate->addHours($request->input('DurasiPaket')));
+            }
+
+            if ($request->input('JenisPaket') == 'MENIT') {
+                $model->JamSelesai = $currentDate->addMinutes($request->input('DurasiPaket'));
                 // var_dump($currentDate->addHours($request->input('DurasiPaket')));
             }
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;

@@ -701,7 +701,7 @@
                             "Email": formData.email,
                             "NoTlp1": formData.noTelp,
                             "VoucherCode" : formData.voucherCode,
-                            "kodePartner": formData.kodePartner,
+                            "kodePartner": {{ $company->KodePartner }},
                             "ExtraRequest" : formData.extraRequest
                         };
                         

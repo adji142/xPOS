@@ -909,11 +909,11 @@ License: You must have a valid license purchased only from themeforest(the above
 															</td>
 														</tr>
 
-														<tr>
+														<tr style="display:none;">
 															<td style="text-align: right">Uang Muka / Titip </td>
 															<td>:</td>
 															<td style="text-align: right">
-																<input type="text" class="form-control" id="txtTotalUangMuka_Detail" name="txtTotalUangMuka_Detail" readonly>
+																<input type="text" class="form-control" id="txtTotalUangMuka_Detail" name="txtTotalUangMuka_Detail" readonly >
 															</td>
 														</tr>
 														
@@ -929,7 +929,7 @@ License: You must have a valid license purchased only from themeforest(the above
 											</div>
 										</div>
 
-										<div class="form-group row">
+										<div class="form-group row" id="sectionPayment">
 											<div class="col-md-6">
 												<label  class="text-body">Metode Pembayaran</label>
 												<fieldset class="form-group mb-12">
@@ -1045,6 +1045,15 @@ License: You must have a valid license purchased only from themeforest(the above
 																	<input type="text" class="form-control TotalText" id="txtDiskon_TambahMakan" name="txtDiskon_TambahMakan" readonly>
 																</td>
 															</tr>
+
+															<tr>
+																<td style="text-align: right">Pajak</td>
+																<td>:</td>
+																<td style="text-align: right">
+																	<input type="text" class="form-control TotalText" id="txtPajak_TambahMakan" name="txtPajak_TambahMakan" readonly>
+																</td>
+															</tr>
+
 															<tr>
 																<td style="text-align: right">Total Transaksi</td>
 																<td>:</td>
@@ -1668,6 +1677,9 @@ License: You must have a valid license purchased only from themeforest(the above
 					}
 				});
 
+				// sectionPayment
+				jQuery("#sectionPayment").hide();
+
 				jQuery('#LookupDetailOrder').modal({backdrop: 'static', keyboard: false})
 		    	jQuery('#LookupDetailOrder').modal('show');
 				console.log(`Detail clicked for item ID: ${itemId}`);
@@ -1708,12 +1720,13 @@ License: You must have a valid license purchased only from themeforest(the above
 				});
 			}
 
-			if (jQuery('#JenisPaket').val() == "MENIT") {
-				jQuery('#PembayaranSection').hide();
-			}
-			else{
-				jQuery('#PembayaranSection').show();
-			}
+			// if (jQuery('#JenisPaket').val() == "MENIT") {
+			// 	jQuery('#PembayaranSection').hide();
+			// }
+			// else{
+			// 	jQuery('#PembayaranSection').show();
+			// }
+			jQuery('#PembayaranSection').show();
 		});
 
 		jQuery('#paketid').change(function () {
@@ -1726,10 +1739,11 @@ License: You must have a valid license purchased only from themeforest(the above
 				jQuery('#JamHargaBaru').val(filteredData[0]["AkhirJamPerubahanHarga"]);
 			}
 
-			if (jQuery('#JenisPaket').val() != "MENIT") {
-				// GenerateTotal();
-				jQuery('#btMulaiBermain').text('Next >>');
-			}
+			jQuery('#btMulaiBermain').text('Next >>');
+			// if (jQuery('#JenisPaket').val() != "MENIT") {
+			// 	// GenerateTotal();
+			// 	jQuery('#btMulaiBermain').text('Next >>');
+			// }
 		});
 
 		jQuery('#DurasiPaket').change(function () {
@@ -1760,38 +1774,58 @@ License: You must have a valid license purchased only from themeforest(the above
 				success: function(response) {
 					// console.log('Form submitted successfully:', response);
 					if (response.success) {
-						if (jQuery('#JenisPaket').val() != "MENIT") {
-							$.ajax({
-								async:false,
-								url: "{{route('billing-repopulate')}}",
-								type: 'post',
-								data: formData,
-								processData: false, // Prevent jQuery from automatically processing the data
-								contentType: false,
-								headers: {
-									'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
-								},
-								success: function(oBilling) {
-									_billing = oBilling.data;
-									jQuery('#btCloseModalDetails').css('display', 'none');
-									jQuery('#LookupPilihPaket').modal('hide');
-									fnDetails(response.NoTransaksi, []);
+						$.ajax({
+							async:false,
+							url: "{{route('billing-repopulate')}}",
+							type: 'post',
+							data: formData,
+							processData: false, // Prevent jQuery from automatically processing the data
+							contentType: false,
+							headers: {
+								'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+							},
+							success: function(oBilling) {
+								_billing = oBilling.data;
+								jQuery('#btCloseModalDetails').css('display', 'none');
+								jQuery('#LookupPilihPaket').modal('hide');
+								fnDetails(response.NoTransaksi, []);
 
-									jQuery('#LookupDetailOrder').modal({backdrop: 'static', keyboard: false})
-		    						jQuery('#LookupDetailOrder').modal('show');
-								}
-							});
-						}
-						else{
-							Swal.fire({
-								icon: "success",
-								title: "Sukses",
-								text: "Data Berhasil disimpan, Selamat Bermain",
-							}).then((result) => {
-								location.reload();
+								jQuery('#LookupDetailOrder').modal({backdrop: 'static', keyboard: false})
+								jQuery('#LookupDetailOrder').modal('show');
+							}
+						});
+						// if (jQuery('#JenisPaket').val() != "MENIT") {
+						// 	$.ajax({
+						// 		async:false,
+						// 		url: "{{route('billing-repopulate')}}",
+						// 		type: 'post',
+						// 		data: formData,
+						// 		processData: false, // Prevent jQuery from automatically processing the data
+						// 		contentType: false,
+						// 		headers: {
+						// 			'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+						// 		},
+						// 		success: function(oBilling) {
+						// 			_billing = oBilling.data;
+						// 			jQuery('#btCloseModalDetails').css('display', 'none');
+						// 			jQuery('#LookupPilihPaket').modal('hide');
+						// 			fnDetails(response.NoTransaksi, []);
+
+						// 			jQuery('#LookupDetailOrder').modal({backdrop: 'static', keyboard: false})
+		    			// 			jQuery('#LookupDetailOrder').modal('show');
+						// 		}
+						// 	});
+						// }
+						// else{
+						// 	Swal.fire({
+						// 		icon: "success",
+						// 		title: "Sukses",
+						// 		text: "Data Berhasil disimpan, Selamat Bermain",
+						// 	}).then((result) => {
+						// 		location.reload();
 								
-							});
-						}
+						// 	});
+						// }
 					}
 					else{
 						Swal.fire({
@@ -2609,6 +2643,8 @@ License: You must have a valid license purchased only from themeforest(the above
 		});
 
 		function CalculateTotalTambahMakanan() {
+			const oCompany = <?php echo $company ?>;
+
 			var subtotal = 0;
 			var diskon = 0;
 			var total = 0;
@@ -2633,8 +2669,22 @@ License: You must have a valid license purchased only from themeforest(the above
 
 			jQuery('#txtSubTotal_TambahMakan').val(formatNumber(subtotal));
 			jQuery('#txtDiskon_TambahMakan').val(formatNumber(diskon));
-			jQuery('#txtTotalTransaksi_TambahMakan').val(formatNumber(total));
-			jQuery('#txtTotalTransaksi_TambahMakan').attr('originalvalue', total);
+
+			// txtPajak_TambahMakan
+			var pajak = 0;
+
+			var _ppnPercent = oCompany[0]["PPN"];
+			if (_ppnPercent > 0) {
+				pajak = (_ppnPercent / 100) * subtotal -diskon ;	
+			}
+
+			// console.log("NIlai Pajak: " + pajak);
+
+			jQuery('#txtPajak_TambahMakan').val(formatNumber(pajak));
+			jQuery('#txtPajak_TambahMakan').attr('originalvalue', pajak);
+
+			jQuery('#txtTotalTransaksi_TambahMakan').val(formatNumber(total + pajak));
+			jQuery('#txtTotalTransaksi_TambahMakan').attr('originalvalue', total + pajak);
 		}
 
 		jQuery('#LookupTambahMakanan').on('hidden.bs.modal', function () {
@@ -2733,9 +2783,9 @@ License: You must have a valid license purchased only from themeforest(the above
 
 			var StatusDocument = 'C';
 
-			if(JenisPaket != 'MENIT'){
-				StatusDocument = 'O';
-			}
+			// if(JenisPaket != 'MENIT'){
+			// 	StatusDocument = 'O';
+			// }
 
 			console.log(JenisPaket + " >> " + StatusDocument);
 
@@ -3094,19 +3144,20 @@ License: You must have a valid license purchased only from themeforest(the above
 						Swal.fire({
 	                      icon: "success",
 	                      title: "Sukses",
-	                      text: "Berhasil Checkout, Silahkan Melakukan Pembayaran",
+	                      text: "Berhasil Checkout, Ditunggu kedatangannya kembali",
 	                    }).then((result) => {
 						  location.reload();
 						});
 					}
 					else{
-						Swal.fire({
-							icon: "error",
-							title: "Opps...",
-							text: response.message,
-						}).then((result) => {
-						  location.reload();
-						});
+						location.reload();
+						// Swal.fire({
+						// 	icon: "error",
+						// 	title: "Opps...",
+						// 	text: response.message,
+						// }).then((result) => {
+						//   location.reload();
+						// });
 					}
 				}
 			});
@@ -3138,13 +3189,14 @@ License: You must have a valid license purchased only from themeforest(the above
 						});
 					}
 					else{
-						Swal.fire({
-							icon: "error",
-							title: "Opps...",
-							text: response.message,
-						}).then((result) => {
-						  location.reload();
-						});
+						// Swal.fire({
+						// 	icon: "error",
+						// 	title: "Opps...",
+						// 	text: response.message,
+						// }).then((result) => {
+						//   location.reload();
+						// });
+						location.reload();
 					}
 				}
 			});
@@ -3239,110 +3291,141 @@ License: You must have a valid license purchased only from themeforest(the above
 				_isFromBooking = true;
 			}
 			else{
-				if (filteredData[0]["JenisPaket"] != "MENIT") {
-					jQuery('#dtJamSelesai_Detail').text(genfnFormatingDate(filteredData[0]["JamSelesai"]));
-					_NewHargaNormal = filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"];
-					if (_ppnPercent > 0) {
-						_PPnNormal = (_ppnPercent / 100) * (filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"]);	
-					}
+				jQuery('#dtJamSelesai_Detail').text(genfnFormatingDate(filteredData[0]["JamSelesai"]));
+				_NewHargaNormal = filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"];
+				if (_ppnPercent > 0) {
+					_PPnNormal = (_ppnPercent / 100) * (filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"]);	
+				}
 
-					if (_PajakHiburanPercent > 0) {
-						_PajakHiburanNormal = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"]);	
-					}
+				if (_PajakHiburanPercent > 0) {
+					_PajakHiburanNormal = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"]);	
+				}
 
-					_SubTotal = _NewHargaNormal + _PPnNormal + _PajakHiburanNormal;
+				_SubTotal = _NewHargaNormal + _PPnNormal + _PajakHiburanNormal;
 
-					_TextTotalHargaNormal = filteredData[0]["DurasiPaket"] + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
-					_durasiPaket = filteredData[0]["DurasiPaket"];
+				_TextTotalHargaNormal = filteredData[0]["DurasiPaket"] + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
+				_durasiPaket = filteredData[0]["DurasiPaket"];
 
+				oCustomerDisplay["data"].push({
+					KodeItem : 'Paket',
+					NamaItem: filteredData[0]["NamaPaket"] + " " + _durasiPaket + " " + filteredPaket[0]["JenisPaket"],
+					Qty: _durasiPaket,
+					Harga: filteredPaket[0]["HargaNormal"]
+				});
+
+				// PPN
+				if(_PPnNormal > 0) {
 					oCustomerDisplay["data"].push({
-						KodeItem : 'Paket',
-						NamaItem: filteredData[0]["NamaPaket"] + " " + _durasiPaket + " " + filteredPaket[0]["JenisPaket"],
-						Qty: _durasiPaket,
-						Harga: filteredPaket[0]["HargaNormal"]
+						KodeItem : 'Pajak',
+						NamaItem: "PPN " + _ppnPercent + "% - " + filteredData[0]["NamaPaket"],
+						Qty: 1,
+						Harga: _PPnNormal
 					});
-
-					// PPN
-					if(_PPnNormal > 0) {
-						oCustomerDisplay["data"].push({
-							KodeItem : 'Pajak',
-							NamaItem: "PPN " + _ppnPercent + "% - " + filteredData[0]["NamaPaket"],
-							Qty: 1,
-							Harga: _PPnNormal
-						});
-					}
 				}
-				else {
-					var _diferentMinutes = 0;
+				// if (filteredData[0]["JenisPaket"] != "MENIT") {
+				// 	jQuery('#dtJamSelesai_Detail').text(genfnFormatingDate(filteredData[0]["JamSelesai"]));
+				// 	_NewHargaNormal = filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"];
+				// 	if (_ppnPercent > 0) {
+				// 		_PPnNormal = (_ppnPercent / 100) * (filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"]);	
+				// 	}
 
-					// Gunakan JamSelesai dari data jika ada, jika tidak gunakan Now
-					const actualJamSelesai = (filteredData[0]["JamSelesai"] == null ? Now : new Date(filteredData[0]["JamSelesai"]));
-					jQuery('#dtJamSelesai_Detail').text(genfnFormatingDate(actualJamSelesai.toISOString()));
+				// 	if (_PajakHiburanPercent > 0) {
+				// 		_PajakHiburanNormal = (_PajakHiburanPercent / 100) * (filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"]);	
+				// 	}
 
-					const totalDurasiMenit = Math.abs(Math.floor((actualJamSelesai - _JamMulaiPaket) / (1000 * 60)));
+				// 	_SubTotal = _NewHargaNormal + _PPnNormal + _PajakHiburanNormal;
 
-					if (_JamMulaiPaket < _maxPaketNormal) {
-						// Durasi Normal hanya dihitung dari mulai sampai maksimal normal
-						const durasiNormalMenit = Math.abs(Math.floor((_maxPaketNormal - _JamMulaiPaket) / (1000 * 60)));
+				// 	_TextTotalHargaNormal = filteredData[0]["DurasiPaket"] + " " + filteredPaket[0]["JenisPaket"] +" * " + _HargaNormal + " = ";
+				// 	_durasiPaket = filteredData[0]["DurasiPaket"];
 
-						let endTimeForBaru = actualJamSelesai;
-						if (actualJamSelesai < _maxPaketNormal) {
-							// Tidak perlu hitung paket baru karena belum melewati batas
-							_NewHargaBaru = 0;
-							_PPnBaru = 0;
-							_PajakHiburanBaru = 0;
-							_durasiPaketBaru = 0;
-						} else {
-							// Durasi Baru dari _maxPaketNormal sampai actualJamSelesai
-							const durasiBaruMenit = Math.abs(Math.floor((actualJamSelesai - _maxPaketNormal) / (1000 * 60)));
-							_NewHargaBaru = Math.abs(durasiBaruMenit * filteredPaket[0]["HargaBaru"]);
-							_TextTotalHargaBaru = durasiBaruMenit + " " + filteredPaket[0]["JenisPaket"] + " * " + _HargaBaru + " = ";
+				// 	oCustomerDisplay["data"].push({
+				// 		KodeItem : 'Paket',
+				// 		NamaItem: filteredData[0]["NamaPaket"] + " " + _durasiPaket + " " + filteredPaket[0]["JenisPaket"],
+				// 		Qty: _durasiPaket,
+				// 		Harga: filteredPaket[0]["HargaNormal"]
+				// 	});
 
-							if (_ppnPercent > 0) {
-								_PPnBaru = Math.abs((_ppnPercent / 100) * _NewHargaBaru);
-							}
-							if (_PajakHiburanPercent > 0) {
-								_PajakHiburanBaru = Math.abs((_PajakHiburanPercent / 100) * _NewHargaBaru);
-							}
+				// 	// PPN
+				// 	if(_PPnNormal > 0) {
+				// 		oCustomerDisplay["data"].push({
+				// 			KodeItem : 'Pajak',
+				// 			NamaItem: "PPN " + _ppnPercent + "% - " + filteredData[0]["NamaPaket"],
+				// 			Qty: 1,
+				// 			Harga: _PPnNormal
+				// 		});
+				// 	}
+				// }
+				// else {
+				// 	var _diferentMinutes = 0;
 
-							_durasiPaketBaru = durasiBaruMenit;
-						}
+				// 	// Gunakan JamSelesai dari data jika ada, jika tidak gunakan Now
+				// 	const actualJamSelesai = (filteredData[0]["JamSelesai"] == null ? Now : new Date(filteredData[0]["JamSelesai"]));
+				// 	jQuery('#dtJamSelesai_Detail').text(genfnFormatingDate(actualJamSelesai.toISOString()));
 
-						_NewHargaNormal = Math.abs(durasiNormalMenit * filteredPaket[0]["HargaNormal"]);
-						_TextTotalHargaNormal = durasiNormalMenit + " " + filteredPaket[0]["JenisPaket"] + " * " + _HargaNormal + " = ";
+				// 	const totalDurasiMenit = Math.abs(Math.floor((actualJamSelesai - _JamMulaiPaket) / (1000 * 60)));
 
-						if (_ppnPercent > 0) {
-							_PPnNormal = Math.abs((_ppnPercent / 100) * _NewHargaNormal);
-						}
-						if (_PajakHiburanPercent > 0) {
-							_PajakHiburanNormal = Math.abs((_PajakHiburanPercent / 100) * _NewHargaNormal);
-						}
+				// 	if (_JamMulaiPaket < _maxPaketNormal) {
+				// 		// Durasi Normal hanya dihitung dari mulai sampai maksimal normal
+				// 		const durasiNormalMenit = Math.abs(Math.floor((_maxPaketNormal - _JamMulaiPaket) / (1000 * 60)));
 
-						_durasiPaketLama = durasiNormalMenit;
-					} else {
-						// Jika mulai langsung melewati _maxPaketNormal, semua dianggap harga baru
-						const durasiBaruMenit = totalDurasiMenit;
-						_NewHargaNormal = 0;
-						_PPnNormal = 0;
-						_PajakHiburanNormal = 0;
-						_durasiPaketLama = 0;
+				// 		let endTimeForBaru = actualJamSelesai;
+				// 		if (actualJamSelesai < _maxPaketNormal) {
+				// 			// Tidak perlu hitung paket baru karena belum melewati batas
+				// 			_NewHargaBaru = 0;
+				// 			_PPnBaru = 0;
+				// 			_PajakHiburanBaru = 0;
+				// 			_durasiPaketBaru = 0;
+				// 		} else {
+				// 			// Durasi Baru dari _maxPaketNormal sampai actualJamSelesai
+				// 			const durasiBaruMenit = Math.abs(Math.floor((actualJamSelesai - _maxPaketNormal) / (1000 * 60)));
+				// 			_NewHargaBaru = Math.abs(durasiBaruMenit * filteredPaket[0]["HargaBaru"]);
+				// 			_TextTotalHargaBaru = durasiBaruMenit + " " + filteredPaket[0]["JenisPaket"] + " * " + _HargaBaru + " = ";
 
-						_NewHargaBaru = Math.abs(durasiBaruMenit * filteredPaket[0]["HargaBaru"]);
-						_TextTotalHargaBaru = durasiBaruMenit + " " + filteredPaket[0]["JenisPaket"] + " * " + _HargaBaru + " = ";
+				// 			if (_ppnPercent > 0) {
+				// 				_PPnBaru = Math.abs((_ppnPercent / 100) * _NewHargaBaru);
+				// 			}
+				// 			if (_PajakHiburanPercent > 0) {
+				// 				_PajakHiburanBaru = Math.abs((_PajakHiburanPercent / 100) * _NewHargaBaru);
+				// 			}
 
-						if (_ppnPercent > 0) {
-							_PPnBaru = Math.abs((_ppnPercent / 100) * _NewHargaBaru);
-						}
-						if (_PajakHiburanPercent > 0) {
-							_PajakHiburanBaru = Math.abs((_PajakHiburanPercent / 100) * _NewHargaBaru);
-						}
+				// 			_durasiPaketBaru = durasiBaruMenit;
+				// 		}
 
-						_durasiPaketBaru = durasiBaruMenit;
-					}
-					// Total akhir
-					_SubTotal = Math.abs(_NewHargaNormal + _NewHargaBaru + _PPnBaru + _PPnNormal + _PajakHiburanNormal + _PajakHiburanBaru);
-					_durasiPaket = totalDurasiMenit;
-				}
+				// 		_NewHargaNormal = Math.abs(durasiNormalMenit * filteredPaket[0]["HargaNormal"]);
+				// 		_TextTotalHargaNormal = durasiNormalMenit + " " + filteredPaket[0]["JenisPaket"] + " * " + _HargaNormal + " = ";
+
+				// 		if (_ppnPercent > 0) {
+				// 			_PPnNormal = Math.abs((_ppnPercent / 100) * _NewHargaNormal);
+				// 		}
+				// 		if (_PajakHiburanPercent > 0) {
+				// 			_PajakHiburanNormal = Math.abs((_PajakHiburanPercent / 100) * _NewHargaNormal);
+				// 		}
+
+				// 		_durasiPaketLama = durasiNormalMenit;
+				// 	} else {
+				// 		// Jika mulai langsung melewati _maxPaketNormal, semua dianggap harga baru
+				// 		const durasiBaruMenit = totalDurasiMenit;
+				// 		_NewHargaNormal = 0;
+				// 		_PPnNormal = 0;
+				// 		_PajakHiburanNormal = 0;
+				// 		_durasiPaketLama = 0;
+
+				// 		_NewHargaBaru = Math.abs(durasiBaruMenit * filteredPaket[0]["HargaBaru"]);
+				// 		_TextTotalHargaBaru = durasiBaruMenit + " " + filteredPaket[0]["JenisPaket"] + " * " + _HargaBaru + " = ";
+
+				// 		if (_ppnPercent > 0) {
+				// 			_PPnBaru = Math.abs((_ppnPercent / 100) * _NewHargaBaru);
+				// 		}
+				// 		if (_PajakHiburanPercent > 0) {
+				// 			_PajakHiburanBaru = Math.abs((_PajakHiburanPercent / 100) * _NewHargaBaru);
+				// 		}
+
+				// 		_durasiPaketBaru = durasiBaruMenit;
+				// 	}
+				// 	// Total akhir
+				// 	_SubTotal = Math.abs(_NewHargaNormal + _NewHargaBaru + _PPnBaru + _PPnNormal + _PajakHiburanNormal + _PajakHiburanBaru);
+				// 	_durasiPaket = totalDurasiMenit;
+				// }
 
 				_TotalUangMuka= filteredData[0]["TotalPembayaran"];
 			}
@@ -3506,7 +3589,8 @@ License: You must have a valid license purchased only from themeforest(the above
 			formatCurrency($('#txtDiscountFnB_Detail'), _DiscountFnB);
 			formatCurrency($('#txtDiscount_Detail'), Math.floor(_Discount));
 			formatCurrency($('#txtTotalUangMuka_Detail'), _TotalUangMuka);
-			formatCurrency($('#txtGrandTotal_Detail'), _SubTotal + _TotalMakanan+ - Math.floor(_Discount) - _TotalUangMuka);
+			formatCurrency($('#txtGrandTotal_Detail'), _SubTotal + _TotalMakanan+ - Math.floor(_Discount));
+			// _TotalUangMuka
 			// console.log(_SubTotal);
 			// console.log(_TotalMakanan);
 			// console.log(_Discount);
@@ -3516,7 +3600,8 @@ License: You must have a valid license purchased only from themeforest(the above
 			// console.log(_PajakHiburanBaru);
 			// console.log(_TotalUangMuka);
 			if(filteredData[0]["StatusBooking"] == 'BOOKING'){
-				formatCurrency($('#txtJumlahBayar_Detail'), _SubTotal + _TotalMakanan+ - Math.floor(_Discount) + _PPnNormal + _PPnBaru + _PajakHiburanNormal + _PajakHiburanBaru - _TotalUangMuka);
+				formatCurrency($('#txtJumlahBayar_Detail'), _SubTotal + _TotalMakanan+ - Math.floor(_Discount) + _PPnNormal + _PPnBaru + _PajakHiburanNormal + _PajakHiburanBaru);
+				// _TotalUangMuka
 			}
 			else{
 				formatCurrency($('#txtJumlahBayar_Detail'), 0);
@@ -3709,6 +3794,8 @@ License: You must have a valid license purchased only from themeforest(the above
 
 				// Update total input value
 				txtTotal.value = total.toFixed(2);
+
+				CalculateTotalTambahMakanan();
 			}
 
 			txtQty.addEventListener('input', calculateRowTotal);

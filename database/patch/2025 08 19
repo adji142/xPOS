@@ -1,3 +1,1 @@
-ALTER TABLE `xpos`.`company` 
-ADD COLUMN `TypeBackgraund` varchar(255) NULL AFTER `DefaultLandingPages`,
-ADD COLUMN `Backgraund` longtext NULL AFTER `TypeBackgraund`;
+ALTER TABLE `company` ADD COLUMN `TypeBackgraund` varchar(255) NULL AFTER `DefaultLandingPages`, ADD COLUMN `Backgraund` longtext NULL AFTER `TypeBackgraund`;
