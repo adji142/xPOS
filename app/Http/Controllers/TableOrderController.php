@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 use DB;
 use Log;
@@ -314,7 +315,8 @@ class TableOrderController extends Controller
 			$Month = $currentDate->format('m');
 
 			$numberingData = new DocumentNumbering();
-	        $NoTransaksi = $numberingData->GetNewDoc("TRDR","tableorderheader","NoTransaksi");
+            $random = random_int(10000, 99999);
+	        $NoTransaksi = $random . $numberingData->GetNewDoc("TRDR","tableorderheader","NoTransaksi");
 
 
             $model = new TableOrderHeader;
