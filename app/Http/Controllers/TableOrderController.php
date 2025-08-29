@@ -294,7 +294,8 @@ class TableOrderController extends Controller
             'itemmaster' => $itemmaster->get(),
             'midtransclientkey' => $midtransclientkey,
             'MetodePembayaranAutoID' => $MetodePembayaranAutoID,
-            'kelompoklampu' => $kelompoklampu
+            'kelompoklampu' => $kelompoklampu,
+            'oKodeSales' => Auth::user()->KodeSales
         ]);
     }
 

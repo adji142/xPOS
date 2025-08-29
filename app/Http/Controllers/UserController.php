@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\Roles;
 use App\Models\User;
 use App\Models\UserRole;
+use App\Models\Sales;
 
 class UserController extends Controller
 {
@@ -66,10 +67,13 @@ class UserController extends Controller
         
         $roles = Roles::selectRaw("*")
         		->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
-
+        // KodeSales
+        $salesdata = Sales::selectRaw("*")
+        		->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
         return view("master.Auth.User-Input",[
             'users' => $users,
             'rolesdata' => $roles,
+            'salesdata' => $salesdata
         ]);
     }
 
@@ -100,7 +104,8 @@ class UserController extends Controller
                 'password' => Hash::make($request->input('password')),
                 'Active' => $request->input('Active'),
                 'RecordOwnerID' => Auth::user()->RecordOwnerID,
-                'BranchID' => ''
+                'BranchID' => '',
+                'KodeSales' => $request->input('KodeSales')
             ]);
 
             if ($save) {
@@ -157,7 +162,8 @@ class UserController extends Controller
                 				[
 									'name' => $request->input('name'),
 									'email' => $request->input('email'),
-                                    'Active' => $request->input('Active')
+                                    'Active' => $request->input('Active'),
+                                    'KodeSales' => $request->input('KodeSales')
                 				]
                 			);
 
@@ -170,11 +176,11 @@ class UserController extends Controller
 							'roleid' => $KelompokAkses
         				]
         			);
-            		if (!$saveRole) {
-            			throw new \Exception('Gagal Menyimpan Data Akses');
-            			// DB::rollback();
-            			goto jump;
-            		}
+            		// if (!$saveRole) {
+            		// 	throw new \Exception('Gagal Menyimpan Data Akses');
+            		// 	// DB::rollback();
+            		// 	goto jump;
+            		// }
             	}
                 alert()->success('Success','Data User berhasil disimpan.');
                 return redirect('user');

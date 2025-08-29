@@ -86,7 +86,7 @@
 	                            			
 	                            		</div>
 
-	                            		<div class="col-md-6">
+	                            		<div class="col-md-4">
 	                            			<label  class="text-body">Kelompok Akses</label>
 	                            			<fieldset class="form-group mb-3">
 	                            				<select name="KelompokAkses" id="KelompokAkses" class="js-example-basic-single js-states form-control bg-transparent" name="state" required="">
@@ -105,7 +105,26 @@
 	                            			
 	                            		</div>
 
-	                            		<div class="col-md-6">
+										<div class="col-md-4">
+	                            			<label  class="text-body">Sales</label>
+	                            			<fieldset class="form-group mb-3">
+	                            				<select name="KodeSales" id="KodeSales" class="js-example-basic-single js-states form-control bg-transparent" name="state" required="">
+													<option value="">Pilih Sales</option>
+													@foreach($salesdata as $ko)
+														<option 
+                                                            value="{{ $ko->KodeSales }}"
+                                                            {{ count($users) > 0 ? $users[0]['KodeSales'] == $ko->KodeSales ? "selected" : '' :""}}
+                                                        >
+                                                            {{ $ko->NamaSales }}
+                                                        </option>
+													@endforeach
+													
+												</select>
+	                            			</fieldset>
+	                            			
+	                            		</div>
+
+	                            		<div class="col-md-4">
 	                            			<label  class="text-body">Status</label>
 	                            			<fieldset class="form-group mb-3">
 	                            				<select name="Active" id="Active" class="js-example-basic-single js-states form-control bg-transparent" name="state" >

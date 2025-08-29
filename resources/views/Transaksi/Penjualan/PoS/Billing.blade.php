@@ -1273,6 +1273,24 @@ License: You must have a valid license purchased only from themeforest(the above
 	const documentBaseUrl = "{{ route('document') }}";
 
     jQuery(function () {
+
+		let idleTime = 0; 
+		let maxIdle = 60 * 5; 
+		let isRefreshing = false; // flag untuk cegah looping
+
+		$(document).on('mousemove keypress click scroll', function() {
+			idleTime = 0;
+			isRefreshing = false; // reset flag kalau ada aktivitas
+		});
+
+		setInterval(function() {
+			idleTime++;
+			if (idleTime >= maxIdle && !isRefreshing) {
+				isRefreshing = true; // tandai sedang refresh
+				location.reload();
+			}
+		}, 1000);
+		
 		var _billing = [];
 		var _dataPaket = [];
 

@@ -1,0 +1,1 @@
+ALTER TABLE `xpos`.`users` ADD COLUMN `KodeSales` varchar(55) NULL AFTER `current_session_id`;

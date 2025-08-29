@@ -480,7 +480,7 @@ License: You must have a valid license purchased only from themeforest(the above
 														<select name="KodeSales" id="KodeSales" class="js-example-basic-single js-states form-control bg-transparent" >
 															<option value="">Pilih Table Guards</option>
 															@foreach ($sales as $sls)
-																<option value="{{ $sls->KodeSales }}">{{ $sls->NamaSales }}</option>
+																<option value="{{ $sls->KodeSales }}" {{ $sls->KodeSales == $oKodeSales ? 'selected' : '' }}>{{ $sls->NamaSales }}</option>
 															@endforeach
 														</select>
 													</fieldset>
@@ -1051,6 +1051,23 @@ License: You must have a valid license purchased only from themeforest(the above
 	var _custdisplayopened = false;
 
     jQuery(function () {
+		let idleTime = 0; 
+		let maxIdle = 60 * 5; 
+		let isRefreshing = false; // flag untuk cegah looping
+
+		$(document).on('mousemove keypress click scroll', function() {
+			idleTime = 0;
+			isRefreshing = false; // reset flag kalau ada aktivitas
+		});
+
+		setInterval(function() {
+			idleTime++;
+			if (idleTime >= maxIdle && !isRefreshing) {
+				isRefreshing = true; // tandai sedang refresh
+				location.reload();
+			}
+		}, 1000);
+
 		var _billing = [];
 		var _dataPaket = [];
 
@@ -3655,14 +3672,14 @@ License: You must have a valid license purchased only from themeforest(the above
 				'KodePelanggan' : filteredData[0]["KodePelanggan"],
 				'KodeTermin' : oCompany[0]['TerminBayarPoS'],
 				'Termin' : 0,
-				'TotalTransaksi' : jQuery('#txtSubTotal_Detail').attr("originalvalue"),
+				'TotalTransaksi' : Math.floor(jQuery('#txtSubTotal_Detail').attr("originalvalue")),
 				'Potongan' : jQuery('#txtDiscount_Detail').attr("originalvalue"),
 				'Pajak' : TotalPPN,
 				'PajakHiburan' : TotalPajakHiburan,
 				'Pembulatan' : 0,
-				'TotalPembelian' : jQuery('#txtGrandTotal_Detail').attr("originalvalue"),
+				'TotalPembelian' : Math.floor(jQuery('#txtGrandTotal_Detail').attr("originalvalue")),
 				'TotalRetur' : 0,
-				'TotalPembayaran' : jQuery('#txtJumlahBayar_Detail').attr("originalvalue"),
+				'TotalPembayaran' : Math.floor(jQuery('#txtJumlahBayar_Detail').attr("originalvalue")),
 				'Status' : Status,
 				'Keterangan' : '',
 				'MetodeBayar' : jQuery('#cboMetodePembayaran_Detail').val(),
