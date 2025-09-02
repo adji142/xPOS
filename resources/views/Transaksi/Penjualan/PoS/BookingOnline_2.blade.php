@@ -449,8 +449,15 @@
     for (let i = -3; i <= 3; i++) {
       const d = new Date(centerDate);
       d.setDate(d.getDate() + i);
-      const dateStr = d.toISOString().split('T')[0];
+      
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+
       const label = d.toLocaleDateString('id-ID', { weekday: 'short', day: '2-digit', month: 'short' });
+
+      console.log(dateStr + " >> " + label);
 
       const $btn = $('<button>')
         .addClass('btn btn-outline-dark btn-sm rounded-pill date-btn')
@@ -461,8 +468,8 @@
           $('.date-btn').removeClass('active');
           $(this).addClass('active');
 
-          currentSelectedDate = new Date();
-          fetchJadwal("{{ $company->KodePartner }}",$('#paketSelect').val(), d.toISOString().split('T')[0]);
+          currentSelectedDate = d;
+          fetchJadwal("{{ $company->KodePartner }}",$('#paketSelect').val(), dateStr);
         });
 
       $dateList.append($btn);

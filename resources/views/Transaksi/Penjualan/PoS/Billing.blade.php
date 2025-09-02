@@ -464,7 +464,7 @@ License: You must have a valid license purchased only from themeforest(the above
 															<option value="">Pilih Jenis Paket</option>
 															<option value="MENIT">Paket Menit</option>
 															<option value="JAM">Paket Jam</option>
-															<option value="PAKET">Paket Berlangganan</option>
+															{{-- <option value="PAKET">Paket Berlangganan</option> --}}
 														</select>
 													</fieldset>
 												</div>
@@ -514,16 +514,16 @@ License: You must have a valid license purchased only from themeforest(the above
 												<div class="col-md-4">
 													<label  class="text-body">Table Guards</label>
 													<fieldset class="form-group mb-12">
-														<select name="KodeSales" id="KodeSales" class="js-example-basic-single js-states form-control bg-transparent" >
+														<select name="KodeSales" id="KodeSales" class="js-example-basic-single js-states form-control bg-transparent" {{ $oKodeSales != '' ? 'disabled' : '' }}>
 															<option value="">Pilih Table Guards</option>
 															@foreach ($sales as $sls)
-																<option value="{{ $sls->KodeSales }}">{{ $sls->NamaSales }}</option>
+																<option value="{{ $sls->KodeSales }}" {{ $sls->KodeSales == $oKodeSales ? 'selected' : '' }}>{{ $sls->NamaSales }}</option>
 															@endforeach
 														</select>
 													</fieldset>
 												</div>
 												<div class="col-md-4">
-													<label  class="text-body">Durasi (Jam)</label>
+													<label  class="text-body" id= "lblDurasiPaket">Durasi (Jam)</label>
 													<fieldset class="form-group mb-12">
 														<input type="number" class="form-control" id="DurasiPaket" name="DurasiPaket" min="1" value="1">
 													</fieldset>
@@ -831,6 +831,7 @@ License: You must have a valid license purchased only from themeforest(the above
 																<th>Qty</th>
 																<th>Harga</th>
 																<th>Diskon</th>
+																<th>Pajak</th>
 																<th>Total</th>
 
 																<!-- Other Info -->
@@ -1275,7 +1276,7 @@ License: You must have a valid license purchased only from themeforest(the above
     jQuery(function () {
 
 		let idleTime = 0; 
-		let maxIdle = 60 * 5; 
+		let maxIdle = 60 * 2; 
 		let isRefreshing = false; // flag untuk cegah looping
 
 		$(document).on('mousemove keypress click scroll', function() {
@@ -1641,9 +1642,9 @@ License: You must have a valid license purchased only from themeforest(the above
 				// LookupDetailOrder
 				const table = jQuery('#TablePenjualan').DataTable({
 					columnDefs: [
-						{ targets: 5, visible: false },
 						{ targets: 6, visible: false },
 						{ targets: 7, visible: false },
+						{ targets: 8, visible: false },
 					]
 				});
 				var oMakananData = [];
@@ -1669,6 +1670,7 @@ License: You must have a valid license purchased only from themeforest(the above
 									`<span data-raw="${item.Qty}">${formatNumber(item.Qty)}</span>`,
 									`<span data-raw="${item.Harga}">${formatNumber(item.Harga)}</span>`,
 									`<span data-raw="${item.Discount}">${formatNumber(item.Discount)}</span>`,
+									`<span data-raw="${item.Tax}">${formatNumber(item.Tax)}</span>`,
 									`<span data-raw="${item.LineTotal}">${formatNumber(item.LineTotal)}</span>`,
 									item.KodeItem,
 									item.HargaPokokPenjualan,
@@ -1738,12 +1740,51 @@ License: You must have a valid license purchased only from themeforest(the above
 				});
 			}
 
-			// if (jQuery('#JenisPaket').val() == "MENIT") {
-			// 	jQuery('#PembayaranSection').hide();
-			// }
-			// else{
-			// 	jQuery('#PembayaranSection').show();
-			// }
+			if (jQuery('#JenisPaket').val() == "MENIT") {
+				// jQuery('#PembayaranSection').hide();
+				jQuery('#lblDurasiPaket').text('Durasi (Menit)');
+
+				// ...existing code...
+				var now = new Date();
+				var formattedNow = now.getFullYear() + '-' +
+					String(now.getMonth() + 1).padStart(2, '0') + '-' +
+					String(now.getDate()).padStart(2, '0') + ' ' +
+					String(now.getHours()).padStart(2, '0') + ':' +
+					String(now.getMinutes()).padStart(2, '0') + ':' +
+					String(now.getSeconds()).padStart(2, '0');
+				// Use formattedNow instead of jQuery('#JamRequest').val()
+				
+				// ...existing code...
+				// Get Maximal Order
+				$.ajax({
+					url: "{{ route('billing-maxtime') }}",
+					type: 'POST',
+					data: {
+						_token: '{{ csrf_token() }}',
+						mejaID: jQuery('#tableid').val(),
+						JamRequest: formattedNow
+					},
+					success: function(response) {
+						if (response.success) {
+							if(response.MaximalOrder > 0){
+								jQuery('#DurasiPaket').val(response.MaximalOrder);
+								jQuery("#DurasiPaket").attr("max", response.MaximalOrder);
+							}
+						} 
+					},
+					error: function(xhr) {
+						Swal.fire({
+							icon: "error",
+							title: "Opps...",
+							text: xhr.responseText,
+						});
+					}
+				});
+			}
+			else{
+				// jQuery('#PembayaranSection').show();
+				jQuery('#lblDurasiPaket').text('Durasi (Jam)');
+			}
 			jQuery('#PembayaranSection').show();
 		});
 
@@ -3509,6 +3550,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 			// Get From Booking :
 			console.log(oData)
+			var TotalTaxmakanan = 0;
 			for (let index = 0; index < oData.length; index++) {
 				oCustomerDisplay["data"].push({
 					KodeItem : 'Booking',
@@ -3517,7 +3559,15 @@ License: You must have a valid license purchased only from themeforest(the above
 					Harga: oData[index]['HargaJual'],
 				});
 				_TotalMakanan += oData[index]["LineTotal"];
+				TotalTaxmakanan += oData[index]["Tax"];
 			}
+
+			oCustomerDisplay["data"].push({
+				KodeItem : 'Pajak Makanan',
+				NamaItem: 'Pajak Makanan',
+				Qty: 1,
+				Harga: TotalTaxmakanan,
+			});
 
 			// Calculate Discount
 
@@ -3640,12 +3690,12 @@ License: You must have a valid license purchased only from themeforest(the above
 			}
 
 			oCustomerDisplay['Total'] = _SubTotal;
-			oCustomerDisplay['Tax'] = _PPnNormal + _PPnBaru + _PajakHiburanNormal + _PajakHiburanBaru;
+			oCustomerDisplay['Tax'] = _PPnNormal + _PPnBaru + _PajakHiburanNormal + _PajakHiburanBaru + TotalTaxmakanan; 
 			oCustomerDisplay['UangMuka'] = _TotalUangMuka;
 			oCustomerDisplay['Discount'] = Math.floor(_Discount);
-			oCustomerDisplay['Net'] = _SubTotal + _TotalMakanan+ - Math.floor(_Discount) + _PajakHiburanNormal + _PajakHiburanBaru - _TotalUangMuka
+			oCustomerDisplay['Net'] = _SubTotal + _TotalMakanan - Math.floor(_Discount);
 
-			// console.log(JSON.stringify(oCustomerDisplay))
+			console.log(oCustomerDisplay)
 			
 			localStorage.setItem('PoSData', JSON.stringify(oCustomerDisplay));
 

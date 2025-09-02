@@ -296,7 +296,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-xl-5 col-lg-8 col-md-8">
+				<div class="col-xl-12 col-lg-8 col-md-8">
 					<div class="card card-custom gutter-b bg-white border-0" >
 						<div class="card-body">
 							<div class="row">
@@ -310,7 +310,7 @@ License: You must have a valid license purchased only from themeforest(the above
 						</div>	
 					</div>
 				</div>
-				<div class="col-xl-5 col-lg-8 col-md-8" style ="display:none;">
+				<div class="col-xl-12 col-lg-8 col-md-8" style ="display:none;">
 					<div class="card card-custom gutter-b bg-white border-0" >
 						<div class="card-body">
 							<div class="row">
@@ -368,7 +368,7 @@ License: You must have a valid license purchased only from themeforest(the above
 						</div>	
 					</div>
 				</div>
-				<div class="col-xl-4 col-lg-8 col-md-8">
+				<div class="col-xl-6 col-lg-8 col-md-8">
 					<div class="card card-custom gutter-b bg-white border-0" >
 						<div class="card-body">
 							<div class="row">
@@ -395,7 +395,7 @@ License: You must have a valid license purchased only from themeforest(the above
 						</div>	
 					</div>
 				</div>
-				<div class="col-xl-3 col-lg-4 col-md-4">
+				<div class="col-xl-6 col-lg-4 col-md-4">
 					<div class="card card-custom gutter-b bg-white border-0">
 						<div class="card-body" >
 							<div class="resulttable-pos">
@@ -433,7 +433,7 @@ License: You must have a valid license purchased only from themeforest(the above
 										</tr>
 										<tr class="d-flex align-items-center justify-content-between">
 											<th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">
-													Tax
+													Tax (P. Hiburan, PPN, P. Makanan)
 											</th>
 											<td class="border-0 justify-content-end d-flex text-dark font-size-base">
 												<input type="text" name="_TotalTax" id="_TotalTax" value="0" class="form-control TotalText">
@@ -771,9 +771,12 @@ License: You must have a valid license purchased only from themeforest(the above
 
 
 	function createYouTubePlayer(videoId, index) {
+		const slidesContainer = document.getElementById('slidesContainer');
+		const containerWidth = slidesContainer.clientWidth;
+		const containerHeight = slidesContainer.clientHeight;
 		ytPlayers[index] = new YT.Player(`ytplayer-${index}`, {
-			height: '360',
-			width: '640',
+			height: containerHeight,
+			width: containerWidth,
 			videoId: videoId,
 			playerVars: {
 				autoplay: 0,

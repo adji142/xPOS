@@ -894,6 +894,13 @@
 															</fieldset>
 														</div>
 
+														<div class="col-md-12">
+															<label class="text-body">Running Text Self Services</label>
+															<fieldset class="form-group mb-3">
+																<input type="text" class="form-control" id="RunningTextSelfServices" name="RunningTextSelfServices" value="{{ count($company) > 0 ? $company[0]['RunningTextSelfServices'] : "" }}">
+															</fieldset>
+														</div>
+
 													</div>
 												</div>
 

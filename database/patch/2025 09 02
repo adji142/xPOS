@@ -1,0 +1,1 @@
+ALTER TABLE `xpos`.`company` ADD COLUMN `RunningTextSelfServices` longtext NULL AFTER `Backgraund`;

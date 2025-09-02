@@ -231,7 +231,8 @@ class CompanyController extends Controller
                                     'DefaultLandingPageColor' => $request->input('DefaultLandingPageColor'),
                                     'DefaultLandingPages' => $request->input('DefaultLandingPages'),
                                     'TypeBackgraund' => $request->input('TypeBackgraund'),
-                                    'Backgraund' => empty($request->input('BackgraundBase64')) ? $request->input('Backgraund') : $request->input('BackgraundBase64')
+                                    'Backgraund' => empty($request->input('BackgraundBase64')) ? $request->input('Backgraund') : $request->input('BackgraundBase64'),
+                                    'RunningTextSelfServices' => empty($request->input('RunningTextSelfServices')) ? $request->input('RunningTextSelfServices') : $request->input('RunningTextSelfServices')
                 				]
                 			);
 

@@ -21,6 +21,7 @@ use App\Models\MetodePembayaran;
 use App\Models\ItemMaster;
 use App\Models\KelompokLampu;
 use App\Models\GrupPelanggan;
+use App\Models\BookingOnline;
 
 class TableOrderController extends Controller
 {
@@ -157,7 +158,8 @@ class TableOrderController extends Controller
             'midtransclientkey' => $midtransclientkey,
             'MetodePembayaranAutoID' => $MetodePembayaranAutoID,
             'kelompoklampu' => $kelompoklampu,
-            'gruppelanggan' => $gruppelanggan
+            'gruppelanggan' => $gruppelanggan,
+            'oKodeSales' => Auth::user()->KodeSales
         ]);
     }
 
@@ -337,12 +339,12 @@ class TableOrderController extends Controller
             $model->NetTotal = 0;//$request->input('NetTotal');
             $model->JamMulai = Carbon::now();
             if ($request->input('JenisPaket') == 'JAM') {
-                $model->JamSelesai = $currentDate->addHours($request->input('DurasiPaket'));
+                $model->JamSelesai = $currentDate->addHours($request->input('DurasiPaket'))->subMinute();
                 // var_dump($currentDate->addHours($request->input('DurasiPaket')));
             }
 
             if ($request->input('JenisPaket') == 'MENIT') {
-                $model->JamSelesai = $currentDate->addMinutes($request->input('DurasiPaket'));
+                $model->JamSelesai = $currentDate->addMinutes($request->input('DurasiPaket'))->subMinute();
                 // var_dump($currentDate->addHours($request->input('DurasiPaket')));
             }
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
@@ -709,5 +711,26 @@ class TableOrderController extends Controller
         $data['data'] = $titiklampu;
         return response()->json($data);
         
+    }
+
+    public function GetMaximalPaketMenit(Request $request){
+        $data = array('success' => false, 'message' => '' , 'data' => array(), 'MaximalOrder' => 0);
+
+        $mejaID = $request->input('mejaID');
+        $JamRequest = $request->input('JamRequest');
+
+        $oBookingOnline = BookingOnline::selectRaw('TIMESTAMPDIFF(MINUTE, now(), ADDTIME(DATE(TglBooking), JamMulai)) AS Durasi')
+            ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+            ->where('MejaID', $mejaID)
+            ->whereBetween(DB::raw('now()'), ["'". DB::raw($JamRequest)."'", DB::raw('ADDTIME(DATE(TglBooking), JamMulai)')])
+            ->first();
+
+        if ($oBookingOnline) {
+            $data['success'] = true;
+            $data['data'] = $oBookingOnline;
+            $data['MaximalOrder'] = $oBookingOnline->Durasi;
+        }
+
+        return response()->json($data);
     }
 }

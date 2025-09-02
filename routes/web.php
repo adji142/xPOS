@@ -985,7 +985,8 @@ Route::post('/billing/readfnb', [TableOrderController::class, 'ReadTableOrderFnB
 Route::post('/billing/warning', [TableOrderController::class, 'NotifHampirHabis'])->name('billing-warning')->middleware('auth');
 Route::post('/billing/repopulate', [TableOrderController::class, 'ReadTitikLampu'])->name('billing-repopulate')->middleware('auth');
 Route::get('/billing/self-service', [TableOrderController::class,'ViewSelfService'])->name('billing-self-service')->middleware('auth');
-
+Route::post('/billing/maxtime', [TableOrderController::class, 'GetMaximalPaketMenit'])->name('billing-maxtime')->middleware('auth');
+// GetMaximalPaketMenit
 /*
 |--------------------------------------------------------------------------
 | Booking Online

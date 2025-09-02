@@ -214,27 +214,19 @@ class BookingOnlineController extends Controller
                     // }
 
                     // Cek Booking
-                    $adaBooking = BookingOnline::where('TglBooking', $tanggalBooking)
+                    $adaBooking = BookingOnline::where(DB::raw("DATE(TglBooking)"), $tanggalBooking)
                         ->where('mejaID', $titik->id)
                         ->where(function ($q) use ($start, $next) {
-                            $q->whereBetween('JamMulai', [$start->format('H:i:s'), $next->format('H:i:s')])
-                            ->orWhereBetween('JamSelesai', [$start->format('H:i:s'), $next->format('H:i:s')])
-                            ->orWhere(function ($q2) use ($start, $next) {
-                                $q2->where('JamMulai', '<=', $start->format('H:i:s'))
-                                    ->where('JamSelesai', '>=', $next->format('H:i:s'));
-                            });
+                            $q->where('JamMulai', '<', $next->format('H:i:s'))
+                              ->where('JamSelesai', '>', $start->format('H:i:s'));
                         })->exists();
 
                     // Cek Order
-                    $adaOrder = TableOrderHeader::where('TglTransaksi', $tanggalBooking)
+                    $adaOrder = TableOrderHeader::where(DB::raw("DATE(TglTransaksi)"), $tanggalBooking)
                         ->where('tableid', $titik->id)
                         ->where(function ($q) use ($start, $next) {
-                            $q->whereBetween('JamMulai', [$start->format('H:i:s'), $next->format('H:i:s')])
-                            ->orWhereBetween('JamSelesai', [$start->format('H:i:s'), $next->format('H:i:s')])
-                            ->orWhere(function ($q2) use ($start, $next) {
-                                $q2->where('JamMulai', '<=', $start->format('H:i:s'))
-                                    ->where('JamSelesai', '>=', $next->format('H:i:s'));
-                            });
+                            $q->where('JamMulai', '<', $next->format('H:i:s'))
+                              ->where('JamSelesai', '>', $start->format('H:i:s'));
                         })->exists();
 
                     $slotSudahLewat = $fullEnd->lessThan($now);
@@ -254,6 +246,8 @@ class BookingOnlineController extends Controller
 
                 // Bisa disesuaikan: deskripsi & fitur dari KelompokLampu
                 $deskripsi = 'Meja standar dengan suasana santai';
+
+                // dd($jadwal);
 
                 $mejaData[] = [
                     'id' => $titik->id,

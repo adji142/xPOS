@@ -1366,7 +1366,7 @@ class FakturPenjualanController extends Controller
                     $fnb->Harga = $key['Harga'];
                     $fnb->Tax = $key['Pajak'];
                     $fnb->Discount = $key['Discount'];
-                    $fnb->LineTotal = $key['Qty'] * $key['HargaNet'];
+                    $fnb->LineTotal = ($key['Qty'] * $key['Harga']) + $key['Pajak'];
                     $fnb->RecordOwnerID = Auth::user()->RecordOwnerID;
                     $fnb->save();
 				}

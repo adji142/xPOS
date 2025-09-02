@@ -118,6 +118,41 @@ License: You must have a valid license purchased only from themeforest(the above
 			text-decoration: none; /* Optional: remove underline */
 		}
 
+
+		/* Running Text */
+
+		.marquee-container {
+            position: relative;
+            width: 100%;
+			height: 50px;
+            overflow: hidden;
+            background-color: #222;
+            padding: 10px 0;
+        }
+        .marquee {
+            display: inline-block;
+            position: absolute;
+            white-space: nowrap;
+            animation: scrollText 10s linear infinite, blink 1s step-start infinite;
+            font-size: 24px;
+            color: #fff;
+        }
+        @keyframes scrollText {
+            from {
+                transform: translateX(-100%);
+            }
+            to {
+                transform: translateX(100%);
+            }
+        }
+        @keyframes blink {
+            0%, 50% {
+                color: yellow;
+            }
+            51%, 100% {
+                color: red;
+            }
+		}
 	</style>
 </head>
 <!--end::Head-->
@@ -229,6 +264,17 @@ License: You must have a valid license purchased only from themeforest(the above
    </header>
    <div class="contentPOS">
 	    <div class="container-fluid">
+			<div class="row">
+				<div class="col-xl-12 col-lg-8 col-md-8">
+					<div class="card card-custom gutter-b bg-white border-0" >
+						@if ($company[0]['RunningTextSelfServices'] != null && $company[0]['RunningTextSelfServices'] != "")
+							<div class="marquee-container">
+								<div class="marquee">{{ $company[0]['RunningTextSelfServices'] }}</div>
+							</div>
+						@endif
+					</div>
+				</div>
+			</div>
 			<div class="row">
 				<div class="col-xl-12 col-lg-8 col-md-8">
 				     <div class="">
@@ -477,10 +523,10 @@ License: You must have a valid license purchased only from themeforest(the above
 												<div class="col-md-4">
 													<label  class="text-body">Table Guards</label>
 													<fieldset class="form-group mb-12">
-														<select name="KodeSales" id="KodeSales" class="js-example-basic-single js-states form-control bg-transparent" >
+														<select name="KodeSales" id="KodeSales" class="js-example-basic-single js-states form-control bg-transparent" {{ $oKodeSales != '' ? 'disabled' : '' }}>
 															<option value="">Pilih Table Guards</option>
 															@foreach ($sales as $sls)
-																<option value="{{ $sls->KodeSales }}" {{ $sls->KodeSales == $oKodeSales ? 'selected' : '' }}>{{ $sls->NamaSales }}</option>
+																<option value="{{ $sls->KodeSales }}" {{ $sls->KodeSales == $oKodeSales ? 'selected disabled' : '' }}>{{ $sls->NamaSales }}</option>
 															@endforeach
 														</select>
 													</fieldset>
@@ -1052,7 +1098,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
     jQuery(function () {
 		let idleTime = 0; 
-		let maxIdle = 60 * 5; 
+		let maxIdle = 60 * 2; 
 		let isRefreshing = false; // flag untuk cegah looping
 
 		$(document).on('mousemove keypress click scroll', function() {
@@ -1389,12 +1435,51 @@ License: You must have a valid license purchased only from themeforest(the above
 				});
 			}
 
-			// if (jQuery('#JenisPaket').val() == "MENIT") {
-			// 	jQuery('#PembayaranSection').hide();
-			// }
-			// else{
-			// 	jQuery('#PembayaranSection').show();
-			// }
+			if (jQuery('#JenisPaket').val() == "MENIT") {
+				// jQuery('#PembayaranSection').hide();
+				jQuery('#lblDurasiPaket').text('Durasi (Menit)');
+
+				// ...existing code...
+				var now = new Date();
+				var formattedNow = now.getFullYear() + '-' +
+					String(now.getMonth() + 1).padStart(2, '0') + '-' +
+					String(now.getDate()).padStart(2, '0') + ' ' +
+					String(now.getHours()).padStart(2, '0') + ':' +
+					String(now.getMinutes()).padStart(2, '0') + ':' +
+					String(now.getSeconds()).padStart(2, '0');
+				// Use formattedNow instead of jQuery('#JamRequest').val()
+				
+				// ...existing code...
+				// Get Maximal Order
+				$.ajax({
+					url: "{{ route('billing-maxtime') }}",
+					type: 'POST',
+					data: {
+						_token: '{{ csrf_token() }}',
+						mejaID: jQuery('#tableid').val(),
+						JamRequest: formattedNow
+					},
+					success: function(response) {
+						if (response.success) {
+							if(response.MaximalOrder > 0){
+								jQuery('#DurasiPaket').val(response.MaximalOrder);
+								jQuery("#DurasiPaket").attr("max", response.MaximalOrder);
+							}
+						} 
+					},
+					error: function(xhr) {
+						Swal.fire({
+							icon: "error",
+							title: "Opps...",
+							text: xhr.responseText,
+						});
+					}
+				});
+			}
+			else{
+				// jQuery('#PembayaranSection').show();
+				jQuery('#lblDurasiPaket').text('Durasi (Jam)');
+			}
 			jQuery('#PembayaranSection').show();
 		});
 
