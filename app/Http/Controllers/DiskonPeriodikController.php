@@ -102,25 +102,18 @@ class DiskonPeriodikController extends Controller
             if ($model) {
             	// $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('diskonperiodik')
-                			->where('id','=', $request->input('id'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'TanggalMulai'=>$request->input('TanggalMulai'),
-                                    'TanggalSelesai'=>$request->input('TanggalSelesai'),
-                                    'Deskripsi'=>$request->input('Deskripsi'),
-                                    'Keterangan'=>$request->input('Keterangan'),
-                                    'UpdatedBy'=>Auth::user()->name,
-                				]
-                			);
 
-                if ($update) {
-                    alert()->success('Success','Data Diskon Periodik berhasil disimpan.');
-                    return redirect('diskonperiodik');
-                }else{
-                    throw new \Exception('Edit Diskon Periodik Gagal');
-                }
+                \App\Services\DBLogger::update('diskonperiodik', ['id' => $request->input('id'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'TanggalMulai'=>$request->input('TanggalMulai'),
+                    'TanggalSelesai'=>$request->input('TanggalSelesai'),
+                    'Deskripsi'=>$request->input('Deskripsi'),
+                    'Keterangan'=>$request->input('Keterangan'),
+                    'UpdatedBy'=>Auth::user()->name,
+                ]);
+
+                alert()->success('Success','Data Diskon Periodik berhasil disimpan.');
+                return redirect('diskonperiodik');
+
             } else{
                 throw new \Exception('Diskon Periodik not found.');
             }
@@ -167,20 +160,15 @@ class DiskonPeriodikController extends Controller
             if ($model) {
                 // $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('diskonperiodik')
-                            ->where('KodeGudang','=', $request->input('KodeGudang'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                            ->update(
-                                [
-                                    'NamaGudang'=>$request->input('NamaGudang'),
-                                ]
-                            );
+                \App\Services\DBLogger::update('diskonperiodik', ['id' => $request->input('id'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'TanggalMulai'=>$request->input('TanggalMulai'),
+                    'TanggalSelesai'=>$request->input('TanggalSelesai'),
+                    'Deskripsi'=>$request->input('Deskripsi'),
+                    'Keterangan'=>$request->input('Keterangan'),
+                    'UpdatedBy'=>Auth::user()->name,
+                ]);
 
-                if ($update) {
-                    $data['success'] = true;
-                }else{
-                    $data['message'] = 'Edit DiskonPeriodik Gagal';
-                }
+                $data['success'] = true;
             } else{
                 $data['message'] = 'DiskonPeriodik not found.';
             }

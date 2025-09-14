@@ -90,24 +90,16 @@ class KelompokRekeningController extends Controller
             if ($model) {
             	// $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('kelompokrekening')
-                			->where('id','=', $request->input('id'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'NamaKelompok'=>$request->input('NamaKelompokRekening'),
-                					'Kelompok'=>$request->input('Kelompok'),
-                					'Posisi'=>$request->input('Posisi'),
-                					'FooterLaporan'=>$request->input('FooterLaporan'),
-                				]
-                			);
 
-                if ($update) {
-                    alert()->success('Success','Data KelompokRekening berhasil disimpan.');
-                    return redirect('kelompokrekening');
-                }else{
-                    throw new \Exception('Edit KelompokRekening Gagal');
-                }
+                \App\Services\DBLogger::update('kelompokrekening', ['id' => $request->input('id'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaKelompok'=>$request->input('NamaKelompokRekening'),
+                    'Kelompok'=>$request->input('Kelompok'),
+                    'Posisi'=>$request->input('Posisi'),
+                    'FooterLaporan'=>$request->input('FooterLaporan'),
+                ]);
+
+                alert()->success('Success','Data KelompokRekening berhasil disimpan.');
+                return redirect('kelompokrekening');
             } else{
                 throw new \Exception('KelompokRekening not found.');
             }

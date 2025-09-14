@@ -294,7 +294,7 @@
     <div class="d-flex align-items-center gap-2 mb-3 overflow-auto" id="dateList"></div>
     <div class="mb-4">
       <label for="manualDate">Atau pilih tanggal manual:</label>
-      <input type="text" id="manualDate" class="form-control" style="max-width: 250px;" placeholder="Pilih tanggal...">
+      <input type="date" id="manualDate" class="form-control" style="max-width: 250px;" placeholder="Pilih tanggal...">
     </div>
 
     <div class="mb-2">
@@ -446,10 +446,15 @@
 
   function generateDateList(centerDate) {
     const $dateList = $('#dateList').empty();
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+
     for (let i = -3; i <= 3; i++) {
       const d = new Date(centerDate);
       d.setDate(d.getDate() + i);
-      
+      d.setHours(0, 0, 0, 0);
+
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
       const day = String(d.getDate()).padStart(2, '0');
@@ -457,20 +462,28 @@
 
       const label = d.toLocaleDateString('id-ID', { weekday: 'short', day: '2-digit', month: 'short' });
 
-      console.log(dateStr + " >> " + label);
-
       const $btn = $('<button>')
         .addClass('btn btn-outline-dark btn-sm rounded-pill date-btn')
         .text(label)
         .attr('data-date', dateStr)
-        .toggleClass('active', i === 0)
         .on('click', function () {
+          if ($(this).hasClass('disabled')) {
+            return;
+          }
           $('.date-btn').removeClass('active');
           $(this).addClass('active');
 
           currentSelectedDate = d;
           fetchJadwal("{{ $company->KodePartner }}",$('#paketSelect').val(), dateStr);
         });
+
+      if (d < tomorrow) {
+        $btn.addClass('disabled').css('pointer-events', 'none').css('opacity', '0.5');
+      }
+
+      if (d.getTime() === centerDate.getTime()) {
+        $btn.addClass('active');
+      }
 
       $dateList.append($btn);
     }
@@ -839,7 +852,19 @@
 
 
   $(function () {
+    // Set min date for manualDate input
+    var today = new Date();
+    today.setDate(today.getDate() + 1);
+    var yyyy = today.getFullYear();
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    var dd = String(today.getDate()).padStart(2, '0');
+    var minDate = yyyy + '-' + mm + '-' + dd;
+    $('#manualDate').attr('min', minDate);
+
     currentSelectedDate = new Date();
+    currentSelectedDate.setDate(currentSelectedDate.getDate() + 1);
+    currentSelectedDate.setHours(0, 0, 0, 0);
+
 
     // Panggil API pertama kali
     fetchJadwal("{{ $company->KodePartner }}",$('#paketSelect').val(), currentSelectedDate.toISOString().split('T')[0]);
@@ -861,10 +886,21 @@
     // Contoh event tanggal berubah
     $('#manualDate').on('change', function () {
       const tgl = $(this).val(); // format 'YYYY-MM-DD'
-      currentSelectedDate = new Date(tgl);
+      const selected = new Date(tgl);
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+
+      if (selected < tomorrow) {
+        $(this).val(tomorrow.toISOString().split('T')[0]);
+        currentSelectedDate = tomorrow;
+      } else {
+        currentSelectedDate = selected;
+      }
+      
       generateDateList(currentSelectedDate);
 
-      fetchJadwal("{{ $company->KodePartner }}",$('#paketSelect').val(), tgl); // ganti 1 & 1 sesuai PaketID & RecordOwnerID dari data kamu
+      fetchJadwal("{{ $company->KodePartner }}",$('#paketSelect').val(), $(this).val()); // ganti 1 & 1 sesuai PaketID & RecordOwnerID dari data kamu
     });
 
     $('#btModalCheckout').click(function () {

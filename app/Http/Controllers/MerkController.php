@@ -97,21 +97,12 @@ class MerkController extends Controller
             if ($model) {
             	// $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('merk')
-                			->where('KodeMerk','=', $request->input('KodeMerk'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'NamaMerk'=>$request->input('NamaMerk'),
-                				]
-                			);
+                \App\Services\DBLogger::update('merk', ['KodeMerk' => $request->input('KodeMerk'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaMerk' => $request->input('NamaMerk'),
+                ]);
 
-                if ($update) {
-                    alert()->success('Success','Data Merk berhasil disimpan.');
-                    return redirect('merk');
-                }else{
-                    throw new \Exception('Edit Merk Gagal');
-                }
+                alert()->success('Success','Data Merk berhasil disimpan.');
+                return redirect('merk');
             } else{
                 throw new \Exception('Merk not found.');
             }
@@ -157,20 +148,11 @@ class MerkController extends Controller
             $model = Merk::where('KodeMerk','=',$request->input('KodeMerk'));
 
             if ($model) {
-                $update = DB::table('merk')
-                            ->where('KodeMerk','=', $request->input('KodeMerk'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                            ->update(
-                                [
-                                    'NamaMerk'=>$request->input('NamaMerk'),
-                                ]
-                            );
+                \App\Services\DBLogger::update('merk', ['KodeMerk' => $request->input('KodeMerk'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaMerk' => $request->input('NamaMerk'),
+                ]);
 
-                if ($update) {
-                    $data['success'] = true;
-                }else{
-                    $data['message'] = 'Edit Merk Gagal';
-                }
+                $data['success'] = true;
             } else{
                 $data['message'] = 'Merk not found.';
             }

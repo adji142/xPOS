@@ -155,27 +155,20 @@ class UserController extends Controller
             if ($model) {
             	// $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('users')
-                			->where('id','=', $request->input('id'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-									'name' => $request->input('name'),
-									'email' => $request->input('email'),
-                                    'Active' => $request->input('Active'),
-                                    'KodeSales' => $request->input('KodeSales')
-                				]
-                			);
+
+                \App\Services\DBLogger::update('users', ['id' => $request->input('id'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'name' => $request->input('name'),
+                    'email' => $request->input('email'),
+                    'Active' => $request->input('Active'),
+                    'KodeSales' => $request->input('KodeSales')
+                ]);
 
                 if ($KelompokAkses != "") {
-            		$saveRole = DB::table('userrole')
-        			->where('userid','=', $request->input('id'))
-                    ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-        			->update(
-        				[
-							'roleid' => $KelompokAkses
-        				]
-        			);
+
+                    \App\Services\DBLogger::update('userrole', ['userid' => $request->input('id'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                        'roleid' => $KelompokAkses
+                    ]);
+
             		// if (!$saveRole) {
             		// 	throw new \Exception('Gagal Menyimpan Data Akses');
             		// 	// DB::rollback();

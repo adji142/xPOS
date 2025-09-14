@@ -107,24 +107,16 @@ class MasterControllerController extends Controller
             if ($model) {
             	// $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('mastercontroller')
-                			->where('id','=', $request->input('id'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'NamaController'=>$request->input('NamaController'),
-                                    'SN'=>$request->input('SN'),
-                                    'Port'=>$request->input('Port'),
-                                    'BaudRate'=>$request->input('BaudRate'),
-                				]
-                			);
+                \App\Services\DBLogger::update('mastercontroller', ['id' => $request->input('id')], [
+                    'NamaController' => $request->input('NamaController'),
+                    'SN' => $request->input('SN'),
+                    'Port' => $request->input('Port'),
+                    'BaudRate' => $request->input('BaudRate'),
+                ]);
 
-                if ($update) {
-                    alert()->success('Success','Data Controller berhasil disimpan.');
-                    return redirect('controller');
-                }else{
-                    throw new \Exception('Edit Controller Gagal');
-                }
+                alert()->success('Success','Data Controller berhasil disimpan.');
+                return redirect('controller');
+
             } else{
                 throw new \Exception('Controller not found.');
             }
@@ -173,23 +165,14 @@ class MasterControllerController extends Controller
             if ($model) {
                 // $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('mastercontroller')
-                            ->where('id','=', $request->input('id'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                            ->update(
-                                [
-                                    'NamaController'=>$request->input('NamaController'),
-                                    'SN'=>$request->input('SN'),
-                                    'Port'=>$request->input('Port'),
-                                    'BaudRate'=>$request->input('BaudRate'),
-                                ]
-                            );
+                \App\Services\DBLogger::update('mastercontroller', ['id' => $request->input('id')], [
+                    'NamaController' => $request->input('NamaController'),
+                    'SN' => $request->input('SN'),
+                    'Port' => $request->input('Port'),
+                    'BaudRate' => $request->input('BaudRate'),
+                ]);
 
-                if ($update) {
-                    $data['success'] = true;
-                }else{
-                    $data['message'] = 'Edit Controller Gagal';
-                }
+                $data['success'] = true;
             } else{
                 $data['message'] = 'Meja Controller found.';
             }

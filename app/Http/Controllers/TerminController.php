@@ -91,25 +91,17 @@ class TerminController extends Controller
             if ($model) {
             	// $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('terminpembayaran')
-                			->where('id','=', $request->input('id'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'NamaTermin'=>$request->input('NamaTermin'),
-                					'JumlahHari'=>$request->input('JumlahHari'),
-                					'ExtraDays'=>$request->input('ExtraDays')
-                				]
-                			);
 
-                if ($update) {
-                    alert()->success('Success','Data Termin berhasil disimpan.');
-                    return redirect('termin');
-                }else{
-                    throw new \Exception('Edit Termin Gagal');
-                }
+                \App\Services\DBLogger::update('terminpembayaran', ['id' => $request->input('id'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaTermin' => $request->input('NamaTermin'),
+                    'JumlahHari' => $request->input('JumlahHari'),
+                    'ExtraDays' => $request->input('ExtraDays'),
+                ]);
+
+                alert()->success('Success','Data Termin berhasil disimpan.');
+                return redirect('termin');
             } else{
-                throw new \Exception('Termin not found.');
+                throw new \Exception('Edit Termin Gagal');
             }
         } catch (Exception $e) {
             Log::debug($e->getMessage());
@@ -153,24 +145,13 @@ class TerminController extends Controller
             $model = Termin::where('id','=',$request->input('id'));
 
             if ($model) {
-                // $model->Kode = $request->input('Kode');
-             //    $model->Nama = $request->input('Nama');
-                $update = DB::table('terminpembayaran')
-                            ->where('id','=', $request->input('id'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                            ->update(
-                                [
-                                    'NamaTermin'=>$request->input('NamaTermin'),
-                					'JumlahHari'=>$request->input('JumlahHari'),
-                					'ExtraDays'=>$request->input('ExtraDays')
-                                ]
-                            );
-
-                if ($update) {
-                    $data['success'] = true;
-                }else{
-                    $data['message'] = 'Edit Termin Gagal';
-                }
+                \App\Services\DBLogger::update('terminpembayaran', ['id' => $request->input('id'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaTermin' => $request->input('NamaTermin'),
+                    'JumlahHari' => $request->input('JumlahHari'),
+                    'ExtraDays' => $request->input('ExtraDays'),
+                ]);
+                $data['success'] = true;
+                
             } else{
                 $data['message'] = 'Metode Termin found.';
             }

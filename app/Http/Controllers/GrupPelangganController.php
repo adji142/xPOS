@@ -84,37 +84,57 @@ class GrupPelangganController extends Controller
                 'NamaGrup'=>'required'
             ]);
 
-            $model = GrupPelanggan::where('KodeGrup','=',$request->input('KodeGrup'));
+            $model = GrupPelanggan::where('KodeGrup','=',$request->input('KodeGrup'))->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
 
             if ($model) {
-            	// $model->Kode = $request->input('Kode');
-             //    $model->Nama = $request->input('Nama');
-                $update = DB::table('gruppelanggan')
-                			->where('KodeGrup','=', $request->input('KodeGrup'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'NamaGrup'=>$request->input('NamaGrup'),
-                					'LevelHarga' => $request->input('LevelHarga'),
-                					'DiskonPersen' => $request->input('DiskonPersen')
-                				]
-                			);
+                \App\Services\DBLogger::update('gruppelanggan', ['KodeGrup' => $request->input('KodeGrup'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaGrup'      => $request->input('NamaGrup'),
+                    'LevelHarga'    => $request->input('LevelHarga'),
+                    'DiskonPersen'  => $request->input('DiskonPersen')
+                ]);
 
-                if ($update) {
-                    alert()->success('Success','Data Grup Pelanggan berhasil disimpan.');
-                    return redirect('gruppelanggan');
-                }else{
-                    throw new \Exception('Edit Grup Pelanggan Gagal');
-                }
+                alert()->success('Success','Data Grup Pelanggan berhasil disimpan.');
+                return redirect('gruppelanggan');
+
             } else{
                 throw new \Exception('Grup Pelanggan not found.');
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::debug($e->getMessage());
 
             alert()->error('Error',$e->getMessage());
             return redirect()->back();
         }
+    }
+
+    public function editJson(Request $request)
+    {
+        $data = array('success' => false, 'message' => '');
+        Log::debug($request->all());
+        try {
+            $this->validate($request, [
+                'KodeGrup'=>'required',
+                'NamaGrup'=>'required'
+            ]);
+
+            $model = GrupPelanggan::where('KodeGrup','=',$request->input('KodeGrup'))->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
+
+            if ($model) {
+                \App\Services\DBLogger::update('gruppelanggan', ['KodeGrup' => $request->input('KodeGrup'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaGrup'      => $request->input('NamaGrup'),
+                    'LevelHarga'    => $request->input('LevelHarga'),
+                    'DiskonPersen'  => $request->input('DiskonPersen')
+                ]);
+
+                $data['success'] = true;
+            } else{
+                $data['message'] = 'Grup Pelanggan not found.';
+            }
+        } catch (\Exception $e) {
+            Log::debug($e->getMessage());
+            $data['message'] = $e->getMessage();
+        }
+        return response()->json($data);
     }
 
     public function deletedata(Request $request)

@@ -429,36 +429,33 @@ class ItemMasterController extends Controller
             if ($model) {
               // $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-              $update = DB::table('itemmaster')
-                    ->where('KodeItem','=', $request->input('KodeItem'))
-                    ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                    ->update(
-                      [
-                        'NamaItem' => $jsonData['NamaItem'],
-                        'KodeJenisItem' => $jsonData['KodeJenisItem'],
-                        'KodeMerk' => $jsonData['KodeMerk'],
-                        'TypeItem' => $jsonData['TypeItem'],
-                        'Rak' => $jsonData['Rak'],
-                        'KodeGudang' => $jsonData['KodeGudang'],
-                        'KodeSupplier' => $jsonData['KodeSupplier'],
-                        'Satuan' => $jsonData['Satuan'],
-                        'Barcode' => $jsonData['Barcode'],
-                        'Gambar' => "",
-                        'HargaPokokPenjualan' => $jsonData['HargaPokokPenjualan'],
-                        'HargaJual' => $jsonData['HargaJual'],
-                        'HargaBeliTerakhir' => $jsonData['HargaBeliTerakhir'],
-                        'Stock' => $jsonData['Stock'],
-                        'StockMinimum' => $jsonData['StockMinimum'],
-                        'isKonsinyasi' => ($jsonData['TypeItem'] == "5") ? "Y" : "N",
-                        'Active' => $jsonData['Active'],
-                        'VatPercent' => $jsonData['VatPercent'],
-                        'AcctHPP' => empty($jsonData['AcctHPP']) ? "" :$jsonData['AcctHPP'],
-                        'AcctPenjualan' => empty($jsonData['AcctPenjualan']) ? "" : $jsonData['AcctPenjualan'],
-                        'AcctPenjualanJasa' => empty($jsonData['AcctPenjualanJasa']) ? "" : $jsonData['AcctPenjualanJasa'],
-                        'AcctPersediaan' => empty($jsonData['AcctPersediaan']) ? "" : $jsonData['AcctPersediaan'],
-                        'Gambar' => $jsonData['Gambar']
-                      ]
-                    );
+             
+              \App\Services\DBLogger::update('itemmaster', ['KodeItem' => $request->input('KodeItem'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaItem' => $jsonData['NamaItem'],
+                    'KodeJenisItem' => $jsonData['KodeJenisItem'],
+                    'KodeMerk' => $jsonData['KodeMerk'],
+                    'TypeItem' => $jsonData['TypeItem'],
+                    'Rak' => $jsonData['Rak'],
+                    'KodeGudang' => $jsonData['KodeGudang'],
+                    'KodeSupplier' => $jsonData['KodeSupplier'],
+                    'Satuan' => $jsonData['Satuan'],
+                    'Barcode' => $jsonData['Barcode'],
+                    'Gambar' => "",
+                    'HargaPokokPenjualan' => $jsonData['HargaPokokPenjualan'],
+                    'HargaJual' => $jsonData['HargaJual'],
+                    'HargaBeliTerakhir' => $jsonData['HargaBeliTerakhir'],
+                    'Stock' => $jsonData['Stock'],
+                    'StockMinimum' => $jsonData['StockMinimum'],
+                    'isKonsinyasi' => ($jsonData['TypeItem'] == "5") ? "Y" : "N",
+                    'Active' => $jsonData['Active'],
+                    'VatPercent' => $jsonData['VatPercent'],
+                    'AcctHPP' => empty($jsonData['AcctHPP']) ? "" :$jsonData['AcctHPP'],
+                    'AcctPenjualan' => empty($jsonData['AcctPenjualan']) ? "" : $jsonData['AcctPenjualan'],
+                    'AcctPenjualanJasa' => empty($jsonData['AcctPenjualanJasa']) ? "" : $jsonData['AcctPenjualanJasa'],
+                    'AcctPersediaan' => empty($jsonData['AcctPersediaan']) ? "" : $jsonData['AcctPersediaan'],
+                    'Gambar' => $jsonData['Gambar']
+                ]);
+          
 
                 if (count($jsonData['BahanRakitan']) > 0) {
                   $itemRakitan = DB::table('itemrakitan')

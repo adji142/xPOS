@@ -113,40 +113,30 @@ class SalesController extends Controller
                 'Email'=>'required',
             ]);
 
-            $model = Sales::where('KodeSales','=',$request->input('KodeSales'));
+            $model = Sales::where('KodeSales','=',$request->input('KodeSales'))->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
 
             if ($model) {
-            	// $model->Kode = $request->input('Kode');
-             //    $model->Nama = $request->input('Nama');
-                $update = DB::table('sales')
-                			->where('KodeSales','=', $request->input('KodeSales'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-									'NamaSales' => $request->input('NamaSales'),
-									'ProvID' => $request->input('ProvID'),
-									'KotaID' => $request->input('KotaID'),
-									'KelID' => $request->input('KelID'),
-									'KecID' => $request->input('KecID'),
-									'Email' => $request->input('Email'),
-									'NoTlp1' => $request->input('NoTlp1'),
-									'NoTlp2' => $request->input('NoTlp2'),
-									'Alamat' => $request->input('Alamat'),
-									'Keterangan' => $request->input('Keterangan'),
-                                    'Status' => $request->input('Status')
-                				]
-                			);
+                \App\Services\DBLogger::update('sales', ['KodeSales' => $request->input('KodeSales'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaSales' => $request->input('NamaSales'),
+                    'ProvID' => $request->input('ProvID'),
+                    'KotaID' => $request->input('KotaID'),
+                    'KelID' => $request->input('KelID'),
+                    'KecID' => $request->input('KecID'),
+                    'Email' => $request->input('Email'),
+                    'NoTlp1' => $request->input('NoTlp1'),
+                    'NoTlp2' => $request->input('NoTlp2'),
+                    'Alamat' => $request->input('Alamat'),
+                    'Keterangan' => $request->input('Keterangan'),
+                    'Status' => $request->input('Status')
+                ]);
 
-                if ($update) {
-                    alert()->success('Success','Data Sales berhasil disimpan.');
-                    return redirect('sales');
-                }else{
-                    throw new \Exception('Edit Sales Gagal');
-                }
+                alert()->success('Success','Data Sales berhasil disimpan.');
+                return redirect('sales');
+
             } else{
-                throw new \Exception('Grup Sales not found.');
+                throw new \Exception('Sales not found.');
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::debug($e->getMessage());
 
             alert()->error('Error',$e->getMessage());

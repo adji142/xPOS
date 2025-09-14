@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use DB;
 
-class ItemMaster extends Model
+class ItemMaster extends BaseModel
 {
     use HasFactory;
     protected $table = "itemmaster";

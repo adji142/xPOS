@@ -95,25 +95,14 @@ class GudangController extends Controller
             $model = Gudang::where('KodeGudang','=',$request->input('KodeGudang'));
 
             if ($model) {
-            	// $model->Kode = $request->input('Kode');
-             //    $model->Nama = $request->input('Nama');
-                $update = DB::table('gudang')
-                			->where('KodeGudang','=', $request->input('KodeGudang'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'NamaGudang'=>$request->input('NamaGudang'),
-                				]
-                			);
+                \App\Services\DBLogger::update('gudang', ['KodeGudang' => $request->input('KodeGudang'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaGudang' => $request->input('NamaGudang'),
+                ]);
 
-                if ($update) {
-                    alert()->success('Success','Data Gudang berhasil disimpan.');
-                    return redirect('gudang');
-                }else{
-                    throw new \Exception('Edit Gudang Gagal');
-                }
-            } else{
-                throw new \Exception('Gudang not found.');
+                alert()->success('Success','Data Gudang berhasil disimpan.');
+                return redirect('gudang');
+            }else{
+                throw new \Exception('Edit Gudang Gagal');
             }
         } catch (Exception $e) {
             Log::debug($e->getMessage());
@@ -158,14 +147,9 @@ class GudangController extends Controller
             if ($model) {
                 // $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('gudang')
-                            ->where('KodeGudang','=', $request->input('KodeGudang'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                            ->update(
-                                [
-                                    'NamaGudang'=>$request->input('NamaGudang'),
-                                ]
-                            );
+                \App\Services\DBLogger::update('gudang', ['KodeGudang' => $request->input('KodeGudang'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaGudang' => $request->input('NamaGudang'),
+                ]);
 
                 if ($update) {
                     $data['success'] = true;
@@ -177,7 +161,6 @@ class GudangController extends Controller
             }
         } catch (Exception $e) {
             Log::debug($e->getMessage());
-
             $data['message'] = $e->getMessage();
         }
         return response()->json($data);

@@ -123,6 +123,17 @@
 										</span>
 									</a>
 								</li>
+
+								<li class="nav-item">
+									<a href="{{ route('log', ['id' => base64_encode(Auth::user()->RecordOwnerID)]) }}" class="nav-link">
+										<span class="svg-icon nav-icon">
+											<i class="fas fa-clipboard-check font-size-h4"></i>
+										</span>
+										<span class="nav-text">
+											Log Aktivitas
+										</span>
+									</a>
+								</li>
 								
 								<!-- Dynamic Menu -->
 								@foreach ($navbars as $lv1)

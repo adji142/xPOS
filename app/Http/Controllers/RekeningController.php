@@ -148,25 +148,17 @@ class RekeningController extends Controller
             if ($model) {
             	// $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('rekeningakutansi')
-                			->where('KodeRekening','=', $request->input('KodeRekening'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'NamaRekening' => $request->input('NamaRekening'),
-						            'KodeKelompok' => $request->input('KodeKelompok'),
-						            'Jenis' => $request->input('Jenis'),
-						            'Level' => $request->input('Level'),
-						            'KodeRekeningInduk' => $request->input('RekeningInduk'),
-                				]
-                			);
 
-                if ($update) {
-                    alert()->success('Success','Data Rekening berhasil disimpan.');
-                    return redirect('rekening');
-                }else{
-                    throw new \Exception('Edit Rekening Gagal');
-                }
+                \App\Services\DBLogger::update('rekeningakutansi', ['KodeRekening' => $request->input('KodeRekening'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaRekening' => $request->input('NamaRekening'),
+                    'KodeKelompok' => $request->input('KodeKelompok'),
+                    'Jenis' => $request->input('Jenis'),
+                    'Level' => $request->input('Level'),
+                    'KodeRekeningInduk' => $request->input('RekeningInduk'),
+                ]);
+
+                alert()->success('Success','Data Rekening berhasil disimpan.');
+                return redirect('rekening');
             } else{
                 throw new \Exception('Rekening not found.');
             }

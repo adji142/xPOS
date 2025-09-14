@@ -115,44 +115,34 @@ class SupplierController extends Controller
                 'NoTlp1'=>'required',
             ]);
 
-            $model = Supplier::where('KodeSupplier','=',$request->input('KodeSupplier'));
+            $model = Supplier::where('KodeSupplier','=',$request->input('KodeSupplier'))->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
 
             if ($model) {
-            	// $model->Kode = $request->input('Kode');
-             //    $model->Nama = $request->input('Nama');
-                $update = DB::table('supplier')
-                			->where('KodeSupplier','=', $request->input('KodeSupplier'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-									'NamaSupplier' => $request->input('NamaSupplier'),
-									'ProvID' => $request->input('ProvID'),
-									'KotaID' => $request->input('KotaID'),
-									'KelID' => $request->input('KelID'),
-									'KecID' => $request->input('KecID'),
-									'Email' => $request->input('Email'),
-									'NoTlp1' => $request->input('NoTlp1'),
-									'NoTlp2' => $request->input('NoTlp2'),
-									'Alamat' => $request->input('Alamat'),
-									'Keterangan' => $request->input('Keterangan'),
-                                    'Status' => $request->input('Status'),
-                                    'NPWP' => $request->input('NPWP'),
-                                    'Bank' => $request->input('Bank'),
-                                    'NoRekening' => $request->input('NoRekening'),
-                                    'PemilikRekening' => $request->input('PemilikRekening'),
-                				]
-                			);
+                \App\Services\DBLogger::update('supplier', ['KodeSupplier' => $request->input('KodeSupplier'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaSupplier' => $request->input('NamaSupplier'),
+                    'ProvID' => $request->input('ProvID'),
+                    'KotaID' => $request->input('KotaID'),
+                    'KelID' => $request->input('KelID'),
+                    'KecID' => $request->input('KecID'),
+                    'Email' => $request->input('Email'),
+                    'NoTlp1' => $request->input('NoTlp1'),
+                    'NoTlp2' => $request->input('NoTlp2'),
+                    'Alamat' => $request->input('Alamat'),
+                    'Keterangan' => $request->input('Keterangan'),
+                    'Status' => $request->input('Status'),
+                    'NPWP' => $request->input('NPWP'),
+                    'Bank' => $request->input('Bank'),
+                    'NoRekening' => $request->input('NoRekening'),
+                    'PemilikRekening' => $request->input('PemilikRekening'),
+                ]);
 
-                if ($update) {
-                    alert()->success('Success','Data Supplier berhasil disimpan.');
-                    return redirect('supplier');
-                }else{
-                    throw new \Exception('Edit Supplier Gagal');
-                }
+                alert()->success('Success','Data Supplier berhasil disimpan.');
+                return redirect('supplier');
+
             } else{
-                throw new \Exception('Grup Supplier not found.');
+                throw new \Exception('Supplier not found.');
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::debug($e->getMessage());
 
             alert()->error('Error',$e->getMessage());

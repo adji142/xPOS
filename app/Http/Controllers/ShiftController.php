@@ -99,23 +99,15 @@ class ShiftController extends Controller
             if ($model) {
             	// $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('shift')
-                			->where('KodeShift','=', $request->input('KodeShift'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'NamaShift'=>$request->input('NamaShift'),
-                					'JamMulai'=>$request->input('JamMulai'),
-                					'JamSelesai'=>$request->input('JamSelesai'),
-                				]
-                			);
 
-                if ($update) {
-                    alert()->success('Success','Data Shift berhasil disimpan.');
-                    return redirect('shift');
-                }else{
-                    throw new \Exception('Edit Shift Gagal');
-                }
+                \App\Services\DBLogger::update('shift', ['KodeShift' => $request->input('KodeShift'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaShift' => $request->input('NamaShift'),
+                    'JamMulai' => $request->input('JamMulai'),
+                    'JamSelesai' => $request->input('JamSelesai'),
+                ]);
+
+                alert()->success('Success','Data Shift berhasil disimpan.');
+                return redirect('shift');
             } else{
                 throw new \Exception('Shift not found.');
             }
@@ -164,22 +156,14 @@ class ShiftController extends Controller
             if ($model) {
                 // $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('shift')
-                            ->where('KodeShift','=', $request->input('KodeShift'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                            ->update(
-                                [
-                                    'NamaShift'=>$request->input('NamaShift'),
-                					'JamMulai'=>$request->input('JamMulai'),
-                					'JamSelesai'=>$request->input('JamSelesai'),
-                                ]
-                            );
+                \App\Services\DBLogger::update('shift', ['KodeShift' => $request->input('KodeShift'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaShift' => $request->input('NamaShift'),
+                    'JamMulai' => $request->input('JamMulai'),
+                    'JamSelesai' => $request->input('JamSelesai'),
+                ]);
 
-                if ($update) {
-                    $data['success'] = true;
-                }else{
-                    $data['message'] = 'Edit Shift Gagal';
-                }
+                $data['success'] = true;
+
             } else{
                 $data['message'] = 'Shift not found.';
             }

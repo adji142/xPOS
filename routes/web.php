@@ -72,6 +72,7 @@ use App\Http\Controllers\KelompokLampuController;
 use App\Http\Controllers\QueueManagementController;
 use App\Http\Controllers\DiscountVoucherController;
 use App\Http\Controllers\SupportPageController;
+use App\Http\Controllers\LogingController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -1087,3 +1088,6 @@ Route::post('/faq/editJson', [SupportPageController::class, 'editJson'])->name('
 // end json
 Route::delete('/faq/delete/{id}', [SupportPageController::class, 'deletedata'])->name('faq-delete')->middleware('auth');
 Route::get('/faq/export', [SupportPageController::class,'Export'])->name('faq-export')->middleware('auth');
+
+
+Route::get('/log/{id}', [LogingController::class,'view'])->name('log');  

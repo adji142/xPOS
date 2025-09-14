@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class StockOpnameDetail extends Model
+class StockOpnameDetail extends BaseModel
 {
     use HasFactory;
     protected $table = "stockopnamedetail";

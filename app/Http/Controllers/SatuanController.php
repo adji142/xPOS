@@ -95,21 +95,13 @@ class SatuanController extends Controller
             if ($model) {
             	// $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('satuan')
-                			->where('KodeSatuan','=', $request->input('KodeSatuan'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'NamaSatuan'=>$request->input('NamaSatuan'),
-                				]
-                			);
 
-                if ($update) {
-                    alert()->success('Success','Data Satuan berhasil disimpan.');
-                    return redirect('satuan');
-                }else{
-                    throw new \Exception('Edit Satuan Gagal');
-                }
+                \App\Services\DBLogger::update('satuan', ['KodeSatuan' => $request->input('KodeSatuan'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaSatuan' => $request->input('NamaSatuan'),
+                ]);
+
+                alert()->success('Success','Data Satuan berhasil disimpan.');
+                return redirect('satuan');
             } else{
                 throw new \Exception('Satuan not found.');
             }
@@ -157,20 +149,11 @@ class SatuanController extends Controller
             if ($model) {
                 // $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('satuan')
-                            ->where('KodeSatuan','=', $request->input('KodeSatuan'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                            ->update(
-                                [
-                                    'NamaSatuan'=>$request->input('NamaSatuan'),
-                                ]
-                            );
+                \App\Services\DBLogger::update('satuan', ['KodeSatuan' => $request->input('KodeSatuan'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaSatuan' => $request->input('NamaSatuan'),
+                ]);
 
-                if ($update) {
-                    $data['success'] = true;
-                }else{
-                    $data['message'] = 'Edit Satuan Gagal';
-                }
+                $data['success'] = true;
             } else{
                 $data['message'] = 'Satuan not found.';
             }

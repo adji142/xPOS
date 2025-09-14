@@ -97,21 +97,12 @@ class JenisItemController extends Controller
             if ($model) {
             	// $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('jenisitem')
-                			->where('KodeJenis','=', $request->input('KodeJenis'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'NamaJenis'=>$request->input('NamaJenis'),
-                				]
-                			);
+                \App\Services\DBLogger::update('jenisitem', ['KodeJenis' => $request->input('KodeJenis'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaJenis' => $request->input('NamaJenis'),
+                ]);
 
-                if ($update) {
-                    alert()->success('Success','Data Jenis Item berhasil disimpan.');
-                    return redirect('jenisitem');
-                }else{
-                    throw new \Exception('Edit Jenis Item Gagal');
-                }
+                alert()->success('Success','Data Jenis Item berhasil disimpan.');
+                return redirect('jenisitem');
             } else{
                 throw new \Exception('Jenis Item not found.');
             }
@@ -163,20 +154,11 @@ class JenisItemController extends Controller
             if ($model) {
                 // $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('jenisitem')
-                            ->where('KodeJenis','=', $request->input('KodeJenis'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                            ->update(
-                                [
-                                    'NamaJenis'=>$request->input('NamaJenis'),
-                                ]
-                            );
+                \App\Services\DBLogger::update('jenisitem', ['KodeJenis' => $request->input('KodeJenis'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaJenis' => $request->input('NamaJenis'),
+                ]);
 
-                if ($update) {
-                    $data['success'] = true;
-                }else{
-                    $data['message'] = 'Edit Jenis Item Gagal';
-                }
+                $data['success'] = true;
             } else{
                 $data['message'] = 'Jenis Item not found.';
             }

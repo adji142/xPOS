@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class FakturPembelianHeader extends Model
+class FakturPembelianHeader extends BaseModel
 {
     use HasFactory;
     protected $table = "fakturpembelianheader";

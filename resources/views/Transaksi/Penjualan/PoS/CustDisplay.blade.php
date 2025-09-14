@@ -36,7 +36,45 @@ License: You must have a valid license purchased only from themeforest(the above
 	{{-- <script src="https://www.youtube.com/iframe_api"></script> --}}
     {{-- Datatable --}}
     <link href="{{asset('api/datatable/jquery.dataTables.min.css')}}" rel="stylesheet" type="text/css" />
-	<style type="text/css">
+	<style>
+	html, body {
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+	}
+	.contentPOS {
+		height: calc(100vh - 70px); /* Adjust 70px based on header height */
+		display: flex;
+		flex-direction: column;
+	}
+	.contentPOS .container-fluid, .contentPOS .row {
+		flex-grow: 1;
+		display: flex;
+		flex-direction: column;
+	}
+	.contentPOS .col-xl-12 {
+		display: flex;
+		flex-direction: column;
+		flex-grow: 1;
+	}
+	.card-custom {
+		flex-grow: 1;
+		display: flex;
+		flex-direction: column;
+	}
+	.card-body {
+		flex-grow: 1;
+		overflow-y: auto; /* Allow scrolling within card body if needed */
+	}
+	.slider, .slides, .slide {
+		height: 100%;
+	}
+	.slide img {
+		object-fit: contain;
+	}
+</style>
+<style type="text/css">
 		.TotalText{
 			text-align: right;
 			pointer-events: none;
@@ -283,179 +321,78 @@ License: You must have a valid license purchased only from themeforest(the above
 		</div>
 	</header>
 	<div class="contentPOS">
-		<div class="container-fluid">
-			<div class="row">
-				<div class="col-xl-12 col-lg-8 col-md-8">
-					<div class="card card-custom gutter-b bg-white border-0" >
+		<div class="container-fluid h-100">
+			<div class="row h-100">
+				<div class="col-md-7 h-100">
+					<div class="card card-custom gutter-b bg-white border-0 h-100">
 						@if ($company->RunningText != null && $company->RunningText != "")
 							<div class="marquee-container">
 								<div class="marquee">{{ $company->RunningText }}</div>
 							</div>
 						@endif
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-xl-12 col-lg-8 col-md-8">
-					<div class="card card-custom gutter-b bg-white border-0" >
-						<div class="card-body">
-							<div class="row">
-								<div class="col-md-12" style="text-align: center;">
-									<div class="slider">
-										<div class="slides" id="slidesContainer"></div>
-										<div class="dots" id="dotsContainer"></div>
-									</div>
-								</div>	
+						<div class="card-body d-flex flex-column">
+							<div class="slider flex-grow-1">
+								<div class="slides h-100" id="slidesContainer"></div>
+								<div class="dots" id="dotsContainer"></div>
 							</div>
-						</div>	
+						</div>
 					</div>
 				</div>
-				<div class="col-xl-12 col-lg-8 col-md-8" style ="display:none;">
-					<div class="card card-custom gutter-b bg-white border-0" >
-						<div class="card-body">
-							<div class="row">
-								<div class="col-md-12" style="text-align: center;">
-									<div class="slider">
-										<div class="slides">
-											@if ($company->ImageCustDisplay1 == null)
-											<div class="slide">
-												<img src="https://www.pluxee.co.id/sites/g/files/jclxxe371/files/2023-11/Manfaat-Media-Promosi.jpg" alt="Slide 1">
-											</div>
-											@else
-											<div class="slide">
-												<img src={{ $company->ImageCustDisplay1 }} alt="Slide 1">
-											</div>
-											@endif
-											@if ($company->ImageCustDisplay2 == null)
-											<div class="slide">
-												<img src="https://www.pluxee.co.id/sites/g/files/jclxxe371/files/2023-11/Manfaat-Media-Promosi.jpg" alt="Slide 2">
-											</div>
-											@else
-											<div class="slide">
-												<img src={{ $company->ImageCustDisplay2 }} alt="Slide 2">
-											</div>
-											@endif
-
-											@if ($company->ImageCustDisplay3 == null)
-											<div class="slide">
-												<img src="https://www.pluxee.co.id/sites/g/files/jclxxe371/files/2023-11/Manfaat-Media-Promosi.jpg" alt="Slide 3">
-											</div>
-											@else
-											<div class="slide">
-												<img src={{ $company->ImageCustDisplay3 }} alt="Slide 13">
-											</div>
-											@endif
-
-											@if ($company->ImageCustDisplay4 == null)
-											<div class="slide">
-												<img src="https://www.pluxee.co.id/sites/g/files/jclxxe371/files/2023-11/Manfaat-Media-Promosi.jpg" alt="Slide 4">
-											</div>
-											@else
-											<div class="slide">
-												<img src={{ $company->ImageCustDisplay4 }} alt="Slide 4">
-											</div>
-											@endif
-										</div>
-									</div>
-									<div class="dots">
-										<span class="dot" data-slide="0"></span>
-										<span class="dot" data-slide="1"></span>
-										<span class="dot" data-slide="2"></span>
-										<span class="dot" data-slide="3"></span>
-									</div>
-								</div>	
-							</div>
-						</div>	
-					</div>
-				</div>
-				<div class="col-xl-6 col-lg-8 col-md-8">
-					<div class="card card-custom gutter-b bg-white border-0" >
-						<div class="card-body">
-							<div class="row">
-								<div class="col-md-12" style="text-align: center;">
-									<label class="text-dark" >Detail Transaksi</label>
-
-									<div class="table-responsive" id="printableTable">
-										<table id="orderTable" class="display" style="width:100%">
-											<thead>
-												<tr>
-													<th>Nama Item</th>
-													<th>Jumlah</th>
-													<th>Harga</th>
-												</tr>
-											</thead>
-
-											<tbody id="tableBody">
-
-											</tbody>
-										</table>
-									</div>
-								</div>	
-							</div>
-						</div>	
-					</div>
-				</div>
-				<div class="col-xl-6 col-lg-4 col-md-4">
-					<div class="card card-custom gutter-b bg-white border-0">
-						<div class="card-body" >
-							<div class="resulttable-pos">
-								<table class="table right-table">
-
-									<tbody>
-										<tr class="d-flex align-items-center justify-content-between">
-											<th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">
-												Total Items
-											</th>
-											<td class="border-0 justify-content-end d-flex text-dark font-size-base">
-												<input type="text" name="_TotalItem" id="_TotalItem" value="0" class="form-control TotalText">
-											</td>
-											
+				<div class="col-md-5 h-100">
+					<div class="card card-custom gutter-b bg-white border-0 h-100">
+						<div class="card-body d-flex flex-column">
+							<h4 class="text-center">Detail Transaksi</h4>
+							<div class="table-responsive flex-grow-1" id="printableTable">
+								<table id="orderTable" class="display" style="width:100%">
+									<thead>
+										<tr>
+											<th>Nama Item</th>
+											<th>Jumlah</th>
+											<th>Harga</th>
 										</tr>
-										<tr class="d-flex align-items-center justify-content-between">
-											<th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">
-												Subtotal
-											</th>
-											<td class="border-0 justify-content-end d-flex text-dark font-size-base">
-												<input type="text" name="_SubTotal" id="_SubTotal" value="0" class="form-control TotalText">
-											</td>
-										
-									  	</tr>
-									  	<tr class="d-flex align-items-center justify-content-between">
-											<th class="border-0 ">
-												<div class="d-flex align-items-center font-size-h5 mb-0 font-size-bold text-dark">
-													DISCOUNT
-												</div>
-											</th>
-											<td class="border-0 justify-content-end d-flex text-dark font-size-base">
-												<input type="text" name="_TotalDiskon" id="_TotalDiskon" value="0" class="form-control TotalText">
-											</td>
-										
-										</tr>
-										<tr class="d-flex align-items-center justify-content-between">
-											<th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">
-													Tax (P. Hiburan, PPN, P. Makanan)
-											</th>
-											<td class="border-0 justify-content-end d-flex text-dark font-size-base">
-												<input type="text" name="_TotalTax" id="_TotalTax" value="0" class="form-control TotalText">
-											</td>
-										
-									  	</tr>
-									  	<tr class="d-flex align-items-center justify-content-between item-price">
-											<th class="border-0 font-size-h5 mb-0 font-size-bold text-primary">
-												TOTAL
-											</th>
-											<td>:</td>
-											<td class="border-0 justify-content-end d-flex text-primary font-size-base">
-												<input type="text" name="_GrandTotal" id="_GrandTotal" value="0" class="form-control TotalText">
-											</td>
-										
-									  	</tr>
-								
+									</thead>
+									<tbody id="tableBody">
 									</tbody>
 								</table>
 							</div>
-						</div>	
-					 </div>
+							<div class="resulttable-pos">
+								<table class="table right-table">
+									<tbody>
+										<tr class="d-flex align-items-center justify-content-between">
+											<th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">Total Items</th>
+											<td class="border-0 justify-content-end d-flex text-dark font-size-base">
+												<input type="text" name="_TotalItem" id="_TotalItem" value="0" class="form-control TotalText">
+											</td>
+										</tr>
+										<tr class="d-flex align-items-center justify-content-between">
+											<th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">Subtotal</th>
+											<td class="border-0 justify-content-end d-flex text-dark font-size-base">
+												<input type="text" name="_SubTotal" id="_SubTotal" value="0" class="form-control TotalText">
+											</td>
+										</tr>
+										<tr class="d-flex align-items-center justify-content-between">
+											<th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">DISCOUNT</th>
+											<td class="border-0 justify-content-end d-flex text-dark font-size-base">
+												<input type="text" name="_TotalDiskon" id="_TotalDiskon" value="0" class="form-control TotalText">
+											</td>
+										</tr>
+										<tr class="d-flex align-items-center justify-content-between">
+											<th class="border-0 font-size-h5 mb-0 font-size-bold text-dark">Tax (P. Hiburan, PPN, P. Makanan)</th>
+											<td class="border-0 justify-content-end d-flex text-dark font-size-base">
+												<input type="text" name="_TotalTax" id="_TotalTax" value="0" class="form-control TotalText">
+											</td>
+										</tr>
+										<tr class="d-flex align-items-center justify-content-between item-price">
+											<th class="border-0 font-size-h5 mb-0 font-size-bold text-primary">TOTAL</th>
+											<td class="border-0 justify-content-end d-flex text-primary font-size-base">
+												<input type="text" name="_GrandTotal" id="_GrandTotal" value="0" class="form-control TotalText">
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

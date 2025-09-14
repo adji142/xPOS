@@ -105,29 +105,21 @@ class MetodePembayaranController extends Controller
             if ($model) {
             	// $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('metodepembayaran')
-                			->where('id','=', $request->input('id'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'NamaMetodePembayaran'=>$request->input('NamaMetodePembayaran'),
-                                    'AkunPembayaran' => $request->input('AkunPembayaran'),
-                                    'Image' => $request->input('image_base64'),
-                                    'Active' => $request->input('Active'),
-                                    'MetodeVerifikasi' => $request->input('MetodeVerifikasi'),
-                                    'TipePembayaran' => $request->input('TipePembayaran'),
-                                    'ClientKey' => $request->input('ClientKey'),
-                                    'ServerKey' => $request->input('ServerKey'),
-                                    'MerchantID' => $request->input('MerchantID'),
-                				]
-                			);
 
-                if ($update) {
-                    alert()->success('Success','Data Metode Pembayaran berhasil disimpan.');
-                    return redirect('metodepembayaran');
-                }else{
-                    throw new \Exception('Edit Metode Pembayaran Gagal');
-                }
+                \App\Services\DBLogger::update('metodepembayaran', ['id' => $request->input('id'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaMetodePembayaran'=>$request->input('NamaMetodePembayaran'),
+                    'AkunPembayaran' => $request->input('AkunPembayaran'),
+                    'Image' => $request->input('image_base64'),
+                    'Active' => $request->input('Active'),
+                    'MetodeVerifikasi' => $request->input('MetodeVerifikasi'),
+                    'TipePembayaran' => $request->input('TipePembayaran'),
+                    'ClientKey' => $request->input('ClientKey'),
+                    'ServerKey' => $request->input('ServerKey'),
+                    'MerchantID' => $request->input('MerchantID'),
+                ]);
+
+                alert()->success('Success','Data Metode Pembayaran berhasil disimpan.');
+                return redirect('metodepembayaran');
             } else{
                 throw new \Exception('Metode Pembayaran not found.');
             }
@@ -174,21 +166,19 @@ class MetodePembayaranController extends Controller
             if ($model) {
                 // $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('metodepembayaran')
-                            ->where('id','=', $request->input('id'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                            ->update(
-                                [
-                                    'NamaMetodePembayaran'=>$request->input('NamaMetodePembayaran'),
-                                    'AkunPembayaran' => $request->input('AkunPembayaran')
-                                ]
-                            );
+                \App\Services\DBLogger::update('metodepembayaran', ['id' => $request->input('id'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaMetodePembayaran'=>$request->input('NamaMetodePembayaran'),
+                    'AkunPembayaran' => $request->input('AkunPembayaran'),
+                    'Image' => $request->input('image_base64'),
+                    'Active' => $request->input('Active'),
+                    'MetodeVerifikasi' => $request->input('MetodeVerifikasi'),
+                    'TipePembayaran' => $request->input('TipePembayaran'),
+                    'ClientKey' => $request->input('ClientKey'),
+                    'ServerKey' => $request->input('ServerKey'),
+                    'MerchantID' => $request->input('MerchantID'),
+                ]);
 
-                if ($update) {
-                    $data['success'] = true;
-                }else{
-                    $data['message'] = 'Edit Metode Pembayaran Gagal';
-                }
+                $data['success'] = true;
             } else{
                 $data['message'] = 'Metode Pembayaran not found.';
             }

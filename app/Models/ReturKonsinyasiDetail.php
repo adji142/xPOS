@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ReturKonsinyasiDetail extends Model
+class ReturKonsinyasiDetail extends BaseModel
 {
     use HasFactory;
     protected $table = 'returkonsinyasidetail';

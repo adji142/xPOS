@@ -50,47 +50,41 @@ class SettingAccountController extends Controller
             if ($model) {
             	// $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('settingaccount')
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'InvAcctHargaPokokPenjualan'=>$this->checkInput($request, 'InvAcctHargaPokokPenjualan'),
-									'InvAcctPendapatanJual'=>$this->checkInput($request, 'InvAcctPendapatanJual'),
-									'InvAcctPendapatanJasa'=>$this->checkInput($request, 'InvAcctPendapatanJasa'),
-									'InvAcctPersediaan'=>$this->checkInput($request, 'InvAcctPersediaan'),
-									'InvAcctPendapatanNonInventory'=>$this->checkInput($request, 'InvAcctPendapatanNonInventory'),
-									'InvAcctPendapatanLainLain'=>$this->checkInput($request, 'InvAcctPendapatanLainLain'),
-									'InvAcctPenyesuaiaanStockMasuk'=>$this->checkInput($request, 'InvAcctPenyesuaiaanStockMasuk'),
-									'InvAcctPenyesuaiaanStockKeluar'=>$this->checkInput($request, 'InvAcctPenyesuaiaanStockKeluar'),
-									'PbAcctPajakPembelian'=>$this->checkInput($request, 'PbAcctPajakPembelian'),
-									'PbAcctPembayaranTunai'=>$this->checkInput($request, 'PbAcctPembayaranTunai'),
-									'PbAcctPembayaranNonTunai'=>$this->checkInput($request, 'PbAcctPembayaranNonTunai'),
-									'PbAcctHutang'=>$this->checkInput($request, 'PbAcctHutang'),
-									'PbAcctUangMukaPembelian'=>$this->checkInput($request, 'PbAcctUangMukaPembelian'),
-									'PjAcctPajakPenjualan'=>$this->checkInput($request, 'PjAcctPajakPenjualan'),
-									'PjAcctPenjualanTunai'=>$this->checkInput($request, 'PjAcctPenjualanTunai'),
-									'PjAcctPenjualanNonTunai'=>$this->checkInput($request, 'PjAcctPenjualanNonTunai'),
-									'PjAcctPiutang'=>$this->checkInput($request, 'PjAcctPiutang'),
-									'PjAcctUangMukaPenjualan'=>$this->checkInput($request, 'PjAcctUangMukaPenjualan'),
-                                    'PjAcctGoodsInTransit'=>$this->checkInput($request, 'PjAcctGoodsInTransit'),
-                                    'PjAcctReturnPenjualan'=>$this->checkInput($request, 'PjAcctReturnPenjualan'),
-									'PjAcctPajakHiburan'=>$this->checkInput($request, 'PjAcctPajakHiburan'),
-									'KnAcctHutangKonsinyasi'=>$this->checkInput($request, 'KnAcctHutangKonsinyasi'),
-									'KnAcctPembayaranHutang'=>$this->checkInput($request, 'KnAcctPembayaranHutang'),
-									'KnAcctPenerimaanKonsinyasi'=>$this->checkInput($request, 'KnAcctPenerimaanKonsinyasi'),
-									'OthAcctModal'=>$this->checkInput($request, 'OthAcctModal'),
-									'OthAcctPrive'=>$this->checkInput($request, 'OthAcctPrive'),
-									'OthAcctLabaDitahan'=>$this->checkInput($request, 'OthAcctLabaDitahan'),
-									'OthAcctLabaTahunBerjalan'=>$this->checkInput($request, 'OthAcctLabaTahunBerjalan')
-                				]
-                			);
 
-                if ($update) {
-                    alert()->success('Success','Data Setting Berhasil disimpan.');
+				\App\Services\DBLogger::update('settingaccount', ['RecordOwnerID' => Auth::user()->RecordOwnerID], [
+					'InvAcctHargaPokokPenjualan'=>$this->checkInput($request, 'InvAcctHargaPokokPenjualan'),
+					'InvAcctPendapatanJual'=>$this->checkInput($request, 'InvAcctPendapatanJual'),
+					'InvAcctPendapatanJasa'=>$this->checkInput($request, 'InvAcctPendapatanJasa'),
+					'InvAcctPersediaan'=>$this->checkInput($request, 'InvAcctPersediaan'),
+					'InvAcctPendapatanNonInventory'=>$this->checkInput($request, 'InvAcctPendapatanNonInventory'),
+					'InvAcctPendapatanLainLain'=>$this->checkInput($request, 'InvAcctPendapatanLainLain'),
+					'InvAcctPenyesuaiaanStockMasuk'=>$this->checkInput($request, 'InvAcctPenyesuaiaanStockMasuk'),
+					'InvAcctPenyesuaiaanStockKeluar'=>$this->checkInput($request, 'InvAcctPenyesuaiaanStockKeluar'),
+					'PbAcctPajakPembelian'=>$this->checkInput($request, 'PbAcctPajakPembelian'),
+					'PbAcctPembayaranTunai'=>$this->checkInput($request, 'PbAcctPembayaranTunai'),
+					'PbAcctPembayaranNonTunai'=>$this->checkInput($request, 'PbAcctPembayaranNonTunai'),
+					'PbAcctHutang'=>$this->checkInput($request, 'PbAcctHutang'),
+					'PbAcctUangMukaPembelian'=>$this->checkInput($request, 'PbAcctUangMukaPembelian'),
+					'PjAcctPajakPenjualan'=>$this->checkInput($request, 'PjAcctPajakPenjualan'),
+					'PjAcctPenjualanTunai'=>$this->checkInput($request, 'PjAcctPenjualanTunai'),
+					'PjAcctPenjualanNonTunai'=>$this->checkInput($request, 'PjAcctPenjualanNonTunai'),
+					'PjAcctPiutang'=>$this->checkInput($request, 'PjAcctPiutang'),
+					'PjAcctUangMukaPenjualan'=>$this->checkInput($request, 'PjAcctUangMukaPenjualan'),
+					'PjAcctGoodsInTransit'=>$this->checkInput($request, 'PjAcctGoodsInTransit'),
+					'PjAcctReturnPenjualan'=>$this->checkInput($request, 'PjAcctReturnPenjualan'),
+					'PjAcctPajakHiburan'=>$this->checkInput($request, 'PjAcctPajakHiburan'),
+					'KnAcctHutangKonsinyasi'=>$this->checkInput($request, 'KnAcctHutangKonsinyasi'),
+					'KnAcctPembayaranHutang'=>$this->checkInput($request, 'KnAcctPembayaranHutang'),
+					'KnAcctPenerimaanKonsinyasi'=>$this->checkInput($request, 'KnAcctPenerimaanKonsinyasi'),
+					'OthAcctModal'=>$this->checkInput($request, 'OthAcctModal'),
+					'OthAcctPrive'=>$this->checkInput($request, 'OthAcctPrive'),
+					'OthAcctLabaDitahan'=>$this->checkInput($request, 'OthAcctLabaDitahan'),
+					'OthAcctLabaTahunBerjalan'=>$this->checkInput($request, 'OthAcctLabaTahunBerjalan')
+
+				]);
+
+				alert()->success('Success','Data Setting Berhasil disimpan.');
                     return redirect('acctsetting');
-                }else{
-                    throw new \Exception('Edit Setting Gagal');
-                }
             } else{
                 throw new \Exception('Satuan not found.');
             }

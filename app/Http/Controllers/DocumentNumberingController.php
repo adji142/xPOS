@@ -45,22 +45,12 @@ class DocumentNumberingController extends Controller
                       ->where('RecordOwnerID','=', Auth::user()->RecordOwnerID)->get();
 
             if (count($model) > 0) {
-            	$update = DB::table('documentnumbering')
-                    ->where('DocumentID','=', $request->input('DocumentID'))
-                    ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                    ->update(
-                      [
-                        'prefix' => $request->input('prefix'),
-                        'NumberLength' => $request->input('NumberLength'),
-                      ]
-                    );
+                \app\Services\DBLogger::update('documentnumbering', ['DocumentID' => $request->input('DocumentID'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'prefix' => $request->input('prefix'),
+                    'NumberLength' => $request->input('NumberLength'),
+                ]);
 	    
-	            if ($update) {
-	                $data['success'] = true;
-	                
-	            }else{
-	                $data['message'] = 'Update Data Gagal';
-	            }
+	            $data['success'] = true;
             }
             else{
             	$addModel = new DocumentNumbering;
@@ -93,6 +83,11 @@ class DocumentNumberingController extends Controller
             $model = Models::where('KodeModels','=',$request->input('KodeModels'));
     
             if ($model) {
+
+                \App\Services\DBLogger::update('model', ['KodeModels' => $request->input('KodeModels'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaModels' => $request->input('NamaModels'),
+                ]);
+
                 $update = DB::table('model')
                             ->where('KodeModels','=', $request->input('KodeModels'))
                             ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)

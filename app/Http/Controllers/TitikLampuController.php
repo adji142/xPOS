@@ -122,27 +122,17 @@ class TitikLampuController extends Controller
             $model = TitikLampu::where('id','=',$request->input('id'))->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
 
             if ($model) {
-            	// $model->Kode = $request->input('Kode');
-             //    $model->Nama = $request->input('Nama');
-                $update = DB::table('titiklampu')
-                			->where('id','=', $request->input('id'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'NamaTitikLampu'=>$request->input('NamaTitikLampu'),
-                                    'DigitalInput'=>$request->input('DigitalInput'),
-                                    'ControllerID'=>$request->input('ControllerID'),
-                                    'KelompokLampu'=>$request->input('KelompokLampu'),
-                                    'Deskripsi' => $request->input('Deskripsi')
-                				]
-                			);
+                \App\Services\DBLogger::update('titiklampu', ['id' => $request->input('id')], [
+                    'NamaTitikLampu'    => $request->input('NamaTitikLampu'),
+                    'DigitalInput'      => $request->input('DigitalInput'),
+                    'ControllerID'      => $request->input('ControllerID'),
+                    'KelompokLampu'     => $request->input('KelompokLampu'),
+                    'Deskripsi'         => $request->input('Deskripsi')
+                ]);
 
-                if ($update) {
-                    alert()->success('Success','Data Titik Lampu berhasil disimpan.');
-                    return redirect('titiklampu');
-                }else{
-                    throw new \Exception('Edit Titik Lampu Gagal');
-                }
+                alert()->success('Success','Data Titik Lampu berhasil disimpan.');
+                return redirect('titiklampu');
+
             } else{
                 throw new \Exception('Titik Lampu not found.');
             }
@@ -192,24 +182,16 @@ class TitikLampuController extends Controller
             if ($model) {
                 // $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('titiklampu')
-                            ->where('id','=', $request->input('id'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                            ->update(
-                                [
-                                    'NamaTitikLampu'=>$request->input('NamaTitikLampu'),
-                                    'DigitalInput'=>$request->input('DigitalInput'),
-                                    'ControllerID'=>$request->input('ControllerID'),
-                                    'KelompokLampu'=>$request->input('KelompokLampu'),
-                                    'Deskripsi' => $request->input('Deskripsi')
-                                ]
-                            );
+                \App\Services\DBLogger::update('titiklampu', ['id' => $request->input('id')], [
+                    'NamaTitikLampu'    => $request->input('NamaTitikLampu'),
+                    'DigitalInput'      => $request->input('DigitalInput'),
+                    'ControllerID'      => $request->input('ControllerID'),
+                    'KelompokLampu'     => $request->input('KelompokLampu'),
+                    'Deskripsi'         => $request->input('Deskripsi')
+                ]);
 
-                if ($update) {
-                    $data['success'] = true;
-                }else{
-                    $data['message'] = 'Edit Titik Lampu Gagal';
-                }
+                $data['success'] = true;
+
             } else{
                 $data['message'] = 'Titik Lampu Not found.';
             }

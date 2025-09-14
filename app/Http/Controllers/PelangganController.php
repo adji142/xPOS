@@ -242,50 +242,84 @@ class PelangganController extends Controller
                 'KodeGrupPelanggan'=>'required',
             ]);
 
-            $model = Pelanggan::where('KodePelanggan','=',$request->input('KodePelanggan'));
+            $model = Pelanggan::where('KodePelanggan','=',$request->input('KodePelanggan'))->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
 
             if ($model) {
-            	// $model->Kode = $request->input('Kode');
-             //    $model->Nama = $request->input('Nama');
-                $update = DB::table('pelanggan')
-                			->where('KodePelanggan','=', $request->input('KodePelanggan'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-									'NamaPelanggan' => $request->input('NamaPelanggan'),
-									'KodeGrupPelanggan' => $request->input('KodeGrupPelanggan'),
-									'LimitPiutang' => $request->input('LimitPiutang'),
-									'ProvID' => $request->input('ProvID'),
-									'KotaID' => $request->input('KotaID'),
-									'KelID' => $request->input('KelID'),
-									'KecID' => $request->input('KecID'),
-									'Email' => $request->input('Email'),
-									'NoTlp1' => $request->input('NoTlp1'),
-									'NoTlp2' => $request->input('NoTlp2'),
-									'Alamat' => $request->input('Alamat'),
-									'Keterangan' => $request->input('Keterangan'),
-                                    'Status' => $request->input('Status'),
-                                    'PelangganID' => $request->input('PelangganID'),
-                                    'AllowedDay' => is_array($request->input('AllowedDay')) ? implode(',', $request->input('AllowedDay')) : '',
-                                    'ValidUntil' => $request->input('ValidUntil')
-                				]
-                			);
+                \App\Services\DBLogger::update('pelanggan', ['KodePelanggan' => $request->input('KodePelanggan'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaPelanggan' => $request->input('NamaPelanggan'),
+                    'KodeGrupPelanggan' => $request->input('KodeGrupPelanggan'),
+                    'LimitPiutang' => $request->input('LimitPiutang'),
+                    'ProvID' => $request->input('ProvID'),
+                    'KotaID' => $request->input('KotaID'),
+                    'KelID' => $request->input('KelID'),
+                    'KecID' => $request->input('KecID'),
+                    'Email' => $request->input('Email'),
+                    'NoTlp1' => $request->input('NoTlp1'),
+                    'NoTlp2' => $request->input('NoTlp2'),
+                    'Alamat' => $request->input('Alamat'),
+                    'Keterangan' => $request->input('Keterangan'),
+                    'Status' => $request->input('Status'),
+                    'PelangganID' => $request->input('PelangganID'),
+                    'AllowedDay' => is_array($request->input('AllowedDay')) ? implode(',', $request->input('AllowedDay')) : '',
+                    'ValidUntil' => $request->input('ValidUntil')
+                ]);
 
-                if ($update) {
-                    alert()->success('Success','Data Pelanggan berhasil disimpan.');
-                    return redirect('pelanggan');
-                }else{
-                    throw new \Exception('Edit Pelanggan Gagal');
-                }
+                alert()->success('Success','Data Pelanggan berhasil disimpan.');
+                return redirect('pelanggan');
+
             } else{
-                throw new \Exception('Grup Pelanggan not found.');
+                throw new \Exception('Pelanggan not found.');
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::debug($e->getMessage());
 
             alert()->error('Error',$e->getMessage());
             return redirect()->back();
         }
+    }
+
+    public function editJson(Request $request)
+    {
+        $data = array('success' => false, 'message' => '');
+        Log::debug($request->all());
+        try {
+            $this->validate($request, [
+                'KodePelanggan'=>'required',
+                'NamaPelanggan'=>'required',
+                'KodeGrupPelanggan'=>'required',
+            ]);
+
+            $model = Pelanggan::where('KodePelanggan','=',$request->input('KodePelanggan'))->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
+
+            if ($model) {
+                \App\Services\DBLogger::update('pelanggan', ['KodePelanggan' => $request->input('KodePelanggan'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
+                    'NamaPelanggan' => $request->input('NamaPelanggan'),
+                    'KodeGrupPelanggan' => $request->input('KodeGrupPelanggan'),
+                    'LimitPiutang' => $request->input('LimitPiutang'),
+                    'ProvID' => $request->input('ProvID'),
+                    'KotaID' => $request->input('KotaID'),
+                    'KelID' => $request->input('KelID'),
+                    'KecID' => $request->input('KecID'),
+                    'Email' => $request->input('Email'),
+                    'NoTlp1' => $request->input('NoTlp1'),
+                    'NoTlp2' => $request->input('NoTlp2'),
+                    'Alamat' => $request->input('Alamat'),
+                    'Keterangan' => $request->input('Keterangan'),
+                    'Status' => $request->input('Status'),
+                    'PelangganID' => $request->input('PelangganID'),
+                    'AllowedDay' => is_array($request->input('AllowedDay')) ? implode(',', $request->input('AllowedDay')) : '',
+                    'ValidUntil' => $request->input('ValidUntil')
+                ]);
+
+                $data['success'] = true;
+            } else{
+                $data['message'] = 'Pelanggan not found.';
+            }
+        } catch (\Exception $e) {
+            Log::debug($e->getMessage());
+            $data['message'] = $e->getMessage();
+        }
+        return response()->json($data);
     }
 
     public function deletedata(Request $request)

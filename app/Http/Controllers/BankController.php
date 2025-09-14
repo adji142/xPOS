@@ -95,29 +95,30 @@ class BankController extends Controller
                 'NamaBank'=>'required'
             ]);
 
-            $model = Bank::where('KodeBank','=',$request->input('KodeBank'));
+            $model = Bank::where('KodeBank','=',$request->input('KodeBank'))->first();
 
             if ($model) {
             	// $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                $update = DB::table('bank')
-                			->where('KodeBank','=', $request->input('KodeBank'))
-                            ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                			->update(
-                				[
-                					'NamaBank'=>$request->input('NamaBank'),
-                					'NamaPemilik'=>$request->input('NamaPemilik'),
-                					'CabangPembukaRekening'=>$request->input('CabangPembukaRekening'),
-                					'NoRekeningBank' => $request->input('NoRekeningBank')
-                				]
-                			);
-
-                if ($update) {
-                    alert()->success('Success','Data Bank berhasil disimpan.');
-                    return redirect('bank');
-                }else{
-                    throw new \Exception('Edit Bank Gagal');
-                }
+                // $update = DB::table('bank')
+                // 			->where('KodeBank','=', $request->input('KodeBank'))
+                //             ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                // 			->update(
+                // 				[
+                // 					'NamaBank'=>$request->input('NamaBank'),
+                // 					'NamaPemilik'=>$request->input('NamaPemilik'),
+                // 					'CabangPembukaRekening'=>$request->input('CabangPembukaRekening'),
+                // 					'NoRekeningBank' => $request->input('NoRekeningBank')
+                // 				]
+                // 			);
+                $model->NamaBank = $request->input('NamaBank');
+                $model->NamaPemilik = $request->input('NamaPemilik');
+                $model->CabangPembukaRekening = $request->input('CabangPembukaRekening');
+                $model->NoRekeningBank = $request->input('NoRekeningBank');
+                $model->save();
+                
+                alert()->success('Success','Data Bank berhasil disimpan.');
+                return redirect('bank');
             } else{
                 throw new \Exception('Bank not found.');
             }

@@ -11,7 +11,7 @@ use DB;
 
 use App\Models\ItemMaster;
 
-class SettingAccount extends Model
+class SettingAccount extends BaseModel
 {
     use HasFactory;
     protected $table = 'settingaccount';
