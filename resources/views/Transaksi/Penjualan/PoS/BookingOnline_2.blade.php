@@ -867,11 +867,14 @@
 
 
     // Panggil API pertama kali
-    fetchJadwal("{{ $company->KodePartner }}",$('#paketSelect').val(), currentSelectedDate.toISOString().split('T')[0]);
+    // fetchJadwal("{{ $company->KodePartner }}",$('#paketSelect').val(), currentSelectedDate.toISOString().split('T')[0]);
 
     renderMeja();
     generateDateList(currentSelectedDate);
     updateCartUI();
+
+    // Auto-click the active (tomorrow) date button to load schedule
+    $('#dateList .date-btn.active').click();
 
     const savedColor = localStorage.getItem('theme_color');
     if (savedColor) applyThemeColor(savedColor);

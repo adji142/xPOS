@@ -1122,7 +1122,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 		function closedWindow(){
 			
-			_custdisplayopened = localStorage.getItem("closedwindows");
+			// _custdisplayopened = localStorage.getItem("closedwindows");
 			console.log(_custdisplayopened);
 			// alert('Closed');
 		}
@@ -1189,10 +1189,10 @@ License: You must have a valid license purchased only from themeforest(the above
 		});
 
 		window.onload = function () {
-			if (localStorage.getItem('displayOpen') === 'true') {
-				// Window tidak bisa diakses ulang langsung, tapi akan dapat postMessage dari display
-				console.log('Menunggu say-hello dari display...');
-			}
+			// if (localStorage.getItem('displayOpen') === 'true') {
+			// 	// Window tidak bisa diakses ulang langsung, tapi akan dapat postMessage dari display
+			// 	console.log('Menunggu say-hello dari display...');
+			// }
 		};
 		// window.addEventListener("closedwindows", closedWindow);
 		jQuery(document).ready(function() {
@@ -1245,7 +1245,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			// FirstRowHandling();
 			// SetTimer(1,0,'2024-12-09T21:55:00');
 			// Fill Datatable
-			localStorage.setItem('PoSData', JSON.stringify([]));
+			// localStorage.setItem('PoSData', JSON.stringify([]));
 		});
 		$('#LookupDetailOrder').on('shown.bs.modal', function () {
 			$('#cboMetodePembayaran_Detail').select2({
@@ -1850,7 +1850,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			console.log("Status Cust Display : " + _custdisplayopened)
 			if(_custdisplayopened){
 				// console.log('Cust Display Oppened');
-				localStorage.setItem('paymentgatewaydata', JSON.stringify(oData));
+				// localStorage.setItem('paymentgatewaydata', JSON.stringify(oData));
 				displayWindow.postMessage('paymentgateway', '*');
 			}
 			else{
@@ -2991,7 +2991,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 			console.log(JSON.stringify(oCustomerDisplay))
 			
-			localStorage.setItem('PoSData', JSON.stringify(oCustomerDisplay));
+			// localStorage.setItem('PoSData', JSON.stringify(oCustomerDisplay));
 
 			SetEnableCommand();
 		}
@@ -3775,7 +3775,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			
 			if(_custdisplayopened){
 				// console.log('Cust Display Oppened');
-				localStorage.setItem('paymentgatewaydata', JSON.stringify(oData));
+				// localStorage.setItem('paymentgatewaydata', JSON.stringify(oData));
 				displayWindow.postMessage('paymentgateway', '*');
 			}
 			else{
@@ -3909,7 +3909,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			// Use Laravel's url() helper to generate the URL
 			const url = "{{ url('/fpenjualan/custdisplay') }}";
 			displayWindow  = window.open(url, '_blank', 'width=1390,height=800,,scrollbars=no,toolbar=no,status=no,menubar=no');
-			localStorage.setItem('displayOpen', 'true');
+			// localStorage.setItem('displayOpen', 'true');
 
 			const interval = setInterval(() => {
 				if (displayWindow && displayWindow.closed) {
