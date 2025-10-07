@@ -135,7 +135,7 @@
 </head>
 <body>
   <header>
-    <h3 class="mb-0">QUEUE SYSTEM - PT. XYS</h3>
+    <h3 class="mb-0">QUEUE SYSTEM - {{ $company->NamaPartner }}</h3>
     <div id="clock"></div>
   </header>
 
