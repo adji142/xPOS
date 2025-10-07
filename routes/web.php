@@ -1065,8 +1065,8 @@ Route::get('/discountvoucher/export', [DiscountVoucherController::class,'Export'
 
 
 
-Route::get('/queue/{id}', [QueueManagementController::class,'index'])->name('queue-management')->middleware('auth');
-Route::post('/queue/getData', [QueueManagementController::class, 'handleQueue'])->name('queue-getData')->middleware('auth');
+Route::get('/queue/{id}', [QueueManagementController::class,'index'])->name('queue-management');
+Route::post('/queue/getData', [QueueManagementController::class, 'handleQueue'])->name('queue-getData');
 
 /*
 |--------------------------------------------------------------------------

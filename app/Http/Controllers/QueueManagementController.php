@@ -81,7 +81,7 @@ class QueueManagementController extends Controller
         }
 
 
-        return view('Transaksi.Penjualan.QueueManagement.QueueManagement',[
+        return view('Transaksi.Penjualan.QueueManagement.QueueManagement_v2',[
             'oImageData' => $oImageData,
             'company' => $company,
             'idE' => $idE
