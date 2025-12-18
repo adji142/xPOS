@@ -1273,11 +1273,12 @@
 
 @push('scripts')
 
-@if (env('MIDTRANS_IS_PRODUCTION') == 'false')
+{{-- @if (env('MIDTRANS_IS_PRODUCTION') == 'false')
 <script src="{{ env('MIDTRANS_DEV_URL') }}" data-client-key="{{ config('midtrans.client_key') }}"></script>
 @else
 <script src="{{ env('MIDTRANS_PROD_URL') }}" data-client-key="{{ config('midtrans.client_key') }}"></script>
-@endif
+@endif --}}
+<script src="{{ env('MIDTRANS_DEV_URL') }}" data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script type="text/javascript">
 var _URL = window.URL || window.webkitURL;
 var _URLePub = window.URL || window.webkitURL;
