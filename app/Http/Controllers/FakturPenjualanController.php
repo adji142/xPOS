@@ -1438,6 +1438,7 @@ class FakturPenjualanController extends Controller
 				$update = DB::table('tableorderheader')
 							->where('NoTransaksi','=', $NoTransaksi)
 							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+							->where('JenisPaket','<>', 'JAM')
 							->update(
 								[
 									'Status'=>1,

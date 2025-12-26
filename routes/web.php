@@ -73,6 +73,7 @@ use App\Http\Controllers\QueueManagementController;
 use App\Http\Controllers\DiscountVoucherController;
 use App\Http\Controllers\SupportPageController;
 use App\Http\Controllers\LogingController;
+use App\Http\Controllers\SerialNumberController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -120,6 +121,19 @@ Route::delete('/gruppelanggan/delete/{id}', [GrupPelangganController::class, 'de
 
 /*
 |--------------------------------------------------------------------------
+| Serial Number
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/serialnumber', [SerialNumberController::class, 'View'])->name('serialnumber')->middleware('auth');
+Route::get('/serialnumber/form/{id}', [SerialNumberController::class, 'Form'])->name('serialnumber-form')->middleware('auth');
+Route::post('/serialnumber/store', [SerialNumberController::class, 'store'])->name('serialnumber-store')->middleware('auth');
+Route::post('/serialnumber/edit', [SerialNumberController::class, 'edit'])->name('serialnumber-edit')->middleware('auth');
+Route::delete('/serialnumber/delete/{id}', [SerialNumberController::class, 'deletedata'])->name('serialnumber-delete')->middleware('auth');
+Route::post('/serialnumber/generate', [SerialNumberController::class, 'generateJson'])->name('serialnumber-generate')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
 | Pelanggan
 |--------------------------------------------------------------------------
 |
@@ -133,6 +147,10 @@ Route::delete('/pelanggan/delete/{id}', [PelangganController::class, 'deletedata
 Route::post('/pelanggan/demografi', [PelangganController::class, 'ReadDemografi'])->name('demografipelanggan');
 Route::get('/pelanggan/export', [PelangganController::class,'Export'])->name('pelanggan-export')->middleware('auth');
 Route::post('/pelanggan/viewJson', [PelangganController::class, 'ReadPelangganJson'])->name('pelanggan-viewJson')->middleware('auth');
+Route::post('/pelanggan/activate', [PelangganController::class, 'activateMember'])->name('pelanggan-activate')->middleware('auth');
+Route::post('/pelanggan/extend', [PelangganController::class, 'extendMember'])->name('pelanggan-extend')->middleware('auth');
+Route::post('/pelanggan/payment-gateway', [PelangganController::class, 'paymentGateway'])->name('pelanggan-payment-gateway')->middleware('auth');
+Route::post('/pelanggan/payment-callback', [PelangganController::class, 'paymentCallback'])->name('pelanggan-payment-callback')->middleware('auth');
 /*
 |--------------------------------------------------------------------------
 | Supplier
@@ -354,6 +372,7 @@ Route::get('/metodepembayaran/form/{id}', [MetodePembayaranController::class,'Fo
 Route::post('/metodepembayaran/store', [MetodePembayaranController::class, 'store'])->name('metodepembayaran-store')->middleware('auth');
 Route::post('/metodepembayaran/edit', [MetodePembayaranController::class, 'edit'])->name('metodepembayaran-edit')->middleware('auth');
 Route::delete('/metodepembayaran/delete/{id}', [MetodePembayaranController::class, 'deletedata'])->name('metodepembayaran-delete')->middleware('auth');
+Route::post('/metodepembayaran/viewJson', [MetodePembayaranController::class, 'ViewJson'])->name('metodepembayaran-viewJson')->middleware('auth');
 Route::post('/create-transaction', [PaymentGatewayController::class, 'createTransaction'])->name('create-transaction')->middleware('auth');
 
 /*
@@ -556,6 +575,10 @@ Route::post('/fpenjualan/editJsonPosFnb', [FakturPenjualanController::class, 'ed
 Route::get('/fpenjualan/custdisplay', [CustDisplayController::class, 'View'])->name('fpenjualan-custdisplay')->middleware('auth');
 Route::post('/fpenjualan/hiburanPoS', [FakturPenjualanController::class, 'storePoSHiburan'])->name('fpenjualan-hiburanPoS')->middleware('auth');
 Route::post('/fpenjualan/void', [FakturPenjualanController::class, 'void'])->name('fpenjualan-void')->middleware('auth');
+Route::post('/fpenjualan/getTimeSlots', [TableOrderController::class, 'getAvailableTimeSlots'])->name('fpenjualan-getTimeSlots')->middleware('auth');
+Route::get('/daftartableorder', [TableOrderController::class, 'DaftarTableOrder'])->name('daftartableorder')->middleware('auth');
+Route::post('/daftartableorder/reset', [TableOrderController::class, 'ResetController'])->name('daftartableorder-reset')->middleware('auth');
+
 /*
 |--------------------------------------------------------------------------
 | Retur Penjualan

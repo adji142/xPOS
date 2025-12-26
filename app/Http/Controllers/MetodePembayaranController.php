@@ -39,6 +39,7 @@ class MetodePembayaranController extends Controller
 
         $jenisitem = MetodePembayaran::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
+        $data['success'] = true;
         $data['data']= $jenisitem;
         return response()->json($data);
     }

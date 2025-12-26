@@ -67,9 +67,29 @@ class MasterControllerController extends Controller
                 'BaudRate' =>'required'
             ]);
 
+            $sn = $request->input('SN');
+            
+            // Check global SN in mastercontroller
+            $checkRegistered = DB::table('mastercontroller')->where('SN', $sn)->exists();
+            if ($checkRegistered) {
+                alert()->error('Error', 'serial number sudah pernah di claim');
+                return redirect()->back();
+            }
+
+            // Check if SN exists in serial_numbers and belongs to the partner
+            $checkOwner = DB::table('serial_numbers')
+                ->where('SerialNumber', $sn)
+                ->where('KodePartner', Auth::user()->RecordOwnerID)
+                ->exists();
+            
+            if (!$checkOwner) {
+                alert()->error('Error', 'Serial Number tidak valid atau bukan milik anda');
+                return redirect()->back();
+            }
+
             $model = new MasterController;
             $model->NamaController = $request->input('NamaController');
-            $model->SN = $request->input('SN');
+            $model->SN = $sn;
             $model->Port = $request->input('Port');
             $model->BaudRate = $request->input('BaudRate');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
@@ -77,7 +97,7 @@ class MasterControllerController extends Controller
             $save = $model->save();
 
             if ($save) {
-                alert()->success('Success','Data Controller Berhasil disimpan.');
+                alert()->success('Success','Serial Number Berhasil di claim.');
                 return redirect('controller');
                 
             }else{
@@ -102,14 +122,39 @@ class MasterControllerController extends Controller
                 'BaudRate' =>'required'
             ]);
 
-            $model = MasterController::where('id','=',$request->input('id'))->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
+            $sn = $request->input('SN');
+            $id = $request->input('id');
+
+            // Check global SN in mastercontroller (excluding current record)
+            $checkRegistered = DB::table('mastercontroller')
+                ->where('SN', $sn)
+                ->where('id', '<>', $id)
+                ->exists();
+            
+            if ($checkRegistered) {
+                alert()->error('Error', 'serial number sudah pernah di claim');
+                return redirect()->back();
+            }
+
+            // Check if SN exists in serial_numbers and belongs to the partner
+            $checkOwner = DB::table('serial_numbers')
+                ->where('SerialNumber', $sn)
+                ->where('KodePartner', Auth::user()->RecordOwnerID)
+                ->exists();
+            
+            if (!$checkOwner) {
+                alert()->error('Error', 'Serial Number tidak valid atau bukan milik anda');
+                return redirect()->back();
+            }
+
+            $model = MasterController::where('id','=',$id)->where('RecordOwnerID','=',Auth::user()->RecordOwnerID);
 
             if ($model) {
             	// $model->Kode = $request->input('Kode');
              //    $model->Nama = $request->input('Nama');
-                \App\Services\DBLogger::update('mastercontroller', ['id' => $request->input('id')], [
+                \App\Services\DBLogger::update('mastercontroller', ['id' => $id], [
                     'NamaController' => $request->input('NamaController'),
-                    'SN' => $request->input('SN'),
+                    'SN' => $sn,
                     'Port' => $request->input('Port'),
                     'BaudRate' => $request->input('BaudRate'),
                 ]);
@@ -120,7 +165,7 @@ class MasterControllerController extends Controller
             } else{
                 throw new \Exception('Controller not found.');
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::debug($e->getMessage());
 
             alert()->error('Error',$e->getMessage());
@@ -176,7 +221,7 @@ class MasterControllerController extends Controller
             } else{
                 $data['message'] = 'Meja Controller found.';
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::debug($e->getMessage());
 
             $data['message'] = $e->getMessage();
@@ -199,7 +244,7 @@ class MasterControllerController extends Controller
 	        	alert()->error('Error','Delete Controller Gagal.');
 	        }
 	        return redirect('controller');
-    	} catch (Exception $e) {
+    	} catch (\Exception $e) {
     		Log::debug($e->getMessage());
 
             alert()->error('Error',$e->getMessage());
@@ -235,7 +280,7 @@ class MasterControllerController extends Controller
                 $data['success'] = false;
                 $data['message'] = 'Controller not found.';
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::debug($e->getMessage());
             $data['success'] = false;
             $data['message'] = $e->getMessage();

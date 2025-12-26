@@ -24,6 +24,12 @@ class Pelanggan extends BaseModel
         'Alamat',
         'Keterangan',
         'Status',
+        'isPaidMembership',
+        'MaxPlay',
+        'Played',
+        'MemberPrice',
+        'maxTimePerPlay',
+        'ValidUntil',
         'RecordOwnerID',
         'created_at',
         'updated_at'

@@ -118,39 +118,6 @@ License: You must have a valid license purchased only from themeforest(the above
 			text-decoration: none; /* Optional: remove underline */
 		}
 
-		.time-slot-card {
-			cursor: pointer;
-			transition: all 0.2s;
-			border: 1px solid #ddd;
-			border-radius: 8px;
-			overflow: hidden;
-		}
-		.time-slot-card:hover {
-			transform: translateY(-2px);
-			box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-		}
-		.time-slot-card.selected {
-			border-color: #3699FF;
-			background-color: #2280dfff;
-		}
-		.time-slot-card.disabled {
-			opacity: 0.5;
-			cursor: not-allowed;
-			background-color: #f3f6f9;
-		}
-		.time-slot-card.disabled:hover {
-			transform: none;
-			box-shadow: none;
-		}
-		/* Fix identifying selected items by targeting the inner card */
-		.time-slot-card.selected .card {
-			background-color: #3699FF !important;
-			color: #ffffff !important;
-			border-color: #3699FF;
-		}
-		.time-slot-card.selected .text-muted {
-			color: #e4e6ef !important;
-		}
 	</style>
 </head>
 <!--end::Head-->
@@ -536,7 +503,7 @@ License: You must have a valid license purchased only from themeforest(the above
 												<div class="col-md-4">
 													<label  class="text-body">Table</label>
 													<fieldset class="form-group mb-12">
-														<select name="tableid" id="tableid" class="js-example-basic-single js-states form-control bg-transparent">
+														<select name="tableid" id="tableid" class="js-example-basic-single js-states form-control bg-transparent" disabled>
 															<option value="">Pilih Table</option>
 															@foreach ($titiklampuoption as $pkt)
 																<option value="{{ $pkt->id }}">{{ $pkt->NamaTitikLampu }}</option>
@@ -557,13 +524,6 @@ License: You must have a valid license purchased only from themeforest(the above
 												</div>
 												<div class="col-md-4">
 													<label  class="text-body" id= "lblDurasiPaket">Durasi (Jam)</label>
-													<div class="checkbox-inline mb-2">
-														<label class="checkbox checkbox-outline checkbox-success">
-															<input type="checkbox" id="chkFlexibleTime" name="FlexibleTime"/>
-															<span></span>
-															Waktu Flexible
-														</label>
-													</div>
 													<fieldset class="form-group mb-12">
 														<input type="number" class="form-control" id="DurasiPaket" name="DurasiPaket" min="1" value="1">
 													</fieldset>
@@ -588,24 +548,6 @@ License: You must have a valid license purchased only from themeforest(the above
 													<fieldset class="form-group mb-9">
 														<button type="button" class="btn btn-primary" id="btTambahMember">Tambah Member</button>
 													</fieldset>
-												</div>
-											</div>
-
-											{{-- Time Slot Section - Only shown when JenisPaket = JAM --}}
-											<div class="form-group row" id="timeSlotSection" style="display:none;">
-												<div class="col-md-12">
-													<label class="text-body font-weight-bold">Pilih Jam</label>
-													<div class="card">
-														<div class="card-body">
-															<div class="row" id="timeSlotContainer">
-																<!-- Time slots will be loaded here dynamically -->
-																<div class="col-12 text-center">
-																	<p class="text-muted">Memuat slot waktu...</p>
-																</div>
-															</div>
-														</div>
-													</div>
-													<input type="hidden" id="selectedTimeSlot" name="selectedTimeSlot" value="">
 												</div>
 											</div>
 
@@ -1434,21 +1376,6 @@ License: You must have a valid license purchased only from themeforest(the above
 		jQuery(document).ready(function() {
 			_billing = <?php echo $titiklampu ?>;
 			console.log(_billing);
-
-            // Handle Time Slot Selection
-            // Old handler removed to allow multiple selection
-			// jQuery(document).on('click', '.time-slot-card:not(.disabled)', function() {
-			// 	jQuery('.time-slot-card').removeClass('selected');
-			// 	jQuery(this).addClass('selected');
-				
-			// 	const startTime = jQuery(this).data('start');
-			// 	const endTime = jQuery(this).data('end');
-			// 	const timeSlot = startTime + '-' + endTime;
-				
-			// 	jQuery('#selectedTimeSlot').val(timeSlot);
-			// });
-
-
 			jQuery('.js-example-basic-single').select2({
 				dropdownParent: $('#LookupPilihPaket')
 			});
@@ -1814,15 +1741,8 @@ License: You must have a valid license purchased only from themeforest(the above
 			}
 
 			if (jQuery('#JenisPaket').val() == "MENIT") {
-                jQuery('#timeSlotSection').slideUp();
-                jQuery('#selectedTimeSlot').val('');
 				// jQuery('#PembayaranSection').hide();
 				jQuery('#lblDurasiPaket').text('Durasi (Menit)');
-                jQuery('#paketid').attr('disabled', false);
-                jQuery('#SearchMember').attr('disabled', false);
-                jQuery('#KodePelanggan').attr('disabled', false);
-                jQuery('#btTambahMember').attr('disabled', false);
-                jQuery('#DurasiPaket').attr('readonly', false);
 
 				// ...existing code...
 				var now = new Date();
@@ -1849,14 +1769,6 @@ License: You must have a valid license purchased only from themeforest(the above
 							if(response.MaximalOrder > 0){
 								jQuery('#DurasiPaket').val(response.MaximalOrder);
 								jQuery("#DurasiPaket").attr("max", response.MaximalOrder);
-								
-								// PAKETMEMBER Logic: Show Slots after MaxTime is retrieved
-								// if (jQuery('#JenisPaket').val() == "PAKETMEMBER") {
-								// 	jQuery('#DurasiPaket').attr('readonly', true);
-								// 	jQuery('#chkFlexibleTime').attr('disabled', true).prop('checked', false); // Force Unchecked/Fixed
-								// 	jQuery('#timeSlotSection').slideDown();
-								// 	loadTimeSlots();
-								// }
 							}
 						} 
 					},
@@ -1868,116 +1780,13 @@ License: You must have a valid license purchased only from themeforest(the above
 						});
 					}
 				});
-            } else if (jQuery('#JenisPaket').val() == "PAKETMEMBER") {
-                jQuery('#timeSlotSection').slideUp(); // Hide initially
-                jQuery('#selectedTimeSlot').val('');
-                jQuery('#lblDurasiPaket').text('Durasi (Jam)');
-                // jQuery('#paketid').val("-1").trigger('change').attr('disabled', true); // Existing logic kept?
-                
-                 // Fields handling
-                jQuery('#HargaNormal').val(0);
-                jQuery('#HargaBaru').val(0);
-                jQuery('#JamHargaNormal').val("");
-                jQuery('#JamHargaBaru').val("");
-                jQuery('#DurasiPaket').val(0).attr('readonly', true);
-                
-                // Disable Flexible Check
-                jQuery('#chkFlexibleTime').attr('disabled', true).prop('checked', false);
-
-                // Fields that stay active are Member search and Table Guards
-                jQuery('#SearchMember').attr('disabled', false);
-                jQuery('#KodePelanggan').attr('disabled', false);
-                jQuery('#btTambahMember').attr('disabled', false);
-
-				jQuery('#DurasiPaket').attr('readonly', true);
-				jQuery('#chkFlexibleTime').attr('disabled', true).prop('checked', false); // Force Unchecked/Fixed
-				jQuery('#timeSlotSection').slideDown();
-				loadTimeSlots();
-            }
-            else if (jQuery('#JenisPaket').val() == "JAM") {
-                jQuery('#lblDurasiPaket').text('Durasi (Jam)');
-                jQuery('#paketid').attr('disabled', false);
-                jQuery('#SearchMember').attr('disabled', false);
-                jQuery('#KodePelanggan').attr('disabled', false);
-                jQuery('#btTambahMember').attr('disabled', false);
-                
-                // JAM specific
-				if (jQuery('#chkFlexibleTime').is(':checked')) {
-					jQuery('#timeSlotSection').slideUp();
-					jQuery('#DurasiPaket').val(1).attr('readonly', false);
-				} else {
-					jQuery('#timeSlotSection').slideDown();
-					loadTimeSlots();
-					jQuery('#DurasiPaket').val(1).attr('readonly', true);
-				}
-            }
+			}
 			else{
-                jQuery('#timeSlotSection').slideUp();
-                jQuery('#selectedTimeSlot').val('');
 				// jQuery('#PembayaranSection').show();
 				jQuery('#lblDurasiPaket').text('Durasi (Jam)');
-                jQuery('#paketid').attr('disabled', false);
-                jQuery('#SearchMember').attr('disabled', false);
-                jQuery('#KodePelanggan').attr('disabled', false);
-                jQuery('#btTambahMember').attr('disabled', false);
-                jQuery('#DurasiPaket').attr('readonly', false);
 			}
 			jQuery('#PembayaranSection').show();
 		});
-
-        jQuery('#KodePelanggan').change(function () {
-            if (jQuery('#JenisPaket').val() == "PAKETMEMBER") {
-                const kode = jQuery(this).val();
-                if (kode == "") return;
-
-                $.ajax({
-                    url: "{{ route('pelanggan-viewJson') }}",
-                    type: 'post',
-                    data: {
-                        "KodePelanggan" : kode,
-                        "GrupPelanggan" : "",
-                        "Search" : ""
-                    },
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        if (response.data.length > 0) {
-                            const member = response.data[0];
-                            const now = new Date();
-                            const validUntil = member.ValidUntil ? new Date(member.ValidUntil) : null;
-
-                            // a. cek ValidUntil kosong
-                            if (!member.ValidUntil) {
-                                Swal.fire("Informasi", "Member Belom Aktif", "warning");
-                                jQuery('#KodePelanggan').val("").trigger('change');
-                                return;
-                            }
-
-                            // b. cek ValidUntil < Now
-                            // Reset time for comparison if needed, or compare as is
-                            if (validUntil < now) {
-                                Swal.fire("Informasi", "member sudah expired", "warning");
-                                jQuery('#KodePelanggan').val("").trigger('change');
-                                return;
-                            }
-
-                            // c. cek isPaidMembership
-                            if (member.isPaidMembership == 1) {
-                                if (member.MaxPlay - member.Played <= 0) {
-                                    Swal.fire("Informasi", "Jatah Bermain sudah habis", "warning");
-                                    jQuery('#KodePelanggan').val("").trigger('change');
-                                    return;
-                                }
-                            }
-
-                            // d. tampilkan maxTimePerPlay di kolom Durasi
-                            jQuery('#DurasiPaket').val(member.maxTimePerPlay);
-                        }
-                    }
-                });
-            }
-        });
 
 		jQuery('#paketid').change(function () {
 			const filteredData = _dataPaket.filter(item => item.id == jQuery('#paketid').val());
@@ -2001,25 +1810,6 @@ License: You must have a valid license purchased only from themeforest(the above
 			GenerateTotal();
 		});
 
-		// Flexible Time Toggle
-		jQuery('#chkFlexibleTime').change(function() {
-			if(jQuery(this).is(':checked')) {
-				// Flexible Mode: Hide Slots, Enable Duration
-				jQuery('#timeSlotSection').slideUp();
-				jQuery('#DurasiPaket').attr('readonly', false);
-				jQuery('#selectedTimeSlot').val(''); // Clear slot selection
-			} else {
-				// Fixed Mode: Show Slots, Disable Duration (read form slots)
-				if (jQuery('#JenisPaket').val() == "JAM") {
-					jQuery('#timeSlotSection').slideDown();
-					jQuery('#DurasiPaket').attr('readonly', true);
-					jQuery('#DurasiPaket').val(1); // Reset or Keep? Reset safer if no slot selected
-					// Trigger updateTimeSlotData to restore if any selected? 
-					// For now, maybe just clear or let user select again
-				}
-			}
-		});
-
 		jQuery('#frmPilihPaket').on('submit', function(e) {
 			// 
 			jQuery('#btMulaiBermain').text('Tunggu Sebentar');
@@ -2028,32 +1818,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			e.preventDefault();
 			jQuery('#frmPilihPaket').find(':disabled').prop('disabled', false);
 			const formData = new FormData(this);
-            if (jQuery('#JenisPaket').val() == "JAM") {
-                 const timeSlot = jQuery('#selectedTimeSlot').val();
-                 if (timeSlot) {
-                     const parts = timeSlot.split('-');
-                     if (parts.length >= 1) {
-                         formData.append('JamMulai', parts[0]);
-						 if(parts.length > 1) {
-							formData.append('JamSelesai', parts[1]);
-						 }
-						 // Use Local Date for TglBooking to avoid TZ issues
-						 var now = new Date();
-						 var localDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-                         formData.append('TglBooking', localDate);
-                     }
-                 }
-            }
-			
-			// Jika Flexible time, kirim parameter khusus jika perlu, atau biarkan backend handle default NOW
-			// Tapi jika TIDAK flexible (Fixed Slot), pastikan JamMulai terkirim (sudah di atas)
-			
-			if(jQuery('#JenisPaket').val() == "PAKETMEMBER"){
-				formData.append('Status', '1');
-			}
-			else{
-				formData.append('Status', '0');
-			}
+			formData.append('Status', '0');
 
 			$.ajax({
 				async:false,
@@ -2082,20 +1847,10 @@ License: You must have a valid license purchased only from themeforest(the above
 								_billing = oBilling.data;
 								jQuery('#btCloseModalDetails').css('display', 'none');
 								jQuery('#LookupPilihPaket').modal('hide');
+								fnDetails(response.NoTransaksi, []);
 
-                                if (jQuery('#JenisPaket').val() == "PAKETMEMBER") {
-                                    Swal.fire({
-                                        icon: "success",
-                                        title: "Sukses",
-                                        text: "Data Berhasil disimpan, Selamat Bermain",
-                                    }).then((result) => {
-                                        location.reload();
-                                    });
-                                } else {
-                                    fnDetails(response.NoTransaksi, []);
-                                    jQuery('#LookupDetailOrder').modal({backdrop: 'static', keyboard: false})
-                                    jQuery('#LookupDetailOrder').modal('show');
-                                }
+								jQuery('#LookupDetailOrder').modal({backdrop: 'static', keyboard: false})
+								jQuery('#LookupDetailOrder').modal('show');
 							}
 						});
 						// if (jQuery('#JenisPaket').val() != "MENIT") {
@@ -4833,152 +4588,6 @@ License: You must have a valid license purchased only from themeforest(the above
 					clearInterval(interval);
 				}
 			}, 1000);
-		}
-
-		// Time Slot Logic
-		function loadTimeSlots() {
-			console.trace("Who called loadTimeSlots?");
-			const container = jQuery('#timeSlotContainer');
-			container.html('<div class="col-12 text-center"><p class="text-muted">Memuat slot waktu...</p></div>');
-			
-			$.ajax({
-				url: "{{ route('fpenjualan-getTimeSlots') }}",
-				type: 'POST',
-				data: {
-					_token: '{{ csrf_token() }}',
-					// date: new Date().toISOString().split('T')[0], // Send today's date
-					date: (new Date()).getFullYear() + '-' + String((new Date()).getMonth() + 1).padStart(2, '0') + '-' + String((new Date()).getDate()).padStart(2, '0'),
-					tableid: jQuery('#tableid').val()
-				},
-				success: function(response) {
-					container.empty();
-					
-					if (response.success && response.slots.length > 0) {
-						response.slots.forEach(function(slot) {
-							let statusClass = '';
-							if (!slot.available) {
-								statusClass = 'disabled';
-							}
-							
-							let html = `
-								<div class="col-md-3 col-sm-4 col-6 mb-3">
-									<div class="time-slot-card ${statusClass}" data-start="${slot.start}" data-end="${slot.end}" data-available="${slot.available}">
-										<div class="card text-center mb-0">
-											<div class="card-body p-3">
-												<h6 class="mb-0 font-weight-bold">${slot.label}</h6>
-												${slot.isBooked ? '<small class="text-danger">Booked</small>' : ''}
-											</div>
-										</div>
-									</div>
-								</div>
-							`;
-							container.append(html);
-						});
-						console.log("Time Slot Script Loaded");
-					} else {
-						container.html('<div class="col-12 text-center"><p class="text-muted text-danger">Tidak ada slot waktu tersedia atau konfigurasi jam belum diatur.</p></div>');
-					}
-				},
-				error: function() {
-					container.html('<div class="col-12 text-center"><p class="text-danger">Gagal memuat slot waktu.</p></div>');
-				}
-			});
-		}
-
-		// Debug Log to ensure script is loaded
-
-
-		// Handle Multiple Sequential Time Slot Selection
-		jQuery(document).on('click', '.time-slot-card', function(e) {
-			e.preventDefault();
-			console.log("Click detected on .time-slot-card");
-			
-			const $this = jQuery(this);
-
-			if ($this.hasClass('disabled')) {
-				console.log("Clicked disabled slot");
-				return;
-			}
-			
-			// Deselection Logic
-			if ($this.hasClass('selected')) {
-				const selected = jQuery('.time-slot-card.selected');
-				console.log("Deselecting...");
-				
-				// Allow deselecting edges (First or Last)
-				if (selected.length > 0) {
-					const first = selected.first();
-					const last = selected.last();
-					
-					// Compare raw data attributes
-					if ($this.data('start') == first.data('start') || $this.data('end') == last.data('end')) {
-						$this.removeClass('selected');
-					} else {
-						Swal.fire("Info", "Tidak boleh memutus urutan jam.", "warning");
-						return; 
-					}
-				}
-			} else {
-				console.log("Selecting...");
-				// Selection Logic
-				const selected = jQuery('.time-slot-card.selected');
-				
-				// CHECK: Limit selection for PAKETMEMBER
-				if (jQuery('#JenisPaket').val() == "PAKETMEMBER") {
-					var maxSlots = parseInt(jQuery('#DurasiPaket').val()) || 0;
-					if (selected.length >= maxSlots) {
-						Swal.fire("Info", "Maksimal durasi paket adalah " + maxSlots + " jam.", "warning");
-						return;
-					}
-				}
-
-				if (selected.length === 0) {
-					$this.addClass('selected');
-				} else {
-					const first = selected.first();
-					const last = selected.last();
-					
-					// Check adjacency
-					// Clicked Start == Current End (Append to end)
-					// Clicked End == Current Start (Prepend to start)
-					console.log("Start: " + $this.data('start') + ", PrevEnd: " + last.data('end'));
-					console.log("End: " + $this.data('end') + ", NextStart: " + first.data('start'));
-
-					if ($this.data('start') == last.data('end')) {
-						$this.addClass('selected');
-					} else if ($this.data('end') == first.data('start')) {
-						$this.addClass('selected');
-					} else {
-						Swal.fire("Info", "Slot waktu harus berurutan.", "warning");
-						return;
-					}
-				}
-			}
-			
-			updateTimeSlotData();
-		});
-
-		function updateTimeSlotData() {
-			const selected = jQuery('.time-slot-card.selected');
-			if (selected.length > 0) {
-				const first = selected.first();
-				const last = selected.last();
-				
-				// Set Range String (e.g. "19:00-21:00")
-				const timeRange = first.data('start') + '-' + last.data('end');
-				jQuery('#selectedTimeSlot').val(timeRange);
-				
-				// Set Duration (Count of slots)
-				// Only update if NOT PAKETMEMBER
-				if (jQuery('#JenisPaket').val() != "PAKETMEMBER") {
-					jQuery('#DurasiPaket').val(selected.length);
-				}
-			} else {
-				jQuery('#selectedTimeSlot').val('');
-				if (jQuery('#JenisPaket').val() != "PAKETMEMBER") {
-					jQuery('#DurasiPaket').val(1);
-				}
-			}
 		}
 	});
 

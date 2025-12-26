@@ -105,7 +105,8 @@ class UserController extends Controller
                 'Active' => $request->input('Active'),
                 'RecordOwnerID' => Auth::user()->RecordOwnerID,
                 'BranchID' => '',
-                'KodeSales' => $request->input('KodeSales')
+                'KodeSales' => $request->input('KodeSales'),
+                'isConfirmed' => 1
             ]);
 
             if ($save) {

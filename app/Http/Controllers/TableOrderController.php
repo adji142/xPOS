@@ -12,6 +12,10 @@ use Log;
 use App\Models\TableOrderHeader;
 use App\Models\TableOrderFnB;
 use App\Models\TitikLampu;
+use App\Models\FakturPenjualanHeader;
+use App\Models\FakturPenjualanDetail;
+use App\Models\PembayaranPenjualanHeader;
+use App\Models\PembayaranPenjualanDetail;
 use App\Models\Paket;
 use App\Models\Company;
 use App\Models\Sales;
@@ -33,6 +37,9 @@ class TableOrderController extends Controller
                     ->where('DocumentStatus','=', 'O')
                     ->where('Status','=', '0')
                     ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                     // PREVIOUSLY CLOSED ALL STATUS 0. 
+                     // NEW LOGIC: Only close if JamMulai <= NOW. Future bookings (Status 0) must remain Open.
+                    ->where('JamMulai', '<=', Carbon::now()) 
                     ->update(
                         [
                             'DocumentStatus'=>'C',
@@ -77,7 +84,7 @@ class TableOrderController extends Controller
                             $value->on('titiklampu.id','=','tableorderheader.tableid')
                             ->on('titiklampu.RecordOwnerID','=','tableorderheader.RecordOwnerID')
                             // ->on(DB::raw("DATE_FORMAT(COALESCE(tableorderheader.JamSelesai, now()), '%Y-%m-%d')"),'>=',DB::raw("DATE_FORMAT(NOW(), '%Y-%m-%d')"))
-                            ->on('tableorderheader.DocumentStatus','!=',DB::raw("'C'"));
+                            ->on('tableorderheader.DocumentStatus','=',DB::raw("'O'"));
                         })
                         ->leftJoin('pakettransaksi', function ($value)  {
                             $value->on('tableorderheader.paketid','=','pakettransaksi.id')
@@ -215,7 +222,7 @@ class TableOrderController extends Controller
                             $value->on('titiklampu.id','=','tableorderheader.tableid')
                             ->on('titiklampu.RecordOwnerID','=','tableorderheader.RecordOwnerID')
                             // ->on(DB::raw("DATE_FORMAT(COALESCE(tableorderheader.JamSelesai, now()), '%Y-%m-%d')"),'>=',DB::raw("DATE_FORMAT(NOW(), '%Y-%m-%d')"))
-                            ->on('tableorderheader.DocumentStatus','!=',DB::raw("'C'"));
+                            ->on('tableorderheader.DocumentStatus','=',DB::raw("'O'"));
                         })
                         ->leftJoin('pakettransaksi', function ($value)  {
                             $value->on('tableorderheader.paketid','=','pakettransaksi.id')
@@ -306,7 +313,7 @@ class TableOrderController extends Controller
 
         $this->validate($request, [
             'JenisPaket'=>'required',
-            'paketid'=>'required',
+            'paketid'=>$request->input('JenisPaket') == 'PAKETMEMBER' ? 'nullable' : 'required',
             'tableid'=>'required',
             'KodeSales'=>'required',
             'DurasiPaket'=>'required'
@@ -337,9 +344,26 @@ class TableOrderController extends Controller
             $model->GrossTotal = 0; //$request->input('GrossTotal');
             $model->DiscTotal = 0;// $request->input('DiscTotal');
             $model->NetTotal = 0;//$request->input('NetTotal');
-            $model->JamMulai = Carbon::now();
-            if ($request->input('JenisPaket') == 'JAM') {
-                $model->JamSelesai = $currentDate->addHours($request->input('DurasiPaket'))->subMinute();
+            
+            // JamMulai Handling
+            // If provided from frontend (Slot selected), use it.
+            // If not provided (Flexible, or Menit), use NOW.
+            if ($request->has('JamMulai') && $request->input('JamMulai') != "") {
+                $tgl = $request->input('TglBooking') ?? Carbon::now()->format('Y-m-d');
+                $jam = $request->input('JamMulai');
+                $model->JamMulai = Carbon::parse($tgl . ' ' . $jam);
+            } else {
+                $model->JamMulai = Carbon::now();
+            }
+
+            if ($request->input('JenisPaket') == 'JAM' || $request->input('JenisPaket') == 'PAKETMEMBER') {
+                 // JamSelesai Calculation
+                 // If frontend provided JamSelesai, we could uses it, BUT calculation based on Duration is safer/consistent
+                 // $model->JamSelesai = $currentDate->addHours($request->input('DurasiPaket'))->subMinute(); <--- This uses NOW, we must use Model's JamMulai
+                 
+                 $jamMulai = $model->JamMulai->copy();
+                 $model->JamSelesai = $jamMulai->addHours($request->input('DurasiPaket'))->subMinute();
+                 
                 // var_dump($currentDate->addHours($request->input('DurasiPaket')));
             }
 
@@ -347,9 +371,132 @@ class TableOrderController extends Controller
                 $model->JamSelesai = $currentDate->addMinutes($request->input('DurasiPaket'))->subMinute();
                 // var_dump($currentDate->addHours($request->input('DurasiPaket')));
             }
+
+            // Future Booking Logic
+            // If JamMulai > NOW, force Status to 0 (Booking/Scheduled)
+            $now = Carbon::now();
+            if ($model->JamMulai->gt($now)) {
+                $model->Status = 0;
+                $model->DocumentStatus = 'D';
+            }
+            
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
+            // dd($model);
             $save = $model->save();
+
+            // if ($save && $request->input('JenisPaket') == 'PAKETMEMBER') {
+            //     $pelanggan = Pelanggan::where('KodePelanggan', $request->input('KodePelanggan'))
+            //         ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+            //         ->first();
+            //     if ($pelanggan && $pelanggan->isPaidMembership == 1) {
+            //         // Update Played instead of decrementing MaxPlay
+            //         DB::table('pelanggan')
+            //                 ->where('KodePelanggan','=', $pelanggan->KodePelanggan)
+            //                 ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+            //                 ->update(
+            //                     [
+            //                         'Played' => DB::raw('COALESCE(Played,0) + 1')
+            //                     ]
+            //                 );
+
+            //         // Auto Create Faktur & Payment
+            //         try {
+            //             $pricePerPlay = 0;
+            //             if ($pelanggan->MaxPlay > 0) {
+            //                 $pricePerPlay = $pelanggan->MemberPrice / $pelanggan->MaxPlay;
+            //             }
+
+            //             $oCompany = Company::where('RecordOwnerID', Auth::user()->RecordOwnerID)->first();
+            //             $metodeCash = MetodePembayaran::where('RecordOwnerID', Auth::user()->RecordOwnerID)
+            //                             ->where('NamaMetodePembayaran', 'CASH')
+            //                             ->first();
+            //             $metodeId = $metodeCash ? $metodeCash->id : MetodePembayaran::where('RecordOwnerID', Auth::user()->RecordOwnerID)->first()->id;
+
+            //             // 1. Faktur Header
+            //             $fakturNo = $numberingData->GetNewDoc("POS", "fakturpenjualanheader", "NoTransaksi");
+            //             $fHeader = new FakturPenjualanHeader();
+            //             $fHeader->Periode = $Year . $Month;
+            //             $fHeader->NoTransaksi = $fakturNo;
+            //             $fHeader->Transaksi = 'POS';
+            //             $fHeader->TglTransaksi = Carbon::now();
+            //             $fHeader->TglJatuhTempo = Carbon::now();
+            //             $fHeader->NoReff = $NoTransaksi;
+            //             $fHeader->KodePelanggan = $pelanggan->KodePelanggan;
+            //             $fHeader->KodeTermin = "";
+            //             $fHeader->Termin = 0;
+            //             $fHeader->TotalTransaksi = $pricePerPlay;
+            //             $fHeader->Potongan = 0;
+            //             $fHeader->Pajak = 0;
+            //             $fHeader->TotalPembelian = $pricePerPlay;
+            //             $fHeader->TotalRetur = 0;
+            //             $fHeader->TotalPembayaran = $pricePerPlay;
+            //             $fHeader->Pembulatan = 0;
+            //             $fHeader->Status = 'C'; // Close/Lunas
+            //             $fHeader->Keterangan = 'Paket Member - Auto Paid';
+            //             $fHeader->MetodeBayar = $metodeId;
+            //             $fHeader->ReffPembayaran = "MEMBER-" . $pelanggan->KodePelanggan;
+            //             $fHeader->KodeSales = $request->input('KodeSales');
+            //             $fHeader->Posted = 0;
+            //             $fHeader->RecordOwnerID = Auth::user()->RecordOwnerID;
+            //             $fHeader->CreatedBy = Auth::user()->name;
+            //             $fHeader->save();
+
+            //             // 2. Faktur Detail
+            //             $fDetail = new FakturPenjualanDetail();
+            //             $fDetail->NoTransaksi = $fakturNo;
+            //             $fDetail->NoUrut = 0;
+            //             $fDetail->KodeItem = $oCompany->ItemHiburan;
+            //             $fDetail->Qty = $request->input('DurasiPaket');
+            //             $fDetail->QtyKonversi = $request->input('DurasiPaket');
+            //             $fDetail->QtyRetur = 0;
+            //             $fDetail->Satuan = 'JAM';
+            //             $fDetail->Harga = $pricePerPlay / max(1, $request->input('DurasiPaket')); // Adjust price per hour if needed
+            //             $fDetail->Discount = 0;
+            //             $fDetail->BaseReff = $NoTransaksi;
+            //             $fDetail->BaseLine = -1;
+            //             $fDetail->KodeGudang = $oCompany->GudangPoS;
+            //             $fDetail->HargaNet = $pricePerPlay;
+            //             $fDetail->LineStatus = 'O';
+            //             $fDetail->VatPercent = 0;
+            //             $fDetail->HargaPokokPenjualan = 0;
+            //             $fDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+            //             $fDetail->save();
+
+            //             // 3. Pembayaran Header
+            //             $payNo = $numberingData->GetNewDoc("INPAY", "pembayaranpenjualanheader", "NoTransaksi");
+            //             $pHeader = new PembayaranPenjualanHeader();
+            //             $pHeader->Periode = $Year . $Month;
+            //             $pHeader->NoTransaksi = $payNo;
+            //             $pHeader->TglTransaksi = Carbon::now();
+            //             $pHeader->KodePelanggan = $pelanggan->KodePelanggan;
+            //             $pHeader->TotalPembelian = $pricePerPlay;
+            //             $pHeader->TotalPembayaran = $pricePerPlay;
+            //             $pHeader->KodeMetodePembayaran = $metodeId;
+            //             $pHeader->NoReff = "MEMBER-" . $pelanggan->KodePelanggan;
+            //             $pHeader->Keterangan = 'Paket Member Auto Payment';
+            //             $pHeader->RecordOwnerID = Auth::user()->RecordOwnerID;
+            //             $pHeader->CreatedBy = Auth::user()->name;
+            //             $pHeader->Posted = 0;
+            //             $pHeader->Status = 'C';
+            //             $pHeader->save();
+
+            //             // 4. Pembayaran Detail
+            //             $pDetail = new PembayaranPenjualanDetail();
+            //             $pDetail->NoTransaksi = $payNo;
+            //             $pDetail->NoUrut = 0;
+            //             $pDetail->BaseReff = $fakturNo;
+            //             $pDetail->TotalPembayaran = $pricePerPlay;
+            //             $pDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+            //             $pDetail->KodeMetodePembayaran = $metodeId;
+            //             $pDetail->Keterangan = 'Auto Paid';
+            //             $pDetail->save();
+
+            //         } catch (\Exception $e) {
+            //             Log::error("Failed to auto-create faktur for member: " . $e->getMessage());
+            //         }
+            //     }
+            // }
 
             // DB::table('tableorderheader')
             //                 ->where('NoTransaksi','=', $NoTransaksi)
@@ -560,7 +707,7 @@ class TableOrderController extends Controller
                     $detail->save();
 
                     if (!$detail) {
-                        $data['message'] = "Menyimpan Data " . dt["NamaItem"] . " Gagal dilakukan";
+                        $data['message'] = "Menyimpan Data " . $dt["NamaItem"] . " Gagal dilakukan";
                         $errorCount +=1;
                         goto jump;
                     }
@@ -732,5 +879,154 @@ class TableOrderController extends Controller
         }
 
         return response()->json($data);
+    }
+
+    public function getAvailableTimeSlots(Request $request)
+    {
+        $data = array('success' => false, 'message' => '', 'slots' => array());
+        
+        try {
+            $date = $request->input('date', date('Y-m-d')); // Default to today
+            
+            // Get company settings
+            $company = Company::where('KodePartner', Auth::user()->RecordOwnerID)->first();
+            
+            if (!$company || !$company->JamAwalBooking || !$company->JamAkhirBooking) {
+                $data['message'] = 'Company booking hours not configured';
+                return response()->json($data);
+            }
+            
+            // Parse start and end times
+            $startTime = Carbon::createFromFormat('H:i:s', $company->JamAwalBooking);
+            $endTime = Carbon::createFromFormat('H:i:s', $company->JamAkhirBooking);
+            $currentDateTime = Carbon::now();
+            $selectedDate = Carbon::createFromFormat('Y-m-d', $date);
+            
+            // Generate hourly time slots
+            $slots = [];
+            $currentSlot = $startTime->copy();
+            
+            while ($currentSlot->lt($endTime)) {
+                $slotStart = $currentSlot->format('H:i');
+                $slotEnd = $currentSlot->copy()->addHour()->format('H:i');
+                
+                // Create slot datetime for comparison
+                $slotDateTime = Carbon::createFromFormat('Y-m-d H:i', $date . ' ' . $slotStart);
+                
+                // Check if slot is in the past with 30 minutes tolerance
+                // Ex: Current 20:25, Slot 20:00 -> 20:00 < 19:55 ? False -> Available
+                // Ex: Current 20:35, Slot 20:00 -> 20:00 < 20:05 ? True -> Past
+                $toleranceTime = $currentDateTime->copy()->subMinutes(30);
+                $isPast = $slotDateTime->lt($toleranceTime);
+                
+                // Check if slot is booked
+                // Modify to check overlap:
+                // Existing Booking Start < Slot End AND Existing Booking End > Slot Start
+                // Also filter by tableid if provided
+                $tableId = $request->input('tableid');
+                
+                $isBooked = false;
+                if ($tableId) {
+                    $isBooked = TableOrderHeader::whereDate('TglTransaksi', $date)
+                        ->whereTime('JamMulai', '<', $slotEnd)
+                        ->whereTime('JamSelesai', '>', $slotStart)
+                        ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                        ->whereIn('DocumentStatus', ['O', 'D'])
+                        ->where('tableid', $tableId)
+                        ->exists();
+
+                    if (!$isBooked) {
+                         $isBooked = BookingOnline::whereDate('TglBooking', $date)
+                            ->whereTime('JamMulai', '<', $slotEnd)
+                            ->whereTime('JamSelesai', '>', $slotStart)
+                            ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                            ->where('StatusTransaksi', '=', 0) // Confirmed Status 0 is likely active/booked for BookingOnline
+                            ->where('mejaID', $tableId)
+                            ->exists();
+                    }
+                }
+                
+                $slots[] = [
+                    'start' => $slotStart,
+                    'end' => $slotEnd,
+                    'label' => $slotStart . ' - ' . $slotEnd,
+                    'available' => !$isPast && !$isBooked,
+                    'isPast' => $isPast,
+                    'isBooked' => $isBooked
+                ];
+                
+                $currentSlot->addHour();
+            }
+            
+            $data['success'] = true;
+            $data['slots'] = $slots;
+            
+        } catch (\Exception $e) {
+            Log::error("Get time slots error: " . $e->getMessage());
+            $data['message'] = 'Error: ' . $e->getMessage();
+        }
+        
+        return response()->json($data);
+
+    }
+
+    public function DaftarTableOrder(Request $request)
+    {
+        $keyword = $request->input('keyword');
+        $tglAwal = $request->input('TglAwal', \Carbon\Carbon::now()->format('Y-m-d'));
+        $tglAkhir = $request->input('TglAkhir', \Carbon\Carbon::now()->format('Y-m-d'));
+
+        $field = ['tableorderheader.NoTransaksi', 'titiklampu.NamaTitikLampu', 'tableorderheader.JenisPaket'];
+
+        $data = DB::table('tableorderheader')
+            ->select('tableorderheader.NoTransaksi', 'tableorderheader.TglTransaksi', 'tableorderheader.JenisPaket', 'tableorderheader.DurasiPaket as Durasi', 'tableorderheader.Status', 'titiklampu.NamaTitikLampu as NamaTable')
+            ->join('titiklampu', function($join) {
+                $join->on('tableorderheader.tableid', '=', 'titiklampu.id')
+                     ->on('tableorderheader.RecordOwnerID', '=', 'titiklampu.RecordOwnerID');
+            })
+            ->where('tableorderheader.RecordOwnerID', Auth::user()->RecordOwnerID)
+            ->whereBetween('tableorderheader.TglTransaksi', [$tglAwal . ' 00:00:00', $tglAkhir . ' 23:59:59']);
+
+        if ($keyword) {
+            $data->where(function ($query) use ($keyword, $field) {
+                for ($i = 0; $i < count($field); $i++) {
+                    $query->orwhere($field[$i], 'like', '%' . $keyword . '%');
+                }
+            });
+        }
+
+        $data->orderBy('tableorderheader.TglTransaksi', 'desc');
+
+        return view("Admin.DaftarTableOrder", [
+            'data' => $data->get(),
+            'tglAwal' => $tglAwal,
+            'tglAkhir' => $tglAkhir,
+        ]);
+    }
+
+    public function ResetController(Request $request)
+    {
+        try {
+            $NoTransaksi = $request->input('NoTransaksi');
+            
+            $update = DB::table('tableorderheader')
+                ->where('NoTransaksi', $NoTransaksi)
+                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                ->update([
+                    'Status' => 0,
+                    'DocumentStatus' => 'C'
+                ]);
+
+            if ($update) {
+                alert()->success('Success', 'Controller berhasil direset.');
+            } else {
+                alert()->error('Error', 'Gagal mereset controller atau data tidak ditemukan.');
+            }
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            alert()->error('Error', 'Terjadi kesalahan sistem.');
+        }
+
+        return redirect()->back();
     }
 }

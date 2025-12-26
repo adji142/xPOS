@@ -228,11 +228,48 @@
 	                            			<label  class="text-body">Berlaku Sampai</label>
 	                            			<fieldset class="form-group mb-3">
 												@if (count($pelanggan) > 0)
-	                            					<input type="date" class="form-control" id="ValidUntil" name="ValidUntil" value="{{ old('ValidUntil', \Carbon\Carbon::parse($pelanggan[0]['ValidUntil'])->format('Y-m>-d')) }}" >
+	                            					<input type="date" class="form-control" id="ValidUntil" name="ValidUntil" value="{{ old('ValidUntil', \Carbon\Carbon::parse($pelanggan[0]['ValidUntil'])->format('Y-m-d')) }}" readonly disabled>
 												@else
-	                            					<input type="date" class="form-control" id="ValidUntil" name="ValidUntil" >
+	                            					<input type="date" class="form-control" id="ValidUntil" name="ValidUntil" readonly disabled>
 												@endif
 											</fieldset>
+	                            		</div>
+
+	                            		<div class="col-md-4">
+	                            			<label  class="text-body">Membership Berbayar</label>
+	                            			<fieldset class="form-group mb-3">
+	                            				<select name="isPaidMembership" id="isPaidMembership" class="js-example-basic-single js-states form-control bg-transparent" name="state" >
+													<option value="1" {{ count($pelanggan) > 0 ? $pelanggan[0]['isPaidMembership'] == 1 ? "selected" : '' :""}}>Ya</option>
+													<option value="0" {{ count($pelanggan) > 0 ? $pelanggan[0]['isPaidMembership'] == 0 ? "selected" : '' :"selected"}}>Tidak</option>
+												</select>
+	                            			</fieldset>
+	                            		</div>
+
+	                                        <div class="col-md-6">
+                                            <label  class="text-body">Maksimal Bermain Dalam 1 Periode</label>
+                                            <fieldset class="form-group mb-3">
+                                                <input type="number" class="form-control" id="MaxPlay" name="MaxPlay" placeholder="0" value="{{ count($pelanggan) > 0 ? $pelanggan[0]['MaxPlay'] : 0 }}">
+                                            </fieldset>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label  class="text-body">Sudah Bermain</label>
+                                            <fieldset class="form-group mb-3">
+                                                <input type="number" class="form-control" id="Played" name="Played" placeholder="0" value="{{ count($pelanggan) > 0 ? $pelanggan[0]['Played'] : 0 }}">
+                                            </fieldset>
+                                        </div>
+
+	                            		<div class="col-md-4">
+	                            			<label  class="text-body">Harga Member</label>
+	                            			<fieldset class="form-group mb-3">
+	                            			<input type="number" class="form-control" id="MemberPrice" name="MemberPrice" placeholder="0" value="{{ count($pelanggan) > 0 ? $pelanggan[0]['MemberPrice'] : 0 }}" >
+	                            			</fieldset>
+	                            		</div>
+
+	                            		<div class="col-md-4">
+	                            			<label  class="text-body">Lama Bermain Per Permainan (Jam)</label>
+	                            			<fieldset class="form-group mb-3">
+	                            				<input type="number" class="form-control" id="maxTimePerPlay" name="maxTimePerPlay" placeholder="0" value="{{ count($pelanggan) > 0 ? $pelanggan[0]['maxTimePerPlay'] : 0 }}" >
+	                            			</fieldset>
 	                            		</div>
 
 	                            		<div class="col-md-4">

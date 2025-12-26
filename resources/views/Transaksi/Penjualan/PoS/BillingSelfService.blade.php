@@ -153,6 +153,34 @@ License: You must have a valid license purchased only from themeforest(the above
                 color: red;
             }
 		}
+        
+        /* Time Slot Styles */
+        .time-slot-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .time-slot-card .card {
+            border: 2px solid #e4e6ef;
+        }
+        .time-slot-card:hover .card {
+            border-color: #FFA800; /* Warning Color */
+            background-color: #FFF4DE;
+        }
+        .time-slot-card.selected .card {
+            background-color: #FFA800;
+            border-color: #FFA800;
+            color: #ffffff;
+        }
+        .time-slot-card.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .time-slot-card.disabled .card {
+            background-color: #F3F6F9;
+            border-color: #EBEDF3;
+			color: #B5B5C3;
+        }
 	</style>
 </head>
 <!--end::Head-->
@@ -534,6 +562,15 @@ License: You must have a valid license purchased only from themeforest(the above
 												<div class="col-md-4">
 													<label  class="text-body">Durasi (Jam)</label>
 													<fieldset class="form-group mb-12">
+													<label  class="text-body" id= "lblDurasiPaket">Durasi (Jam)</label>
+													<div class="checkbox-inline mb-2">
+														<label class="checkbox checkbox-outline checkbox-success">
+															<input type="checkbox" id="chkFlexibleTime" name="FlexibleTime"/>
+															<span></span>
+															Waktu Flexible
+														</label>
+													</div>
+													<fieldset class="form-group mb-12">
 														<input type="number" class="form-control" id="DurasiPaket" name="DurasiPaket" min="1" value="1">
 													</fieldset>
 												</div>
@@ -621,7 +658,22 @@ License: You must have a valid license purchased only from themeforest(the above
 														<input type="text" class="form-control" id="txtJumlahKembalian_Paket" name="txtJumlahKembalian_Paket" readonly>
 													</fieldset>
 												</div>
-											</div> --}}
+											</div>
+
+											{{-- Time Slot Section - Only shown when JenisPaket = JAM --}}
+											<div class="form-group row" id="timeSlotSection" style="display:none;">
+												<div class="col-md-12">
+													<label class="text-body font-weight-bold">Pilih Jam</label>
+													<div class="card">
+														<div class="card-body">
+															<div class="row" id="timeSlotContainer">
+																{{-- Slots will be loaded here via AJAX --}}
+															</div>
+															<input type="hidden" id="selectedTimeSlot" name="selectedTimeSlot">
+														</div>
+													</div>
+												</div>
+											</div>
 
 										</div>
 									</div>
@@ -969,7 +1021,6 @@ License: You must have a valid license purchased only from themeforest(the above
 						</div>
 					</div>
 				</div>
-			</div>
 			<div class="modal-footer">
 				<button class="btn btn-success ms-1" id="btBayar" data-bs-dismiss="modal">
 					<span class="">Bayar</span>
@@ -1435,51 +1486,46 @@ License: You must have a valid license purchased only from themeforest(the above
 				});
 			}
 
-			if (jQuery('#JenisPaket').val() == "MENIT") {
-				// jQuery('#PembayaranSection').hide();
-				jQuery('#lblDurasiPaket').text('Durasi (Menit)');
+			if (jQuery('#JenisPaket').val() == "PAKET") {
+                jQuery('#lblDurasiPaket').text('Durasi (Hari / Bulan / Tahun)');
+                jQuery('#DurasiPaket').attr('readonly', true);
+				jQuery('#timeSlotSection').slideUp();
+				jQuery('#chkFlexibleTime').prop('checked', false).trigger('change');
+            } else if (jQuery('#JenisPaket').val() == "PAKETMEMBER") {
+                jQuery('#lblDurasiPaket').text('Durasi (Jam)');
+                // jQuery('#DurasiPaket').attr('readonly', false);
+                jQuery('#SearchMember').attr('disabled', false);
+                jQuery('#KodePelanggan').attr('disabled', false);
+                jQuery('#btTambahMember').attr('disabled', false);
 
-				// ...existing code...
-				var now = new Date();
-				var formattedNow = now.getFullYear() + '-' +
-					String(now.getMonth() + 1).padStart(2, '0') + '-' +
-					String(now.getDate()).padStart(2, '0') + ' ' +
-					String(now.getHours()).padStart(2, '0') + ':' +
-					String(now.getMinutes()).padStart(2, '0') + ':' +
-					String(now.getSeconds()).padStart(2, '0');
-				// Use formattedNow instead of jQuery('#JamRequest').val()
+				// PAKETMEMBER: Disable Duration & Flex, Hide Slots initially (wait for member select)
+				jQuery('#DurasiPaket').attr('readonly', true);
+				jQuery('#chkFlexibleTime').attr('disabled', true).prop('checked', false);
+				jQuery('#timeSlotSection').slideDown();
+				loadTimeSlots(); // Load slots, but user might not have selected member yet so constraints apply later
+            }
+            else if (jQuery('#JenisPaket').val() == "JAM") {
+                jQuery('#lblDurasiPaket').text('Durasi (Jam)');
+                jQuery('#DurasiPaket').attr('readonly', false);
 				
-				// ...existing code...
-				// Get Maximal Order
-				$.ajax({
-					url: "{{ route('billing-maxtime') }}",
-					type: 'POST',
-					data: {
-						_token: '{{ csrf_token() }}',
-						mejaID: jQuery('#tableid').val(),
-						JamRequest: formattedNow
-					},
-					success: function(response) {
-						if (response.success) {
-							if(response.MaximalOrder > 0){
-								jQuery('#DurasiPaket').val(response.MaximalOrder);
-								jQuery("#DurasiPaket").attr("max", response.MaximalOrder);
-							}
-						} 
-					},
-					error: function(xhr) {
-						Swal.fire({
-							icon: "error",
-							title: "Opps...",
-							text: xhr.responseText,
-						});
-					}
-				});
-			}
-			else{
-				// jQuery('#PembayaranSection').show();
-				jQuery('#lblDurasiPaket').text('Durasi (Jam)');
-			}
+				// Show Flexible Checkbox
+				jQuery('#chkFlexibleTime').removeAttr('disabled');
+				
+				// Handle Slot Visibility based on Checkbox
+				if (jQuery('#chkFlexibleTime').is(':checked')) {
+					jQuery('#timeSlotSection').slideUp();
+					jQuery('#DurasiPaket').attr('readonly', false);
+				} else {
+					jQuery('#timeSlotSection').slideDown();
+					jQuery('#DurasiPaket').attr('readonly', true);
+					loadTimeSlots();
+				}
+            } else {
+                jQuery('#lblDurasiPaket').text('Durasi (Menit)');
+                jQuery('#DurasiPaket').attr('readonly', false);
+				jQuery('#timeSlotSection').slideUp();
+				jQuery('#chkFlexibleTime').prop('checked', false).trigger('change');
+            }
 			jQuery('#PembayaranSection').show();
 		});
 
@@ -1512,7 +1558,32 @@ License: You must have a valid license purchased only from themeforest(the above
 			e.preventDefault();
 			jQuery('#frmPilihPaket').find(':disabled').prop('disabled', false);
 			const formData = new FormData(this);
-			formData.append('Status', '0');
+
+			// Append Time Slot Data for JAM and PAKETMEMBER
+            if (jQuery('#JenisPaket').val() == "JAM" || jQuery('#JenisPaket').val() == "PAKETMEMBER") {
+                 const timeSlot = jQuery('#selectedTimeSlot').val();
+                 if (timeSlot) {
+                     const parts = timeSlot.split('-');
+                     if (parts.length >= 1) {
+                         formData.append('JamMulai', parts[0]);
+						 if(parts.length > 1) {
+							formData.append('JamSelesai', parts[1]);
+						 }
+						 // Use Local Date for TglBooking
+						 var bookingNow = new Date();
+						 var localDate = bookingNow.getFullYear() + '-' + String(bookingNow.getMonth() + 1).padStart(2, '0') + '-' + String(bookingNow.getDate()).padStart(2, '0');
+                         formData.append('TglBooking', localDate);
+                     }
+                 }
+            }
+
+			// Align Status Logic
+			if(jQuery('#JenisPaket').val() == "PAKETMEMBER"){
+				formData.append('Status', '1');
+			}
+			else{
+				formData.append('Status', '0');
+			}
 
 			// ⏳ Show loading
 			Swal.fire({
@@ -1552,50 +1623,27 @@ License: You must have a valid license purchased only from themeforest(the above
 								_billing = oBilling.data;
 								jQuery('#btCloseModalDetails').css('display', 'none');
 								jQuery('#LookupPilihPaket').modal('hide');
-								fnDetails(response.NoTransaksi, []);
 
-								jQuery('#LookupDetailOrder').modal({backdrop: 'static', keyboard: false});
-								jQuery('#LookupDetailOrder').modal('show');
+								// Align Response Logic: Reload for Member, Details for others
+                                if (jQuery('#JenisPaket').val() == "PAKETMEMBER") {
+                                    Swal.fire({
+                                        icon: "success",
+                                        title: "Sukses",
+                                        text: "Data Berhasil disimpan, Selamat Bermain",
+                                    }).then((result) => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    fnDetails(response.NoTransaksi, []);
+                                    jQuery('#LookupDetailOrder').modal({backdrop: 'static', keyboard: false});
+                                    jQuery('#LookupDetailOrder').modal('show');
+                                }
 							},
 							error: function(xhr) {
 								Swal.close(); // ✅ CLOSE LOADING
 								Swal.fire('Error', 'Gagal ambil data billing.', 'error');
 							}
 						});
-						// if (jQuery('#JenisPaket').val() != "MENIT") {
-						// 	$.ajax({
-						// 		url: "{{route('billing-repopulate')}}",
-						// 		type: 'post',
-						// 		data: formData,
-						// 		processData: false,
-						// 		contentType: false,
-						// 		headers: {
-						// 			'X-CSRF-TOKEN': '{{ csrf_token() }}'
-						// 		},
-						// 		success: function(oBilling) {
-						// 			Swal.close(); // ✅ CLOSE LOADING
-
-						// 			_billing = oBilling.data;
-						// 			jQuery('#btCloseModalDetails').css('display', 'none');
-						// 			jQuery('#LookupPilihPaket').modal('hide');
-						// 			fnDetails(response.NoTransaksi, []);
-
-						// 			jQuery('#LookupDetailOrder').modal({backdrop: 'static', keyboard: false});
-						// 			jQuery('#LookupDetailOrder').modal('show');
-						// 		},
-						// 		error: function(xhr) {
-						// 			Swal.close(); // ✅ CLOSE LOADING
-						// 			Swal.fire('Error', 'Gagal ambil data billing.', 'error');
-						// 		}
-						// 	});
-						// } else {
-						// 	Swal.close(); // ✅ CLOSE LOADING
-						// 	Swal.fire({
-						// 		icon: "success",
-						// 		title: "Sukses",
-						// 		text: "Data Berhasil disimpan, Selamat Bermain",
-						// 	}).then(() => location.reload());
-						// }
 					} else {
 						Swal.close(); // ✅ CLOSE LOADING
 						Swal.fire({
@@ -3643,16 +3691,16 @@ License: You must have a valid license purchased only from themeforest(the above
 			const tdElementPpn = document.getElementById("dtTotalPPN_Detail");
 			const tdElementPajakHiburan = document.getElementById("dtTotalPajakHiburan_Detail");
 
-			const DurasiLama = tdElementNormal.getAttribute("raw-durasi");
-			const DurasiBaru = tdElementBaru.getAttribute("raw-durasi-baru");
+			const DurasiLama = parseFloat(tdElementNormal.getAttribute("raw-durasi")) || 0;
+			const DurasiBaru = parseFloat(tdElementBaru.getAttribute("raw-durasi-baru")) || 0;
 			const SatuanDurasiLama = tdElementNormal.getAttribute("raw-satuan-durasi");
 			const SatuanDurasiBaru = tdElementBaru.getAttribute("raw-satuan-durasi-baru");
-			const HargaNormal = tdElementNormal.getAttribute("raw-harga-normal");
-			const HargaBaru = tdElementBaru.getAttribute("raw-harga-baru");
-			const TotalHargaNormal = tdElementNormal.getAttribute("raw-totalharga-normal");
-			const TotalHargaBaru = tdElementBaru.getAttribute("raw-totalharga-baru");
-			const TotalPPN = tdElementPpn.getAttribute("raw-totalharga-ppn");
-			const TotalPajakHiburan = tdElementPajakHiburan.getAttribute("raw-totalharga-pajakhiburan");
+			const HargaNormal = parseFloat(tdElementNormal.getAttribute("raw-harga-normal")) || 0;
+			const HargaBaru = parseFloat(tdElementBaru.getAttribute("raw-harga-baru")) || 0;
+			const TotalHargaNormal = parseFloat(tdElementNormal.getAttribute("raw-totalharga-normal")) || 0;
+			const TotalHargaBaru = parseFloat(tdElementBaru.getAttribute("raw-totalharga-baru")) || 0;
+			const TotalPPN = parseFloat(tdElementPpn.getAttribute("raw-totalharga-ppn")) || 0;
+			const TotalPajakHiburan = parseFloat(tdElementPajakHiburan.getAttribute("raw-totalharga-pajakhiburan")) || 0;
 
 			const table = jQuery('#TablePenjualan').DataTable();
 			const columnNames = table.columns().header().toArray().map(header => $(header).text());
@@ -3695,6 +3743,8 @@ License: You must have a valid license purchased only from themeforest(the above
 					'LineStatus': 'O',
 					'VatPercent' : 0,
 					'HargaPokokPenjualan' : HargaNormal,
+					'Pajak' : 0,
+					'PajakHiburan' : 0,
 				}
 				oDetail.push(oItem);
 				NoUrut += 1;
@@ -3716,6 +3766,8 @@ License: You must have a valid license purchased only from themeforest(the above
 					'LineStatus': 'O',
 					'VatPercent' : 0,
 					'HargaPokokPenjualan' : HargaBaru,
+					'Pajak' : 0,
+					'PajakHiburan' : 0,
 				}
 				oDetail.push(oItem);
 				NoUrut += 1;
@@ -3740,6 +3792,8 @@ License: You must have a valid license purchased only from themeforest(the above
 						'LineStatus': 'O',
 						'VatPercent' : 0,
 						'HargaPokokPenjualan' : dataMakanan[i]["HargaPokokPenjualan"],
+						'Pajak' : dataMakanan[i]["Pajak"] || 0,
+						'PajakHiburan' : 0,
 					}
 					oDetail.push(oItem);
 
@@ -3770,6 +3824,21 @@ License: You must have a valid license purchased only from themeforest(the above
 				'MetodeBayar' : jQuery('#cboMetodePembayaran_Detail').val(),
 				'ReffPembayaran' : $('#txtRefrensi_Detail').val(),
 				'Detail' : oDetail
+			}
+
+			// Append Slot Data
+			if (jQuery('#JenisPaket').val() == "PAKETMEMBER" || jQuery('#JenisPaket').val() == "JAM") {
+				const timeSlotParts = jQuery('#selectedTimeSlot').val().split('-');
+				if (timeSlotParts.length >= 1 && jQuery('#selectedTimeSlot').val() !== "") {
+					oData['JamMulai'] = timeSlotParts[0];
+					if (timeSlotParts.length > 1) {
+						oData['JamSelesai'] = timeSlotParts[1];
+					}
+					// Use Local Date
+					var bookingNow = new Date();
+					var localDate = bookingNow.getFullYear() + '-' + String(bookingNow.getMonth() + 1).padStart(2, '0') + '-' + String(bookingNow.getDate()).padStart(2, '0');
+					oData['TglBooking'] = localDate;
+				}
 			}
 
 			
@@ -3845,6 +3914,224 @@ License: You must have a valid license purchased only from themeforest(the above
 			}
 		}
 
+		function SaveData(Status, ButonObject, ButtonDefaultText) {
+			ButonObject.text('Tunggu Sebentar.....');
+			ButonObject.attr('disabled',true);
+
+			const oCompany = <?php echo $company ?>;
+			const filteredData = _billing.filter(item => item.NoTransaksi == jQuery('#txtNoTransaksi_Detail').val());
+
+			const now = new Date();
+	    	const day = ("0" + now.getDate()).slice(-2);
+	    	const month = ("0" + (now.getMonth() + 1)).slice(-2);
+	    	const hours = now.getHours().toString().padStart(2, '0');
+			const minutes = now.getMinutes().toString().padStart(2, '0');
+			const seconds = now.getSeconds().toString().padStart(2, '0');
+
+	    	const FirstDay = now.getFullYear()+"-"+month+"-01";
+	    	const NowDay = now.getFullYear()+"-"+month+"-"+day;
+
+	    	const _Tanggal = NowDay;
+	    	const _Jam = hours+":"+minutes+":"+seconds;
+
+			var oDetail = [];
+			const tdElementNormal = document.getElementById("dtTotalHargaNormal_Detail");
+			const tdElementBaru = document.getElementById("dtTotalPerubahanHarga_Detail");
+			const tdElementPpn = document.getElementById("dtTotalPPN_Detail");
+			const tdElementPajakHiburan = document.getElementById("dtTotalPajakHiburan_Detail");
+
+			const DurasiLama = parseFloat(tdElementNormal.getAttribute("raw-durasi")) || 0;
+			const DurasiBaru = parseFloat(tdElementBaru.getAttribute("raw-durasi-baru")) || 0;
+			const SatuanDurasiLama = tdElementNormal.getAttribute("raw-satuan-durasi");
+			const SatuanDurasiBaru = tdElementBaru.getAttribute("raw-satuan-durasi-baru");
+			const HargaNormal = parseFloat(tdElementNormal.getAttribute("raw-harga-normal")) || 0;
+			const HargaBaru = parseFloat(tdElementBaru.getAttribute("raw-harga-baru")) || 0;
+			const TotalHargaNormal = parseFloat(tdElementNormal.getAttribute("raw-totalharga-normal")) || 0;
+			const TotalHargaBaru = parseFloat(tdElementBaru.getAttribute("raw-totalharga-baru")) || 0;
+			const TotalPPN = parseFloat(tdElementPpn.getAttribute("raw-totalharga-ppn")) || 0;
+			const TotalPajakHiburan = parseFloat(tdElementPajakHiburan.getAttribute("raw-totalharga-pajakhiburan")) || 0;
+
+			const table = jQuery('#TablePenjualan').DataTable();
+			const columnNames = table.columns().header().toArray().map(header => $(header).text());
+
+			// Get raw data from the table
+			const dataMakanan = table.rows().data().toArray().map(row => {
+				let rowDataObj = {};
+				columnNames.forEach((colName, index) => {
+					if (colName == 'Diskon' || colName == 'Harga' || colName == 'Qty' || colName == 'Total') {
+					// Parse the raw HTML string into a DOM element
+					const cellHtml = $.parseHTML(row[index]); // Convert to DOM elements
+					const rawValue = $(cellHtml).data('raw'); // Extract data-raw attribute
+					rowDataObj[colName] = rawValue;
+					} else {
+					rowDataObj[colName] = row[index];
+					}
+				});
+				return rowDataObj;
+			});
+			var NoUrut = 0;
+
+			if (oCompany[0]["ItemHiburan"] == null || oCompany[0]["ItemHiburan"] == "") {
+				alert('Setting Item Hiburan');
+				return;
+			}
+
+			if (TotalHargaNormal > 0) {
+				var oItem = {
+					'NoUrut' : 0,
+					'KodeItem' : oCompany[0]["ItemHiburan"],
+					'Qty' : DurasiLama,
+					'QtyKonversi' : DurasiLama,
+					'Satuan' : SatuanDurasiLama,
+					'Harga' : HargaNormal,
+					'Discount' : 0,
+					'HargaNet' : (DurasiLama * HargaNormal),
+					'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
+					'BaseLine' : -1,
+					'KodeGudang' : oCompany[0]['GudangPoS'],
+					'LineStatus': 'O',
+					'VatPercent' : 0,
+					'HargaPokokPenjualan' : HargaNormal,
+					'Pajak' : 0,
+					'PajakHiburan' : 0,
+				}
+				oDetail.push(oItem);
+				NoUrut += 1;
+			}
+
+			if (TotalHargaBaru > 0) {
+				var oItem = {
+					'NoUrut' : 1,
+					'KodeItem' : oCompany[0]["ItemHiburan"],
+					'Qty' : DurasiBaru,
+					'QtyKonversi' : DurasiBaru,
+					'Satuan' : SatuanDurasiBaru,
+					'Harga' : HargaBaru,
+					'Discount' : 0,
+					'HargaNet' : (DurasiBaru * HargaBaru),
+					'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
+					'BaseLine' : -1,
+					'KodeGudang' : oCompany[0]['GudangPoS'],
+					'LineStatus': 'O',
+					'VatPercent' : 0,
+					'HargaPokokPenjualan' : HargaBaru,
+					'Pajak' : 0,
+					'PajakHiburan' : 0,
+				}
+				oDetail.push(oItem);
+				NoUrut += 1;
+			}
+
+			// Makanan
+
+			if (dataMakanan.length > 0) {
+				for (var i = 0; i < dataMakanan.length; i++) {
+					var oItem = {
+						'NoUrut' : NoUrut,
+						'KodeItem' : dataMakanan[i]["KodeItem"],
+						'Qty' : dataMakanan[i]["Qty"],
+						'QtyKonversi' : dataMakanan[i]["Qty"],
+						'Satuan' : dataMakanan[i]["Satuan"],
+						'Harga' : dataMakanan[i]["Harga"],
+						'Discount' : dataMakanan[i]["Diskon"],
+						'HargaNet' : (dataMakanan[i]["Qty"] * dataMakanan[i]["Harga"]) - dataMakanan[i]["Diskon"],
+						'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
+						'BaseLine' : -1,
+						'KodeGudang' : oCompany[0]['GudangPoS'],
+						'LineStatus': 'O',
+						'VatPercent' : 0,
+						'HargaPokokPenjualan' : dataMakanan[i]["HargaPokokPenjualan"],
+						'Pajak' : dataMakanan[i]["Pajak"] || 0,
+						'PajakHiburan' : 0,
+					}
+					oDetail.push(oItem);
+
+					NoUrut += 1;
+				}
+			}
+
+			// Header
+			var oData = {
+				'NoTransaksi' : "",
+				'TglTransaksi' : _Tanggal + " " + _Jam,
+				'TglJatuhTempo' : _Tanggal,
+				'NoReff' : 'POS',
+				'KodeSales' : filteredData[0]["KodeSales"],
+				'KodePelanggan' : filteredData[0]["KodePelanggan"],
+				'KodeTermin' : oCompany[0]['TerminBayarPoS'],
+				'Termin' : 0,
+				'TotalTransaksi' : Math.floor(jQuery('#txtSubTotal_Detail').attr("originalvalue")),
+				'Potongan' : jQuery('#txtDiscount_Detail').attr("originalvalue"),
+				'Pajak' : TotalPPN,
+				'PajakHiburan' : TotalPajakHiburan,
+				'Pembulatan' : 0,
+				'TotalPembelian' : Math.floor(jQuery('#txtGrandTotal_Detail').attr("originalvalue")),
+				'TotalRetur' : 0,
+				'TotalPembayaran' : Math.floor(jQuery('#txtJumlahBayar_Detail').attr("originalvalue")),
+				'Status' : Status,
+				'Keterangan' : '',
+				'MetodeBayar' : jQuery('#cboMetodePembayaran_Detail').val(),
+				'ReffPembayaran' : $('#txtRefrensi_Detail').val(),
+				'Detail' : oDetail
+			}
+
+			// Append Slot Data
+			if (jQuery('#JenisPaket').val() == "PAKETMEMBER" || jQuery('#JenisPaket').val() == "JAM") {
+				const timeSlotParts = jQuery('#selectedTimeSlot').val().split('-');
+				if (timeSlotParts.length >= 1 && jQuery('#selectedTimeSlot').val() !== "") {
+					oData['JamMulai'] = timeSlotParts[0];
+					if (timeSlotParts.length > 1) {
+						oData['JamSelesai'] = timeSlotParts[1];
+					}
+					// Use Local Date
+					var bookingNow = new Date();
+					var localDate = bookingNow.getFullYear() + '-' + String(bookingNow.getMonth() + 1).padStart(2, '0') + '-' + String(bookingNow.getDate()).padStart(2, '0');
+					oData['TglBooking'] = localDate;
+				}
+			}
+
+			console.log(oData);
+
+			$.ajax({
+				async:false,
+				url: "{{route('fpenjualan-hiburanPoS')}}",
+				type: 'POST',
+				contentType: 'application/json',
+				headers: {
+					'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
+				},
+				data: JSON.stringify(oData),
+				success: function(response) {
+					if (response.success == true) {
+						PrintStruk(response.LastTRX);
+					}
+					else{
+						Swal.fire({
+							icon: "error",
+							title: "Opps...",
+							text: response.message,
+						}).then((result) => {
+							ButonObject.text(ButtonDefaultText);
+							ButonObject.attr('disabled',false);
+						});
+					}
+				},
+				error: function(xhr, status, error) {
+                     Swal.fire({
+							icon: "error",
+							title: "Opps...",
+							text: error,
+						}).then((result) => {
+							ButonObject.text(ButtonDefaultText);
+							ButonObject.attr('disabled',false);
+						});
+                }
+			});
+
+			ButonObject.text(ButtonDefaultText);
+			ButonObject.attr('disabled',false);
+		}
+
 		function PrintStruk(NoTransaksi) {
 			let url = "{{ url('') }}";
 			url += "/fpenjualan/printthermal/" + NoTransaksi;
@@ -3917,6 +4204,201 @@ License: You must have a valid license purchased only from themeforest(the above
 				}
 			}, 1000);
 		}
+
+		// ==========================================
+        // TIME SLOT & FLEXIBLE TIME LOGIC
+        // ==========================================
+
+        function loadTimeSlots() {
+            const container = jQuery('#timeSlotContainer');
+            container.html('<div class="col-12 text-center"><p class="text-muted">Memuat slot waktu...</p></div>');
+            
+            $.ajax({
+                url: "{{ route('fpenjualan-getTimeSlots') }}",
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    // Use Local Date
+                    date: (new Date()).getFullYear() + '-' + String((new Date()).getMonth() + 1).padStart(2, '0') + '-' + String((new Date()).getDate()).padStart(2, '0'),
+                    tableid: jQuery('#tableid').val()
+                },
+                success: function(response) {
+                    container.empty();
+                    
+                    if (response.success && response.slots.length > 0) {
+                        response.slots.forEach(function(slot) {
+                            let statusClass = '';
+                            if (!slot.available) {
+                                statusClass = 'disabled';
+                            }
+                            
+                            let html = `
+                                <div class="col-md-3 col-sm-4 col-6 mb-3">
+                                    <div class="time-slot-card ${statusClass}" data-start="${slot.start}" data-end="${slot.end}" data-available="${slot.available}">
+                                        <div class="card text-center mb-0">
+                                            <div class="card-body p-3">
+                                                <h6 class="mb-0 font-weight-bold">${slot.label}</h6>
+                                                ${slot.isBooked ? '<small class="text-danger">Booked</small>' : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            container.append(html);
+                        });
+                    } else {
+                        container.html('<div class="col-12 text-center"><p class="text-muted text-danger">Tidak ada slot waktu tersedia atau konfigurasi jam belum diatur.</p></div>');
+                    }
+                },
+                error: function() {
+                    container.html('<div class="col-12 text-center"><p class="text-danger">Gagal memuat slot waktu.</p></div>');
+                }
+            });
+        }
+
+        function updateTimeSlotData() {
+            const selected = jQuery('.time-slot-card.selected');
+            if (selected.length > 0) {
+                const first = selected.first();
+                const last = selected.last();
+                
+                // Set Range String
+                const timeRange = first.data('start') + '-' + last.data('end');
+                jQuery('#selectedTimeSlot').val(timeRange);
+                
+                // Set Duration (Count of slots)
+                // Only update if NOT PAKETMEMBER
+                if (jQuery('#JenisPaket').val() != "PAKETMEMBER") {
+                    jQuery('#DurasiPaket').val(selected.length);
+                }
+            } else {
+                jQuery('#selectedTimeSlot').val('');
+                if (jQuery('#JenisPaket').val() != "PAKETMEMBER") {
+                    jQuery('#DurasiPaket').val(1);
+                }
+            }
+        }
+
+        jQuery(document).ready(function() {
+            // Flexible Time Checkbox
+            jQuery('#chkFlexibleTime').change(function() {
+                if(jQuery(this).is(':checked')) {
+                    jQuery('#timeSlotSection').slideUp();
+                    jQuery('#DurasiPaket').attr('readonly', false);
+                    jQuery('#selectedTimeSlot').val('');
+                    jQuery('.time-slot-card').removeClass('selected');
+                } else {
+                    jQuery('#timeSlotSection').slideDown();
+                    jQuery('#DurasiPaket').attr('readonly', true);
+                    loadTimeSlots();
+                }
+            });
+
+            // Handle Time Slot Click
+            jQuery(document).on('click', '.time-slot-card', function(e) {
+                e.preventDefault();
+                
+                const $this = jQuery(this);
+
+                if ($this.hasClass('disabled')) {
+                    return;
+                }
+                
+                // Deselection Logic
+                if ($this.hasClass('selected')) {
+                    const selected = jQuery('.time-slot-card.selected');
+                    
+                    // Allow deselecting edges (First or Last)
+                    if (selected.length > 0) {
+                        const first = selected.first();
+                        const last = selected.last();
+                        
+                        if ($this.data('start') == first.data('start') || $this.data('end') == last.data('end')) {
+                            $this.removeClass('selected');
+                        } else {
+                            Swal.fire("Info", "Tidak boleh memutus urutan jam.", "warning");
+                            return; 
+                        }
+                    }
+                } else {
+                    // Selection Logic
+                    const selected = jQuery('.time-slot-card.selected');
+                    
+                    // CHECK: Limit for PAKETMEMBER
+                    if (jQuery('#JenisPaket').val() == "PAKETMEMBER") {
+                        var maxSlots = parseInt(jQuery('#DurasiPaket').val()) || 0;
+                        if (selected.length >= maxSlots) {
+                            Swal.fire("Info", "Maksimal durasi paket adalah " + maxSlots + " jam.", "warning");
+                            return;
+                        }
+                    }
+
+                    if (selected.length === 0) {
+                        $this.addClass('selected');
+                    } else {
+                        const first = selected.first();
+                        const last = selected.last();
+                        
+                        // Check adjacency
+                        if ($this.data('start') == last.data('end')) {
+                            $this.addClass('selected');
+                        } else if ($this.data('end') == first.data('start')) {
+                             // Prepend requires re-ordering DOM or logic handles visual. 
+                             // Simplified: append only supported well by this logic unless logic extended.
+                             // For now assuming user clicks sequentially.
+                             Swal.fire("Info", "Silahkan pilih jam berurutan setelah jam terakhir.", "warning");
+                             return;
+                        } else {
+                            Swal.fire("Info", "Slot waktu harus berurutan.", "warning");
+                            return;
+                        }
+                    }
+                }
+                
+                updateTimeSlotData();
+            });
+
+			// Handle Member Selection for PAKETMEMBER
+			jQuery('#KodePelanggan').change(function() {
+				if (jQuery('#JenisPaket').val() == "PAKETMEMBER") {
+					var kodePelanggan = jQuery(this).val();
+					if (kodePelanggan) {
+						// jQuery('#DurasiPaket').val('Loading...');
+						
+						// Get Maximal Order
+						$.ajax({
+							url: "{{ route('billing-maxtime') }}",
+							type: 'POST',
+							data: {
+								_token: '{{ csrf_token() }}',
+								mejaID: jQuery('#tableid').val(),
+								// JamRequest: new Date().toISOString() // Use Local Date if needed
+								JamRequest: (new Date()).getFullYear() + '-' + String((new Date()).getMonth() + 1).padStart(2, '0') + '-' + String((new Date()).getDate()).padStart(2, '0') + ' ' + String((new Date()).getHours()).padStart(2, '0') + ':' + String((new Date()).getMinutes()).padStart(2, '0') + ':' + String((new Date()).getSeconds()).padStart(2, '0')
+							},
+							success: function(response) {
+								if (response.success) {
+									if(response.MaximalOrder > 0){
+										jQuery('#DurasiPaket').val(response.MaximalOrder);
+										jQuery("#DurasiPaket").attr("max", response.MaximalOrder);
+										
+										// Reveal slots
+										jQuery('#timeSlotSection').slideDown();
+										loadTimeSlots();
+									} else {
+										Swal.fire("Info", "Member ini tidak memiliki kuota bermain.", "warning");
+									}
+								} else {
+									Swal.fire("Error", "Gagal mengambil data member.", "error");
+								}
+							},
+							error: function(xhr) {
+								console.error(xhr);
+							}
+						});
+					}
+				}
+			});
+        });
 	});
 
 	

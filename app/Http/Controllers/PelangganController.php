@@ -57,8 +57,18 @@ class PelangganController extends Controller
         $title = 'Delete Pelanggan !';
         $text = "Are you sure you want to delete ?";
         confirmDelete($title, $text);
+        
+        $metodepembayaran = \App\Models\MetodePembayaran::where('RecordOwnerID', Auth::user()->RecordOwnerID)->where('MetodeVerifikasi','AUTO')->first();
+        $company = \App\Models\Company::where('KodePartner', Auth::user()->RecordOwnerID)->first();
+
+        
+        $midtransclientkey = $company ? $metodepembayaran->ClientKey : '';
+        
         return view("master.BussinessPartner.Pelanggan",[
-            'pelanggan' => $pelanggan->get(), 
+            'pelanggan' => $pelanggan->get(),
+            'metodepembayaran' => $metodepembayaran,
+            'midtransclientkey' => $midtransclientkey,
+            'company' => $company,
         ]);
     }
 
@@ -159,7 +169,12 @@ class PelangganController extends Controller
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
             $allowedDays = $request->input('AllowedDay');
             $model->AllowedDay = is_array($allowedDays) ? implode(',', $allowedDays) : '';
-            $model->ValidUntil = $request->input('ValidUntil');
+            // ValidUntil will be set only during activation/extension
+            $model->isPaidMembership = $request->input('isPaidMembership', 0);
+            $model->MaxPlay = $request->input('MaxPlay', 0);
+            $model->Played = $request->input('Played', 0);
+            $model->MemberPrice = $request->input('MemberPrice', 0);
+            $model->maxTimePerPlay = $request->input('maxTimePerPlay', 0);
 
             $save = $model->save();
 
@@ -210,7 +225,12 @@ class PelangganController extends Controller
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
             $allowedDays = $request->input('AllowedDay');
             $model->AllowedDay = is_array($allowedDays) ? implode(',', $allowedDays) : '';
-            $model->ValidUntil = $request->input('ValidUntil');
+            // ValidUntil will be set only during activation/extension
+            $model->isPaidMembership = $request->input('isPaidMembership', 0);
+            $model->MaxPlay = $request->input('MaxPlay', 0);
+            $model->Played = $request->input('Played', 0);
+            $model->MemberPrice = $request->input('MemberPrice', 0);
+            $model->maxTimePerPlay = $request->input('maxTimePerPlay', 0);
 
             $save = $model->save();
 
@@ -261,7 +281,12 @@ class PelangganController extends Controller
                     'Status' => $request->input('Status'),
                     'PelangganID' => $request->input('PelangganID'),
                     'AllowedDay' => is_array($request->input('AllowedDay')) ? implode(',', $request->input('AllowedDay')) : '',
-                    'ValidUntil' => $request->input('ValidUntil')
+                    // ValidUntil will be set only during activation/extension
+                    'isPaidMembership' => $request->input('isPaidMembership', 0),
+                    'MaxPlay' => $request->input('MaxPlay', 0),
+                    'Played' => $request->input('Played', 0),
+                    'MemberPrice' => $request->input('MemberPrice', 0),
+                    'maxTimePerPlay' => $request->input('maxTimePerPlay', 0)
                 ]);
 
                 alert()->success('Success','Data Pelanggan berhasil disimpan.');
@@ -308,7 +333,12 @@ class PelangganController extends Controller
                     'Status' => $request->input('Status'),
                     'PelangganID' => $request->input('PelangganID'),
                     'AllowedDay' => is_array($request->input('AllowedDay')) ? implode(',', $request->input('AllowedDay')) : '',
-                    'ValidUntil' => $request->input('ValidUntil')
+                    // ValidUntil will be set only during activation/extension
+                    'isPaidMembership' => $request->input('isPaidMembership', 0),
+                    'MaxPlay' => $request->input('MaxPlay', 0),
+                    'Played' => $request->input('Played', 0),
+                    'MemberPrice' => $request->input('MemberPrice', 0),
+                    'maxTimePerPlay' => $request->input('maxTimePerPlay', 0)
                 ]);
 
                 $data['success'] = true;
@@ -340,5 +370,497 @@ class PelangganController extends Controller
     public function Export()
     {
         return Excel::download(new PelangganExport(), 'Daftar Pelanggan.xlsx');
+    }
+
+    public function activateMember(Request $request)
+    {
+        $data = array('success' => false, 'message' => '', 'data' => array());
+        DB::beginTransaction();
+        
+        try {
+            $kodeMember = $request->input('kode_member');
+            $metodeId = $request->input('metode_pembayaran');
+            
+            // Get member data
+            $pelanggan = Pelanggan::where('KodePelanggan', $kodeMember)
+                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                ->first();
+            
+            if (!$pelanggan) {
+                $data['message'] = 'Member tidak ditemukan';
+                return response()->json($data);
+            }
+            
+            $currentDate = Carbon::now();
+            $Year = $currentDate->format('Y');
+            $Month = $currentDate->format('m');
+            
+            // Get company settings
+            $oCompany = \App\Models\Company::where('KodePartner', Auth::user()->RecordOwnerID)->first();
+            
+            // Create Faktur
+            $numberingData = new DocumentNumbering();
+            $fakturNo = $numberingData->GetNewDoc("POS", "fakturpenjualanheader", "NoTransaksi");
+            
+            $fHeader = new \App\Models\FakturPenjualanHeader();
+            $fHeader->Periode = $Year . $Month;
+            $fHeader->NoTransaksi = $fakturNo;
+            $fHeader->Transaksi = 'POS';
+            $fHeader->TglTransaksi = $currentDate;
+            $fHeader->TglJatuhTempo = $currentDate;
+            $fHeader->NoReff = 'AKTIVASI-' . $kodeMember;
+            $fHeader->KodePelanggan = $kodeMember;
+            $fHeader->KodeTermin = "";
+            $fHeader->Termin = 0;
+            $fHeader->TotalTransaksi = $pelanggan->MemberPrice;
+            $fHeader->Potongan = 0;
+            $fHeader->Pajak = 0;
+            $fHeader->TotalPembelian = $pelanggan->MemberPrice;
+            $fHeader->TotalRetur = 0;
+            $fHeader->TotalPembayaran = $pelanggan->MemberPrice;
+            $fHeader->Pembulatan = 0;
+            $fHeader->Status = 'C'; // Close/Lunas
+            $fHeader->Keterangan = 'Aktivasi Member';
+            $fHeader->MetodeBayar = $metodeId;
+            $fHeader->ReffPembayaran = "AKTIVASI-" . $kodeMember;
+            $fHeader->KodeSales = Auth::user()->KodeSales;
+            $fHeader->Posted = 0;
+            $fHeader->RecordOwnerID = Auth::user()->RecordOwnerID;
+            $fHeader->CreatedBy = Auth::user()->name;
+            $fHeader->UpdatedBy = "";
+            $fHeader->save();
+            
+            // Create Faktur Detail
+            $fDetail = new \App\Models\FakturPenjualanDetail();
+            $fDetail->NoTransaksi = $fakturNo;
+            $fDetail->NoUrut = 0;
+            $fDetail->KodeItem = $oCompany->ItemHiburan;
+            $fDetail->Qty = 1;
+            $fDetail->QtyKonversi = 1;
+            $fDetail->QtyRetur = 0;
+            $fDetail->Satuan = 'PAKET';
+            $fDetail->Harga = $pelanggan->MemberPrice;
+            $fDetail->Discount = 0;
+            $fDetail->BaseReff = '';
+            $fDetail->BaseLine = -1;
+            $fDetail->KodeGudang = $oCompany->GudangPoS;
+            $fDetail->HargaNet = $pelanggan->MemberPrice;
+            $fDetail->LineStatus = 'O';
+            $fDetail->VatPercent = 0;
+            $fDetail->HargaPokokPenjualan = 0;
+            $fDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+            $fDetail->save();
+            
+            // Create Payment
+            $payNo = $numberingData->GetNewDoc("INPAY", "pembayaranpenjualanheader", "NoTransaksi");
+            $pHeader = new \App\Models\PembayaranPenjualanHeader();
+            $pHeader->Periode = $Year . $Month;
+            $pHeader->NoTransaksi = $payNo;
+            $pHeader->TglTransaksi = $currentDate;
+            $pHeader->KodePelanggan = $kodeMember;
+            $pHeader->TotalPembelian = $pelanggan->MemberPrice;
+            $pHeader->TotalPembayaran = $pelanggan->MemberPrice;
+            $pHeader->KodeMetodePembayaran = $metodeId;
+            $pHeader->NoReff = "AKTIVASI-" . $kodeMember;
+            $pHeader->Keterangan = 'Aktivasi Member';
+            $pHeader->RecordOwnerID = Auth::user()->RecordOwnerID;
+            $pHeader->CreatedBy = Auth::user()->name;
+            $pHeader->UpdatedBy = "";
+            $pHeader->Posted = 0;
+            $pHeader->Status = 'C';
+            $pHeader->save();
+            
+            $pDetail = new \App\Models\PembayaranPenjualanDetail();
+            $pDetail->NoTransaksi = $payNo;
+            $pDetail->NoUrut = 0;
+            $pDetail->BaseReff = $fakturNo;
+            $pDetail->TotalPembayaran = $pelanggan->MemberPrice;
+            $pDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+            $pDetail->KodeMetodePembayaran = $metodeId;
+            $pDetail->Keterangan = 'Aktivasi Member';
+            $pDetail->save();
+            
+            // Update member ValidUntil and reset Played
+            $validUntil = $currentDate->copy()->addDays(30);
+            DB::table('pelanggan')
+                ->where('KodePelanggan', $kodeMember)
+                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                ->update([
+                    'ValidUntil' => $validUntil,
+                    'Played' => 0
+                ]);
+            
+            DB::commit();
+            $data['success'] = true;
+            $data['message'] = 'Member berhasil diaktivasi';
+            
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error("Member activation error: " . $e->getMessage());
+            $data['message'] = 'Gagal mengaktivasi member: ' . $e->getMessage();
+        }
+        
+        return response()->json($data);
+    }
+
+    public function extendMember(Request $request)
+    {
+        $data = array('success' => false, 'message' => '', 'data' => array());
+        DB::beginTransaction();
+        
+        try {
+            $kodeMember = $request->input('kode_member');
+            $validUntil = $request->input('valid_until');
+            $metodeId = $request->input('metode_pembayaran');
+            
+            // Get member data
+            $pelanggan = Pelanggan::where('KodePelanggan', $kodeMember)
+                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                ->first();
+            
+            if (!$pelanggan) {
+                $data['message'] = 'Member tidak ditemukan';
+                return response()->json($data);
+            }
+            
+            $currentDate = Carbon::now();
+            $Year = $currentDate->format('Y');
+            $Month = $currentDate->format('m');
+            
+            // Get company settings
+            $oCompany = \App\Models\Company::where('KodePartner', Auth::user()->RecordOwnerID)->first();
+            
+            // Create Faktur
+            $numberingData = new DocumentNumbering();
+            $fakturNo = $numberingData->GetNewDoc("POS", "fakturpenjualanheader", "NoTransaksi");
+            
+            $fHeader = new \App\Models\FakturPenjualanHeader();
+            $fHeader->Periode = $Year . $Month;
+            $fHeader->NoTransaksi = $fakturNo;
+            $fHeader->Transaksi = 'POS';
+            $fHeader->TglTransaksi = $currentDate;
+            $fHeader->TglJatuhTempo = $currentDate;
+            $fHeader->NoReff = 'PERPANJANG-' . $kodeMember;
+            $fHeader->KodePelanggan = $kodeMember;
+            $fHeader->KodeTermin = "";
+            $fHeader->Termin = 0;
+            $fHeader->TotalTransaksi = $pelanggan->MemberPrice;
+            $fHeader->Potongan = 0;
+            $fHeader->Pajak = 0;
+            $fHeader->TotalPembelian = $pelanggan->MemberPrice;
+            $fHeader->TotalRetur = 0;
+            $fHeader->TotalPembayaran = $pelanggan->MemberPrice;
+            $fHeader->Pembulatan = 0;
+            $fHeader->Status = 'C'; // Close/Lunas
+            $fHeader->Keterangan = 'Perpanjang Member';
+            $fHeader->MetodeBayar = $metodeId;
+            $fHeader->ReffPembayaran = "PERPANJANG-" . $kodeMember;
+            $fHeader->KodeSales = Auth::user()->KodeSales;
+            $fHeader->Posted = 0;
+            $fHeader->RecordOwnerID = Auth::user()->RecordOwnerID;
+            $fHeader->CreatedBy = Auth::user()->name;
+            $fHeader->UpdatedBy = "";
+            $fHeader->save();
+            
+            // Create Faktur Detail
+            $fDetail = new \App\Models\FakturPenjualanDetail();
+            $fDetail->NoTransaksi = $fakturNo;
+            $fDetail->NoUrut = 0;
+            $fDetail->KodeItem = $oCompany->ItemHiburan;
+            $fDetail->Qty = 1;
+            $fDetail->QtyKonversi = 1;
+            $fDetail->QtyRetur = 0;
+            $fDetail->Satuan = 'PAKET';
+            $fDetail->Harga = $pelanggan->MemberPrice;
+            $fDetail->Discount = 0;
+            $fDetail->BaseReff = '';
+            $fDetail->BaseLine = -1;
+            $fDetail->KodeGudang = $oCompany->GudangPoS;
+            $fDetail->HargaNet = $pelanggan->MemberPrice;
+            $fDetail->LineStatus = 'O';
+            $fDetail->VatPercent = 0;
+            $fDetail->HargaPokokPenjualan = 0;
+            $fDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+            $fDetail->save();
+            
+            // Create Payment
+            $payNo = $numberingData->GetNewDoc("INPAY", "pembayaranpenjualanheader", "NoTransaksi");
+            $pHeader = new \App\Models\PembayaranPenjualanHeader();
+            $pHeader->Periode = $Year . $Month;
+            $pHeader->NoTransaksi = $payNo;
+            $pHeader->TglTransaksi = $currentDate;
+            $pHeader->KodePelanggan = $kodeMember;
+            $pHeader->TotalPembelian = $pelanggan->MemberPrice;
+            $pHeader->TotalPembayaran = $pelanggan->MemberPrice;
+            $pHeader->KodeMetodePembayaran = $metodeId;
+            $pHeader->NoReff = "PERPANJANG-" . $kodeMember;
+            $pHeader->Keterangan = 'Perpanjang Member';
+            $pHeader->RecordOwnerID = Auth::user()->RecordOwnerID;
+            $pHeader->CreatedBy = Auth::user()->name;
+            $pHeader->UpdatedBy = "";
+            $pHeader->Posted = 0;
+            $pHeader->Status = 'C';
+            $pHeader->save();
+            
+            $pDetail = new \App\Models\PembayaranPenjualanDetail();
+            $pDetail->NoTransaksi = $payNo;
+            $pDetail->NoUrut = 0;
+            $pDetail->BaseReff = $fakturNo;
+            $pDetail->TotalPembayaran = $pelanggan->MemberPrice;
+            $pDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
+            $pDetail->KodeMetodePembayaran = $metodeId;
+            $pDetail->Keterangan = 'Perpanjang Member';
+            $pDetail->save();
+            
+            // Update member ValidUntil and reset Played
+            DB::table('pelanggan')
+                ->where('KodePelanggan', $kodeMember)
+                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                ->update([
+                    'ValidUntil' => $validUntil,
+                    'Played' => 0
+                ]);
+            
+            DB::commit();
+            $data['success'] = true;
+            $data['message'] = 'Member berhasil diperpanjang';
+            
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error("Member extension error: " . $e->getMessage());
+            $data['message'] = 'Gagal memperpanjang member: ' . $e->getMessage();
+        }
+        
+        return response()->json($data);
+    }
+
+    public function paymentGateway(Request $request)
+    {
+        $data = array('success' => false, 'message' => '', 'snap_token' => '');
+        
+        try {
+            $kodeMember = $request->input('kode_member');
+            $type = $request->input('type'); // 'aktivasi' or 'perpanjang'
+            $metodeId = $request->input('metode_pembayaran');
+            $validUntil = $request->input('valid_until', '');
+            
+            // Get member data
+            $pelanggan = Pelanggan::where('KodePelanggan', $kodeMember)
+                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                ->first();
+            
+            if (!$pelanggan) {
+                $data['message'] = 'Member tidak ditemukan';
+                return response()->json($data);
+            }
+            
+            // Get payment method
+            $metode = \App\Models\MetodePembayaran::where('id', $metodeId)
+                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                ->first();
+            
+            if (!$metode || !$metode->ServerKey) {
+                $data['message'] = 'Metode pembayaran tidak valid atau belum dikonfigurasi';
+                return response()->json($data);
+            }
+            
+            // Configure Midtrans
+            \Midtrans\Config::$serverKey = $metode->ServerKey;
+            \Midtrans\Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+            \Midtrans\Config::$isSanitized = true;
+            \Midtrans\Config::$is3ds = true;
+            
+            // Create unique order ID
+            $orderId = 'MEMBER-' . strtoupper($type) . '-' . $kodeMember . '-' . time();
+            
+            // Create transaction details
+            $transaction_details = [
+                'order_id' => $orderId,
+                'gross_amount' => floatval($pelanggan->MemberPrice),
+            ];
+            
+            $customer_details = [
+                'first_name' => $pelanggan->NamaPelanggan,
+                'email' => $pelanggan->Email,
+                'phone' => $pelanggan->NoTlp1,
+            ];
+            
+            // Store transaction metadata
+            $metadata = [
+                'kode_member' => $kodeMember,
+                'type' => $type,
+                'valid_until' => $validUntil,
+                'metode_id' => $metodeId,
+                'user_id' => Auth::user()->id,
+                'record_owner_id' => Auth::user()->RecordOwnerID,
+            ];
+            
+            $transaction = [
+                'transaction_details' => $transaction_details,
+                'customer_details' => $customer_details,
+                'custom_field1' => json_encode($metadata),
+            ];
+            
+            $snapToken = \Midtrans\Snap::getSnapToken($transaction);
+            
+            $data['success'] = true;
+            $data['snap_token'] = $snapToken;
+            $data['order_id'] = $orderId;
+            
+        } catch (\Exception $e) {
+            Log::error("Payment gateway error: " . $e->getMessage());
+            $data['message'] = 'Gagal membuat transaksi: ' . $e->getMessage();
+        }
+        
+        return response()->json($data);
+    }
+
+    public function paymentCallback(Request $request)
+    {
+        $data = array('success' => false, 'message' => '');
+        DB::beginTransaction();
+        
+        try {
+            $orderId = $request->input('order_id');
+            $statusCode = $request->input('status_code');
+            $transactionStatus = $request->input('transaction_status');
+            $metadata = json_decode($request->input('metadata'), true);
+            
+            // Verify payment is successful
+            if ($transactionStatus !== 'settlement' && $transactionStatus !== 'capture') {
+                $data['message'] = 'Pembayaran belum selesai';
+                return response()->json($data);
+            }
+            
+            $kodeMember = $metadata['kode_member'];
+            $type = $metadata['type'];
+            $validUntil = $metadata['valid_until'];
+            $metodeId = $metadata['metode_id'];
+            
+            // Get member data
+            $pelanggan = Pelanggan::where('KodePelanggan', $kodeMember)
+                ->where('RecordOwnerID', $metadata['record_owner_id'])
+                ->first();
+            
+            if (!$pelanggan) {
+                $data['message'] = 'Member tidak ditemukan';
+                return response()->json($data);
+            }
+            
+            $currentDate = Carbon::now();
+            $Year = $currentDate->format('Y');
+            $Month = $currentDate->format('m');
+            
+            // Get company settings
+            $oCompany = \App\Models\Company::where('KodePartner', $metadata['record_owner_id'])->first();
+            
+            // Create Faktur
+            $numberingData = new DocumentNumbering();
+            $fakturNo = $numberingData->GetNewDoc("POS", "fakturpenjualanheader", "NoTransaksi");
+            
+            $fHeader = new \App\Models\FakturPenjualanHeader();
+            $fHeader->Periode = $Year . $Month;
+            $fHeader->NoTransaksi = $fakturNo;
+            $fHeader->Transaksi = 'POS';
+            $fHeader->TglTransaksi = $currentDate;
+            $fHeader->TglJatuhTempo = $currentDate;
+            $fHeader->NoReff = strtoupper($type) . '-' . $kodeMember;
+            $fHeader->KodePelanggan = $kodeMember;
+            $fHeader->KodeTermin = "";
+            $fHeader->Termin = 0;
+            $fHeader->TotalTransaksi = $pelanggan->MemberPrice;
+            $fHeader->Potongan = 0;
+            $fHeader->Pajak = 0;
+            $fHeader->TotalPembelian = $pelanggan->MemberPrice;
+            $fHeader->TotalRetur = 0;
+            $fHeader->TotalPembayaran = $pelanggan->MemberPrice;
+            $fHeader->Pembulatan = 0;
+            $fHeader->Status = 'C';
+            $fHeader->Keterangan = ucfirst($type) . ' Member via Payment Gateway';
+            $fHeader->MetodeBayar = $metodeId;
+            $fHeader->ReffPembayaran = $orderId;
+            $fHeader->KodeSales = '';
+            $fHeader->Posted = 0;
+            $fHeader->RecordOwnerID = $metadata['record_owner_id'];
+            $fHeader->CreatedBy = 'SYSTEM';
+            $fHeader->UpdatedBy = "";
+            $fHeader->save();
+            
+            // Create Faktur Detail
+            $fDetail = new \App\Models\FakturPenjualanDetail();
+            $fDetail->NoTransaksi = $fakturNo;
+            $fDetail->NoUrut = 0;
+            $fDetail->KodeItem = $oCompany->ItemHiburan;
+            $fDetail->Qty = 1;
+            $fDetail->QtyKonversi = 1;
+            $fDetail->QtyRetur = 0;
+            $fDetail->Satuan = 'PAKET';
+            $fDetail->Harga = $pelanggan->MemberPrice;
+            $fDetail->Discount = 0;
+            $fDetail->BaseReff = '';
+            $fDetail->BaseLine = -1;
+            $fDetail->KodeGudang = $oCompany->GudangPoS;
+            $fDetail->HargaNet = $pelanggan->MemberPrice;
+            $fDetail->LineStatus = 'O';
+            $fDetail->VatPercent = 0;
+            $fDetail->HargaPokokPenjualan = 0;
+            $fDetail->RecordOwnerID = $metadata['record_owner_id'];
+            $fDetail->save();
+            
+            // Create Payment
+            $payNo = $numberingData->GetNewDoc("INPAY", "pembayaranpenjualanheader", "NoTransaksi");
+            $pHeader = new \App\Models\PembayaranPenjualanHeader();
+            $pHeader->Periode = $Year . $Month;
+            $pHeader->NoTransaksi = $payNo;
+            $pHeader->TglTransaksi = $currentDate;
+            $pHeader->KodePelanggan = $kodeMember;
+            $pHeader->TotalPembelian = $pelanggan->MemberPrice;
+            $pHeader->TotalPembayaran = $pelanggan->MemberPrice;
+            $pHeader->KodeMetodePembayaran = $metodeId;
+            $pHeader->NoReff = $orderId;
+            $pHeader->Keterangan = ucfirst($type) . ' Member via Payment Gateway';
+            $pHeader->RecordOwnerID = $metadata['record_owner_id'];
+            $pHeader->CreatedBy = 'SYSTEM';
+            $pHeader->UpdatedBy = "";
+            $pHeader->Posted = 0;
+            $pHeader->Status = 'C';
+            $pHeader->save();
+            
+            $pDetail = new \App\Models\PembayaranPenjualanDetail();
+            $pDetail->NoTransaksi = $payNo;
+            $pDetail->NoUrut = 0;
+            $pDetail->BaseReff = $fakturNo;
+            $pDetail->TotalPembayaran = $pelanggan->MemberPrice;
+            $pDetail->RecordOwnerID = $metadata['record_owner_id'];
+            $pDetail->KodeMetodePembayaran = $metodeId;
+            $pDetail->Keterangan = ucfirst($type) . ' Member via Payment Gateway';
+            $pDetail->save();
+            
+            // Update member ValidUntil and reset Played
+            if ($type === 'aktivasi') {
+                $newValidUntil = $currentDate->copy()->addDays(30);
+            } else {
+                $newValidUntil = $validUntil;
+            }
+            
+            DB::table('pelanggan')
+                ->where('KodePelanggan', $kodeMember)
+                ->where('RecordOwnerID', $metadata['record_owner_id'])
+                ->update([
+                    'ValidUntil' => $newValidUntil,
+                    'Played' => 0
+                ]);
+            
+            DB::commit();
+            $data['success'] = true;
+            $data['message'] = 'Pembayaran berhasil diproses';
+            
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error("Payment callback error: " . $e->getMessage());
+            $data['message'] = 'Gagal memproses pembayaran: ' . $e->getMessage();
+        }
+        
+        return response()->json($data);
     }
 }
