@@ -25,13 +25,16 @@ class UserController extends Controller
         $KelompokAkses = $request->input('KelompokAkses');
         $StatusUser = $request->input('StatusUser');
 
-        $sql = "users.id, users.name, users.email, CASE WHEN users.Active = 'Y' THEN 'Aktif' ELSE 'Tidak Aktif' END StatusUser, roles.RoleName";
+        $sql = "users.id, users.name, users.email, CASE WHEN users.Active = 'Y' THEN 'Aktif' ELSE 'Tidak Aktif' END StatusUser, roles.RoleName,company.KodePartner, company.NamaPartner, CASE WHEN COALESCE(users.current_session_id, '') = '' THEN 'Loged Out' ELSE 'Loged In' END AS StatusLogin ";
 
         $users = User::selectRaw($sql)
 				->leftJoin('userrole','users.id','=','userrole.userid')
 				->leftJoin('roles','roles.id','=','userrole.roleid')
-                ->where('users.RecordOwnerID','=',Auth::user()->RecordOwnerID);
+                ->leftJoin('company','company.KodePartner','=','users.RecordOwnerID');  
 
+        if (Auth::user()->RecordOwnerID <> "999999") {
+            $users->where('users.RecordOwnerID','=',Auth::user()->RecordOwnerID);
+        }
         if ($KelompokAkses != "") {
         	$users->where('roles.id','=', $KelompokAkses);
         }
@@ -39,17 +42,17 @@ class UserController extends Controller
         if ($StatusUser != "") {
         	$users->where('users.Active','=', $StatusUser);
         }
-        $users = $users->paginate(4);
+        // $users = $users->paginate(4);
 
         // KelompokAkses
         $roles = Roles::selectRaw("*")
         		->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
-        $title = 'Delete User !';
-        $text = "Are you sure you want to delete ?";
+        $title = 'Logout User !';
+        $text = "Are you sure you want to Log Out User ?";
         confirmDelete($title, $text);
         return view("master.Auth.User",[
-            'users' => $users, 
+            'users' => $users->get(), 
             'rolesdata' => $roles,
             'oldKelompokAkses' => $KelompokAkses,
             'oldStatusUser' => $StatusUser
@@ -204,6 +207,24 @@ class UserController extends Controller
         	alert()->error('Error','Delete User Gagal.');
         }
         return redirect('users');
+    }
+
+    public function LogOutUser(Request $request)
+    {
+        $users = DB::table('users')
+                ->where('id', $request->id)
+                ->update([
+                    'current_session_id' => ''
+                ]);
+        // dd($request->id);
+
+        if ($users) {
+        	alert()->success('Success','Log out User berhasil.');
+        }
+        else{
+        	alert()->error('Error','Log out User Gagal.');
+        }
+        return redirect('user');
     }
     public function Export()
     {

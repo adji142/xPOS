@@ -80,6 +80,8 @@ class MejaController extends Controller
                 'KelompokMeja'=> 'required'
             ]);
 
+            
+
             $model = new Meja;
             $model->KodeMeja = $request->input('KodeMeja');
             $model->NamaMeja = $request->input('NamaMeja');

@@ -22,12 +22,23 @@ class MasterControllerController extends Controller
     	$field = ['NamaController','SN'];
         $keyword = $request->input('keyword');
 
-        $controller = MasterController::selectRaw("mastercontroller.*")
+        $controller = MasterController::selectRaw("mastercontroller.id, mastercontroller.NamaController,mastercontroller.SN, mastercontroller.Port, mastercontroller.BaudRate, mastercontroller.RecordOwnerID,serial_numbers.MaximalNode, COUNT(titiklampu.id) as JumlahTitikLampu")
+                ->leftJoin('serial_numbers', function ($value){
+                    $value->on('serial_numbers.SerialNumber','=','mastercontroller.SN')
+                    ->on('serial_numbers.KodePartner','=','mastercontroller.RecordOwnerID');
+                })
+                ->leftJoin('titiklampu', function ($value) {
+                    $value->on('titiklampu.ControllerID', '=', 'mastercontroller.id')
+                    ->on('titiklampu.RecordOwnerID', '=', 'mastercontroller.RecordOwnerID');
+                })
                 ->Where(function ($query) use($keyword, $field) {
-                    for ($i = 0; $i < count($field); $i++){
-                        $query->orwhere($field[$i], 'like',  '%' . $keyword .'%');
-                    }      
-                })->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+                    for ($i = 0; $i < count($field); $i++) {
+                        $query->orwhere($field[$i], 'like', '%' . $keyword . '%');
+                    }
+                })
+                ->where('mastercontroller.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
+                ->groupBy('mastercontroller.id', 'mastercontroller.NamaController','mastercontroller.SN', 'mastercontroller.Port', 'mastercontroller.BaudRate', 'mastercontroller.RecordOwnerID', 'serial_numbers.MaximalNode')
+                ->get();
 
         $title = 'Delete Controller !';
         $text = "Are you sure you want to delete ?";

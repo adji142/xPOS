@@ -201,7 +201,8 @@ Route::get('/user', [UserController::class,'View'])->name('user')->middleware('a
 Route::get('/user/form/{id}', [UserController::class,'Form'])->name('user-form')->middleware('auth');
 Route::post('/user/store', [UserController::class, 'store'])->name('user-store')->middleware('auth');
 Route::post('/user/edit', [UserController::class, 'edit'])->name('user-edit')->middleware('auth');
-Route::delete('/user/delete/{id}', [UserController::class, 'deletedata'])->name('user-delete')->middleware('auth');
+// Route::delete('/user/delete/{id}', [UserController::class, 'deletedata'])->name('user-delete')->middleware('auth');
+Route::delete('/user/logout/{id}', [UserController::class, 'LogOutUser'])->name('user-logout')->middleware('auth');
 Route::get('/user/export', [UserController::class,'Export'])->name('user-export')->middleware('auth');
 
 /*

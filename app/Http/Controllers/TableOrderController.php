@@ -1009,19 +1009,131 @@ class TableOrderController extends Controller
         try {
             $NoTransaksi = $request->input('NoTransaksi');
             
-            $update = DB::table('tableorderheader')
-                ->where('NoTransaksi', $NoTransaksi)
-                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
-                ->update([
-                    'Status' => 0,
-                    'DocumentStatus' => 'C'
-                ]);
+            // Cari data existing untuk mendapatkan tableid
+            $currentData = DB::table('tableorderheader')
+                            ->where('NoTransaksi', $NoTransaksi)
+                            ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                            ->first();
+            
 
-            if ($update) {
-                alert()->success('Success', 'Controller berhasil direset.');
+            if ($currentData) {
+                // 1. cari dulu Transaksi tableorderheader yang DocumentStatus = 'O' dan Status nya 1 dengan order asc
+                $checkOrder = DB::table('tableorderheader')
+                                ->where('tableid', $currentData->tableid)
+                                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                                ->where('DocumentStatus', 'O')
+                                ->where('Status', 1)
+                                ->orderBy('TglPencatatan', 'asc')
+                                ->get();
+                // dd($checkOrder);
+                // update dulu semua DocumentStatus = 'C' dan Status nya 0
+                foreach ($checkOrder as $co) {
+                    DB::table('tableorderheader')
+                        ->where('NoTransaksi', $co->NoTransaksi)
+                        ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                        ->update([
+                            'Status' => 0,
+                            'DocumentStatus' => 'C'
+                        ]);
+                }
+
+                // kemudian update order dengan urutan terakhir dalam loop dengan DocumentStatus = 'O' dan Status nya 1
+                // TAPI hanya jika JamSelesai belum lewat (Masih Valid)
+                $now = Carbon::now();
+                $validOrder = null;
+
+                foreach ($checkOrder as $co) {
+                    $jamSelesai = Carbon::parse($co->JamSelesai);
+                    if ($jamSelesai->gt($now)) {
+                        // Found a valid order. We keep the last one found (highest ID/latest) if multiple exist.
+                        $validOrder = $co;
+                    }
+                }
+
+                if ($validOrder) {
+                    DB::table('tableorderheader')
+                        ->where('NoTransaksi', $validOrder->NoTransaksi)
+                        ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                        ->update([
+                            'Status' => 1,
+                            'DocumentStatus' => 'O'
+                        ]);
+                    alert()->success('Success', 'Controller berhasil direset (Fixed: Active Order Restored).');
+                } else {
+                    // Tidak ada yang valid (Semua sudah expired) -> Tetap Closed semua.
+                        alert()->success('Success', 'Controller berhasil direset (Fixed: All Expired).');
+                }
+                // 2. Jika record nya = 1 langsung update saja
+                // if (count($checkOrder) == 1) { 
+                //     $update = DB::table('tableorderheader')
+                //         ->where('NoTransaksi', $NoTransaksi)
+                //         ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                //         ->update([
+                //             'Status' => 0,
+                //             'DocumentStatus' => 'C'
+                //         ]);
+    
+                //     if ($update) {
+                //         alert()->success('Success', 'Controller berhasil direset.');
+                //     } else {
+                //         alert()->error('Error', 'Gagal mereset controller atau data tidak ditemukan.');
+                //     }
+                // }
+                // // 3. Jika recordnya lebih dari 1
+                // elseif (count($checkOrder) > 1) {
+                //     // update dulu semua DocumentStatus = 'C' dan Status nya 0
+                //     foreach ($checkOrder as $co) {
+                //         DB::table('tableorderheader')
+                //             ->where('NoTransaksi', $co->NoTransaksi)
+                //             ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                //             ->update([
+                //                 'Status' => 0,
+                //                 'DocumentStatus' => 'C'
+                //             ]);
+                //     }
+
+                //     // kemudian update order dengan urutan terakhir dalam loop dengan DocumentStatus = 'O' dan Status nya 1
+                //     // TAPI hanya jika JamSelesai belum lewat (Masih Valid)
+                //     $now = Carbon::now();
+                //     $validOrder = null;
+
+                //     foreach ($checkOrder as $co) {
+                //         $jamSelesai = Carbon::parse($co->JamSelesai);
+                //         if ($jamSelesai->gt($now)) {
+                //             // Found a valid order. We keep the last one found (highest ID/latest) if multiple exist.
+                //             $validOrder = $co;
+                //         }
+                //     }
+
+                //     if ($validOrder) {
+                //         DB::table('tableorderheader')
+                //             ->where('NoTransaksi', $validOrder->NoTransaksi)
+                //             ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                //             ->update([
+                //                 'Status' => 1,
+                //                 'DocumentStatus' => 'O'
+                //             ]);
+                //         alert()->success('Success', 'Controller berhasil direset (Fixed: Active Order Restored).');
+                //     } else {
+                //         // Tidak ada yang valid (Semua sudah expired) -> Tetap Closed semua.
+                //          alert()->success('Success', 'Controller berhasil direset (Fixed: All Expired).');
+                //     }
+
+                // } else {
+                //     // Fallback
+                //     $update = DB::table('tableorderheader')
+                //         ->where('NoTransaksi', $NoTransaksi)
+                //         ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                //         ->update([
+                //             'Status' => 0,
+                //             'DocumentStatus' => 'C'
+                //         ]);
+                //     alert()->success('Success', 'Controller berhasil direset.');
+                // }
             } else {
-                alert()->error('Error', 'Gagal mereset controller atau data tidak ditemukan.');
+                alert()->error('Error', 'Data Transaksi tidak ditemukan.');
             }
+
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             alert()->error('Error', 'Terjadi kesalahan sistem.');

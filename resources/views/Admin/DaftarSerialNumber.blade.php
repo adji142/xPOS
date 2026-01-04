@@ -47,6 +47,7 @@
 												<th>Serial Number</th>
 												<th>Kode Partner</th>
 												<th>Keterangan</th>
+												<th>Jumlah Node Maximal</th>
 												<th>Status</th>
 												<th class=" no-sort text-end">Action</th>
 											</tr>
@@ -60,6 +61,7 @@
 													<td>{{ $v->SerialNumber }}</td>
 													<td>{{ $v->KodePartner }}</td>
 													<td>{{ $v->Keterangan }}</td>
+													<td>{{ $v->MaximalNode }}</td>
 													<td>
 														<span class="badge {{ $v->Status == 'CLAIMED' ? 'bg-success' : 'bg-secondary' }}">
 															{{ $v->Status }}

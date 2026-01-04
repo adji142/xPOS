@@ -57,12 +57,14 @@ class SerialNumberController extends Controller
             $this->validate($request, [
                 'SerialNumber' => 'required|unique:serial_numbers,SerialNumber',
                 'KodePartner' => 'required',
+                'MaximalNode' => 'required',
             ]);
 
             DB::table('serial_numbers')->insert([
                 'SerialNumber' => $request->input('SerialNumber'),
                 'KodePartner' => $request->input('KodePartner'),
                 'Keterangan' => $request->input('Keterangan'),
+                'MaximalNode' => $request->input('MaximalNode'),
                 'RecordOwnerID' => Auth::user()->RecordOwnerID,
                 'CreatedBy' => Auth::user()->name,
                 'created_at' => now(),
@@ -85,6 +87,7 @@ class SerialNumberController extends Controller
                 'id' => 'required',
                 'SerialNumber' => 'required|unique:serial_numbers,SerialNumber,' . $request->input('id'),
                 'KodePartner' => 'required',
+                'MaximalNode' => 'required',
             ]);
 
             DB::table('serial_numbers')
@@ -94,6 +97,7 @@ class SerialNumberController extends Controller
                     'SerialNumber' => $request->input('SerialNumber'),
                     'KodePartner' => $request->input('KodePartner'),
                     'Keterangan' => $request->input('Keterangan'),
+                    'MaximalNode' => $request->input('MaximalNode'),
                     'UpdatedBy' => Auth::user()->name,
                     'updated_at' => now(),
                 ]);

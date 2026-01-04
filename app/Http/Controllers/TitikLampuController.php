@@ -84,12 +84,48 @@ class TitikLampuController extends Controller
                 'ControllerID' =>'required',
             ]);
 
+            // Validation regarding Serial Number and Maximal Node
+            $ControllerID = $request->input('ControllerID');
+
+            if ($ControllerID) {
+                // Get SN from MasterController
+                $masterController = DB::table('mastercontroller')
+                                    ->where('id', $ControllerID)
+                                    ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                                    ->first();
+
+                if ($masterController) {
+                    $sn = $masterController->SN;
+
+                    // Get MaximalNode from serial_numbers
+                    $serialNumberData = DB::table('serial_numbers')
+                                        ->where('SerialNumber', $sn)
+                                        ->where('KodePartner', Auth::user()->RecordOwnerID)
+                                        ->first();
+
+                   if ($serialNumberData) {
+                        $maxNode = $serialNumberData->MaximalNode;
+
+                        // Count existing TitikLampu
+                        $currentCount = DB::table('titiklampu')
+                                        ->where('ControllerID', $ControllerID)
+                                        ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                                        ->count();
+                        
+                        if ($currentCount >= $maxNode) {
+                            throw new \Exception('Jumlah Titik Lampu melebihi batas maksimal ('.$maxNode.') untuk controller ini.');
+                        }
+                   }
+                }
+            }
+
             $model = new TitikLampu;
             $model->NamaTitikLampu = $request->input('NamaTitikLampu');
             $model->DigitalInput = $request->input('DigitalInput');
             $model->ControllerID = $request->input('ControllerID');
             $model->KelompokLampu = $request->input('KelompokLampu');
             $model->Deskripsi = $request->input('Deskripsi');
+            $model->Gambar = $request->input('image_base64');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -127,7 +163,8 @@ class TitikLampuController extends Controller
                     'DigitalInput'      => $request->input('DigitalInput'),
                     'ControllerID'      => $request->input('ControllerID'),
                     'KelompokLampu'     => $request->input('KelompokLampu'),
-                    'Deskripsi'         => $request->input('Deskripsi')
+                    'Deskripsi'         => $request->input('Deskripsi'),
+                    'Gambar'            => $request->input('image_base64')
                 ]);
 
                 alert()->success('Success','Data Titik Lampu berhasil disimpan.');
@@ -149,6 +186,41 @@ class TitikLampuController extends Controller
         Log::debug($request->all());
         try {
 
+            // Validation regarding Serial Number and Maximal Node
+            $ControllerID = $request->input('ControllerID');
+
+            if ($ControllerID) {
+                // Get SN from MasterController
+                $masterController = DB::table('mastercontroller')
+                                    ->where('id', $ControllerID)
+                                    ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                                    ->first();
+
+                if ($masterController) {
+                    $sn = $masterController->SN;
+
+                    // Get MaximalNode from serial_numbers
+                    $serialNumberData = DB::table('serial_numbers')
+                                        ->where('SerialNumber', $sn)
+                                        ->where('KodePartner', Auth::user()->RecordOwnerID)
+                                        ->first();
+
+                   if ($serialNumberData) {
+                        $maxNode = $serialNumberData->MaximalNode;
+
+                        // Count existing TitikLampu
+                        $currentCount = DB::table('titiklampu')
+                                        ->where('ControllerID', $ControllerID)
+                                        ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                                        ->count();
+                        
+                        if ($currentCount >= $maxNode) {
+                            throw new \Exception('Jumlah Titik Lampu melebihi batas maksimal ('.$maxNode.') untuk controller ini.');
+                        }
+                   }
+                }
+            }
+
             $model = new TitikLampu;
             $model->NamaTitikLampu = $request->input('NamaTitikLampu');
             $model->DigitalInput = $request->input('DigitalInput');
@@ -156,6 +228,7 @@ class TitikLampuController extends Controller
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
             $model->KelompokLampu = $request->input('KelompokLampu');
             $model->Deskripsi = $request->input('Deskripsi');
+            $model->Gambar = $request->input('image_base64');
 
             $save = $model->save();
 
@@ -187,7 +260,8 @@ class TitikLampuController extends Controller
                     'DigitalInput'      => $request->input('DigitalInput'),
                     'ControllerID'      => $request->input('ControllerID'),
                     'KelompokLampu'     => $request->input('KelompokLampu'),
-                    'Deskripsi'         => $request->input('Deskripsi')
+                    'Deskripsi'         => $request->input('Deskripsi'),
+                    'Gambar'            => $request->input('image_base64')
                 ]);
 
                 $data['success'] = true;

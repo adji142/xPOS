@@ -50,6 +50,8 @@
                                                 <th>SN</th>
                                                 <th>Port</th>
                                                 <th>BaudRate</th>
+												<th>Maximal Node</th>
+												<th>Node Terpakai</th>
 												<th class=" no-sort text-end">Action</th>
 											</tr>
 										</thead>
@@ -61,6 +63,8 @@
 													<td>{{ $v['SN'] }}</td>
                                                     <td>{{ $v['Port'] }}</td>
                                                     <td>{{ $v['BaudRate'] }}</td>
+													<td>{{ $v['MaximalNode'] }}</td>
+													<td>{{ $v['JumlahTitikLampu'] }}</td>
 													<td>
 														<div class="card-toolbar text-end">
 															<button class="btn p-0 shadow-none" type="button" id="dropdowneditButton1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

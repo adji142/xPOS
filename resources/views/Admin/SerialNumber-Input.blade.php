@@ -52,7 +52,7 @@
                             	@endif
                             		@csrf
 	                            	<div class="form-group row">
-	                            		<div class="col-md-6">
+	                            		<div class="col-md-4">
 	                            			<label class="text-body">Serial Number</label>
 	                            			<div class="input-group mb-3">
 	                            				<input type="text" class="form-control" id="SerialNumber" name="SerialNumber" placeholder="Generating..." value="{{ $serialNumber ? $serialNumber->SerialNumber : '' }}" required readonly>
@@ -60,7 +60,7 @@
 	                            			</div>
 	                            		</div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
 	                            			<label class="text-body">Kode Partner</label>
 	                            			<fieldset class="form-group mb-3">
 	                            				<select name="KodePartner" id="KodePartner" class="js-example-basic-single form-control bg-transparent" required>
@@ -73,6 +73,15 @@
 												</select>
 	                            			</fieldset>
 	                            		</div>
+
+										<div class="col-md-4">
+	                            			<label class="text-body">Jumlah Node Maximal</label>
+	                            			<fieldset class="form-group mb-12">
+	                            				<input type="number" class="form-control" id="MaximalNode" name="MaximalNode" placeholder="Masukan Jumlah Node Maximal" value="{{ $serialNumber ? $serialNumber->MaximalNode : 1 }}">
+	                            			</fieldset>
+	                            		</div>
+
+
 
 	                            		<div class="col-md-12">
 	                            			<label class="text-body">Keterangan</label>
