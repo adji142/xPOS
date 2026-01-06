@@ -133,16 +133,16 @@ License: You must have a valid license purchased only from themeforest(the above
             display: inline-block;
             position: absolute;
             white-space: nowrap;
-            animation: scrollText 10s linear infinite, blink 1s step-start infinite;
+            animation: scrollText 40s linear infinite, blink 1s step-start infinite;
             font-size: 24px;
             color: #fff;
         }
         @keyframes scrollText {
             from {
-                transform: translateX(-100%);
+                transform: translateX(100%);
             }
             to {
-                transform: translateX(100%);
+                transform: translateX(-100%);
             }
         }
         @keyframes blink {
@@ -258,7 +258,7 @@ License: You must have a valid license purchased only from themeforest(the above
 					</div>
 
 					<div class="dropdown">
-						<div class="topbar-item" data-bs-toggle="dropdown" data-display="static">
+						<!-- <div class="topbar-item" data-bs-toggle="dropdown" data-display="static">
 							<div class="btn btn-icon w-auto h-auto btn-clean d-flex align-items-center py-0">
 							
 								<span class="symbol symbol-35 symbol-light-success">
@@ -269,9 +269,9 @@ License: You must have a valid license purchased only from themeforest(the above
 									</span>
 								</span>
 							</div>
-						</div>
+						</div> -->
 	
-						<div class="dropdown-menu dropdown-menu-right" style="min-width: 150px;">
+						<!-- <div class="dropdown-menu dropdown-menu-right" style="min-width: 150px;">
 							<a href="{{ route('logout') }}" class="dropdown-item">
 								<span class="svg-icon svg-icon-xl svg-icon-primary me-2">
 									<svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-power">
@@ -281,7 +281,7 @@ License: You must have a valid license purchased only from themeforest(the above
 								</span>
 								Logout
 							</a>
-						</div>
+						</div> -->
 	
 					</div>
 				</div>
@@ -371,7 +371,7 @@ License: You must have a valid license purchased only from themeforest(the above
                                                                                     </svg>
                                                                                     </span>
                                                                                 <div class="list-content">
-                                                                                <span class="list-title text-body">Paket</span>
+                                                                                <span class="list-title text-body">Layanan</span>
                                                                                 </div>
                                                                             </div>
                                                                             <span id="lblPaketTransaksi{{ $item->id }}">-</span>
@@ -418,7 +418,7 @@ License: You must have a valid license purchased only from themeforest(the above
                                                                         @if ($item->Status == -1)
                                                                             <div class ="row">
                                                                                 <div class="col-xl-12 col-lg-12 col-md-12 ">
-                                                                                    <button disabled class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH PAKET</button>
+                                                                                    <button disabled class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
                                                                                 </div>
                                                                             </div>
                                                                         @endif
@@ -426,7 +426,7 @@ License: You must have a valid license purchased only from themeforest(the above
                                                                         @if ($item->Status == 0)
                                                                             <div class ="row">
                                                                                 <div class="col-xl-12 col-lg-12 col-md-12 ">
-                                                                                    <button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH PAKET</button>
+                                                                                    <button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
                                                                                 </div>
                                                                             </div>
                                                                         @endif
@@ -434,7 +434,7 @@ License: You must have a valid license purchased only from themeforest(the above
                                                                         @if ($item->Status == 1 || $item->Status == 99)
                                                                             <div class ="row">
                                                                                 <div class="col-xl-12 col-lg-12 col-md-12 ">
-                                                                                    <button disabled class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH PAKET</button>
+                                                                                    <button disabled class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
                                                                                 </div>
                                                                             </div>
                                                                         @endif
@@ -443,14 +443,14 @@ License: You must have a valid license purchased only from themeforest(the above
                                                                             <br>
                                                                             <div class="row">
                                                                                 <div class="col-xl-12 col-lg-12 col-md-12">
-                                                                                    <button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH JAM</button>
+                                                                                    <button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH WAKTU</button>
                                                                                 </div>
                                                                             </div>
                                                                         @else
                                                                             <br>
                                                                             <div class="row">
                                                                                 <div class="col-xl-12 col-lg-12 col-md-12">
-                                                                                    <button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH JAM</button>
+                                                                                    <button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH WAKTU</button>
                                                                                 </div>
                                                                             </div>
                                                                         @endif
@@ -481,7 +481,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		<form id="frmPilihPaket">
 			<div class="modal-content">
 				<div class="modal-header">
-				  	<h3 class="modal-title" id="myModalLabel11">Lookup Pilih Paket</h3>
+				  	<h3 class="modal-title" id="myModalLabel11">Lookup Pilih Layanan</h3>
 					<button type="button" class="close rounded-pill btn btn-sm btn-icon btn-light btn-hover-primary m-0" data-bs-dismiss="modal" aria-label="Close">
 						<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 							<path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
@@ -496,7 +496,7 @@ License: You must have a valid license purchased only from themeforest(the above
 									<div class="card card-custom gutter-b bg-white border-0">
 										<div class="card-header align-items-center  border-0">
 											<div class="card-title mb-0">
-												<h3 class="card-label mb-0 font-weight-bold text-body ">Pilih Paket</h3>
+												<h3 class="card-label mb-0 font-weight-bold text-body ">Pilih Layanan</h3>
 											</div>
 										</div>
 										<div class="card-body">
@@ -508,10 +508,10 @@ License: You must have a valid license purchased only from themeforest(the above
 												</div>
 	
 												<div class="col-md-6">
-													<label  class="text-body">Jenis Paket</label>
+													<label  class="text-body">Jenis Layanan</label>
 													<fieldset class="form-group mb-12">
 														<select name="JenisPaket" id="JenisPaket" class="js-example-basic-single js-states form-control bg-transparent" >
-															<option value="">Pilih Jenis Paket</option>
+															<option value="">Pilih Jenis Layanan</option>
 															<option value="MENIT">Paket Menit</option>
 															<option value="JAM">Paket Jam</option>
 															<option value="PAKET">Paket Berlangganan</option>
@@ -519,10 +519,10 @@ License: You must have a valid license purchased only from themeforest(the above
 													</fieldset>
 												</div>
 												<div class="col-md-6">
-													<label  class="text-body">Paket</label>
+													<label  class="text-body">Layanan</label>
 													<fieldset class="form-group mb-12">
 														<select name="paketid" id="paketid" class="js-example-basic-single js-states form-control bg-transparent" >
-															<option value="">Pilih Paket</option>
+															<option value="">Pilih Layanan</option>
 														</select>
 													</fieldset>
 												</div>
@@ -726,7 +726,7 @@ License: You must have a valid license purchased only from themeforest(the above
 									<div class="card card-custom gutter-b bg-white border-0">
 										<div class="card-header align-items-center  border-0">
 											<div class="card-title mb-0">
-												<h3 class="card-label mb-0 font-weight-bold text-body ">Pilih Paket</h3>
+												<h3 class="card-label mb-0 font-weight-bold text-body ">Pilih Layanan</h3>
 											</div>
 										</div>
 										<div class="card-body">
@@ -1801,12 +1801,12 @@ License: You must have a valid license purchased only from themeforest(the above
 					PaymentGateWayTambahJam($('#btRubahDurasiPaket'),'Bayar');
 				}
 				else{
-					SaveTambahJam(jQuery('#btRubahDurasiPaket'),'Tambah Jam');
+					SaveTambahJam(jQuery('#btRubahDurasiPaket'),'Tambah Waktu');
 				}
 				
 			}
 			else{
-				SaveTambahJam(jQuery('#btRubahDurasiPaket'),'Tambah Jam');
+				SaveTambahJam(jQuery('#btRubahDurasiPaket'),'Tambah Waktu');
 			}
 		});
 

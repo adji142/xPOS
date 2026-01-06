@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Booking Online Table di {{ $company->NamaPartner }}</title>
+  <title>Booking Online Layanan di {{ $company->NamaPartner }}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css"/>
@@ -290,7 +290,7 @@
 
   <!-- Pilih Jadwal Section -->
   <div class="mt-5">
-    <h5 class="mb-3">Pilih Meja & Jadwal</h5>
+    <h5 class="mb-3">Pilih Layanan & Jadwal</h5>
     <div class="d-flex align-items-center gap-2 mb-3 overflow-auto" id="dateList"></div>
     <div class="mb-4">
       <label for="manualDate">Atau pilih tanggal manual:</label>
