@@ -270,7 +270,7 @@
 
   <div class="running-text-strip">
      <div class="blinking-text">
-        {{ $company->RunningText ?? '' }}
+        <marquee>{{ $company->RunningTextSelfServices ?? 'Selamat Datang' }}</marquee>
      </div>
   </div>
 

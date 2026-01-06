@@ -98,9 +98,9 @@
     </button>
 </div>
 
-<div class="running-text-container">
+<div class="running-text-container">  
     <div class="blinking-text">
-        {{ $company->RunningText ?? 'Selamat Datang' }}
+      <marquee>{{ $company->RunningTextSelfServices ?? 'Selamat Datang' }}</marquee>
     </div>
 </div>
 
