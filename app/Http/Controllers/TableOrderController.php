@@ -375,6 +375,7 @@ class TableOrderController extends Controller
             // Future Booking Logic
             // If JamMulai > NOW, force Status to 0 (Booking/Scheduled)
             $now = Carbon::now();
+            // dd($model->JamMulai->gt($now), $now, $model->JamMulai);
             if ($model->JamMulai->gt($now)) {
                 $model->Status = 0;
                 $model->DocumentStatus = 'D';

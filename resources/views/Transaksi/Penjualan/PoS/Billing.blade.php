@@ -2078,7 +2078,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			e.preventDefault();
 			jQuery('#frmPilihPaket').find(':disabled').prop('disabled', false);
 			const formData = new FormData(this);
-            if (jQuery('#JenisPaket').val() == "JAM") {
+            if (jQuery('#JenisPaket').val() == "JAM" || jQuery('#JenisPaket').val() == "PAKETMEMBER") {
                  const timeSlot = jQuery('#selectedTimeSlot').val();
                  if (timeSlot) {
                      const parts = timeSlot.split('-');
@@ -2099,7 +2099,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			// Tapi jika TIDAK flexible (Fixed Slot), pastikan JamMulai terkirim (sudah di atas)
 			
 			if(jQuery('#JenisPaket').val() == "PAKETMEMBER"){
-				formData.append('Status', '1');
+				formData.append('Status', '0');
 			}
 			else{
 				formData.append('Status', '0');
