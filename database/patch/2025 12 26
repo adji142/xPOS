@@ -1,20 +1,20 @@
 SET FOREIGN_KEY_CHECKS=0;
 
-ALTER TABLE `xpos_live`.`pelanggan` ADD COLUMN `isPaidMembership` smallint(6) NOT NULL DEFAULT 0 AFTER `Status`;
+ALTER TABLE `pelanggan` ADD COLUMN `isPaidMembership` smallint(6) NOT NULL DEFAULT 0 AFTER `Status`;
 
-ALTER TABLE `xpos_live`.`pelanggan` ADD COLUMN `MaxPlay` int(11) NOT NULL DEFAULT 0 AFTER `isPaidMembership`;
+ALTER TABLE `pelanggan` ADD COLUMN `MaxPlay` int(11) NOT NULL DEFAULT 0 AFTER `isPaidMembership`;
 
-ALTER TABLE `xpos_live`.`pelanggan` ADD COLUMN `MemberPrice` double NOT NULL DEFAULT 0 AFTER `MaxPlay`;
+ALTER TABLE `pelanggan` ADD COLUMN `MemberPrice` double NOT NULL DEFAULT 0 AFTER `MaxPlay`;
 
-ALTER TABLE `xpos_live`.`pelanggan` ADD COLUMN `maxTimePerPlay` int(11) NOT NULL DEFAULT 0 AFTER `MemberPrice`;
+ALTER TABLE `pelanggan` ADD COLUMN `maxTimePerPlay` int(11) NOT NULL DEFAULT 0 AFTER `MemberPrice`;
 
-ALTER TABLE `xpos_live`.`pelanggan` ADD COLUMN `AllowedDay` varchar(55) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL AFTER `RecordOwnerID`;
+ALTER TABLE `pelanggan` ADD COLUMN `AllowedDay` varchar(55) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL AFTER `RecordOwnerID`;
 
-ALTER TABLE `xpos_live`.`pelanggan` ADD COLUMN `ValidUntil` datetime(6) NULL DEFAULT NULL AFTER `AllowedDay`;
+ALTER TABLE `pelanggan` ADD COLUMN `ValidUntil` datetime(6) NULL DEFAULT NULL AFTER `AllowedDay`;
 
-ALTER TABLE `xpos_live`.`pelanggan` ADD COLUMN `Played` int(255) NULL DEFAULT NULL AFTER `updated_at`;
+ALTER TABLE `pelanggan` ADD COLUMN `Played` int(255) NULL DEFAULT NULL AFTER `updated_at`;
 
-CREATE TABLE `xpos_live`.`serial_numbers`  (
+CREATE TABLE `serial_numbers`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `SerialNumber` varchar(10) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
   `KodePartner` varchar(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
@@ -31,9 +31,9 @@ CREATE TABLE `xpos_live`.`serial_numbers`  (
 SET FOREIGN_KEY_CHECKS=1;
 
 
-INSERT INTO `xpos`.`permission`(`id`, `PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `isSuperAdmin`, `created_at`, `updated_at`) VALUES (108, 'Serial Number Generator', 'serialnumber', '', 2, 100, 2, 76.8, 1, 1, NULL, NULL);
-INSERT INTO `xpos`.`permission`(`id`, `PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `isSuperAdmin`, `created_at`, `updated_at`) VALUES (109, 'Table Order', 'daftartableorder', '', 3, 25, 2, 28.1, 1, 0, NULL, NULL);
+INSERT INTO `permission`(`id`, `PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `isSuperAdmin`, `created_at`, `updated_at`) VALUES (108, 'Serial Number Generator', 'serialnumber', '', 2, 100, 2, 76.8, 1, 1, NULL, NULL);
+INSERT INTO `permission`(`id`, `PermissionName`, `Link`, `Icon`, `Level`, `MenuInduk`, `SubMenu`, `Order`, `Status`, `isSuperAdmin`, `created_at`, `updated_at`) VALUES (109, 'Table Order', 'daftartableorder', '', 3, 25, 2, 28.1, 1, 0, NULL, NULL);
 
 
-INSERT INTO `xpos`.`permissionrole`(`roleid`, `permissionid`, `RecordOwnerID`, `created_at`, `updated_at`) VALUES (53, 108, '999999', NULL, NULL);
-INSERT INTO `xpos`.`permissionrole`(`roleid`, `permissionid`, `RecordOwnerID`, `created_at`, `updated_at`) VALUES (1, 109, 'CL0001', '2025-12-26 15:13:45', '2025-12-26 15:13:45');
+INSERT INTO `permissionrole`(`roleid`, `permissionid`, `RecordOwnerID`, `created_at`, `updated_at`) VALUES (53, 108, '999999', NULL, NULL);
+INSERT INTO `permissionrole`(`roleid`, `permissionid`, `RecordOwnerID`, `created_at`, `updated_at`) VALUES (1, 109, 'CL0001', '2025-12-26 15:13:45', '2025-12-26 15:13:45');

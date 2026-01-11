@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\TableOrderHeader;
 use App\Models\TitikLampu;
@@ -43,6 +44,7 @@ class UpdateBookingStatus extends Command
     {
         $now = Carbon::now();
         
+        Log::info("BookingStatusUpdate: Command started at " . $now);
         $this->info("Checking for bookings to activate at " . $now);
 
         // Find orders where Status is 0 (Scheduled), DocumentStatus is O (Open), and JamMulai <= NOW
@@ -89,6 +91,7 @@ class UpdateBookingStatus extends Command
         }
 
         $this->info("Activated $count bookings.");
+        Log::info("BookingStatusUpdate: Command finished. Activated $count bookings.");
         return 0;
     }
 }

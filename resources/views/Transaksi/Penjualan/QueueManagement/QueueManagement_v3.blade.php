@@ -204,24 +204,82 @@
       animation: pulse 1.5s infinite;
     }
     @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; scale: 1.2; } 100% { opacity: 0.5; } }
+
+    /* === NEW ADDITIONS === */
+    .company-logo {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 15px;
+    }
+    .header-left {
+        display: flex;
+        align-items: center;
+    }
+    
+    .running-text-strip {
+        margin: 5px 15px 0 15px;
+        padding: 5px 15px;
+        background: rgba(39, 41, 61, 0.8);
+        border-radius: var(--border-radius);
+        color: lime; /* High contrast on dark */
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .blinking-text {
+        width: 100%;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.1rem;
+        animation: blink 1.5s infinite;
+    }
+    @keyframes blink { 
+        0% { opacity: 1; }
+        50% { opacity: 0; }
+        100% { opacity: 1; }
+    }
   </style>
 </head>
 <body>
 
   <!-- HEADER -->
   <header>
-    <div id="company-name">
-       {{ $company->NamaPartner ?? 'Company Name' }}
+    <div class="header-left">
+        @if(!empty($company->icon))
+            <img src="{{ $company->icon }}" alt="Logo" class="company-logo">
+        @else
+            <img src="https://via.placeholder.com/50" alt="Logo" class="company-logo">
+        @endif
+        <div id="company-name">
+           {{ $company->NamaPartner ?? 'Company Name' }}
+        </div>
     </div>
-    <div id="clock">--:--:--</div>
+    <div class="d-flex align-items-center gap-3">
+        <div id="clock">--:--:--</div>
+        <button onclick="toggleFullscreen()" class="btn btn-sm btn-outline-light" title="Fullscreen">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+            </svg>
+        </button>
+    </div>
   </header>
+
+  <div class="running-text-strip">
+     <div class="blinking-text">
+        <marquee>{{ $company->RunningTextSelfServices ?? 'Selamat Datang' }}</marquee>
+     </div>
+  </div>
 
   <!-- MAIN GRID -->
   <div class="main-grid">
     
     <!-- MEJA AKTIF -->
     <div class="grid-box area-active">
-      <div class="box-header">Meja Aktif</div>
+      <div class="box-header">Layanan Aktif</div>
       <div class="box-content" id="table-used"></div>
     </div>
 
@@ -259,13 +317,13 @@
 
     <!-- MEJA HAMPIR HABIS -->
     <div class="grid-box area-hampir-habis">
-      <div class="box-header">Meja Hampir Habis</div>
+      <div class="box-header">Layanan Hampir Habis</div>
       <div class="box-content" id="table-hampirHabis"></div>
     </div>
 
     <!-- MEJA AVAILABLE -->
     <div class="grid-box area-available">
-      <div class="box-header">Meja Available</div>
+      <div class="box-header">Layanan Available</div>
       <div class="box-content" id="table-available"></div>
     </div>
 
@@ -385,7 +443,7 @@
       let i=0;function speakNext(){
         if(i>=f.length)return;
         const r=f[i];
-        const pesan=`Perhatian. Meja ${r.NamaTitikLampu}, akan selesai pada jam ${r.JamSelesai}. Harap segera bersiap.`;
+        const pesan=`Perhatian. Layanan ${r.NamaTitikLampu}, akan selesai pada jam ${r.JamSelesai}. Harap segera bersiap.`;
         lastSpokenMap[r.NamaTitikLampu]=now;
         speakWithResponsiveVoice(pesan,()=>{i++;speakNext();});
       }
@@ -395,12 +453,13 @@
     function updateTables(data){
         // Modern Table Markup
         const createTable = (rows, type) => {
-             if(!rows || rows.length === 0) return `<div class="d-flex justify-content-center align-items-center h-100"><i>Tidak ada data</i></div>`;
+             if(!rows || rows.length === 0) return `<div class="d-flex justify-content-center align-items-center h-100"><i>${type === 'booking' ? 'Tidak ada booking' : 'Tidak ada data'}</i></div>`;
              
              let headers = '';
-             if(type === 'active') headers = `<tr><th>Meja</th><th>Selesai</th><th>Sisa</th></tr>`;
-             if(type === 'warn') headers = `<tr><th>Meja</th><th>Mulai</th><th>Selesai</th><th>Sisa</th></tr>`;
-             if(type === 'avail') headers = `<tr><th>Meja Available</th></tr>`;
+             if(type === 'active') headers = `<tr><th>Layanan</th><th>Nama Pelanggan</th><th>Selesai</th><th>Sisa</th></tr>`;
+             if(type === 'warn') headers = `<tr><th>Layanan</th><th>Nama Pelanggan</th><th>Mulai</th><th>Selesai</th><th>Sisa</th></tr>`;
+             if(type === 'avail') headers = `<tr><th>Layanan Available</th></tr>`;
+             if(type === 'booking') headers = `<tr><th>No Transaksi</th><th>Nama Pelanggan</th><th>Layanan</th><th>Mulai</th><th>Selesai</th></tr>`;
              
              const body = rows.map(row => {
                  const sisa = row.JamSelesai ? getSisaWaktu(row.JamSelesai) : '';
@@ -408,16 +467,24 @@
                  
                  if(type === 'active') {
                      content = `<td><span class="text-highlight">${row.NamaTitikLampu}</span></td>
+                                <td>${row.NamaPelanggan || '-'}</td>
                                 <td>${row.JamSelesai}</td>
                                 <td><span class="time-badge">${sisa}</span></td>`;
                  } else if(type === 'warn') {
                      const icon = lastSpokenMap[row.NamaTitikLampu] ? ` <span class="spoken-indicator">🔊</span>` : '';
                      content = `<td><span class="text-highlight">${row.NamaTitikLampu}</span></td>
+                                <td>${row.NamaPelanggan || '-'}</td>
                                 <td>${row.JamMulai}</td>
                                 <td>${row.JamSelesai}</td>
                                 <td><span class="time-badge text-warning">${sisa}${icon}</span></td>`;
                  } else if(type === 'avail') {
                      content = `<td><span class="text-highlight">${row.NamaTitikLampu}</span></td>`;
+                 } else if(type === 'booking') {
+                     content = `<td>${row.NoTransaksi}</td>
+                                <td>${row.NamaPelanggan}</td>
+                                <td>${row.NamaTitikLampu}</td>
+                                <td>${row.JamMulai}</td>
+                                <td>${row.JamSelesai}</td>`;
                  }
                  
                  return `<tr class="fade-in">${content}</tr>`;
@@ -429,6 +496,7 @@
         document.getElementById('table-hampirHabis').innerHTML = createTable(data.hampirHabisTable, 'warn');
         document.getElementById('table-used').innerHTML = createTable(data.usedTable, 'active');
         document.getElementById('table-available').innerHTML = createTable(data.availableTable, 'avail');
+        document.getElementById('table-booking').innerHTML = createTable(data.bookingTable, 'booking');
         
         // Voice trigger
         if(data.hampirHabisTable) speakQueueInIndonesian(data.hampirHabisTable);
@@ -446,6 +514,17 @@
       });
     }
     
+    
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
     fetchQueueData();
     setInterval(fetchQueueData,10000);
 

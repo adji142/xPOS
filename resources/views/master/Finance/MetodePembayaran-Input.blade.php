@@ -157,6 +157,20 @@
 	                            			
 	                            		</div>
 
+										<div class="col-md-6">
+											<label  class="text-body">Biaya Admin (%)</label>
+											<fieldset class="form-group mb-3">
+												<input type="number" step="0.01" class="form-control" id="BiayaAdminPercent" name="BiayaAdminPercent" placeholder="0" value="{{ count($metodepembayaran) > 0 ? $metodepembayaran[0]['BiayaAdminPercent'] : '0' }}" >
+											</fieldset>
+										</div>
+
+										<div class="col-md-6">
+											<label  class="text-body">Biaya Admin (Rp)</label>
+											<fieldset class="form-group mb-3">
+												<input type="number" step="0.01" class="form-control" id="BiayaAdminRupiah" name="BiayaAdminRupiah" placeholder="0" value="{{ count($metodepembayaran) > 0 ? $metodepembayaran[0]['BiayaAdminRupiah'] : '0' }}" >
+											</fieldset>
+										</div>
+
 										<div id="divMidtrans" style="display: none">
 											<hr>
 											<div class="col-md-12">
@@ -191,10 +205,6 @@
 	                            	</div>
 
                             	</form>
-
-								<div class="col-md-12">
-									<button class="btn btn-success text-white font-weight-bold me-1 mb-1" id="btTestKoneksi">Test Koneksi</button>
-								</div>
 							</div>
 						</div>
 					</div>
@@ -308,5 +318,20 @@
         }
         reader.readAsDataURL(file);
     }
+
+    // Logic Mutual Exclusivity Biaya Admin
+    jQuery('#BiayaAdminPercent').on('input change', function() {
+        var val = parseFloat(jQuery(this).val());
+        if (val > 0) {
+            jQuery('#BiayaAdminRupiah').val(0);
+        }
+    });
+
+    jQuery('#BiayaAdminRupiah').on('input change', function() {
+        var val = parseFloat(jQuery(this).val());
+        if (val > 0) {
+            jQuery('#BiayaAdminPercent').val(0);
+        }
+    });
 </script>
 @endpush

@@ -13,17 +13,55 @@
       margin: 0;
       overflow: hidden;
     }
+    .header-container {
+      background-color: #f8f9fa;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #ddd;
+      height: 70px;
+    }
+    .company-logo {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 15px;
+    }
+    .company-name {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+    }
+    .running-text-container {
+        background-color: #000;
+        color: lime;
+        font-weight: bold;
+        padding: 5px 0;
+        overflow: hidden;
+        white-space: nowrap;
+        height: 35px;
+        display: flex;
+        align-items: center;
+    }
+    .blinking-text {
+        animation: blink 1.5s infinite;
+        width: 100%;
+        text-align: center;
+        font-size: 1.1rem;
+    }
+    @keyframes blink {
+        0% { opacity: 1; }
+        50% { opacity: 0; }
+        100% { opacity: 1; }
+    }
+
     .left-panel {
-      height: 100vh;
+      height: calc(100vh - 105px); /* 100vh - header(70) - runningText(35) */
       overflow: hidden;
     }
-    .scrolling-content {
-      height: 100%;
-      overflow-y: auto;
-      scroll-behavior: smooth;
-    }
     .right-panel {
-      height: 100vh;
+      height: calc(100vh - 105px);
       padding: 0;
     }
     .video-banner iframe, .image-banner img {
@@ -45,6 +83,27 @@
   </style>
 </head>
 <body>
+
+<div class="header-container">
+    @if(!empty($company->icon))
+        <img src="{{ $company->icon }}" alt="Logo" class="company-logo">
+    @else
+        <img src="https://via.placeholder.com/50" alt="Logo" class="company-logo">
+    @endif
+    <div class="company-name">{{ $company->NamaPartner ?? 'Company Name' }}</div>
+    <button onclick="toggleFullscreen()" class="btn btn-outline-secondary ms-auto" title="Fullscreen">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+        </svg>
+    </button>
+</div>
+
+<div class="running-text-container">  
+    <div class="blinking-text">
+      <marquee>{{ $company->RunningTextSelfServices ?? 'Selamat Datang' }}</marquee>
+    </div>
+</div>
+
 <div class="container-fluid">
   <div class="row">
     <!-- LEFT PANEL -->
@@ -185,7 +244,7 @@
     function speakNext() {
       if (index >= filtered.length) return;
       const row = filtered[index];
-      const pesan = `Perhatian. Meja ${row.NamaTitikLampu}, akan selesai pada jam ${row.JamSelesai}. Harap segera bersiap.`;
+      const pesan = `Perhatian. Layanan ${row.NamaTitikLampu}, akan selesai pada jam ${row.JamSelesai}. Harap segera bersiap.`;
       lastSpokenMap[row.NamaTitikLampu] = now;
       speakWithResponsiveVoice(pesan, () => {
         index++;
@@ -198,22 +257,22 @@
 
   function updateTables(data) {
     const hampirHabisHTML = `<table class="table table-bordered text-center">
-      <thead class="table-danger"><tr><th colspan="4">Hampir Habis</th></tr><tr><th>Nama Meja</th><th>Jam Mulai</th><th>Jam Selesai</th><th>Sisa Waktu</th></tr></thead>
+      <thead class="table-danger"><tr><th colspan="5">Hampir Habis</th></tr><tr><th>Nama Layanan</th><th>Nama Pelanggan</th><th>Jam Mulai</th><th>Jam Selesai</th><th>Sisa Waktu</th></tr></thead>
       <tbody>${data.hampirHabisTable.map(row => {
         const sisa = getSisaWaktu(row.JamSelesai);
         const icon = lastSpokenMap[row.NamaTitikLampu] ? ` <span class="spoken-indicator">🔊</span>` : '';
-        return `<tr><td>${row.NamaTitikLampu}</td><td>${row.JamMulai}</td><td>${row.JamSelesai}</td><td>${sisa}${icon}</td></tr>`;
+        return `<tr><td>${row.NamaTitikLampu}</td><td>${row.NamaPelanggan || '-'}</td><td>${row.JamMulai}</td><td>${row.JamSelesai}</td><td>${sisa}${icon}</td></tr>`;
       }).join('')}</tbody></table>`;
 
     const usedHTML = `<table class="table table-bordered text-center">
-      <thead class="table-warning"><tr><th colspan="4">Sedang Digunakan</th></tr><tr><th>Nama Meja</th><th>Jam Mulai</th><th>Jam Selesai</th><th>Sisa Waktu</th></tr></thead>
+      <thead class="table-warning"><tr><th colspan="5">Sedang Digunakan</th></tr><tr><th>Nama Layanan</th><th>Nama Pelanggan</th><th>Jam Mulai</th><th>Jam Selesai</th><th>Sisa Waktu</th></tr></thead>
       <tbody>${data.usedTable.map(row => {
         const sisa = getSisaWaktu(row.JamSelesai);
-        return `<tr><td>${row.NamaTitikLampu}</td><td>${row.JamMulai}</td><td>${row.JamSelesai}</td><td>${sisa}</td></tr>`;
+        return `<tr><td>${row.NamaTitikLampu}</td><td>${row.NamaPelanggan || '-'}</td><td>${row.JamMulai}</td><td>${row.JamSelesai}</td><td>${sisa}</td></tr>`;
       }).join('')}</tbody></table>`;
 
     const availableHTML = `<table class="table table-bordered text-center">
-      <thead class="table-success"><tr><th>Meja Tersedia</th></tr></thead>
+      <thead class="table-success"><tr><th>Layanan Tersedia</th></tr></thead>
       <tbody>${data.availableTable.map(row => `<tr><td>${row.NamaTitikLampu}</td></tr>`).join('')}</tbody></table>`;
 
     document.getElementById('table-hampirHabis').innerHTML = hampirHabisHTML;
@@ -235,6 +294,16 @@
         console.error("Gagal ambil data antrian:", xhr);
       }
     });
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
   }
 
   // Inisialisasi

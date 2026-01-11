@@ -93,6 +93,9 @@
 												<th>Nama User</th>
 												<th>Level Akses</th>
 												<th>Status User</th>
+												<th>Kode Partner</th>
+												<th>Nama Partner</th>
+												<th>Status Login</th>
 												<th class=" no-sort text-end">Action</th>
 											</tr>
 										</thead>
@@ -105,6 +108,9 @@
 													<td>{{ $v['name'] }}</td>
 													<td>{{ $v['RoleName'] }}</td>
 													<td> <div class="{{ $v['StatusUser'] == 'Aktif' ? 'mr-0 text-success' : 'mr-0 text-danger' }} ">{{ $v['StatusUser'] }}</div> </td>
+													<td>{{ $v['KodePartner'] }}</td>
+													<td>{{ $v['NamaPartner'] }}</td>
+													<td> {{ $v['StatusLogin'] }}</td>
 													<td>
 														<div class="card-toolbar text-end">
 															<button class="btn p-0 shadow-none" type="button" id="dropdowneditButton1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -116,6 +122,7 @@
 															</button>
 															<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdowneditButton1"  style="position: absolute; transform: translate3d(1001px, 111px, 0px); top: 0px; left: 0px; will-change: transform;">
 																<a class="dropdown-item" href="{{ url('user/form/' . $v['id']) }}">Edit</a>
+																<a class="dropdown-item" title="Logout" href="{{ route('user-logout', $v['id']) }}" data-confirm-delete="true">Log Out</a>
 															</div>
 														</div>
 													</td>

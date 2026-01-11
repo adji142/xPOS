@@ -81,7 +81,13 @@ class QueueManagementController extends Controller
         }
 
 
-        return view('Transaksi.Penjualan.QueueManagement.QueueManagement_v3',[
+
+        $viewName = $company->QueueDesignSetting ?? 'QueueManagement';
+        if (empty($viewName)) {
+            $viewName = 'QueueManagement';
+        }
+
+        return view('Transaksi.Penjualan.QueueManagement.'.$viewName,[
             'oImageData' => $oImageData,
             'company' => $company,
             'idE' => $idE

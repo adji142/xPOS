@@ -1195,8 +1195,9 @@ class FakturPenjualanController extends Controller
 			$model->Posted = 0;
 			$model->CreatedBy = Auth::user()->name;
 			$model->UpdatedBy = "";
-            $model->RecordOwnerID = Auth::user()->RecordOwnerID;
+			$model->RecordOwnerID = Auth::user()->RecordOwnerID;
 			$model->PajakHiburan = $jsonData['PajakHiburan'];
+			$model->BiayaLayanan = $jsonData['BiayaLayanan'];
    
 			$save = $model->save();
 
@@ -1410,6 +1411,7 @@ class FakturPenjualanController extends Controller
 				$modelBayar->UpdatedBy = "";
 				$modelBayar->Posted = 0;
 				$modelBayar->Status = $jsonData['Status'];
+				$modelBayar->BiayaLayanan = $jsonData['BiayaLayanan'];
 
 				$saveBayar = $modelBayar->save();
 

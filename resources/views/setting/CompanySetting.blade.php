@@ -901,6 +901,24 @@
 															</fieldset>
 														</div>
 
+														<div class="col-md-4">
+															<label  class="text-body">Queue Design Setting</label>
+															<fieldset class="form-group mb-3">
+																<select name="QueueDesignSetting" id="QueueDesignSetting" class="js-example-basic-single js-states form-control bg-transparent">
+																	<option value="QueueManagement" {{ count($company) > 0 ? $company[0]['QueueDesignSetting'] == "QueueManagement"? "selected" : '' :""}} >Versi 1</option>
+																	<option value="QueueManagement_v2" {{ count($company) > 0 ? $company[0]['QueueDesignSetting'] == "QueueManagement_v2"? "selected" : '' :""}} >Versi 2</option>
+																	<option value="QueueManagement_v3" {{ count($company) > 0 ? $company[0]['QueueDesignSetting'] == "QueueManagement_v3"? "selected" : '' :""}} >Versi 3</option>
+																</select>
+															</fieldset>
+														</div>
+
+														<div class="col-md-8">
+															<label  class="text-body">Preview</label>
+															<fieldset class="form-group mb-3">
+																<img src="#" id="PreviewQueueDesign" width="100%">
+															</fieldset>
+														</div>
+
 													</div>
 												</div>
 
@@ -1355,6 +1373,21 @@ var oCompany;
 			jQuery('#LevelHarga').select2();
 			jQuery('#DefaultSlip').val(slip).trigger('change');
 			jQuery('#DefaultLandingPages').val(template).trigger('change');
+
+			var queueDesign = "{{ count($company) > 0 ? $company[0]['QueueDesignSetting'] : 'QueueManagement' }}";
+			jQuery('#QueueDesignSetting').val(queueDesign).trigger('change');
+
+			jQuery('#QueueDesignSetting').change(function() {
+				var design = jQuery(this).val();
+				// Replace with actual image paths when available
+				var imageUrl = ""; 
+				if(design === "QueueManagement") imageUrl = "https://pos.dstechsmart.com/images/Screenshot%202026-01-01%20225023.png"; 
+				else if(design === "QueueManagement_v2") imageUrl = "https://pos.dstechsmart.com/images/Screenshot%202026-01-01%20225004.png";
+				else if(design === "QueueManagement_v3") imageUrl = "https://pos.dstechsmart.com/images/Screenshot%202026-01-01%20224854.png";
+				
+				jQuery('#PreviewQueueDesign').attr('src', imageUrl);
+			});
+			jQuery('#QueueDesignSetting').trigger('change');
 
 			oCompany = <?php echo $company ?>;
 			console.log(oCompany)

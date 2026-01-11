@@ -289,23 +289,38 @@ License: You must have a valid license purchased only from themeforest(the above
 																		<h3 class="card-label text-body font-weight-bold mb-0">{{ $item->NamaTitikLampu }}</h3>
 																	</div>
 																</div>
-																<div class="card-body" >
+																<div class="card-body pt-4" >
+																	
+																	<div class="row align-items-center mb-4">
+																		<div class="col-7">
+																			@if ($item->Status == 0)
+																				<button class="btn btn-success text-white font-weight-bold w-100 py-4" style="font-size: 1.2rem;">{{ $item->StatusMeja }}</button>
+																			@endif
 
-																	@if ($item->Status == 0)
-																		<button class="btn btn-success text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
-																	@endif
+																			@if ($item->Status == 1)
+																				<button class="btn btn-danger text-white font-weight-bold w-100 py-4" style="font-size: 1.2rem;">{{ $item->StatusMeja }}</button>
+																			@endif
 
-																	@if ($item->Status == 1)
-																		<button class="btn btn-danger text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
-																	@endif
+																			@if ($item->Status == 99)
+																				<button class="btn btn-warning text-white font-weight-bold w-100 py-4" style="font-size: 1.2rem;">{{ $item->StatusMeja }}</button>
+																			@endif
 
-																	@if ($item->Status == 99)
-																		<button class="btn btn-warning text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
-																	@endif
+																			@if ($item->Status == -1)
+																				<button class="btn btn-warning text-white font-weight-bold w-100 py-4" style="font-size: 1.2rem;">{{ $item->StatusMeja }}</button>
+																			@endif
+																		</div>
+																		<div class="col-5">
+																			<div class="d-flex justify-content-center align-items-center rounded border" style="height: 80px; overflow: hidden; background-color: #f8f9fa;">
+																				@if (!empty($item->Gambar))
+																					<img src="{{ $item->Gambar }}" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;" alt="Table Image">
+																				@else
+																					<img src="https://www.generationsforpeace.org/wp-content/uploads/2018/03/empty.jpg" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;" alt="Empty">
+																				@endif
+																			</div>
+																		</div>
+																	</div>
 
-																	@if ($item->Status == -1)
-																		<button class="btn btn-warning text-white font-weight-bold w-100 py-3">{{ $item->StatusMeja }}</button>
-																	@endif
+
 
 																	<ul class="list-group scrollbar-1">
 																		<li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between py-2">
@@ -364,7 +379,7 @@ License: You must have a valid license purchased only from themeforest(the above
 																		@if ($item->Status == -1)
 																			<div class ="row">
 																				<div class="col-xl-4 col-lg-12 col-md-12 ">
-																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH PAKET</button>
+																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
 																				</div>
 																				<div class="col-xl-4 col-lg-12 col-md-12">
 																					<button disabled class="btn btn-danger text-white font-weight-bold w-100 py-3 item-dropdown btCheckOut_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">CHECKOUT</button>
@@ -376,7 +391,7 @@ License: You must have a valid license purchased only from themeforest(the above
 																			<br>
 																			<div class="row">
 																				<div class="col-xl-12 col-lg-12 col-md-12">
-																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH MAKANAN</button>
+																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH LAYANAN</button>
 																				</div>
 																			</div>
 																		@endif
@@ -384,7 +399,7 @@ License: You must have a valid license purchased only from themeforest(the above
 																		@if ($item->Status == 0)
 																			<div class ="row">
 																				<div class="col-xl-4 col-lg-12 col-md-12 ">
-																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH PAKET</button>
+																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
 																				</div>
 																				<div class="col-xl-4 col-lg-12 col-md-12">
 																					<button disabled class="btn btn-danger text-white font-weight-bold w-100 py-3 item-dropdown btCheckOut_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">CHECKOUT</button>
@@ -396,7 +411,7 @@ License: You must have a valid license purchased only from themeforest(the above
 																			<br>
 																			<div class="row">
 																				<div class="col-xl-12 col-lg-12 col-md-12">
-																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH MAKANAN</button>
+																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH LAYANAN</button>
 																				</div>
 																			</div>
 																		@endif
@@ -404,7 +419,7 @@ License: You must have a valid license purchased only from themeforest(the above
 																		@if ($item->Status == 1 || $item->Status == 99)
 																			<div class ="row">
 																				<div class="col-xl-4 col-lg-12 col-md-12 ">
-																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH PAKET</button>
+																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
 																				</div>
 																				<div class="col-xl-4 col-lg-12 col-md-12">
 																					<button class="btn btn-danger text-white font-weight-bold w-100 py-3 item-dropdown btCheckOut_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">CHECKOUT</button>
@@ -416,7 +431,7 @@ License: You must have a valid license purchased only from themeforest(the above
 																			<br>
 																			<div class="row">
 																				<div class="col-xl-12 col-lg-12 col-md-12">
-																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH MAKANAN</button>
+																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH LAYANAN</button>
 																				</div>
 																			</div>
 																		@endif
@@ -445,7 +460,7 @@ License: You must have a valid license purchased only from themeforest(the above
 													@endif
 												@endforeach
 											@else
-												<center><h3 class="card-label mb-0 font-weight-bold text-body ">Belum Ada Data Meja / Titik Lampu</h3></center>
+												<center><h3 class="card-label mb-0 font-weight-bold text-body ">Belum Ada Data Titik Lampu</h3></center>
 											@endif
 										</div>
 									</div>	
@@ -534,10 +549,10 @@ License: You must have a valid license purchased only from themeforest(the above
 													</fieldset>
 												</div>
 												<div class="col-md-4">
-													<label  class="text-body">Table</label>
+													<label  class="text-body">Service / Titik Lampu</label>
 													<fieldset class="form-group mb-12">
 														<select name="tableid" id="tableid" class="js-example-basic-single js-states form-control bg-transparent">
-															<option value="">Pilih Table</option>
+															<option value="">Pilih Service / Titik Lampu</option>
 															@foreach ($titiklampuoption as $pkt)
 																<option value="{{ $pkt->id }}">{{ $pkt->NamaTitikLampu }}</option>
 															@endforeach
@@ -545,10 +560,10 @@ License: You must have a valid license purchased only from themeforest(the above
 													</fieldset>
 												</div>
 												<div class="col-md-4">
-													<label  class="text-body">Table Guards</label>
+													<label  class="text-body">Service Guards</label>
 													<fieldset class="form-group mb-12">
 														<select name="KodeSales" id="KodeSales" class="js-example-basic-single js-states form-control bg-transparent" {{ $oKodeSales != '' ? 'disabled' : '' }}>
-															<option value="">Pilih Table Guards</option>
+															<option value="">Pilih Service Guards</option>
 															@foreach ($sales as $sls)
 																<option value="{{ $sls->KodeSales }}" {{ $sls->KodeSales == $oKodeSales ? 'selected' : '' }}>{{ $sls->NamaSales }}</option>
 															@endforeach
@@ -578,7 +593,7 @@ License: You must have a valid license purchased only from themeforest(the above
 														<select name="KodePelanggan" id="KodePelanggan" class="js-example-basic-single js-states form-control bg-transparent" >
 															<option value="">Pilih Member</option>
 															@foreach ($pelanggan as $plg)
-																<option value="{{ $plg->KodePelanggan }}">{{ $plg->NamaPelanggan }}</option>
+																<option value="{{ $plg->KodePelanggan }}" data-ispaid="{{ $plg->isPaidMembership }}">{{ $plg->NamaPelanggan }}</option>
 															@endforeach
 														</select>
 													</fieldset>
@@ -814,7 +829,7 @@ License: You must have a valid license purchased only from themeforest(the above
 								<div class="card card-custom gutter-b bg-white border-0">
 									<div class="card-header align-items-center  border-0">
 										<div class="card-title mb-0">
-											<h3 class="card-label mb-0 font-weight-bold text-body ">Detail Table Order</h3>
+											<h3 class="card-label mb-0 font-weight-bold text-body ">Detail Service Order</h3>
 											<h3 class="card-label mb-0 font-weight-bold text-body "><small>Selamat Datang <span id="lblNamaCustomer"></span></small></h3>
 										</div>
 									</div>
@@ -940,7 +955,7 @@ License: You must have a valid license purchased only from themeforest(the above
 															</td>
 														</tr>
 														<tr>
-															<td style="text-align: right">Diskon Table</td>
+															<td style="text-align: right">Diskon Service</td>
 															<td>:</td>
 															<td style="text-align: right">
 																<fieldset class="form-group mb-3 d-flex">
@@ -981,6 +996,22 @@ License: You must have a valid license purchased only from themeforest(the above
 															<td>:</td>
 															<td style="text-align: right">
 																<input type="text" class="form-control" id="txtGrandTotal_Detail" name="txtGrandTotal_Detail" readonly>
+															</td>
+														</tr>
+
+														<tr>
+															<td style="text-align: right">Biaya Admin </td>
+															<td>:</td>
+															<td style="text-align: right">
+																<input type="text" class="form-control" id="txtBiayaAdmin_Detail" name="txtBiayaAdmin_Detail" readonly value="0">
+															</td>
+														</tr>
+														
+														<tr>
+															<td style="text-align: right">Total Bayar </td>
+															<td>:</td>
+															<td style="text-align: right">
+																<input type="text" class="form-control" id="txtTotalBayar_Detail" name="txtTotalBayar_Detail" readonly>
 															</td>
 														</tr>
 													</table>
@@ -1795,6 +1826,25 @@ License: You must have a valid license purchased only from themeforest(the above
 		});
 
 		jQuery('#JenisPaket').change(function () {
+			// Logic Filter Member
+			var $kodePelanggan = jQuery('#KodePelanggan');
+			if (!$kodePelanggan.data('options')) {
+				$kodePelanggan.data('options', $kodePelanggan.find('option').clone());
+			}
+			
+			var $options = $kodePelanggan.data('options');
+			$kodePelanggan.empty();
+			
+			if (jQuery('#JenisPaket').val() == "PAKETMEMBER") {
+				$options.each(function() {
+					if ($(this).val() == "" || $(this).data('ispaid') == 1) {
+						$kodePelanggan.append($(this).clone());
+					}
+				});
+			} else {
+				$kodePelanggan.append($options.clone());
+			}
+
 			const filteredData = _dataPaket.filter(item => item.JenisPaket === jQuery('#JenisPaket').val());
 			jQuery('#paketid').empty();
 			var newOption = $('<option>', {
@@ -2028,7 +2078,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			e.preventDefault();
 			jQuery('#frmPilihPaket').find(':disabled').prop('disabled', false);
 			const formData = new FormData(this);
-            if (jQuery('#JenisPaket').val() == "JAM") {
+            if (jQuery('#JenisPaket').val() == "JAM" || jQuery('#JenisPaket').val() == "PAKETMEMBER") {
                  const timeSlot = jQuery('#selectedTimeSlot').val();
                  if (timeSlot) {
                      const parts = timeSlot.split('-');
@@ -2049,7 +2099,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			// Tapi jika TIDAK flexible (Fixed Slot), pastikan JamMulai terkirim (sudah di atas)
 			
 			if(jQuery('#JenisPaket').val() == "PAKETMEMBER"){
-				formData.append('Status', '1');
+				formData.append('Status', '0');
 			}
 			else{
 				formData.append('Status', '0');
@@ -3035,7 +3085,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				$(this).val(formatter.format(numericValue));
 				$(this).attr("originalvalue", value.replace(",",""));
 
-				var kembalian = $(this).attr("originalvalue") - jQuery('#txtGrandTotal_Detail').attr("originalvalue");
+				var kembalian = $(this).attr("originalvalue") - jQuery('#txtTotalBayar_Detail').attr("originalvalue");
 				jQuery('#txtJumlahKembalian_Detail').val(formatter.format(kembalian));
 				jQuery('#txtJumlahKembalian_Detail').attr(kembalian);
 			}
@@ -3135,9 +3185,36 @@ License: You must have a valid license purchased only from themeforest(the above
 				
 			}
 
+			const GrandTotal = parseFloat(jQuery('#txtGrandTotal_Detail').attr('originalvalue')) || 0;
+			let BiayaLayanan = 0;
+			
+			if (filteredData.length > 0) {
+				const BiayaAdminPercent = parseFloat(filteredData[0]['BiayaAdminPercent']) || 0;
+				const BiayaAdminRupiah = parseFloat(filteredData[0]['BiayaAdminRupiah']) || 0;
+
+				if (BiayaAdminPercent > 0) {
+					BiayaLayanan = (BiayaAdminPercent / 100) * GrandTotal;
+				} else if (BiayaAdminRupiah > 0) {
+					BiayaLayanan = BiayaAdminRupiah;
+				}
+			}
+
+			const TotalBayar = GrandTotal + BiayaLayanan;
+
+			jQuery('#txtBiayaAdmin_Detail').val(formatNumber(BiayaLayanan));
+			jQuery('#txtBiayaAdmin_Detail').attr('originalvalue', BiayaLayanan);
+
+			jQuery('#txtTotalBayar_Detail').val(formatNumber(TotalBayar));
+			jQuery('#txtTotalBayar_Detail').attr('originalvalue', TotalBayar);
+
+
 			if (filteredData[0]['TipePembayaran'] == "NON TUNAI") {
-				formatCurrency(jQuery('#txtJumlahBayar_Detail'), jQuery('#txtGrandTotal_Detail').attr('originalvalue'));
+				formatCurrency(jQuery('#txtJumlahBayar_Detail'), TotalBayar);
 				jQuery('#txtJumlahBayar_Detail').attr('readonly', true);
+				
+				// Recalculate Kembalian
+				var kembalian = TotalBayar - TotalBayar;
+				jQuery('#txtJumlahKembalian_Detail').val(formatNumber(kembalian));
 			}
 			else{
 				formatCurrency(jQuery('#txtJumlahBayar_Detail'), "0");
@@ -3237,8 +3314,14 @@ License: You must have a valid license purchased only from themeforest(the above
 					'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
 				},
 				success: function(response) {
-					const suggestions = response.data;
+					var suggestions = response.data;
 					let html = '';
+
+					if (jQuery('#JenisPaket').val() == "PAKETMEMBER") {
+						suggestions = suggestions.filter(function(p) {
+							return p.isPaidMembership == 1;
+						});
+					}
 
 					$('#suggestionList').empty();
 
@@ -4312,8 +4395,9 @@ License: You must have a valid license purchased only from themeforest(the above
 				'Potongan' : jQuery('#txtDiscount_Detail').attr("originalvalue"),
 				'Pajak' : parseFloat(PPNNormal) + parseFloat(PPNBaru),
 				'PajakHiburan' : parseFloat(PajakHiburanNormal) + parseFloat(PajakHiburanBaru),
+				'BiayaLayanan' : jQuery('#txtBiayaAdmin_Detail').attr("originalvalue"),
 				'Pembulatan' : 0,
-				'TotalPembelian' : jQuery('#txtGrandTotal_Detail').attr("originalvalue"),
+				'TotalPembelian' : jQuery('#txtTotalBayar_Detail').attr("originalvalue"),
 				'TotalRetur' : 0,
 				'TotalPembayaran' : jQuery('#txtJumlahBayar_Detail').attr("originalvalue"),
 				'Status' : Status,
@@ -4689,8 +4773,9 @@ License: You must have a valid license purchased only from themeforest(the above
 				'Potongan' : jQuery('#txtDiscount_Detail').attr("originalvalue"),
 				'Pajak' : TotalPPN,
 				'PajakHiburan' : TotalPajakHiburan,
+				'BiayaLayanan' : jQuery('#txtBiayaAdmin_Detail').attr("originalvalue"),
 				'Pembulatan' : 0,
-				'TotalPembelian' : jQuery('#txtGrandTotal_Detail').attr("originalvalue"),
+				'TotalPembelian' : jQuery('#txtTotalBayar_Detail').attr("originalvalue"),
 				'TotalRetur' : 0,
 				'TotalPembayaran' : jQuery('#txtJumlahBayar_Detail').attr("originalvalue"),
 				'Status' : Status,

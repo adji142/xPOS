@@ -31,13 +31,49 @@
       font-size: 1rem;
     }
 
+    .company-logo {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 15px;
+    }
+    .header-content {
+        display: flex;
+        align-items: center;
+    }
+    
+    .running-text-strip {
+        background: #f0f0f0;
+        color: #d63384; /* Bootstrap pinkish or any contrast color */
+        height: 35px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #ccc;
+    }
+    .blinking-text {
+        width: 100%;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.1rem;
+        animation: blink 1.5s infinite;
+    }
+    @keyframes blink { 
+        0% { opacity: 1; }
+        50% { opacity: 0; }
+        100% { opacity: 1; }
+    }
+
     .main-container {
       display: grid;
       grid-template-rows: 65% 35%;
       grid-template-columns: 70% 30%;
       gap: 8px;
-      height: calc(100vh - 60px);
-      padding: 8px;
+      height: calc(100vh - 60px - 43px); /* 60px header + ~35px running text + margins */
+      padding: 0 8px 8px 8px;
     }
 
     /* === SLIDER === */
@@ -135,9 +171,29 @@
 </head>
 <body>
   <header>
-    <h3 class="mb-0">QUEUE SYSTEM - {{ $company->NamaPartner }}</h3>
-    <div id="clock"></div>
+    <div class="header-content">
+        @if(!empty($company->icon))
+            <img src="{{ $company->icon }}" alt="Logo" class="company-logo">
+        @else
+            <img src="https://via.placeholder.com/50" alt="Logo" class="company-logo">
+        @endif
+        <h3 class="mb-0">QUEUE SYSTEM - {{ $company->NamaPartner }}</h3>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+        <div id="clock"></div>
+        <button onclick="toggleFullscreen()" class="btn btn-sm btn-outline-dark" title="Fullscreen">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+            </svg>
+        </button>
+    </div>
   </header>
+
+  <div class="running-text-strip">
+     <div class="blinking-text">
+        <marquee>{{ $company->RunningTextSelfServices ?? 'Selamat Datang' }}</marquee>
+     </div>
+  </div>
 
   <div class="main-container">
     <!-- SLIDER AREA -->
@@ -163,11 +219,11 @@
     <!-- RIGHT PANEL -->
     <div class="right-panel">
       <div class="box">
-        <div class="box-header">MEJA AKTIF</div>
+        <div class="box-header">LAYANAN AKTIF</div>
         <div class="box-content" id="table-used"></div>
       </div>
       <div class="box">
-        <div class="box-header">MEJA AVAILABLE</div>
+        <div class="box-header">LAYANAN AVAILABLE</div>
         <div class="box-content" id="table-available"></div>
       </div>
     </div>
@@ -175,7 +231,7 @@
     <!-- BOTTOM SECTION -->
     <div class="bottom">
       <div class="bottom-box">
-        <div class="bottom-header">MEJA HAMPIR HABIS</div>
+        <div class="bottom-header">LAYANAN HAMPIR HABIS</div>
         <div class="bottom-content" id="table-hampirHabis"></div>
       </div>
       <div class="bottom-box">
@@ -309,7 +365,7 @@
       let i=0;function speakNext(){
         if(i>=f.length)return;
         const r=f[i];
-        const pesan=`Perhatian. Meja ${r.NamaTitikLampu}, akan selesai pada jam ${r.JamSelesai}. Harap segera bersiap.`;
+        const pesan=`Perhatian. Layanan ${r.NamaTitikLampu}, akan selesai pada jam ${r.JamSelesai}. Harap segera bersiap.`;
         lastSpokenMap[r.NamaTitikLampu]=now;
         speakWithResponsiveVoice(pesan,()=>{i++;speakNext();});
       }
@@ -318,26 +374,34 @@
 
     function updateTables(data){
         const hampirHabisHTML = `<table class="table table-bordered text-center">
-        <thead class="table-danger"><tr><th colspan="4">Hampir Habis</th></tr><tr><th>Nama Meja</th><th>Jam Mulai</th><th>Jam Selesai</th><th>Sisa Waktu</th></tr></thead>
+        <thead class="table-danger"><tr><th colspan="5">Hampir Habis</th></tr><tr><th>Nama Layanan</th><th>Nama Pelanggan</th><th>Jam Mulai</th><th>Jam Selesai</th><th>Sisa Waktu</th></tr></thead>
         <tbody>${data.hampirHabisTable.map(row => {
             const sisa = getSisaWaktu(row.JamSelesai);
             const icon = lastSpokenMap[row.NamaTitikLampu] ? ` <span class="spoken-indicator">🔊</span>` : '';
-            return `<tr><td>${row.NamaTitikLampu}</td><td>${row.JamMulai}</td><td>${row.JamSelesai}</td><td>${sisa}${icon}</td></tr>`;
+            return `<tr><td>${row.NamaTitikLampu}</td><td>${row.NamaPelanggan || '-'}</td><td>${row.JamMulai}</td><td>${row.JamSelesai}</td><td>${sisa}${icon}</td></tr>`;
         }).join('')}</tbody></table>`;
 
         const usedHTML = `<table class="table table-bordered text-center">
-        <thead class="table-warning"><tr><th colspan="4">Sedang Digunakan</th></tr><tr><th>Nama Meja</th><th>Jam Mulai</th><th>Jam Selesai</th><th>Sisa Waktu</th></tr></thead>
+        <thead class="table-warning"><tr><th colspan="5">Sedang Digunakan</th></tr><tr><th>Nama Layanan</th><th>Nama Pelanggan</th><th>Jam Mulai</th><th>Jam Selesai</th><th>Sisa Waktu</th></tr></thead>
         <tbody>${data.usedTable.map(row => {
             const sisa = getSisaWaktu(row.JamSelesai);
-            return `<tr><td>${row.NamaTitikLampu}</td><td>${row.JamMulai}</td><td>${row.JamSelesai}</td><td>${sisa}</td></tr>`;
+            return `<tr><td>${row.NamaTitikLampu}</td><td>${row.NamaPelanggan || '-'}</td><td>${row.JamMulai}</td><td>${row.JamSelesai}</td><td>${sisa}</td></tr>`;
         }).join('')}</tbody></table>`;
 
+        const bookingHTML = `<table class="table table-bordered text-center">
+        <thead class="table-info"><tr><th colspan="5">Booking List</th></tr><tr><th>No Transaksi</th><th>Nama Pelanggan</th><th>Layanan</th><th>Jam Mulai</th><th>Jam Selesai</th></tr></thead>
+        <tbody>${data.bookingTable && data.bookingTable.length > 0 ? data.bookingTable.map(row => {
+            return `<tr><td>${row.NoTransaksi}</td><td>${row.NamaPelanggan}</td><td>${row.NamaTitikLampu}</td><td>${row.JamMulai}</td><td>${row.JamSelesai}</td></tr>`;
+        }).join('') : '<tr><td colspan="5">Tidak ada booking</td></tr>'}</tbody></table>`;
+
         const availableHTML = `<table class="table table-bordered text-center">
-        <thead class="table-success"><tr><th>Meja Tersedia</th></tr></thead>
+        <thead class="table-success"><tr><th>Layanan Tersedia</th></tr></thead>
         <tbody>${data.availableTable.map(row => `<tr><td>${row.NamaTitikLampu}</td></tr>`).join('')}</tbody></table>`;
 
         document.getElementById('table-hampirHabis').innerHTML = hampirHabisHTML;
         document.getElementById('table-used').innerHTML = usedHTML;
+        document.getElementById('table-available').innerHTML = availableHTML;
+        document.getElementById('table-booking').innerHTML = bookingHTML;
         document.getElementById('table-available').innerHTML = availableHTML;
 
         speakQueueInIndonesian(data.hampirHabisTable);
@@ -354,6 +418,16 @@
         error:e=>console.error("Gagal ambil data antrian:",e)
       });
     }
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
     setInterval(fetchQueueData,10000);
     fetchQueueData();
 

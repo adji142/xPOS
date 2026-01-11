@@ -238,16 +238,16 @@ License: You must have a valid license purchased only from themeforest(the above
             display: inline-block;
             position: absolute;
             white-space: nowrap;
-            animation: scrollText 10s linear infinite, blink 1s step-start infinite;
+            animation: scrollText 40s linear infinite, blink 1s step-start infinite;
             font-size: 24px;
             color: #fff;
         }
         @keyframes scrollText {
             from {
-                transform: translateX(-100%);
+                transform: translateX(100%);
             }
             to {
-                transform: translateX(100%);
+                transform: translateX(-100%);
             }
         }
         @keyframes blink {

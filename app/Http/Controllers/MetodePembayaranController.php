@@ -74,6 +74,8 @@ class MetodePembayaranController extends Controller
             $model->ClientKey = $request->input('ClientKey');
             $model->ServerKey = $request->input('ServerKey');
             $model->MerchantID = $request->input('MerchantID');
+            $model->BiayaAdminPercent = $request->input('BiayaAdminPercent');
+            $model->BiayaAdminRupiah = $request->input('BiayaAdminRupiah');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -117,6 +119,8 @@ class MetodePembayaranController extends Controller
                     'ClientKey' => $request->input('ClientKey'),
                     'ServerKey' => $request->input('ServerKey'),
                     'MerchantID' => $request->input('MerchantID'),
+                    'BiayaAdminPercent' => $request->input('BiayaAdminPercent'),
+                    'BiayaAdminRupiah' => $request->input('BiayaAdminRupiah'),
                 ]);
 
                 alert()->success('Success','Data Metode Pembayaran berhasil disimpan.');
@@ -140,6 +144,8 @@ class MetodePembayaranController extends Controller
             $model = new MetodePembayaran;
             $model->NamaMetodePembayaran = $request->input('NamaMetodePembayaran');
             $model->AkunPembayaran = $request->input('AkunPembayaran');
+            $model->BiayaAdminPercent = $request->input('BiayaAdminPercent');
+            $model->BiayaAdminRupiah = $request->input('BiayaAdminRupiah');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -177,6 +183,8 @@ class MetodePembayaranController extends Controller
                     'ClientKey' => $request->input('ClientKey'),
                     'ServerKey' => $request->input('ServerKey'),
                     'MerchantID' => $request->input('MerchantID'),
+                    'BiayaAdminPercent' => $request->input('BiayaAdminPercent'),
+                    'BiayaAdminRupiah' => $request->input('BiayaAdminRupiah'),
                 ]);
 
                 $data['success'] = true;

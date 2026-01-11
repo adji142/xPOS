@@ -1,6 +1,31 @@
 @extends('parts.header')
 	
 @section('content')
+<style type="text/css">
+  .xContainer{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    vertical-align: middle;
+  }
+  .image_result{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid black;
+    /*flex-grow: 1;*/
+    vertical-align: middle;
+    align-content: center;
+    flex-basis: 200;
+    width: 150px;
+    height: 200px;
+  }
+  .image_result img {
+    max-width: 100%; /* Fit the image to the container width */
+    height: 100%; /* Maintain the aspect ratio */
+  }
+</style>
 
 <!--begin::Subheader-->
 <div class="subheader py-2 py-lg-6 subheader-solid">
@@ -115,6 +140,24 @@
 											</fieldset>
 										</div>
 
+										<div class="col-md-12"> 
+	                            			<label  class="text-body">Gambar</label>
+	                            			<fieldset class="form-group mb-3">
+	                            				<textarea id = "image_base64" name = "image_base64" style="display: none;"> {{ count($titiklampu) > 0 ? $titiklampu[0]['Gambar'] : '' }} </textarea>
+	                            				
+	                            				<input type="file" id="Attachment" name="Attachment" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+	                            				<div class="xContainer">
+									                <div id="image_result" class="image_result">
+									                	@if (count($titiklampu) > 0 && $titiklampu[0]['Gambar'] != '')
+				                                    		<img src=" {{$titiklampu[0]['Gambar']}} ">
+				                                    	@else
+				                                    		<img src="https://www.generationsforpeace.org/wp-content/uploads/2018/03/empty.jpg">
+					                                	@endif
+									                </div>
+									            </div>
+	                            			</fieldset>
+	                            		</div>
+
 	                            		<div class="col-md-12">
 	                            			<button type="submit" class="btn btn-success text-white font-weight-bold me-1 mb-1">Simpan</button>
 	                            		</div>
@@ -141,6 +184,40 @@
 			theme: 'snow'
 		});
 
+		var _URL = window.URL || window.webkitURL;
+		jQuery('#image_result').click(function(){
+            $('#Attachment').click();
+        });
+
+        $("#Attachment").change(function(){
+            var file = $(this)[0].files[0];
+            var img = new Image();
+            img.src = _URL.createObjectURL(file);
+            img.onload = function () {
+            }
+            readURL(this);
+            encodeImagetoBase64(this);
+        });
+
+        function readURL(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#image_result').html("<img src ='"+e.target.result+"'> ");
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function encodeImagetoBase64(element) {
+            $('#image_base64').val('');
+            var file = element.files[0];
+            var reader = new FileReader();
+            reader.onloadend = function() {
+                $('#image_base64').val(reader.result);
+            }
+            reader.readAsDataURL(file);
+        }
 
 		$(document).ready(function () {
 			$('#LevelHarga').select2();
