@@ -959,7 +959,7 @@ class TableOrderController extends Controller
                 // Check if slot is in the past with 30 minutes tolerance
                 // Ex: Current 20:25, Slot 20:00 -> 20:00 < 19:55 ? False -> Available
                 // Ex: Current 20:35, Slot 20:00 -> 20:00 < 20:05 ? True -> Past
-                $toleranceTime = $currentDateTime->copy()->subMinutes(30);
+                $toleranceTime = $currentDateTime->copy()->subMinutes(10);
                 $isPast = $slotDateTime->lt($toleranceTime);
                 
                 // Check if slot is booked
