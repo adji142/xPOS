@@ -68,6 +68,7 @@ class TableOrderController extends Controller
                             tableorderheader.TglTransaksi,
                             tableorderheader.KodePelanggan,
                             pelanggan.NamaPelanggan,
+                            pelanggan.TglBerlanggananPaketBulanan,
                             gruppelanggan.NamaGrup,
                             gruppelanggan.DiskonPersen,
                             CASE WHEN COALESCE(bookingtableonline.NoTransaksi,'') != '' THEN 'BOOKING' ELSE 'TIDAKBOOKING' END AS StatusBooking,
@@ -78,7 +79,8 @@ class TableOrderController extends Controller
                             COALESCE(bookingtableonline.NetTotal,0) AS BookingNetTotal,
                             COALESCE(bookingtableonline.Keterangan,'') AS BookingPaymentReffNumber,
                             COALESCE(CASE WHEN fakturpenjualanheader.TotalPembayaran > fakturpenjualanheader.TotalPembelian THEN fakturpenjualanheader.TotalPembelian ELSE fakturpenjualanheader.TotalPembayaran END ,0) as TotalPembayaran,
-                            COALESCE(tkelompoklampu.NamaKelompok,'') AS NamaKelompok
+                            COALESCE(tkelompoklampu.NamaKelompok,'') AS NamaKelompok,
+                            pelanggan.TglBerlanggananPaketBulanan
                         ")
                         ->leftJoin('tableorderheader', function ($value)  {
                             $value->on('titiklampu.id','=','tableorderheader.tableid')
@@ -153,6 +155,11 @@ class TableOrderController extends Controller
         $kelompoklampu = KelompokLampu::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
         $gruppelanggan = GrupPelanggan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
+        $jenisLangganan = [];
+        if (count($company) > 0 && $company[0]->JenisLangganan) {
+            $jenisLangganan = json_decode($company[0]->JenisLangganan, true);
+        }
+
         return view("Transaksi.Penjualan.PoS.Billing",[
             'paket' => $paket, 
             'titiklampu' => $titiklampu,
@@ -166,7 +173,8 @@ class TableOrderController extends Controller
             'MetodePembayaranAutoID' => $MetodePembayaranAutoID,
             'kelompoklampu' => $kelompoklampu,
             'gruppelanggan' => $gruppelanggan,
-            'oKodeSales' => Auth::user()->KodeSales
+            'oKodeSales' => Auth::user()->KodeSales,
+            'jenisLangganan' => $jenisLangganan
         ]);
     }
 
@@ -206,6 +214,7 @@ class TableOrderController extends Controller
                             tableorderheader.TglTransaksi,
                             tableorderheader.KodePelanggan,
                             pelanggan.NamaPelanggan,
+                            pelanggan.TglBerlanggananPaketBulanan,
                             gruppelanggan.NamaGrup,
                             gruppelanggan.DiskonPersen,
                             CASE WHEN COALESCE(bookingtableonline.NoTransaksi,'') != '' THEN 'BOOKING' ELSE 'TIDAKBOOKING' END AS StatusBooking,
@@ -292,6 +301,11 @@ class TableOrderController extends Controller
         }
         $kelompoklampu = KelompokLampu::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
+        $jenisLangganan = [];
+        if (count($company) > 0 && $company[0]->JenisLangganan) {
+            $jenisLangganan = json_decode($company[0]->JenisLangganan, true);
+        }
+
         return view("Transaksi.Penjualan.PoS.BillingSelfService",[
             'paket' => $paket, 
             'titiklampu' => $titiklampu,
@@ -304,7 +318,8 @@ class TableOrderController extends Controller
             'midtransclientkey' => $midtransclientkey,
             'MetodePembayaranAutoID' => $MetodePembayaranAutoID,
             'kelompoklampu' => $kelompoklampu,
-            'oKodeSales' => Auth::user()->KodeSales
+            'oKodeSales' => Auth::user()->KodeSales,
+            'jenisLangganan' => $jenisLangganan
         ]);
     }
 
@@ -348,7 +363,20 @@ class TableOrderController extends Controller
             // JamMulai Handling
             // If provided from frontend (Slot selected), use it.
             // If not provided (Flexible, or Menit), use NOW.
-            if ($request->has('JamMulai') && $request->input('JamMulai') != "") {
+            if ($request->input('JenisPaket') == 'DAILY') {
+                $tgl = $request->input('TglBooking') ?? Carbon::now()->format('Y-m-d');
+                $jamCheckin = $request->input('JamMulai');
+                $model->JamMulai = Carbon::parse($tgl . ' ' . $jamCheckin);
+
+                $jamCheckout = $request->input('JamSelesai');
+                if ($jamCheckout) {
+                    $dtCheckout = Carbon::parse($tgl . ' ' . $jamCheckout);
+                    if ($dtCheckout->lt($model->JamMulai)) {
+                        $dtCheckout->addDay();
+                    }
+                    $model->JamSelesai = $dtCheckout;
+                }
+            } elseif ($request->has('JamMulai') && $request->input('JamMulai') != "") {
                 $tgl = $request->input('TglBooking') ?? Carbon::now()->format('Y-m-d');
                 $jam = $request->input('JamMulai');
                 $model->JamMulai = Carbon::parse($tgl . ' ' . $jam);
@@ -356,7 +384,7 @@ class TableOrderController extends Controller
                 $model->JamMulai = Carbon::now();
             }
 
-            if ($request->input('JenisPaket') == 'JAM' || $request->input('JenisPaket') == 'PAKETMEMBER') {
+            if ($request->input('JenisPaket') == 'JAM' || $request->input('JenisPaket') == 'PAKETMEMBER' || $request->input('JenisPaket') == 'JAMREALTIME') {
                  // JamSelesai Calculation
                  // If frontend provided JamSelesai, we could uses it, BUT calculation based on Duration is safer/consistent
                  // $model->JamSelesai = $currentDate->addHours($request->input('DurasiPaket'))->subMinute(); <--- This uses NOW, we must use Model's JamMulai
@@ -370,6 +398,20 @@ class TableOrderController extends Controller
             if ($request->input('JenisPaket') == 'MENIT') {
                 $model->JamSelesai = $currentDate->addMinutes($request->input('DurasiPaket'))->subMinute();
                 // var_dump($currentDate->addHours($request->input('DurasiPaket')));
+            }
+
+            if ($request->input('JenisPaket') == 'MENITREALTIME' || $request->input('JenisPaket') == 'JAMREALTIME' || $request->input('JenisPaket') == 'PAYPERUSE') {
+                $model->DocumentStatus = 'O';
+                $model->Status = 1;
+                if ($request->input('JenisPaket') == 'MENITREALTIME' || $request->input('JenisPaket') == 'PAYPERUSE') {
+                    $model->JamMulai = Carbon::now();
+                    $model->JamSelesai = null;
+                }
+            }
+
+            if ($request->input('JenisPaket') == 'MONTHLY' || $request->input('JenisPaket') == 'YEARLY') {
+                $model->JamMulai = Carbon::parse($request->input('JamMulaiMonth'));
+                $model->JamSelesai = Carbon::parse($request->input('JamSelesaiMonth'));
             }
 
             // Future Booking Logic
@@ -602,7 +644,7 @@ class TableOrderController extends Controller
                             ->update(
                                 [
                                     'Status' => 0 ,
-                                    'JamSelesai' => DB::raw("CASE WHEN '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENIT' THEN NOW() ELSE JamSelesai END")
+                                    'JamSelesai' => DB::raw("CASE WHEN '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENIT' OR '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENITREALTIME' THEN NOW() ELSE JamSelesai END")
                                 ]
                             );
 

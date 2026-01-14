@@ -233,6 +233,18 @@
 	                    caption: "Merk",
 	                    allowEditing:false, 
 	                },
+                    {
+	                    dataField: "TampilkanEMenu",
+	                    caption: "E-Menu",
+	                    allowEditing:false,
+                        cellTemplate: function(container, options) {
+                            if (options.value == "1") {
+                                container.text("YES");
+                            } else {
+                                container.text("NO");
+                            }
+                        }
+	                },
 	                {
 	                    dataField: "Rak",
 	                    caption: "Rak",

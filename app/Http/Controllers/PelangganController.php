@@ -175,6 +175,7 @@ class PelangganController extends Controller
             $model->Played = $request->input('Played', 0);
             $model->MemberPrice = $request->input('MemberPrice', 0);
             $model->maxTimePerPlay = $request->input('maxTimePerPlay', 0);
+            $model->TglBerlanggananPaketBulanan = $request->input('TglBerlanggananPaketBulanan');
 
             $save = $model->save();
 
@@ -231,6 +232,7 @@ class PelangganController extends Controller
             $model->Played = $request->input('Played', 0);
             $model->MemberPrice = $request->input('MemberPrice', 0);
             $model->maxTimePerPlay = $request->input('maxTimePerPlay', 0);
+            $model->TglBerlanggananPaketBulanan = $request->input('TglBerlanggananPaketBulanan');
 
             $save = $model->save();
 
@@ -286,7 +288,8 @@ class PelangganController extends Controller
                     'MaxPlay' => $request->input('MaxPlay', 0),
                     'Played' => $request->input('Played', 0),
                     'MemberPrice' => $request->input('MemberPrice', 0),
-                    'maxTimePerPlay' => $request->input('maxTimePerPlay', 0)
+                    'maxTimePerPlay' => $request->input('maxTimePerPlay', 0),
+                    'TglBerlanggananPaketBulanan' => $request->input('TglBerlanggananPaketBulanan')
                 ]);
 
                 alert()->success('Success','Data Pelanggan berhasil disimpan.');
@@ -338,7 +341,8 @@ class PelangganController extends Controller
                     'MaxPlay' => $request->input('MaxPlay', 0),
                     'Played' => $request->input('Played', 0),
                     'MemberPrice' => $request->input('MemberPrice', 0),
-                    'maxTimePerPlay' => $request->input('maxTimePerPlay', 0)
+                    'maxTimePerPlay' => $request->input('maxTimePerPlay', 0),
+                    'TglBerlanggananPaketBulanan' => $request->input('TglBerlanggananPaketBulanan')
                 ]);
 
                 $data['success'] = true;

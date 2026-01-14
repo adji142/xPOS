@@ -101,6 +101,12 @@ Route::get('/forgotpassword', [LoginController::class, 'forgotpassword'])->name(
 Route::get('/resetpassword/{id}', [LoginController::class, 'resetpassword'])->name('resetpassword');
 Route::post('/SendEmailResetPassword', [LoginController::class, 'SendEmailResetPassword'])->name('SendEmailResetPassword');
 Route::post('/actionResetPassword', [LoginController::class, 'actionResetPassword'])->name('actionResetPassword');
+
+Route::get('/emenu/{id}/{roid}', [TitikLampuController::class, 'emenu'])->name('emenu.order');
+Route::post('/emenu/store', [TitikLampuController::class, 'storeOrder'])->name('emenu.store');
+Route::post('/emenu/create-payment', [TitikLampuController::class, 'createPaymentEMenu'])->name('emenu.create-payment');
+Route::post('/emenu/store-qris', [TitikLampuController::class, 'storeOrderEMenuQRIS'])->name('emenu.store-qris');
+Route::get('titiklampu/generate-qrcode', [TitikLampuController::class, 'generateQRCode'])->name('titiklampu-generate-qrcode');
 /*
 |--------------------------------------------------------------------------
 | Grup Pelanggan

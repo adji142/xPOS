@@ -295,6 +295,7 @@ class ItemMasterController extends Controller
           $model->AcctPenjualanJasa = empty($jsonData['AcctPenjualanJasa']) ? "" : $jsonData['AcctPenjualanJasa'];
           $model->AcctPersediaan = empty($jsonData['AcctPersediaan']) ? "" : $jsonData['AcctPersediaan'];
           $model->Gambar = $jsonData['Gambar'];
+          $model->TampilkanEMenu = isset($jsonData['TampilkanEMenu']) ? $jsonData['TampilkanEMenu'] : 0;
           $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
           $save = $model->save();
@@ -449,6 +450,7 @@ class ItemMasterController extends Controller
                     'isKonsinyasi' => ($jsonData['TypeItem'] == "5") ? "Y" : "N",
                     'Active' => $jsonData['Active'],
                     'VatPercent' => $jsonData['VatPercent'],
+                    'TampilkanEMenu' => isset($jsonData['TampilkanEMenu']) ? $jsonData['TampilkanEMenu'] : 0,
                     'AcctHPP' => empty($jsonData['AcctHPP']) ? "" :$jsonData['AcctHPP'],
                     'AcctPenjualan' => empty($jsonData['AcctPenjualan']) ? "" : $jsonData['AcctPenjualan'],
                     'AcctPenjualanJasa' => empty($jsonData['AcctPenjualanJasa']) ? "" : $jsonData['AcctPenjualanJasa'],

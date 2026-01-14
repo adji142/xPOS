@@ -444,6 +444,102 @@
                             </fieldset>
                         </div>
     
+                        <div class="col-md-12" id="SectionJenisLangganan" style="display: none;">
+                            <label class="text-body font-weight-bold">Jenis Layanan</label>
+                            <div class="form-group row">
+                                <div class="col-md-4">
+                                    <div class="checkbox-inline">
+                                        <label class="checkbox checkbox-success">
+                                            <input type="checkbox" name="JenisLangganan[]" value="MENIT"/>
+                                            <span>Paket Menit</span>
+                                            <br>
+                                            <small>Paket Untuk bermain dalam menit yang sudah di tentukan</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="checkbox-inline">
+                                        <label class="checkbox checkbox-success">
+                                            <input type="checkbox" name="JenisLangganan[]" value="JAM"/>
+                                            <span>Paket Jam</span>
+                                            <br>
+                                            <small>Paket Untuk bermain dalam jam yang sudah di tentukan</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="checkbox-inline">
+                                        <label class="checkbox checkbox-success">
+                                            <input type="checkbox" name="JenisLangganan[]" value="PAKETMEMBER"/>
+                                            <span>Paket Berlangganan</span>
+                                            <br>
+                                            <small>Paket Untuk Member yang sudah berlangganan atau menggunakan berlangganan yang berbayar</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mt-2">
+                                    <div class="checkbox-inline">
+                                        <label class="checkbox checkbox-success">
+                                            <input type="checkbox" name="JenisLangganan[]" value="MENITREALTIME"/>
+                                            <span>Paket Menit Realtime</span>
+                                            <br>
+                                            <small>Paket Untuk bermain dalam hitungan menit dengan billing yang di hitung berdasarkan lama user bermain</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mt-2">
+                                    <div class="checkbox-inline">
+                                        <label class="checkbox checkbox-success">
+                                            <input type="checkbox" name="JenisLangganan[]" value="JAMREALTIME"/>
+                                            <span>Paket Jam Realtime</span>
+                                            <br>
+                                            <small>Paket Untuk bermain secara langsung dengan kelipatan jam</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mt-2">
+                                    <div class="checkbox-inline">
+                                        <label class="checkbox checkbox-success">
+                                            <input type="checkbox" name="JenisLangganan[]" value="PAYPERUSE"/>
+                                            <span>Paket Pay Per Use</span>
+                                            <br>
+                                            <small>Paket Untuk bermain dengan mengabaikan waktu, diganti dengan paket permainan yang di ambil</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mt-2">
+                                    <div class="checkbox-inline">
+                                        <label class="checkbox checkbox-success">
+                                            <input type="checkbox" name="JenisLangganan[]" value="DAILY"/>
+                                            <span>Paket Harian</span>
+                                            <br>
+                                            <small>Paket Untuk bermain dalam waktu 24 jam </small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mt-2">
+                                    <div class="checkbox-inline">
+                                        <label class="checkbox checkbox-success">
+                                            <input type="checkbox" name="JenisLangganan[]" value="MONTHLY"/>
+                                            <span>Paket Bulanan</span>
+                                            <br>
+                                            <small>Paket Untuk bermain dalam waktu 30 hari Berturut turut</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mt-2">
+                                    <div class="checkbox-inline">
+                                        <label class="checkbox checkbox-success">
+                                            <input type="checkbox" name="JenisLangganan[]" value="YEARLY"/>
+                                            <span>Paket Tahunan</span>
+                                            <br>
+                                            <small>Paket Untuk bermain dalam waktu 365 hari Berturut turut</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
                     </div>
                     <hr>
                     <div class="form-group row justify-content-end mb-0">
@@ -511,7 +607,17 @@
 
 
     jQuery('#ModalJenisUsahaRubahLangganan').change(function () {
-        const filteredData = oSubs.filter(item => item.JenisUsaha == jQuery('#ModalJenisUsahaRubahLangganan').val());
+        const jenisUsaha = jQuery('#ModalJenisUsahaRubahLangganan').val();
+        
+        if (jenisUsaha === 'Hiburan') {
+            jQuery('#SectionJenisLangganan').show();
+        } else {
+            jQuery('#SectionJenisLangganan').hide();
+            // Uncheck all if hidden? Optional, but safer to keep data unless explicitly cleared.
+            // jQuery('input[name="JenisLangganan[]"]').prop('checked', false);
+        }
+
+        const filteredData = oSubs.filter(item => item.JenisUsaha == jenisUsaha);
         jQuery('#ModalPaketAplikasiRubahLangganan').empty();
         var newOption = $('<option>', {
             value: -1,
@@ -602,6 +708,23 @@
 
         jQuery('#ModalStartSubsRubahLangganan').val(filterPelanggan[0]['StartSubs']);
         jQuery('#ModalEndSubsRubahLangganan').val(filterPelanggan[0]['EndSubs']);
+
+        // Load Jenis Langganan
+        jQuery('input[name="JenisLangganan[]"]').prop('checked', false); // Reset first
+        if (filterPelanggan[0]['JenisLangganan']) {
+            try {
+                var jenisLangganan = JSON.parse(filterPelanggan[0]['JenisLangganan']);
+                if (Array.isArray(jenisLangganan)) {
+                    jenisLangganan.forEach(function(val) {
+                        // Check if val is object (new format) or string (old/dev format)
+                        var code = (typeof val === 'object' && val !== null) ? val.Kode : val;
+                        jQuery('input[name="JenisLangganan[]"][value="' + code + '"]').prop('checked', true);
+                    });
+                }
+            } catch (e) {
+                console.error("Error parsing JenisLangganan JSON", e);
+            }
+        }
 
         jQuery('#LookupRubahPaket').modal({backdrop: 'static', keyboard: false})
 		jQuery('#LookupRubahPaket').modal('show');

@@ -254,7 +254,7 @@
                                         <div class="col-md-6">
                                             <label  class="text-body">Sudah Bermain</label>
                                             <fieldset class="form-group mb-3">
-                                                <input type="number" class="form-control" id="Played" name="Played" placeholder="0" value="{{ count($pelanggan) > 0 ? $pelanggan[0]['Played'] : 0 }}">
+                                                <input type="number" class="form-control" id="Played" name="Played" placeholder="0" value="{{ count($pelanggan) > 0 ? $pelanggan[0]['Played'] : 0 }}" readonly>
                                             </fieldset>
                                         </div>
 
@@ -281,6 +281,17 @@
 												</select>
 	                            			</fieldset>
 	                            			
+	                            		</div>
+
+										<div class="col-md-4">
+	                            			<label  class="text-body">Tgl Berlangganan Paket Bulanan</label>
+	                            			<fieldset class="form-group mb-3">
+												@if (count($pelanggan) > 0)
+	                            					<input type="date" class="form-control" id="TglBerlanggananPaketBulanan" name="TglBerlanggananPaketBulanan" value="{{ old('TglBerlanggananPaketBulanan', \Carbon\Carbon::parse($pelanggan[0]['TglBerlanggananPaketBulanan'])->format('Y-m-d')) }}">
+												@else
+	                            					<input type="date" class="form-control" id="TglBerlanggananPaketBulanan" name="TglBerlanggananPaketBulanan" value="{{ old('TglBerlanggananPaketBulanan') }}">
+												@endif
+											</fieldset>
 	                            		</div>
 
 	                            		<div class="col-md-12">

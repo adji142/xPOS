@@ -207,9 +207,12 @@
   }
 
   function getSisaWaktu(jamSelesai) {
+    if (!jamSelesai) return "00:00";
     const now = new Date();
     const end = new Date();
-    const [jam, menit] = jamSelesai.split(':').map(Number);
+    const parts = jamSelesai.split(':');
+    if (parts.length < 2) return "00:00";
+    const [jam, menit] = parts.map(Number);
     end.setHours(jam, menit, 0, 0);
     const diff = (end - now) / 1000;
     if (diff < 0) return "00:00";
@@ -219,9 +222,12 @@
   }
 
   function getSisaMenit(jamSelesai) {
+    if (!jamSelesai) return -1;
     const now = new Date();
     const end = new Date();
-    const [jam, menit] = jamSelesai.split(':').map(Number);
+    const parts = jamSelesai.split(':');
+    if (parts.length < 2) return -1;
+    const [jam, menit] = parts.map(Number);
     end.setHours(jam, menit, 0, 0);
     return Math.floor((end - now) / 60000);
   }

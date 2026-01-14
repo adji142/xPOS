@@ -188,13 +188,20 @@
                             		<div class="col-md-6">
                             			<label  class="text-body">Status</label>
                             			<fieldset class="form-group mb-3">
-                            				<select name="Active" id="Active" class="js-example-basic-single js-states form-control bg-transparent" name="state" >
-												<option value="Y" {{ count($supplier) > 0 ? $supplier[0]['Active'] == 'Y' ? "selected" : '' :""}}>Active</option>
-												<option value="N" {{ count($supplier) > 0 ? $supplier[0]['Active'] == 'Y' ? "selected" : '' :""}}>Inactive</option>
+                             				<select name="Active" id="Active" class="js-example-basic-single js-states form-control bg-transparent" name="state" >
+												<option value="Y" {{ count($itemmaster) > 0 ? $itemmaster[0]['Active'] == 'Y' ? "selected" : '' :""}}>Active</option>
+												<option value="N" {{ count($itemmaster) > 0 ? $itemmaster[0]['Active'] == 'N' ? "selected" : '' :""}}>Inactive</option>
 											</select>
                             			</fieldset>
-                            			
                             		</div>
+                                    <div class="col-md-12">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="TampilkanEMenu" name="TampilkanEMenu" {{ count($itemmaster) > 0 ? $itemmaster[0]['TampilkanEMenu'] == 1 ? 'checked' : '' : '' }}>
+                                            <label class="form-check-label" for="TampilkanEMenu">
+                                                Tampilkan di EMenu
+                                            </label>
+                                        </div>
+                                    </div>
 
                             		<hr>
 
@@ -1007,6 +1014,7 @@
 			'StockMinimum' : jQuery('#StockMinimum').val(),
 			'isKonsinyasi' : jQuery('#isKonsinyasi').val(),
 			'Active' : jQuery('#Active').val(),
+            'TampilkanEMenu' : jQuery('#TampilkanEMenu').is(':checked') ? 1 : 0,
 			'AcctHPP' : jQuery('#AcctHPP').val(),
 			'AcctPenjualan' : jQuery('#AcctPenjualan').val(),
 			'AcctPenjualanJasa' : jQuery('#AcctPenjualanJasa').val(),

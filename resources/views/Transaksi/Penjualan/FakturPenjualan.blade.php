@@ -533,7 +533,7 @@
                             LinkAccess += "<button class='btn btn-outline-success font-weight-bold me-1 mb-1' onclick=\"showCetakModal('" + cellInfo.data.NoTransaksi + "')\"><i class='fas fa-print'></i></button>";
                         }
 
-                        if (cellInfo.data.StatusDocument == "OPEN") {
+                        if (cellInfo.data.Status != "D") {
                             LinkAccess += "<button class='btn btn-outline-danger font-weight-bold me-1 mb-1' onclick=\"voidTransaksi('" + cellInfo.data.NoTransaksi + "')\"><i class='fas fa-trash-alt'></i></button>";
                         }
 

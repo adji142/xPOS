@@ -95,7 +95,7 @@
 						<!--begin::Menu Nav-->
 						<div id="accordion">
 							<ul class="nav flex-column">
-								<li class="nav-item active">
+								<li class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
 									<a href="{{ route('dashboard') }}" class="nav-link">
 										<span class="svg-icon nav-icon">
 											<svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
@@ -124,7 +124,7 @@
 									</a>
 								</li>
 
-								<li class="nav-item">
+								<li class="nav-item {{ request()->routeIs('log') ? 'active' : '' }}">
 									<a href="{{ route('log', ['id' => base64_encode(Auth::user()->RecordOwnerID)]) }}" class="nav-link">
 										<span class="svg-icon nav-icon">
 											<i class="fas fa-clipboard-check font-size-h4"></i>
@@ -135,11 +135,36 @@
 									</a>
 								</li>
 								
+								@php
+									if(!function_exists('is_nav_exact_active')) {
+										function is_nav_exact_active($item) {
+											if (!isset($item['Link']) || empty($item['Link']) || $item['Link'] == '#' || $item['Link'] == 'javascript:void(0)') {
+												return false;
+											}
+											return request()->routeIs($item['Link']) || request()->is($item['Link']) || request()->is($item['Link'] . '/*') || (filter_var($item['Link'], FILTER_VALIDATE_URL) ? request()->fullUrlIs($item['Link']) : request()->fullUrlIs(url($item['Link'])));
+										}
+									}
+									if(!function_exists('is_nav_child_active')) {
+										function is_nav_child_active($item) {
+											if (isset($item['submenu']) && count($item['submenu']) > 0) {
+												foreach ($item['submenu'] as $sub) {
+													if (is_nav_exact_active($sub) || is_nav_child_active($sub)) return true;
+												}
+											}
+											return false;
+										}
+									}
+								@endphp
+
 								<!-- Dynamic Menu -->
 								@foreach ($navbars as $lv1)
 									@if ($lv1['ParentType'] == 1)
-										<li class="nav-item">
-											<a class="nav-link" data-bs-toggle="collapse"  href="javascript:void(0)" data-bs-target="#{{$lv1['PermissionName']}}" role="button" aria-expanded="false" aria-controls="{{$lv1['PermissionName']}}">
+										@php 
+											$lv1ExactActive = is_nav_exact_active($lv1);
+											$lv1ChildActive = is_nav_child_active($lv1);
+										@endphp
+										<li class="nav-item {{ $lv1ExactActive ? 'active' : '' }}">
+											<a class="nav-link {{ ($lv1ExactActive || $lv1ChildActive) ? '' : 'collapsed' }}" data-bs-toggle="collapse"  href="javascript:void(0)" data-bs-target="#{{str_replace([' ', '.'],'',$lv1['PermissionName'])}}" role="button" aria-expanded="{{ ($lv1ExactActive || $lv1ChildActive) ? 'true' : 'false' }}" aria-controls="{{str_replace([' ', '.'],'',$lv1['PermissionName'])}}">
 												<span class="svg-icon nav-icon">
 													<i class="{{$lv1['Icon']}} font-size-h4"></i>
 												</span>
@@ -148,14 +173,18 @@
 											</a>
 										</li>
 
-										<div class="collapse nav-collapse" id="{{$lv1['PermissionName']}}" data-bs-parent="#accordion">
+										<div class="collapse nav-collapse {{ ($lv1ExactActive || $lv1ChildActive) ? 'show' : '' }}" id="{{str_replace([' ', '.'],'',$lv1['PermissionName'])}}" data-bs-parent="#accordion">
 											<div id="accordion1">
 												<ul class="nav flex-column">
 													@if (count($lv1['submenu']) > 0)
 														@foreach ($lv1['submenu'] as $lv2)
 															@if ($lv2['ParentType'] == 1)
-																<li class="nav-item">
-																	<a  class="nav-link sub-nav-link" data-bs-toggle="collapse" href="#{{str_replace(' ','',$lv2['PermissionName'])}}" role="button" aria-expanded="false" aria-controls="{{str_replace(' ','',$lv2['PermissionName'])}}">
+																@php 
+																	$lv2ExactActive = is_nav_exact_active($lv2);
+																	$lv2ChildActive = is_nav_child_active($lv2);
+																@endphp
+																<li class="nav-item {{ $lv2ExactActive ? 'active' : '' }}">
+																	<a  class="nav-link sub-nav-link {{ ($lv2ExactActive || $lv2ChildActive) ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#{{str_replace([' ', '.'],'',$lv2['PermissionName'])}}" role="button" aria-expanded="{{ ($lv2ExactActive || $lv2ChildActive) ? 'true' : 'false' }}" aria-controls="{{str_replace([' ', '.'],'',$lv2['PermissionName'])}}">
 																		<span class="svg-icon nav-icon d-flex justify-content-center">
 																			<svg xmlns="http://www.w3.org/2000/svg" width="10px" height="10px" fill="currentColor" class="bi bi-circle" viewBox="0 0 16 16">
 																				<path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
@@ -165,11 +194,11 @@
 																		<i class="fas fa-chevron-right fa-rotate-90"></i>
 																	</a>
 
-																	<div class="collapse nav-collapse" id="{{str_replace(' ','',$lv2['PermissionName'])}}" data-bs-parent="#accordion1">
+																	<div class="collapse nav-collapse {{ ($lv2ExactActive || $lv2ChildActive) ? 'show' : '' }}" id="{{str_replace([' ', '.'],'',$lv2['PermissionName'])}}" data-bs-parent="#accordion1">
 																		<ul class="nav flex-column">
 																			@if (count($lv2['submenu']) > 0)
 																				@foreach ($lv2['submenu'] as $lv3)
-																					<li class="nav-item">
+																					<li class="nav-item {{ is_nav_exact_active($lv3) ? 'active' : '' }}">
 																						<a href="{{ route($lv3['Link']) }}" class="nav-link mini-sub-nav-link">
 																						
 																							<span class="nav-text">{{$lv3['PermissionName']}}</span>
@@ -182,7 +211,7 @@
 																	</div>
 																</li>
 															@else
-																<li class="nav-item">
+																<li class="nav-item {{ is_nav_exact_active($lv2) ? 'active' : '' }}">
 																	<a href="{{ url($lv2['Link']) }}" class="nav-link sub-nav-link">
 																		<span class="svg-icon nav-icon d-flex justify-content-center">
 																			<svg xmlns="http://www.w3.org/2000/svg" width="10px" height="10px" fill="currentColor" class="bi bi-circle" viewBox="0 0 16 16">

@@ -30,6 +30,7 @@ class Pelanggan extends BaseModel
         'MemberPrice',
         'maxTimePerPlay',
         'ValidUntil',
+        'TglBerlanggananPaketBulanan',
         'RecordOwnerID',
         'created_at',
         'updated_at'

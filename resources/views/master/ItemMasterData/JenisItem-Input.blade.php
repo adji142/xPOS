@@ -70,6 +70,18 @@
 	                            			
 	                            		</div>
 
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <div class="checkbox-inline">
+                                                    <label class="checkbox checkbox-lg">
+                                                        <input type="checkbox" name="TampilkanEMenu" {{ count($jenisitem) > 0 && $jenisitem[0]['TampilkanEMenu'] == 1 ? 'checked' : '' }}>
+                                                        <span></span>
+                                                        Tampilkan di EMenu
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
 	                            		<div class="col-md-12">
 	                            			<button type="submit" class="btn btn-success text-white font-weight-bold me-1 mb-1">Simpan</button>
 	                            		</div>

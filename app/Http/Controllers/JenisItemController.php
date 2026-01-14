@@ -64,6 +64,7 @@ class JenisItemController extends Controller
             $model = new JenisItem;
             $model->KodeJenis = $request->input('KodeJenis');
             $model->NamaJenis = $request->input('NamaJenis');
+            $model->TampilkanEMenu = $request->input('TampilkanEMenu') == 'on' ? 1 : 0;
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -99,6 +100,7 @@ class JenisItemController extends Controller
              //    $model->Nama = $request->input('Nama');
                 \App\Services\DBLogger::update('jenisitem', ['KodeJenis' => $request->input('KodeJenis'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
                     'NamaJenis' => $request->input('NamaJenis'),
+                    'TampilkanEMenu' => $request->input('TampilkanEMenu') == 'on' ? 1 : 0,
                 ]);
 
                 alert()->success('Success','Data Jenis Item berhasil disimpan.');
@@ -124,6 +126,7 @@ class JenisItemController extends Controller
             $model = new JenisItem;
             $model->KodeJenis = $request->input('KodeJenis');
             $model->NamaJenis = $request->input('NamaJenis');
+            $model->TampilkanEMenu = $request->input('TampilkanEMenu') == 'on' ? 1 : 0;
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -156,6 +159,7 @@ class JenisItemController extends Controller
              //    $model->Nama = $request->input('Nama');
                 \App\Services\DBLogger::update('jenisitem', ['KodeJenis' => $request->input('KodeJenis'), 'RecordOwnerID' => Auth::user()->RecordOwnerID], [
                     'NamaJenis' => $request->input('NamaJenis'),
+                    'TampilkanEMenu' => $request->input('TampilkanEMenu') == 'on' ? 1 : 0,
                 ]);
 
                 $data['success'] = true;

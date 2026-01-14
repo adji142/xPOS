@@ -29,8 +29,8 @@
 								</div>
 							    <div class="icons d-flex">
 									<a href="{{ url('titiklampu/form/-') }}" class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1">Tambah Data</a>
+									<a href="{{ url('titiklampu/generate-qrcode') }}" target="_blank" class="btn btn-outline-success rounded-pill font-weight-bold me-1 mb-1">Download QRCode</a>
 								</div>
-							</div>
 						
 						</div>
 

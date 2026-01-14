@@ -1,0 +1,17 @@
+SET FOREIGN_KEY_CHECKS=0;
+
+ALTER TABLE `xpos_live`.`company` ADD COLUMN `QueueDesignSetting` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL AFTER `RunningTextSelfServices`;
+
+ALTER TABLE `xpos_live`.`fakturpenjualanheader` ADD COLUMN `BiayaLayanan` decimal(18, 2) NOT NULL DEFAULT 0 AFTER `PajakHiburan`;
+
+ALTER TABLE `xpos_live`.`metodepembayaran` ADD COLUMN `BiayaAdminPercent` double NULL DEFAULT NULL AFTER `MerchantID`;
+
+ALTER TABLE `xpos_live`.`metodepembayaran` ADD COLUMN `BiayaAdminRupiah` double NULL DEFAULT NULL AFTER `BiayaAdminPercent`;
+
+ALTER TABLE `xpos_live`.`pembayaranpenjualanheader` ADD COLUMN `BiayaLayanan` decimal(18, 2) NOT NULL DEFAULT 0 AFTER `TotalPembayaran`;
+
+ALTER TABLE `xpos_live`.`serial_numbers` ADD COLUMN `MaximalNode` int(255) NULL DEFAULT 1 AFTER `Keterangan`;
+
+ALTER TABLE `xpos_live`.`titiklampu` ADD COLUMN `Gambar` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL AFTER `Deskripsi`;
+
+SET FOREIGN_KEY_CHECKS=1;
