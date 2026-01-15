@@ -1346,16 +1346,53 @@ class FakturPenjualanController extends Controller
 				}
 
 				if($jsonData['NoReff'] == "POS-TAMBAHJAM"){
-					$update = DB::table('tableorderheader')
-								->where('NoTransaksi','=', $key['BaseReff'])
-								->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-								->update(
-									[
-										'Status' => '1',
-										'DurasiPaket' => DB::raw('DurasiPaket + ' . $key['Qty']),
-										'JamSelesai' => DB::raw('DATE_ADD(JamMulai, INTERVAL DurasiPaket HOUR)')
-									]
-								);
+					$tableInfo = DB::table('tableorderheader')
+						->leftJoin('pakettransaksi', function($join) {
+							$join->on('tableorderheader.paketid', '=', 'pakettransaksi.id')
+								->on('tableorderheader.RecordOwnerID', '=', 'pakettransaksi.RecordOwnerID');
+						})
+						->where('tableorderheader.NoTransaksi', $key['BaseReff'])
+						->where('tableorderheader.RecordOwnerID', Auth::user()->RecordOwnerID)
+						->select('pakettransaksi.JenisPaket')
+						->first();
+
+					if ($tableInfo) {
+						$interval = 'HOUR';
+						$durasi = 0;
+						
+						if (in_array($tableInfo->JenisPaket, ['DAILY', 'MONTHLY', 'YEARLY'])) {
+							$interval = 'DAY';
+						} elseif (in_array($tableInfo->JenisPaket, ['JAM', 'JAMREALTIME'])) {
+							$interval = 'HOUR';
+						} elseif ($tableInfo->JenisPaket == 'MENIT') {
+							$interval = 'MINUTE';
+						}
+
+						if($interval == "DAY"){
+							$update = DB::table('tableorderheader')
+									->where('NoTransaksi','=', $key['BaseReff'])
+									->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+									->update(
+										[
+											'Status' => '1',
+											'JamSelesai' => DB::raw("DATE_ADD(JamSelesai, INTERVAL (" . $key['Qty'] . ") " . $interval . ")")
+										]
+									);
+						}
+						else{
+							$update = DB::table('tableorderheader')
+									->where('NoTransaksi','=', $key['BaseReff'])
+									->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+									->update(
+										[
+											'Status' => '1',
+											'DurasiPaket' => DB::raw('DurasiPaket + ' . $key['Qty']),
+											'JamSelesai' => DB::raw("DATE_ADD(JamMulai, INTERVAL (DurasiPaket + " . $key['Qty'] . ") " . $interval . ")")
+										]
+									);
+						}
+						
+					}
 				}
 
 				if($jsonData['NoReff'] == "POS-FNB"){
@@ -1369,6 +1406,7 @@ class FakturPenjualanController extends Controller
                     $fnb->Discount = $key['Discount'];
                     $fnb->LineTotal = ($key['Qty'] * $key['Harga']) + $key['Pajak'];
                     $fnb->RecordOwnerID = Auth::user()->RecordOwnerID;
+					$fnb->LineStatus = "C";
                     $fnb->save();
 				}
 
@@ -1376,20 +1414,23 @@ class FakturPenjualanController extends Controller
 			}
 
 			// Update Table Order
-			if ($BaseReffTableOrder != "") {
-				// dd($BaseReffTableOrder);
-				DB::table('tableorderheader')
-				->where('RecordOwnerID', Auth::user()->RecordOwnerID)
-				->where('NoTransaksi', $BaseReffTableOrder)
-				->where(function ($query) {
-					$query->whereIn('JenisPaket', ['MENIT', 'MENITREALTIME'])
-						->orWhere('Status', -1);
-				})
-				->update([
-					'Status' => 0,
-					'JamSelesai' => DB::raw('NOW()')
-				]);
+			if ($jsonData['NoReff'] != "POS-FNB" || $jsonData['NoReff'] != "POS-TAMBAHJAM") {
+				if ($BaseReffTableOrder != "") {
+					// dd($BaseReffTableOrder);
+					DB::table('tableorderheader')
+					->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+					->where('NoTransaksi', $BaseReffTableOrder)
+					->where(function ($query) {
+						$query->whereIn('JenisPaket', ['MENIT', 'MENITREALTIME'])
+							->orWhere('Status', -1);
+					})
+					->update([
+						'Status' => 0,
+						'JamSelesai' => DB::raw('NOW()')
+					]);
+				}
 			}
+			
 
 			// Pembayaran
 

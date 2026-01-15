@@ -391,7 +391,7 @@ License: You must have a valid license purchased only from themeforest(the above
 																			<br>
 																			<div class="row">
 																				<div class="col-xl-12 col-lg-12 col-md-12">
-																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH LAYANAN</button>
+																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH ITEM</button>
 																				</div>
 																			</div>
 																		@endif
@@ -411,7 +411,7 @@ License: You must have a valid license purchased only from themeforest(the above
 																			<br>
 																			<div class="row">
 																				<div class="col-xl-12 col-lg-12 col-md-12">
-																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH LAYANAN</button>
+																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH ITEM</button>
 																				</div>
 																			</div>
 																		@endif
@@ -431,23 +431,23 @@ License: You must have a valid license purchased only from themeforest(the above
 																			<br>
 																			<div class="row">
 																				<div class="col-xl-12 col-lg-12 col-md-12">
-																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH LAYANAN</button>
+																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH ITEM</button>
 																				</div>
 																			</div>
 																		@endif
 
-																		@if ($item->NoTransaksi != "" && $item->JenisPaket == "JAM")
+																		@if ($item->NoTransaksi != "" && ($item->JenisPaket == "JAM" || $item->JenisPaket == "JAMREALTIME" || $item->JenisPaket == "DAILY" || $item->JenisPaket == "MONTHLY" || $item->JenisPaket == "YEARLY"))
 																			<br>
 																			<div class="row">
 																				<div class="col-xl-12 col-lg-12 col-md-12">
-																					<button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH JAM</button>
+																					<button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH WAKTU</button>
 																				</div>
 																			</div>
 																		@else
 																			<br>
 																			<div class="row">
 																				<div class="col-xl-12 col-lg-12 col-md-12">
-																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH JAM</button>
+																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH WAKTU</button>
 																				</div>
 																			</div>
 																		@endif
@@ -578,7 +578,7 @@ License: You must have a valid license purchased only from themeforest(the above
 												</div>
 												<div class="col-md-4">
 													<label  class="text-body" id= "lblDurasiPaket">Durasi (Jam)</label>
-													<div class="checkbox-inline mb-2">
+													<div class="checkbox-inline mb-2" style="display: none;">
 														<label class="checkbox checkbox-outline checkbox-success">
 															<input type="checkbox" id="chkFlexibleTime" name="FlexibleTime"/>
 															<span></span>
@@ -622,28 +622,92 @@ License: You must have a valid license purchased only from themeforest(the above
 											{{-- Daily Packet Section --}}
 											<div class="form-group row" id="divDailyPacket" style="display:none;">
 												<div class="col-md-6">
-													<label class="text-body">Jam Checkin</label>
+													<label class="text-body">Tanggal Masuk</label>
 													<fieldset class="form-group mb-12">
-														<input type="time" class="form-control" id="JamCheckin_Daily" name="JamCheckin_Daily" readonly>
-														<div class="checkbox-inline mt-2">
-															<label class="checkbox checkbox-outline checkbox-success">
-																<input type="checkbox" id="chkCheckinNow" name="chkCheckinNow"/>
-																<span></span>
-																Check in sekarang
-															</label>
-														</div>
+														<input type="date" class="form-control" id="TglMasuk_Daily" name="TglMasuk_Daily" readonly>
 													</fieldset>
 												</div>
 												<div class="col-md-6">
-													<label class="text-body">Jam Checkout</label>
+													<label class="text-body">Jam Masuk</label>
 													<fieldset class="form-group mb-12">
-														<input type="time" class="form-control" id="JamCheckout_Daily" name="JamCheckout_Daily" readonly>
+														<input type="time" class="form-control" id="JamMasuk_Daily" name="JamMasuk_Daily" readonly>
+													</fieldset>
+												</div>
+
+												<div class="col-md-6">
+													<label class="text-body">Tanggal Keluar</label>
+													<fieldset class="form-group mb-12">
+														<input type="date" class="form-control" id="TglKeluar_Daily" name="TglKeluar_Daily">
+													</fieldset>
+												</div>
+												<div class="col-md-6">
+													<label class="text-body">Jam Keluar</label>
+													<fieldset class="form-group mb-12">
+														<input type="time" class="form-control" id="JamKeluar_Daily" name="JamKeluar_Daily">
 													</fieldset>
 												</div>
 												<div class="col-md-6">
 													<label class="text-body">Extra Cost</label>
 													<fieldset class="form-group mb-12">
 														<input type="number" class="form-control" id="ExtraCost" name="ExtraCost" value="0" disabled>
+													</fieldset>
+												</div>
+											</div>
+
+                                            {{-- Monthly Packet Section --}}
+											<div class="form-group row" id="divMonthlyPacket" style="display:none;">
+												<div class="col-md-6">
+													<label class="text-body">Tanggal Masuk</label>
+													<fieldset class="form-group mb-12">
+														<input type="date" class="form-control" id="TglMasuk_Monthly" name="TglMasuk_Monthly" readonly>
+													</fieldset>
+												</div>
+												<div class="col-md-6">
+													<label class="text-body">Jam Masuk</label>
+													<fieldset class="form-group mb-12">
+														<input type="time" class="form-control" id="JamMasuk_Monthly" name="JamMasuk_Monthly" readonly>
+													</fieldset>
+												</div>
+
+												<div class="col-md-6">
+													<label class="text-body">Tanggal Keluar</label>
+													<fieldset class="form-group mb-12">
+														<input type="date" class="form-control" id="TglKeluar_Monthly" name="TglKeluar_Monthly">
+													</fieldset>
+												</div>
+												<div class="col-md-6">
+													<label class="text-body">Jam Keluar</label>
+													<fieldset class="form-group mb-12">
+														<input type="time" class="form-control" id="JamKeluar_Monthly" name="JamKeluar_Monthly">
+													</fieldset>
+												</div>
+											</div>
+
+                                            {{-- Yearly Packet Section --}}
+											<div class="form-group row" id="divYearlyPacket" style="display:none;">
+												<div class="col-md-6">
+													<label class="text-body">Tanggal Masuk</label>
+													<fieldset class="form-group mb-12">
+														<input type="date" class="form-control" id="TglMasuk_Yearly" name="TglMasuk_Yearly" readonly>
+													</fieldset>
+												</div>
+												<div class="col-md-6">
+													<label class="text-body">Jam Masuk</label>
+													<fieldset class="form-group mb-12">
+														<input type="time" class="form-control" id="JamMasuk_Yearly" name="JamMasuk_Yearly" readonly>
+													</fieldset>
+												</div>
+
+												<div class="col-md-6">
+													<label class="text-body">Tanggal Keluar</label>
+													<fieldset class="form-group mb-12">
+														<input type="date" class="form-control" id="TglKeluar_Yearly" name="TglKeluar_Yearly">
+													</fieldset>
+												</div>
+												<div class="col-md-6">
+													<label class="text-body">Jam Keluar</label>
+													<fieldset class="form-group mb-12">
+														<input type="time" class="form-control" id="JamKeluar_Yearly" name="JamKeluar_Yearly">
 													</fieldset>
 												</div>
 											</div>
@@ -810,7 +874,7 @@ License: You must have a valid license purchased only from themeforest(the above
 									<div class="card card-custom gutter-b bg-white border-0">
 										<div class="card-header align-items-center  border-0">
 											<div class="card-title mb-0">
-												<h3 class="card-label mb-0 font-weight-bold text-body ">Pilih Paket</h3>
+												<h3 class="card-label mb-0 font-weight-bold text-body ">Tambah Paket</h3>
 											</div>
 										</div>
 										<div class="card-body">
@@ -822,13 +886,13 @@ License: You must have a valid license purchased only from themeforest(the above
 													</fieldset>
 												</div>
 												<div class="col-md-6">
-													<label  class="text-body">Harga / Jam</label>
+													<label id="lblhargaperjam_RubahDurasi" class="text-body">Harga / Jam</label>
 													<fieldset class="form-group mb-12">
 														<input type="text" class="form-control" id="txtHargaPerJam_TambahJam" name="txtHargaPerJam_TambahJam" readonly>
 													</fieldset>
 												</div>
 												<div class="col-md-6">
-													<label  class="text-body">Durasi (Jam)</label>
+													<label id="lblDurasiPaket_RubahDurasi" class="text-body">Durasi (Jam)</label>
 													<fieldset class="form-group mb-12">
 														<input type="number" class="form-control" id="txtDurasiPaket_RubahDurasi" name="txtDurasiPaket_RubahDurasi" min="1" value="1">
 													</fieldset>
@@ -837,6 +901,12 @@ License: You must have a valid license purchased only from themeforest(the above
 													<label  class="text-body">Total Transaksi</label>
 													<fieldset class="form-group mb-12">
 														<input type="text" class="form-control" id="txtTotalTransaksi_TambahJam" name="txtTotalTransaksi_TambahJam" readonly>
+													</fieldset>
+												</div>
+												<div class="col-md-6">
+													<label  class="text-body">Biaya Layanan</label>
+													<fieldset class="form-group mb-12">
+														<input type="text" class="form-control" id="txtBiayaLayanan_TambahJam" name="txtBiayaLayanan_TambahJam" readonly value="0">
 													</fieldset>
 												</div>
 												<div class="col-md-12">
@@ -848,7 +918,7 @@ License: You must have a valid license purchased only from themeforest(the above
 														<select name="cboMetodePembayaran_TambahJam" id="cboMetodePembayaran_TambahJam" class="cboMetodePembayaran_TambahJam js-states form-control bg-transparent" >
 															<option value="">Pilih Metode Pembayaran</option>
 															@foreach ($metodepembayaran as $mtd)
-																<option value="{{ $mtd->id }}">{{ $mtd->NamaMetodePembayaran }}</option>
+																<option value="{{ $mtd->id }}" data-percent="{{ $mtd->BiayaAdminPercent }}" data-rupiah="{{ $mtd->BiayaAdminRupiah }}">{{ $mtd->NamaMetodePembayaran }}</option>
 															@endforeach
 														</select>
 													</fieldset>
@@ -1243,6 +1313,14 @@ License: You must have a valid license purchased only from themeforest(the above
 															</tr>
 
 															<tr>
+																<td style="text-align: right">Biaya Layanan</td>
+																<td>:</td>
+																<td style="text-align: right">
+																	<input type="text" class="form-control TotalText" id="txtBiayaLayanan_TambahMakan" name="txtBiayaLayanan_TambahMakan" readonly value="0">
+																</td>
+															</tr>
+
+															<tr>
 																<td style="text-align: right">Total Transaksi</td>
 																<td>:</td>
 																<td style="text-align: right">
@@ -1259,7 +1337,7 @@ License: You must have a valid license purchased only from themeforest(the above
 															<select name="cboMetodePembayaran_TambahMakan" id="cboMetodePembayaran_TambahMakan" class="cboMetodePembayaran_TambahMakan js-states form-control bg-transparent" >
 																<option value="">Pilih Metode Pembayaran</option>
 																@foreach ($metodepembayaran as $mtd)
-																	<option value="{{ $mtd->id }}">{{ $mtd->NamaMetodePembayaran }}</option>
+																	<option value="{{ $mtd->id }}" data-biayalayanan="{{ $mtd->BiayaAdminRupiah > 0 ? $mtd->BiayaAdminRupiah : ($mtd->BiayaAdminPercent > 0 ? $mtd->BiayaAdminPercent . '%' : 0) }}" data-percent="{{ $mtd->BiayaAdminPercent }}" data-rupiah="{{ $mtd->BiayaAdminRupiah }}">{{ $mtd->NamaMetodePembayaran }}</option>
 																@endforeach
 															</select>
 														</fieldset>
@@ -1919,9 +1997,54 @@ License: You must have a valid license purchased only from themeforest(the above
 				const DataPaket = <?php echo $paket ?>;
 				const filteredPaket = DataPaket.filter(item => item.id == filteredBilling[0]['paketid']);
 
+				console.log(filteredBilling);
+
+				let hargaNormal = filteredPaket[0]['HargaNormal'];
+				if (filteredPaket[0].JenisPaket === 'MONTHLY') {
+					const tglTrx = new Date(filteredBilling[0].TglTransaksi);
+					const daysInMonth = new Date(tglTrx.getFullYear(), tglTrx.getMonth() + 1, 0).getDate();
+					hargaNormal = Math.round(hargaNormal / daysInMonth);
+				} else if (filteredPaket[0].JenisPaket === 'YEARLY') {
+					const tglTrx = new Date(filteredBilling[0].TglTransaksi);
+					const year = tglTrx.getFullYear();
+					const isLeap = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+					const daysInYear = isLeap ? 366 : 365;
+					hargaNormal = Math.round(hargaNormal / daysInYear);
+				}
+
 				// console.log(filteredPaket)
-				jQuery('#txtHargaPerJam_TambahJam').val(formatNumber(filteredPaket[0]['HargaNormal']));
-				jQuery('#txtHargaPerJam_TambahJam').attr('originalvalue', filteredPaket[0]['HargaNormal']);
+				jQuery('#txtHargaPerJam_TambahJam').val(formatNumber(hargaNormal));
+				jQuery('#txtHargaPerJam_TambahJam').attr('originalvalue', hargaNormal);
+
+				switch (filteredPaket[0].JenisPaket) {
+					case 'JAM':
+						jQuery('#lblhargaperjam_RubahDurasi').text("Harga / Jam");
+						jQuery('#lblDurasiPaket_RubahDurasi').text("Durasi (Jam)");
+						break;
+					case 'MENIT':
+						jQuery('#lblhargaperjam_RubahDurasi').text("Harga / Menit");
+						jQuery('#lblDurasiPaket_RubahDurasi').text("Durasi (Menit)");
+						break;
+					case 'JAMREALTIME':
+						jQuery('#lblhargaperjam_RubahDurasi').text("Harga / Jam");
+						jQuery('#lblDurasiPaket_RubahDurasi').text("Durasi (Jam)");
+						break;
+					case 'DAILY':
+						jQuery('#lblhargaperjam_RubahDurasi').text("Harga / Hari");
+						jQuery('#lblDurasiPaket_RubahDurasi').text("Durasi (Hari)");
+						break;
+					case 'MONTHLY':
+						jQuery('#lblhargaperjam_RubahDurasi').text("Harga / Hari");
+						jQuery('#lblDurasiPaket_RubahDurasi').text("Durasi (Hari)");
+						break;
+					case 'YEARLY':
+						jQuery('#lblhargaperjam_RubahDurasi').text("Harga / Hari");
+						jQuery('#lblDurasiPaket_RubahDurasi').text("Durasi (Hari)");
+						break;
+					default:
+						break;
+				}
+
 				calculateTotalTambahJam();
 				
 				jQuery('#LookupTambahDurasiPaket').modal({backdrop: 'static', keyboard: false})
@@ -1965,13 +2088,13 @@ License: You must have a valid license purchased only from themeforest(the above
 					const member = response.data[0];
 					tglBerlangganan = member.TglBerlanggananPaketBulanan;
 
-					if (!tglBerlangganan) {
-						Swal.fire("Informasi", "Tgl Berlangganan Paket Bulanan harus diisi di Master Pelanggan!", "warning");
-						jQuery('#divProrataInfo').hide();
-						return;
-					}
+					// if (!tglBerlangganan) {
+					// 	Swal.fire("Informasi", "Tgl Berlangganan Paket Bulanan harus diisi di Master Pelanggan!", "warning");
+					// 	jQuery('#divProrataInfo').hide();
+					// 	return;
+					// }
 
-					jQuery('#divProrataInfo').show();
+					// jQuery('#divProrataInfo').show();
 					
 					// Get Packet Price
 					const filteredPacket = _dataPaket.filter(item => item.id == packetId);
@@ -2196,6 +2319,117 @@ License: You must have a valid license purchased only from themeforest(the above
                 jQuery('#btTambahMember').attr('disabled', false);
                 jQuery('#DurasiPaket').val(1).attr('readonly', false);
 				jQuery('#chkFlexibleTime').attr('disabled', true).prop('checked', false);
+				jQuery('#divLangsungBayar').show();
+			}
+			else if (jQuery('#JenisPaket').val() == "MONTHLY") {
+				jQuery('#timeSlotSection').slideUp();
+                jQuery('#selectedTimeSlot').val('');
+				jQuery('#lblDurasiPaket').text('Durasi (Bulan)');
+				
+                jQuery('#paketid').attr('disabled', false);
+                jQuery('#SearchMember').attr('disabled', false);
+                jQuery('#KodePelanggan').attr('disabled', false);
+                jQuery('#btTambahMember').attr('disabled', false);
+                jQuery('#DurasiPaket').val(1).attr('readonly', false).attr('disabled', false);
+				jQuery('#chkFlexibleTime').attr('disabled', true).prop('checked', false);
+				jQuery('#divLangsungBayar').show();
+				jQuery('#divProrataInfo').hide(); // Hide if previously used
+				jQuery('#divMonthlyPacket').show(); // Show new section
+
+				// Set Date Time Now
+				const now = new Date();
+				const year = now.getFullYear();
+				const month = String(now.getMonth() + 1).padStart(2, '0');
+				const day = String(now.getDate()).padStart(2, '0');
+				const hours = String(now.getHours()).padStart(2, '0');
+				const minutes = String(now.getMinutes()).padStart(2, '0');
+
+				jQuery('#TglMasuk_Monthly').val(`${year}-${month}-${day}`);
+				jQuery('#JamMasuk_Monthly').val(`${hours}:${minutes}`);
+				
+				// Set Default Keluar (Now + 1 Month)
+				const nextMonth = new Date(now);
+				nextMonth.setMonth(nextMonth.getMonth() + 1);
+				
+				const tYear = nextMonth.getFullYear();
+				const tMonth = String(nextMonth.getMonth() + 1).padStart(2, '0');
+				const tDay = String(nextMonth.getDate()).padStart(2, '0');
+
+				jQuery('#TglKeluar_Monthly').val(`${tYear}-${tMonth}-${tDay}`);
+				jQuery('#JamKeluar_Monthly').val(`${hours}:${minutes}`);
+			}
+			else if (jQuery('#JenisPaket').val() == "YEARLY") {
+				jQuery('#timeSlotSection').slideUp();
+                jQuery('#selectedTimeSlot').val('');
+				jQuery('#lblDurasiPaket').text('Durasi (Tahun)');
+				
+                jQuery('#paketid').attr('disabled', false);
+                jQuery('#SearchMember').attr('disabled', false);
+                jQuery('#KodePelanggan').attr('disabled', false);
+                jQuery('#btTambahMember').attr('disabled', false);
+                jQuery('#DurasiPaket').val(1).attr('readonly', false).attr('disabled', false);
+				jQuery('#chkFlexibleTime').attr('disabled', true).prop('checked', false);
+				jQuery('#divLangsungBayar').show();
+				jQuery('#divProrataInfo').hide();
+				jQuery('#divMonthlyPacket').hide(); 
+				jQuery('#divYearlyPacket').show();
+
+				// Set Date Time Now
+				const now = new Date();
+				const year = now.getFullYear();
+				const month = String(now.getMonth() + 1).padStart(2, '0');
+				const day = String(now.getDate()).padStart(2, '0');
+				const hours = String(now.getHours()).padStart(2, '0');
+				const minutes = String(now.getMinutes()).padStart(2, '0');
+
+				jQuery('#TglMasuk_Yearly').val(`${year}-${month}-${day}`);
+				jQuery('#JamMasuk_Yearly').val(`${hours}:${minutes}`);
+				
+				// Set Default Keluar (Now + 1 Year)
+				const nextYear = new Date(now);
+				nextYear.setFullYear(nextYear.getFullYear() + 1);
+				
+				const tYear = nextYear.getFullYear();
+				const tMonth = String(nextYear.getMonth() + 1).padStart(2, '0');
+				const tDay = String(nextYear.getDate()).padStart(2, '0');
+
+				jQuery('#TglKeluar_Yearly').val(`${tYear}-${tMonth}-${tDay}`);
+				jQuery('#JamKeluar_Yearly').val(`${hours}:${minutes}`);
+			}
+			else if (jQuery('#JenisPaket').val() == "DAILY") {
+				jQuery('#timeSlotSection').slideUp();
+                jQuery('#selectedTimeSlot').val('');
+				jQuery('#lblDurasiPaket').text('Durasi (Hari)');
+				
+                jQuery('#paketid').attr('disabled', false);
+                jQuery('#SearchMember').attr('disabled', false);
+                jQuery('#KodePelanggan').attr('disabled', false);
+                jQuery('#btTambahMember').attr('disabled', false);
+                jQuery('#DurasiPaket').val(1).attr('readonly', false);
+				jQuery('#chkFlexibleTime').attr('disabled', true).prop('checked', false);
+				jQuery('#divLangsungBayar').show();
+
+				// Set Date Time Now
+				const now = new Date();
+				const year = now.getFullYear();
+				const month = String(now.getMonth() + 1).padStart(2, '0');
+				const day = String(now.getDate()).padStart(2, '0');
+				const hours = String(now.getHours()).padStart(2, '0');
+				const minutes = String(now.getMinutes()).padStart(2, '0');
+
+				jQuery('#TglMasuk_Daily').val(`${year}-${month}-${day}`);
+				jQuery('#JamMasuk_Daily').val(`${hours}:${minutes}`);
+				
+				// Set Default Keluar (Now + 1 Day)
+				const tomorrow = new Date(now);
+				tomorrow.setDate(tomorrow.getDate() + 1);
+				
+				const tYear = tomorrow.getFullYear();
+				const tMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
+				const tDay = String(tomorrow.getDate()).padStart(2, '0');
+
+				jQuery('#TglKeluar_Daily').val(`${tYear}-${tMonth}-${tDay}`);
+				jQuery('#JamKeluar_Daily').val(`${hours}:${minutes}`);
 			}
 			else{
                 jQuery('#timeSlotSection').slideUp();
@@ -2217,7 +2451,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			if (jQuery('#JenisPaket').val() == "MONTHLY" || jQuery('#JenisPaket').val() == "YEARLY") {
 				jQuery('#lblDurasiPaket').text(jQuery('#JenisPaket').val() == "MONTHLY" ? 'Durasi (Bulan)' : 'Durasi (Tahun)');
 				jQuery('#DurasiPaket').val(1).attr('readonly', true);
-				CalculateProrata();
+				// CalculateProrata();
 			} else {
 				jQuery('#divProrataInfo').hide();
 			}
@@ -2276,9 +2510,9 @@ License: You must have a valid license purchased only from themeforest(the above
                 });
             }
 
-			if (jQuery('#JenisPaket').val() == "MONTHLY" || jQuery('#JenisPaket').val() == "YEARLY") {
-				CalculateProrata();
-			}
+			// if (jQuery('#JenisPaket').val() == "MONTHLY" || jQuery('#JenisPaket').val() == "YEARLY") {
+			// 	CalculateProrata();
+			// }
         });
 
 		jQuery('#paketid').change(function () {
@@ -2311,9 +2545,9 @@ License: You must have a valid license purchased only from themeforest(the above
 				jQuery('#divDailyPacket').slideUp();
 			}
 
-			if (jQuery('#JenisPaket').val() == "MONTHLY" || jQuery('#JenisPaket').val() == "YEARLY") {
-				CalculateProrata();
-			}
+			// if (jQuery('#JenisPaket').val() == "MONTHLY" || jQuery('#JenisPaket').val() == "YEARLY") {
+			// 	CalculateProrata();
+			// }
 
 			jQuery('#btMulaiBermain').text('Next >>');
 			// if (jQuery('#JenisPaket').val() != "MENIT") {
@@ -2322,31 +2556,130 @@ License: You must have a valid license purchased only from themeforest(the above
 			// }
 		});
 
-		// Checkin Now Toggle
-		jQuery('#chkCheckinNow').change(function() {
-			if(jQuery(this).is(':checked')) {
-				jQuery('#ExtraCost').prop('disabled', false);
 
-				// Set to Current Time
-				const now = new Date();
-				const hours = String(now.getHours()).padStart(2, '0');
-				const minutes = String(now.getMinutes()).padStart(2, '0');
-				jQuery('#JamCheckin_Daily').val(`${hours}:${minutes}`);
-			} else {
-				jQuery('#ExtraCost').prop('disabled', true);
-				jQuery('#ExtraCost').val(0);
 
-				// Revert to original
-				const original = jQuery('#JamCheckin_Daily').data('original-value');
-				if(original) {
-					jQuery('#JamCheckin_Daily').val(original);
+		jQuery('#DurasiPaket').on('change input', function () {
+			// console.log(jQuery('#DurasiPaket').val());
+
+			if (jQuery('#JenisPaket').val() == "DAILY") {
+				const durasi = parseInt(jQuery(this).val()) || 0;
+				const tglMasukVal = jQuery('#TglMasuk_Daily').val();
+
+				if (tglMasukVal && durasi > 0) {
+					const tglMasuk = new Date(tglMasukVal);
+					const tglKeluar = new Date(tglMasuk);
+					tglKeluar.setDate(tglMasuk.getDate() + durasi);
+
+					const year = tglKeluar.getFullYear();
+					const month = String(tglKeluar.getMonth() + 1).padStart(2, '0');
+					const day = String(tglKeluar.getDate()).padStart(2, '0');
+					
+					jQuery('#TglKeluar_Daily').val(`${year}-${month}-${day}`);
 				}
+			} else if (jQuery('#JenisPaket').val() == "MONTHLY") {
+				const durasi = parseInt(jQuery(this).val()) || 0;
+				const tglMasukVal = jQuery('#TglMasuk_Monthly').val();
+
+				if (tglMasukVal && durasi > 0) {
+					const tglMasuk = new Date(tglMasukVal);
+					const tglKeluar = new Date(tglMasuk);
+					tglKeluar.setMonth(tglMasuk.getMonth() + durasi);
+
+					const year = tglKeluar.getFullYear();
+					const month = String(tglKeluar.getMonth() + 1).padStart(2, '0');
+					const day = String(tglKeluar.getDate()).padStart(2, '0');
+					
+					jQuery('#TglKeluar_Monthly').val(`${year}-${month}-${day}`);
+				}
+			} else if (jQuery('#JenisPaket').val() == "YEARLY") {
+				const durasi = parseInt(jQuery(this).val()) || 0;
+				const tglMasukVal = jQuery('#TglMasuk_Yearly').val();
+
+				if (tglMasukVal && durasi > 0) {
+					const tglMasuk = new Date(tglMasukVal);
+					const tglKeluar = new Date(tglMasuk);
+					tglKeluar.setFullYear(tglMasuk.getFullYear() + durasi);
+
+					const year = tglKeluar.getFullYear();
+					const month = String(tglKeluar.getMonth() + 1).padStart(2, '0');
+					const day = String(tglKeluar.getDate()).padStart(2, '0');
+					
+					jQuery('#TglKeluar_Yearly').val(`${year}-${month}-${day}`);
+				}
+			}
+
+			GenerateTotal();
+		});
+
+		jQuery('#TglKeluar_Daily').on('change', function() {
+			const tglKeluarVal = jQuery(this).val();
+			const tglMasukVal = jQuery('#TglMasuk_Daily').val();
+
+			if (tglKeluarVal && tglMasukVal) {
+				const tglMasuk = new Date(tglMasukVal);
+				const tglKeluar = new Date(tglKeluarVal);
+				
+				// Calculate difference in time
+				const diffTime = tglKeluar - tglMasuk;
+				// Calculate difference in days
+				const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+
+				if (diffDays > 0) {
+					jQuery('#DurasiPaket').val(diffDays);
+				}
+				GenerateTotal();
 			}
 		});
 
-		jQuery('#DurasiPaket').change(function () {
-			// console.log(jQuery('#DurasiPaket').val());
-			GenerateTotal();
+		jQuery('#TglKeluar_Monthly').on('change', function() {
+			const tglKeluarVal = jQuery(this).val();
+			const tglMasukVal = jQuery('#TglMasuk_Monthly').val();
+
+			if (tglKeluarVal && tglMasukVal) {
+				const tglMasuk = new Date(tglMasukVal);
+				const tglKeluar = new Date(tglKeluarVal);
+				
+				// Calculate difference in months roughly
+				let months = (tglKeluar.getFullYear() - tglMasuk.getFullYear()) * 12;
+				months -= tglMasuk.getMonth();
+				months += tglKeluar.getMonth();
+				
+				if(tglKeluar.getDate() < tglMasuk.getDate()){
+					months--;
+				}
+				
+				const diffMonths = months <= 0 ? 0 : months;
+
+				if (diffMonths > 0) {
+					jQuery('#DurasiPaket').val(diffMonths);
+				}
+				GenerateTotal();
+			}
+		});
+
+		jQuery('#TglKeluar_Yearly').on('change', function() {
+			const tglKeluarVal = jQuery(this).val();
+			const tglMasukVal = jQuery('#TglMasuk_Yearly').val();
+
+			if (tglKeluarVal && tglMasukVal) {
+				const tglMasuk = new Date(tglMasukVal);
+				const tglKeluar = new Date(tglKeluarVal);
+				
+				let years = tglKeluar.getFullYear() - tglMasuk.getFullYear();
+				
+				// Adjust if not full year
+				// Simple logic: if month/day of keluar < month/day of masuk, sub 1
+				if (tglKeluar.getMonth() < tglMasuk.getMonth() || (tglKeluar.getMonth() == tglMasuk.getMonth() && tglKeluar.getDate() < tglMasuk.getDate())) {
+					years--;
+				}
+				
+				const diffYears = years <= 0 ? 0 : years;
+
+				if (diffYears > 0) {
+					jQuery('#DurasiPaket').val(diffYears);
+				}
+				GenerateTotal();
+			}
 		});
 
 		// Flexible Time Toggle
@@ -2391,29 +2724,70 @@ License: You must have a valid license purchased only from themeforest(the above
                          formData.append('TglBooking', localDate);
                      }
                  }
+
             } else if (jQuery('#JenisPaket').val() == "DAILY") {
-				const now = new Date();
-				const dateString = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+				// Construct DateTime Strings
+				const tglMasuk = jQuery('#TglMasuk_Daily').val();
+				const jamMasuk = jQuery('#JamMasuk_Daily').val();
 				
-				formData.append('JamMulai', jQuery('#JamCheckin_Daily').val());
-				formData.append('JamSelesai', jQuery('#JamCheckout_Daily').val());
-				formData.append('TglBooking', dateString);
+				const tglKeluar = jQuery('#TglKeluar_Daily').val();
+				const jamKeluar = jQuery('#JamKeluar_Daily').val();
+				
+				formData.append('JamMulai', tglMasuk + ' ' + jamMasuk);
+				formData.append('JamSelesai', tglKeluar + ' ' + jamKeluar);
+				formData.append('TglBooking', tglMasuk); // Use TglMasuk as TglBooking
+				
+
+				if(jQuery('#chkLangsungbayar').is(':checked')) {
+					formData.append('Status', '0');
+					formData.append('DocumentStatus', 'C');
+				} else {
+					formData.append('Status', '1');
+					formData.append('DocumentStatus', 'O');
+				}
 
 				// Extra Cost
 				const extraCost = jQuery('#ExtraCost').val() || 0;
 				formData.append('BiayaLain', extraCost);
-			} else if (jQuery('#JenisPaket').val() == "MONTHLY" || jQuery('#JenisPaket').val() == "YEARLY") {
-				const now = new Date();
-				const tglIn = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-				const jamIn = jQuery('#JamCheckin_Prorata').val();
+			} else if (jQuery('#JenisPaket').val() == "MONTHLY") {
+				// Construct DateTime Strings
+				const tglMasuk = jQuery('#TglMasuk_Monthly').val();
+				const jamMasuk = jQuery('#JamMasuk_Monthly').val();
 				
-				const targetDate = jQuery('#divProrataInfo').data('target-date');
-				const tglOut = targetDate.getFullYear() + '-' + String(targetDate.getMonth() + 1).padStart(2, '0') + '-' + String(targetDate.getDate()).padStart(2, '0');
-				const jamOut = jQuery('#JamCheckout_Prorata').val();
+				const tglKeluar = jQuery('#TglKeluar_Monthly').val();
+				const jamKeluar = jQuery('#JamKeluar_Monthly').val();
+				
+				formData.append('JamMulai', tglMasuk + ' ' + jamMasuk);
+				formData.append('JamSelesai', tglKeluar + ' ' + jamKeluar);
+				formData.append('TglBooking', tglMasuk); // Use TglMasuk as TglBooking
+				if(jQuery('#chkLangsungbayar').is(':checked')) {
+					formData.append('Status', '0');
+					formData.append('DocumentStatus', 'C');
+				} else {
+					formData.append('Status', '1');
+					formData.append('DocumentStatus', 'O');
+				}
 
-				formData.append('JamMulaiMonth', tglIn + ' ' + jamIn);
-				formData.append('JamSelesaiMonth', tglOut + ' ' + jamOut);
-				formData.append('TglBooking', tglIn);
+				// Keep proroata logic if needed or just standard Monthly?
+				// User asked to treat SAME as DAILY.
+			} else if (jQuery('#JenisPaket').val() == "YEARLY") {
+				// Construct DateTime Strings
+				const tglMasuk = jQuery('#TglMasuk_Yearly').val();
+				const jamMasuk = jQuery('#JamMasuk_Yearly').val();
+				
+				const tglKeluar = jQuery('#TglKeluar_Yearly').val();
+				const jamKeluar = jQuery('#JamKeluar_Yearly').val();
+				
+				formData.append('JamMulai', tglMasuk + ' ' + jamMasuk);
+				formData.append('JamSelesai', tglKeluar + ' ' + jamKeluar);
+				formData.append('TglBooking', tglMasuk);
+				if(jQuery('#chkLangsungbayar').is(':checked')) {
+					formData.append('Status', '0');
+					formData.append('DocumentStatus', 'C');
+				} else {
+					formData.append('Status', '1');
+					formData.append('DocumentStatus', 'O');
+				}
 			}
 			
 			// Jika Flexible time, kirim parameter khusus jika perlu, atau biarkan backend handle default NOW
@@ -2422,9 +2796,9 @@ License: You must have a valid license purchased only from themeforest(the above
 			if(jQuery('#JenisPaket').val() == "PAKETMEMBER"){
 				formData.append('Status', '0');
 			}
-			else{
-				formData.append('Status', '0');
-			}
+			// else{
+			// 	formData.append('Status', '0');
+			// }
 
 			$.ajax({
 				async:false,
@@ -2458,7 +2832,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 								formatCurrency($('#txtSubTotal_Detail'), xHargaNormal);
 
-								if (jQuery('#JenisPaket').val() == "PAKETMEMBER" || (jQuery('#JenisPaket').val() == "MENITREALTIME" || (jQuery('#JenisPaket').val() == "PAYPERUSE" && !jQuery('#chkLangsungbayar').is(':checked')))) {
+								if (jQuery('#JenisPaket').val() == "PAKETMEMBER" || (jQuery('#JenisPaket').val() == "MENITREALTIME" || (jQuery('#JenisPaket').val() == "PAYPERUSE" && !jQuery('#chkLangsungbayar').is(':checked')) || ((jQuery('#JenisPaket').val() == "DAILY" || jQuery('#JenisPaket').val() == "MONTHLY" || jQuery('#JenisPaket').val() == "YEARLY") && !jQuery('#chkLangsungbayar').is(':checked')))) {
                                     Swal.fire({
                                         icon: "success",
                                         title: "Sukses",
@@ -2469,6 +2843,11 @@ License: You must have a valid license purchased only from themeforest(the above
                                 } else {
 									const extraCost = jQuery('#ExtraCost').val() || 0;
                                     fnDetails(response.NoTransaksi, { 'BiayaLain': extraCost });
+
+									if (jQuery('#JenisPaket').val() == "JAMREALTIME" || ((jQuery('#JenisPaket').val() == "DAILY" || jQuery('#JenisPaket').val() == "MONTHLY" || jQuery('#JenisPaket').val() == "YEARLY") && jQuery('#chkLangsungbayar').is(':checked'))) {
+										jQuery("#sectionPayment").show();
+									}
+
                                     jQuery('#LookupDetailOrder').modal({backdrop: 'static', keyboard: false})
                                     jQuery('#LookupDetailOrder').modal('show');
                                 }
@@ -2551,6 +2930,26 @@ License: You must have a valid license purchased only from themeforest(the above
 			calculateTotalTambahJam();
 		});
 
+		jQuery('#cboMetodePembayaran_TambahJam').on('change', function() {
+			const metodepembayaran = <?php echo $metodepembayaran ?>;
+			const filteredData = metodepembayaran.filter(item => item.id == jQuery(this).val());
+			const midtransclientkey = "<?php echo $midtransclientkey ?>";
+
+			if (filteredData.length > 0 && filteredData[0]['MetodeVerifikasi'] == "AUTO") {
+				if (midtransclientkey == "") {
+					Swal.fire({
+						icon: "error",
+						title: "Opps...",
+						text: "Client Key Midtrans belum di set, silahkan hubungi admin",
+					});
+					jQuery(this).val("").change();
+					return;
+				}
+			}
+
+			calculateTotalTambahJam();
+		});
+
 		jQuery('#txtDurasiPaket_RubahDurasi').on('input', function() {
 			calculateTotalTambahJam();
 		});
@@ -2558,10 +2957,43 @@ License: You must have a valid license purchased only from themeforest(the above
 		function calculateTotalTambahJam(){
 			const durasi = parseFloat(jQuery('#txtDurasiPaket_RubahDurasi').val()) || 0;
 			const harga = parseFloat(jQuery('#txtHargaPerJam_TambahJam').attr('originalvalue')) || 0;
-			const total = durasi * harga;
+			let subtotal = durasi * harga;
+
+			// Calculate Biaya Layanan
+			let BiayaLayanan = 0;
+			const selectedOption = jQuery('#cboMetodePembayaran_TambahJam').find('option:selected');
+			const percent = parseFloat(selectedOption.data('percent')) || 0;
+			const rupiah = parseFloat(selectedOption.data('rupiah')) || 0;
+
+			if (percent > 0) {
+				BiayaLayanan = (percent / 100) * subtotal;
+			} else if (rupiah > 0) {
+				BiayaLayanan = rupiah;
+			}
+
+			jQuery('#txtBiayaLayanan_TambahJam').val(formatNumber(BiayaLayanan));
+			jQuery('#txtBiayaLayanan_TambahJam').attr('originalvalue', BiayaLayanan);
+
+			let total = subtotal + BiayaLayanan;
 
 			jQuery('#txtTotalTransaksi_TambahJam').val(formatNumber(total));
 			jQuery('#txtTotalTransaksi_TambahJam').attr('originalvalue', total);
+
+			const metodepembayaran = <?php echo $metodepembayaran ?>;
+			const filteredMtd = metodepembayaran.filter(item => item.id == jQuery('#cboMetodePembayaran_TambahJam').val());
+
+			if (filteredMtd.length > 0 && filteredMtd[0]['TipePembayaran'] == "NON TUNAI") {
+				formatCurrency(jQuery('#txtJumlahBayar_TambahJam'), total);
+				jQuery('#txtJumlahBayar_TambahJam').attr('readonly', true);
+				
+				var kembalian = 0;
+				jQuery('#txtJumlahKembalian_TambahJam').val(formatNumber(kembalian));
+				jQuery('#txtJumlahKembalian_TambahJam').attr("originalvalue", kembalian);
+			}
+			else{
+				// formatCurrency(jQuery('#txtJumlahBayar_TambahJam'), "0");
+				jQuery('#txtJumlahBayar_TambahJam').attr('readonly', false);
+			}
 		}
 
 		jQuery('#txtJumlahBayar_TambahJam').on('input', function () {
@@ -2682,6 +3114,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				'Keterangan' : 'Tambah Jam',
 				'MetodeBayar' : jQuery('#cboMetodePembayaran_TambahJam').val(),
 				'ReffPembayaran' : $('#txtRefrensi_TambahJam').val(),
+				'BiayaLayanan' : parseFloat(jQuery('#txtBiayaLayanan_TambahJam').attr("originalvalue")) || 0,
 				'Detail' : oDetail,
 				'Source': 'TAMBAHJAM'
 			}
@@ -2819,6 +3252,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				'Keterangan' : 'Tambah Jam',
 				'MetodeBayar' : jQuery('#cboMetodePembayaran_TambahJam').val(),
 				'ReffPembayaran' : $('#txtRefrensi_TambahJam').val(),
+				'BiayaLayanan' : parseFloat(jQuery('#txtBiayaLayanan_TambahJam').attr("originalvalue")) || 0,
 				'Detail' : oDetail,
 				'Source': 'TAMBAHJAM'
 			}
@@ -3052,7 +3486,8 @@ License: You must have a valid license purchased only from themeforest(the above
 				'MetodeBayar' : jQuery('#cboMetodePembayaran_TambahMakan').val(),
 				'ReffPembayaran' : $('#txtRefrensi_TambahMakan').val(),
 				'Detail' : oDetail,
-                'Source': 'TAMBAHMAKANAN'
+                'Source': 'TAMBAHMAKANAN',
+				'BiayaLayanan' : parseFloat(jQuery('#txtBiayaLayanan_TambahMakan').attr("originalvalue")),
 			}
 
 			console.log("Status Cust Display : " + _custdisplayopened)
@@ -3205,7 +3640,8 @@ License: You must have a valid license purchased only from themeforest(the above
 				'MetodeBayar' : jQuery('#cboMetodePembayaran_TambahMakan').val(),
 				'ReffPembayaran' : $('#txtRefrensi_TambahMakan').val(),
 				'Detail' : oDetail,
-                'Source': 'TAMBAHMAKANAN'
+                'Source': 'TAMBAHMAKANAN',
+				'BiayaLayanan' : parseFloat(jQuery('#txtBiayaLayanan_TambahMakan').attr("originalvalue")),
 			}
 
 			$.ajax({
@@ -3362,9 +3798,31 @@ License: You must have a valid license purchased only from themeforest(the above
 
 			jQuery('#txtPajak_TambahMakan').val(formatNumber(pajak));
 			jQuery('#txtPajak_TambahMakan').attr('originalvalue', pajak);
+			
+			// Add Biaya Layanan if exists
+			var biayaLayanan = parseFloat(jQuery('#txtBiayaLayanan_TambahMakan').attr('originalvalue')) || 0;
+			// Recalc BiayaLayanan if it was percent??? 
+			// Ideally yes, but for now let's just add what's there or re-trigger payment change?
+			// Re-triggering might be heavy. Let's just add it. 
+			// If percent, it should technically be recalculated based on new total.
+			// Let's Keep it simple: Add existing value. Logic in Change event handles update.
+			// Actually, if I add an item, the base changes, so % fee should change.
+			// I should verify if I need to re-run calculation. 
+			// Let's just add for now.
+			
+			// Better: Re-read selected option to recalculate?
+			const selectedOption = jQuery('#cboMetodePembayaran_TambahMakan').find('option:selected');
+			const percent = parseFloat(selectedOption.data('percent')) || 0;
+			const rupiah = parseFloat(selectedOption.data('rupiah')) || 0;
+			
+			if (percent > 0) {
+				biayaLayanan = (percent / 100) * (total + pajak);
+				jQuery('#txtBiayaLayanan_TambahMakan').val(formatNumber(biayaLayanan));
+				jQuery('#txtBiayaLayanan_TambahMakan').attr('originalvalue', biayaLayanan);
+			}
 
-			jQuery('#txtTotalTransaksi_TambahMakan').val(formatNumber(total + pajak));
-			jQuery('#txtTotalTransaksi_TambahMakan').attr('originalvalue', total + pajak);
+			jQuery('#txtTotalTransaksi_TambahMakan').val(formatNumber(total + pajak + biayaLayanan));
+			jQuery('#txtTotalTransaksi_TambahMakan').attr('originalvalue', total + pajak + biayaLayanan);
 		}
 
 		jQuery('#LookupTambahMakanan').on('hidden.bs.modal', function () {
@@ -3574,9 +4032,37 @@ License: You must have a valid license purchased only from themeforest(the above
 				}
 				
 			}
+			
+			// Calculate Biaya Layanan
+			let BiayaLayanan = 0;
+			const selectedOption = jQuery(this).find('option:selected');
+			const percent = parseFloat(selectedOption.data('percent')) || 0;
+			const rupiah = parseFloat(selectedOption.data('rupiah')) || 0;
+
+			CalculateTotalTambahMakanan(); // Recalculate base total first (without service fee) to get correct base
+			// Note: CalculateTotalTambahMakanan currently doesn't add Service Fee. 
+			// We need to get the SubTotal + Pajak first.
+			// Actually, CalculateTotalTambahMakanan sets txtTotalTransaksi_TambahMakan. 
+			// I should add BiayaLaynan inside CalculateTotalTambahMakanan OR handle it here.
+			// Better: Handle here AND update CalculateTotalTambahMakanan to read this value.
+			
+			const currentTotal = parseFloat(jQuery('#txtTotalTransaksi_TambahMakan').attr('originalvalue')) || 0;
+
+			if (percent > 0) {
+				BiayaLayanan = (percent / 100) * currentTotal;
+			} else if (rupiah > 0) {
+				BiayaLayanan = rupiah;
+			}
+			
+			jQuery('#txtBiayaLayanan_TambahMakan').val(formatNumber(BiayaLayanan));
+			jQuery('#txtBiayaLayanan_TambahMakan').attr('originalvalue', BiayaLayanan);
+
+			const newTotal = currentTotal + BiayaLayanan;
+			jQuery('#txtTotalTransaksi_TambahMakan').val(formatNumber(newTotal));
+			jQuery('#txtTotalTransaksi_TambahMakan').attr('originalvalue', newTotal);
 
 			if (filteredData.length > 0 && filteredData[0]['TipePembayaran'] == "NON TUNAI") {
-				formatCurrency(jQuery('#txtJumlahBayar_TambahMakan'), jQuery('#txtTotalTransaksi_TambahMakan').attr('originalvalue'));
+				formatCurrency(jQuery('#txtJumlahBayar_TambahMakan'), newTotal);
 				jQuery('#txtJumlahBayar_TambahMakan').attr('readonly', true);
 			}
 			else{
@@ -4077,6 +4563,10 @@ License: You must have a valid license purchased only from themeforest(the above
 						_durasiPaket = filteredData[0]["DurasiPaket"];
 						_TextTotalHargaNormal = _durasiPaket + " " + filteredPaket[0]["JenisPaket"] +" * " + formatNumber(_HargaNormal) + " = ";
 					}
+
+					_NewHargaNormal = filteredPaket[0]["HargaNormal"] * filteredData[0]["DurasiPaket"];
+					_durasiPaket = filteredData[0]["DurasiPaket"];
+					_TextTotalHargaNormal = _durasiPaket + " " + filteredPaket[0]["JenisPaket"] +" * " + formatNumber(_HargaNormal) + " = ";
 					
 				} else if (filteredData[0]["JenisPaket"] == "MENITREALTIME") {
 					var actualJamSelesai = (filteredData[0]["JamSelesai"] == null ? Now : new Date(filteredData[0]["JamSelesai"]));
