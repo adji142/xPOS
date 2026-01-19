@@ -292,6 +292,10 @@ class TableOrderController extends Controller
                             $value->on('titiklampu.KelompokLampu','=','tkelompoklampu.KodeKelompok')
                             ->on('titiklampu.RecordOwnerID','=','tkelompoklampu.RecordOwnerID');
                         })
+                        ->join('mastercontroller', function ($value)  {
+                            $value->on('titiklampu.ControllerID','=','mastercontroller.id')
+                            ->on('titiklampu.RecordOwnerID','=','mastercontroller.RecordOwnerID');
+                        })
                         ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
                         ->where(DB::raw("COALESCE(payment_summary.NoReff,'POS')"), 'POS')
                         ->get();
@@ -911,6 +915,10 @@ class TableOrderController extends Controller
                         ->on('fakturpenjualanheader.RecordOwnerID','=','fakturpenjualandetail.RecordOwnerID')
                         ->where('fakturpenjualanheader.Status', '=', 'C') // kondisi nilai tetap
                         ->where('fakturpenjualanheader.TotalPembayaran', '>', 0); // kondisi angka tetap
+                    })
+                    ->join('mastercontroller', function ($value)  {
+                        $value->on('titiklampu.ControllerID','=','mastercontroller.id')
+                        ->on('titiklampu.RecordOwnerID','=','mastercontroller.RecordOwnerID');
                     })
                     ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)->get();
         $data['data'] = $titiklampu;
