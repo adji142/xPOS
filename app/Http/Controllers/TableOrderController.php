@@ -140,6 +140,10 @@ class TableOrderController extends Controller
                             $value->on('titiklampu.KelompokLampu','=','tkelompoklampu.KodeKelompok')
                             ->on('titiklampu.RecordOwnerID','=','tkelompoklampu.RecordOwnerID');
                         })
+                        ->join('mastercontroller', function ($value)  {
+                            $value->on('titiklampu.ControllerID','=','mastercontroller.id')
+                            ->on('titiklampu.RecordOwnerID','=','mastercontroller.RecordOwnerID');
+                        })
                         ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
                         ->whereIn(DB::raw("COALESCE(payment_summary.NoReff,'POS')"), ['POS','POS-FNB','POS-TAMBAHJAM'])
                         ->OrderBy('titiklampu.DigitalInput','ASC')
