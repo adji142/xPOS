@@ -25,6 +25,8 @@ use App\Models\PembayaranPenjualanHeader;
 use App\Models\PembayaranPenjualanDetail;
 use App\Models\DocumentNumbering;
 use App\Models\TableOrderFnB;
+use App\Models\TableOrderHeader;
+use App\Models\Paket;
 use App\Models\Rekening;
 use App\Models\AutoPosting;
 use App\Models\SettingAccount;
@@ -404,11 +406,71 @@ class TitikLampuController extends Controller
         $paymentMethods = DB::table('metodepembayaran')
                             ->where('RecordOwnerID', $decodedRoid)
                             ->get();
+
+        // Payment Logic Handling
+        $currentDate = Carbon::now();
+        $activeSession = DB::table('tableorderheader')
+            ->where('tableid', $decodedId)
+            ->where('RecordOwnerID', $decodedRoid)
+            ->where('JamMulai', '<=', $currentDate)
+            ->where('JamSelesai', '>=', $currentDate)
+            ->where('Status', 1)
+            ->where('DocumentStatus', 'O')
+            ->first();
+
+        $canUseQRIS = true;
+        $canUseCash = true;
+
+        if ($activeSession) {
+            $NoTransaksi = $activeSession->NoTransaksi;
+            
+            // Link tableorderheader -> fakturpenjualandetail -> fakturpenjualanheader
+            $faktur = DB::table('fakturpenjualanheader')
+                        ->join('fakturpenjualandetail', 'fakturpenjualanheader.NoTransaksi', '=', 'fakturpenjualandetail.NoTransaksi')
+                        ->where('fakturpenjualandetail.BaseReff', $NoTransaksi)
+                        ->where('fakturpenjualanheader.RecordOwnerID', $decodedRoid)
+                        ->select(
+                            DB::raw('SUM(TotalPembelian) as SumTotalPembelian'),
+                            DB::raw('SUM(TotalPembayaran) as SumTotalPembayaran')
+                        )
+                        ->first();
+
+            if ($faktur && ($faktur->SumTotalPembelian > 0 || $faktur->SumTotalPembayaran > 0)) {
+                if ($faktur->SumTotalPembelian == $faktur->SumTotalPembayaran) {
+                    // Fully paid -> Only QRIS enabled
+                    $canUseCash = false;
+                } else {
+                    // Unpaid or mismatch -> Only Cash enabled
+                    $canUseQRIS = false;
+                }
+            } else {
+                // No invoices yet, but table is active -> Only Cash enabled (typical for start of session)
+                $canUseQRIS = false;
+            }
+        }
         
         $midtransclientkey = "";
         if ($company->MidtransClientKey != null) {
             $midtransclientkey = $company->MidtransClientKey;
         }
+
+        // Fetch Jenis Langganan (Package Types) from Company
+        $jenisLangganan = [];
+        if ($company && $company->JenisLangganan) {
+            $allJenis = json_decode($company->JenisLangganan, true);
+            // Only allow specific package types for E-Menu
+            $allowed = ['MENITREALTIME', 'JAMREALTIME', 'PAYPERUSE'];
+            $jenisLangganan = array_filter($allJenis, function($item) use ($allowed) {
+                return in_array($item['Kode'], $allowed);
+            });
+        }
+
+        // Fetch Available Packages
+        $paket = DB::table('pakettransaksi')
+                    ->where('RecordOwnerID', $decodedRoid)
+                    ->get();
+        
+        // dd($canUseCash, $canUseQRIS, $activeSession);
 
         return view('emenu.order', [
             'titikLampu' => $titikLampu,
@@ -416,7 +478,12 @@ class TitikLampuController extends Controller
             'company' => $company,
             'roid' => $decodedRoid,
             'paymentMethods' => $paymentMethods,
-            'midtransclientkey' => $midtransclientkey
+            'midtransclientkey' => $midtransclientkey,
+            'canUseQRIS' => $canUseQRIS,
+            'canUseCash' => $canUseCash,
+            'jenisLangganan' => $jenisLangganan,
+            'paket' => $paket,
+            'isTableActive' => $activeSession ? true : false
         ]);
     }
 
@@ -451,16 +518,108 @@ class TitikLampuController extends Controller
             $activeSession = DB::table('tableorderheader')
                 ->where('tableid', $tableId)
                 ->where('RecordOwnerID', $roid)
-                ->whereDate('TglTransaksi', $currentDate->toDateString())
+                ->where('JamMulai', '<=', $currentDate)
+                ->where('JamSelesai', '>=', $currentDate)
                 ->where('Status', 1)
                 ->where('DocumentStatus', 'O')
                 ->first();
 
-            if (!$activeSession) {
-                throw new \Exception('Meja tidak aktif. Silakan hubungi Kasir atau Petugas Resto.');
-            }
+            $NoTransaksi = "";
+            if ($activeSession) {
+                $NoTransaksi = $activeSession->NoTransaksi;
+            } else {
+                // Check if booking data provided (activation)
+                if ($request->has('paketid') && $request->input('paketid') != "") {
+                    $numberingData = new DocumentNumbering();
+                    $NoTransaksi = $numberingData->GetNewDoc("POS","tableorderheader","NoTransaksi");
+                    
+                    $paket = Paket::find($request->input('paketid'));
+                    if (!$paket) throw new \Exception('Paket tidak valid');
 
-            $NoTransaksi = $activeSession->NoTransaksi;
+                    $company = DB::table('company')->where('KodePartner', $roid)->first();
+                    $duration = $request->input('bookingDuration', 1);
+                    if ($request->input('JenisPaket') != 'JAMREALTIME') {
+                        $duration = $paket->Durasi;
+                    }
+
+                    $basePrice = $paket->HargaNormal * $duration;
+                    $ppnPercent = $company->PPN ?? 0;
+                    $pajakHiburanPercent = $company->PajakHiburan ?? 0;
+                    
+                    $ppnAmt = ($ppnPercent / 100) * $basePrice;
+                    $pajakHiburanAmt = ($pajakHiburanPercent / 100) * $basePrice;
+                    $totalMeja = $basePrice + $ppnAmt + $pajakHiburanAmt;
+
+                    $kodePelanggan = $request->input('KodePelanggan');
+                    if (empty($kodePelanggan) && !empty($request->input('NoTlp1')) && !empty($request->input('NamaPelanggan'))) {
+                        $pelangganExist = DB::table('pelanggan')
+                                            ->where('NoTlp1', $request->input('NoTlp1'))
+                                            ->where('RecordOwnerID', $roid)
+                                            ->first();
+                        
+                        if ($pelangganExist) {
+                            $kodePelanggan = $pelangganExist->KodePelanggan;
+                        } else {
+                            $numberingPelanggan = new DocumentNumbering();
+                            $kodePelanggan = $numberingPelanggan->GetNewDoc("PLG","pelanggan","KodePelanggan");
+                            
+                            DB::table('pelanggan')->insert([
+                                'KodePelanggan' => $kodePelanggan,
+                                'NamaPelanggan' => $request->input('NamaPelanggan'),
+                                'KodeGrupPelanggan' => '',
+                                'NoTlp1' => $request->input('NoTlp1'),
+                                'isPaidMembership' => 0,
+                                'MaxPlay' => 0,
+                                'MemberPrice' => 0,
+                                'maxTimePerPlay' => 0,
+                                'RecordOwnerID' => $roid,
+                                'CreatedBy' => 'EMENU'
+                            ]);
+                        }
+                    }
+
+                    $model = new TableOrderHeader;
+                    $model->NoTransaksi = $NoTransaksi;
+                    $model->TglTransaksi = $currentDate;
+                    $model->TglPencatatan = $currentDate;
+                    // $model->TglBooking = $currentDate->format('Y-m-d');
+                    $model->RecordOwnerID = $roid;
+                    $model->JenisPaket = $request->input('JenisPaket');
+                    $model->paketid = $request->input('paketid');
+                    $model->tableid = $tableId;
+                    $model->Status = 1;
+                    $model->DocumentStatus = 'O';
+                    $model->KodePelanggan = $kodePelanggan ?? 'CASH';
+                    // $model->CreatedBy = 'EMENU';
+                    $model->JamMulai = $currentDate;
+                    
+                    if ($model->JenisPaket == 'JAM' || $model->JenisPaket == 'PAKETMEMBER' || $model->JenisPaket == 'JAMREALTIME') {
+                         $model->JamSelesai = $model->JamMulai->copy()->addHours($duration)->subMinute();
+                    } elseif ($model->JenisPaket == 'MENIT') {
+                         $model->JamSelesai = $model->JamMulai->copy()->addMinutes($duration)->subMinute();
+                    } else {
+                         $model->JamSelesai = $model->JamMulai->copy()->endOfDay();
+                    }
+                    $model->DurasiPaket = $duration;
+                    // $model->HargaSewa = $basePrice;
+                    $model->TaxTotal = 0;
+                    $model->GrossTotal = 0;
+                    $model->DiscTotal = 0;
+                    $model->NetTotal = 0;
+
+                    $model->KodeSales = "";
+                    $model->save();
+
+                    // Update Table Status to 1 (Active)
+                    DB::table('titiklampu')
+                        ->where('id', $tableId)
+                        ->where('RecordOwnerID', $roid)
+                        ->update(['status' => 1]);
+                    
+                } else {
+                    throw new \Exception('Meja tidak aktif. Silakan pilih paket aktivasi terlebih dahulu.');
+                }
+            }
 
             $subtotalCart = 0;
             foreach ($cart as $id => $item) {
@@ -582,20 +741,121 @@ class TitikLampuController extends Controller
                 throw new \Exception('Company configuration not found');
             }
 
+            $subtotalCart = 0;
+            $tableRentalPrice = 0;
+            $tablePPN = 0;
+            $tablePajakHiburan = 0;
+            $duration = 0;
+
             // 1. Find active session
             $activeSession = DB::table('tableorderheader')
                 ->where('tableid', $tableId)
                 ->where('RecordOwnerID', $roid)
-                ->whereDate('TglTransaksi', $currentDate->toDateString())
+                ->where('JamMulai', '<=', $currentDate)
+                ->where('JamSelesai', '>=', $currentDate)
                 ->where('Status', 1)
                 ->where('DocumentStatus', 'O')
                 ->first();
 
-            if (!$activeSession) {
-                throw new \Exception('Meja tidak aktif. Silakan hubungi Kasir atau Petugas Resto.');
-            }
+            $NoTransaksiTableOrder = "";
+            if ($activeSession) {
+                $NoTransaksiTableOrder = $activeSession->NoTransaksi;
+            } else {
+                // Check if booking data provided (activation)
+                if (isset($jsonData['paketid']) && $jsonData['paketid'] != "") {
+                    $numberingData = new DocumentNumbering();
+                    $NoTransaksiTableOrder = $numberingData->GetNewDoc("POS","tableorderheader","NoTransaksi");
+                    
+                    $paket = Paket::find($jsonData['paketid']);
+                    if (!$paket) throw new \Exception('Paket tidak valid');
 
-            $NoTransaksiTableOrder = $activeSession->NoTransaksi;
+                    $company = DB::table('company')->where('KodePartner', $roid)->first();
+                    $duration = $jsonData['bookingDuration'] ?? 1;
+                    if (($jsonData['JenisPaket'] ?? '') != 'JAMREALTIME') {
+                        $duration = $paket->Durasi;
+                    }
+
+                    $basePrice = $paket->HargaNormal * $duration;
+                    $ppnPercent = $company->PPN ?? 0;
+                    $pajakHiburanPercent = $company->PajakHiburan ?? 0;
+                    
+                    $ppnAmt = ($ppnPercent / 100) * $basePrice;
+                    $pajakHiburanAmt = ($pajakHiburanPercent / 100) * $basePrice;
+                    $totalMeja = $basePrice + $ppnAmt + $pajakHiburanAmt;
+
+                    $kodePelanggan = $jsonData['KodePelanggan'] ?? null;
+                    if (empty($kodePelanggan) && !empty($jsonData['NoTlp1']) && !empty($jsonData['NamaPelanggan'])) {
+                        $pelangganExist = DB::table('pelanggan')
+                                            ->where('NoTlp1', $jsonData['NoTlp1'])
+                                            ->where('RecordOwnerID', $roid)
+                                            ->first();
+                        
+                        if ($pelangganExist) {
+                            $kodePelanggan = $pelangganExist->KodePelanggan;
+                        } else {
+                            $numberingPelanggan = new DocumentNumbering();
+                            $kodePelanggan = $numberingPelanggan->GetNewDoc("PLG","pelanggan","KodePelanggan");
+                            
+                            DB::table('pelanggan')->insert([
+                                'KodePelanggan' => $kodePelanggan,
+                                'NamaPelanggan' => $jsonData['NamaPelanggan'],
+                                'KodeGrupPelanggan' => '',
+                                'NoTlp1' => $jsonData['NoTlp1'],
+                                'isPaidMembership' => 0,
+                                'MaxPlay' => 0,
+                                'MemberPrice' => 0,
+                                'maxTimePerPlay' => 0,
+                                'RecordOwnerID' => $roid
+                            ]);
+                        }
+                    }
+
+                    $model = new TableOrderHeader;
+                    $model->NoTransaksi = $NoTransaksiTableOrder;
+                    $model->TglTransaksi = $currentDate;
+                    $model->TglPencatatan = $currentDate;
+                    // $model->TglBooking = $currentDate->format('Y-m-d');
+                    $model->RecordOwnerID = $roid;
+                    $model->JenisPaket = $jsonData['JenisPaket'] ?? '';
+                    $model->paketid = $jsonData['paketid'];
+                    $model->tableid = $tableId;
+                    $model->Status = 1;
+                    $model->DocumentStatus = 'O';
+                    $model->KodePelanggan = $kodePelanggan ?? 'CASH';
+                    // $model->CreatedBy = 'EMENU';
+                    $model->JamMulai = $currentDate;
+                    
+                    if ($model->JenisPaket == 'JAM' || $model->JenisPaket == 'PAKETMEMBER' || $model->JenisPaket == 'JAMREALTIME') {
+                         $model->JamSelesai = $model->JamMulai->copy()->addHours($duration)->subMinute();
+                    } elseif ($model->JenisPaket == 'MENIT') {
+                         $model->JamSelesai = $model->JamMulai->copy()->addMinutes($duration)->subMinute();
+                    } else {
+                         $model->JamSelesai = $model->JamMulai->copy()->endOfDay();
+                    }
+                    $model->DurasiPaket = $duration;
+                    // $model->HargaSewa = $basePrice;
+                    $model->TaxTotal = 0;
+                    $model->GrossTotal = 0;
+                    $model->DiscTotal = 0;
+                    $model->NetTotal = 0;
+
+                    $model->KodeSales = "";
+                    $model->save();
+
+                    // Store for invoice header
+                    $tableRentalPrice = $basePrice;
+                    $tablePPN = $ppnAmt;
+                    $tablePajakHiburan = $pajakHiburanAmt;
+
+                    // Update Table Status to 1 (Active)
+                    DB::table('titiklampu')
+                        ->where('id', $tableId)
+                        ->where('RecordOwnerID', $roid)
+                        ->update(['status' => 1]);
+                } else {
+                    throw new \Exception('Meja tidak aktif. Silakan pilih paket aktivasi terlebih dahulu.');
+                }
+            }
 
             // 2. Save items to tableorderfnb with status 'C'
             $lastLine = DB::table('tableorderfnb')
@@ -632,45 +892,45 @@ class TitikLampuController extends Controller
                 $modelDetail->save();
             }
 
-            // 3. Create FakturPenjualan (Invoice)
+            // 3. Create Invoices
             $numberingData = new DocumentNumbering();
-            $NoTransaksiFaktur = $numberingData->GetNewDoc("OINV", "fakturpenjualanheader", "NoTransaksi");
+            
+            // --- F&B Invoice ---
+            $NoTransaksiFakturFB = $numberingData->GetNewDoc("OINV", "fakturpenjualanheader", "NoTransaksi");
+            $fakturHeaderFB = new FakturPenjualanHeader();
+            $fakturHeaderFB->Periode = $currentDate->format('Ym');
+            $fakturHeaderFB->Transaksi= 'POS';
+            $fakturHeaderFB->NoTransaksi = $NoTransaksiFakturFB;
+            $fakturHeaderFB->TglTransaksi = $currentDate;
+            $fakturHeaderFB->TglJatuhTempo = $currentDate;
+            $fakturHeaderFB->NoReff = 'EMENU-QRIS';
+            $fakturHeaderFB->KodeSales = $activeSession->KodeSales ?? '';
+            $fakturHeaderFB->KodePelanggan = $activeSession->KodePelanggan ?? 'CASH';
+            $fakturHeaderFB->KodeTermin = $oCompany->TerminBayarPoS ?? '1';
+            $fakturHeaderFB->Termin = 0;
+            $fakturHeaderFB->TotalTransaksi = $subtotalCart;
+            $fakturHeaderFB->Potongan = 0;
+            $fakturHeaderFB->Pajak = 0;
+            $fakturHeaderFB->PajakHiburan = 0;
+            $fakturHeaderFB->BiayaLayanan = $serviceFeeTotal;
+            $fakturHeaderFB->Pembulatan = 0;
+            $fakturHeaderFB->TotalPembelian = $subtotalCart + $serviceFeeTotal;
+            $fakturHeaderFB->TotalRetur = 0;
+            $fakturHeaderFB->TotalPembayaran = $subtotalCart + $serviceFeeTotal;
+            $fakturHeaderFB->RecordOwnerID = $roid;
+            $fakturHeaderFB->Status = 'C'; 
+            $fakturHeaderFB->CreatedBy = 'EMENU';
+            $fakturHeaderFB->UpdatedBy = '';
+            $fakturHeaderFB->Posted = 0;
+            $fakturHeaderFB->save();
 
-            $fakturHeader = new FakturPenjualanHeader();
-            $fakturHeader->Periode = $currentDate->format('Ym');
-            $fakturHeader->Transaksi= 'POS';
-            $fakturHeader->NoTransaksi = $NoTransaksiFaktur;
-            $fakturHeader->TglTransaksi = $currentDate;
-            $fakturHeader->TglJatuhTempo = $currentDate;
-            $fakturHeader->NoReff = 'EMENU-QRIS';
-            $fakturHeader->KodeSales = $activeSession->KodeSales ?? '';
-            $fakturHeader->KodePelanggan = $activeSession->KodePelanggan ?? 'CASH';
-            $fakturHeader->KodeTermin = $oCompany->TerminBayarPoS ?? '1';
-            $fakturHeader->Termin = 0;
-            $fakturHeader->TotalTransaksi = $subtotalCart;
-            $fakturHeader->Potongan = 0;
-            $fakturHeader->Pajak = 0;
-            $fakturHeader->PajakHiburan = 0;
-            $fakturHeader->BiayaLayanan = $serviceFeeTotal;
-            $fakturHeader->Pembulatan = 0;
-            $fakturHeader->TotalPembelian = $total;
-            $fakturHeader->TotalRetur = 0;
-            $fakturHeader->TotalPembayaran = $total;
-            $fakturHeader->RecordOwnerID = $roid;
-            $fakturHeader->Status = 'C'; 
-            $fakturHeader->CreatedBy = 'EMENU';
-            $fakturHeader->UpdatedBy = '';
-            $fakturHeader->Posted = 0;
-            $fakturHeader->save();
-
-            // 4. Create FakturPenjualanDetail
-            $noUrutFaktur = 0;
+            // F&B Invoice Details
+            $noUrutFakturFB = 0;
             foreach ($cart as $id => $item) {
                 $itemMaster = ItemMaster::where('RecordOwnerID', $roid)->where('KodeItem', $id)->first();
-                
                 $fakturDetail = new FakturPenjualanDetail();
-                $fakturDetail->NoTransaksi = $NoTransaksiFaktur;
-                $fakturDetail->NoUrut = $noUrutFaktur++;
+                $fakturDetail->NoTransaksi = $NoTransaksiFakturFB;
+                $fakturDetail->NoUrut = $noUrutFakturFB++;
                 $fakturDetail->BaseReff = $NoTransaksiTableOrder;
                 $fakturDetail->BaseLine = -1;
                 $fakturDetail->KodeItem = $id;
@@ -686,6 +946,57 @@ class TitikLampuController extends Controller
                 $fakturDetail->save();
             }
 
+            // --- Rental Invoice ---
+            $NoTransaksiFakturRental = "";
+            if ($tableRentalPrice > 0) {
+                $NoTransaksiFakturRental = $numberingData->GetNewDoc("OINV", "fakturpenjualanheader", "NoTransaksi");
+                $fakturHeaderRental = new FakturPenjualanHeader();
+                $fakturHeaderRental->Periode = $currentDate->format('Ym');
+                $fakturHeaderRental->Transaksi= 'POS';
+                $fakturHeaderRental->NoTransaksi = $NoTransaksiFakturRental;
+                $fakturHeaderRental->TglTransaksi = $currentDate;
+                $fakturHeaderRental->TglJatuhTempo = $currentDate;
+                $fakturHeaderRental->NoReff = 'POS';
+                $fakturHeaderRental->KodeSales = $activeSession->KodeSales ?? '';
+                $fakturHeaderRental->KodePelanggan = $activeSession->KodePelanggan ?? 'CASH';
+                $fakturHeaderRental->KodeTermin = $oCompany->TerminBayarPoS ?? '1';
+                $fakturHeaderRental->Termin = 0;
+                $fakturHeaderRental->TotalTransaksi = $tableRentalPrice;
+                $fakturHeaderRental->Potongan = 0;
+                $fakturHeaderRental->Pajak = $tablePPN;
+                $fakturHeaderRental->PajakHiburan = $tablePajakHiburan;
+                $fakturHeaderRental->BiayaLayanan = 0;
+                $fakturHeaderRental->Pembulatan = 0;
+                $totalRental = $tableRentalPrice + $tablePPN + $tablePajakHiburan;
+                $fakturHeaderRental->TotalPembelian = $totalRental;
+                $fakturHeaderRental->TotalRetur = 0;
+                $fakturHeaderRental->TotalPembayaran = $totalRental;
+                $fakturHeaderRental->RecordOwnerID = $roid;
+                $fakturHeaderRental->Status = 'C'; 
+                $fakturHeaderRental->CreatedBy = 'EMENU';
+                $fakturHeaderRental->UpdatedBy = '';
+                $fakturHeaderRental->Posted = 0;
+                $fakturHeaderRental->save();
+
+                // Rental Invoice Detail
+                $fakturDetailRental = new FakturPenjualanDetail();
+                $fakturDetailRental->NoTransaksi = $NoTransaksiFakturRental;
+                $fakturDetailRental->NoUrut = 0;
+                $fakturDetailRental->BaseReff = $NoTransaksiTableOrder;
+                $fakturDetailRental->BaseLine = -1;
+                $fakturDetailRental->KodeItem = $oCompany->ItemHiburan;
+                $fakturDetailRental->Qty = $duration;
+                $fakturDetailRental->QtyKonversi = $duration;
+                $fakturDetailRental->Satuan = 'JAM';
+                $fakturDetailRental->Harga = $tableRentalPrice / max(1, $duration);
+                $fakturDetailRental->Discount = 0;
+                $fakturDetailRental->HargaNet = $tableRentalPrice;
+                $fakturDetailRental->LineStatus = 'O';
+                $fakturDetailRental->KodeGudang = $oCompany->GudangPoS ?? 'HO';
+                $fakturDetailRental->RecordOwnerID = $roid;
+                $fakturDetailRental->save();
+            }
+
             // 5. Create PembayaranPenjualan (Payment)
             $NoTransaksiPembayaran = $numberingData->GetNewDoc("INPAY", "pembayaranpenjualanheader", "NoTransaksi");
             
@@ -693,7 +1004,7 @@ class TitikLampuController extends Controller
             $paymentHeader->Periode = $currentDate->format('Ym');
             $paymentHeader->NoTransaksi = $NoTransaksiPembayaran;
             $paymentHeader->TglTransaksi = $currentDate;
-            $paymentHeader->KodePelanggan = $fakturHeader->KodePelanggan;
+            $paymentHeader->KodePelanggan = $fakturHeaderFB->KodePelanggan;
             $paymentHeader->TotalPembelian = $total;
             $paymentHeader->TotalPembayaran = $total;
             $paymentHeader->BiayaLayanan = $serviceFeeTotal;
@@ -706,19 +1017,32 @@ class TitikLampuController extends Controller
             $paymentHeader->Posted = 0;
             $paymentHeader->save();
 
-            $paymentDetail = new PembayaranPenjualanDetail();
-            $paymentDetail->NoTransaksi = $NoTransaksiPembayaran;
-            $paymentDetail->NoUrut = 0;
-            $paymentDetail->BaseReff = $NoTransaksiFaktur;
-            $paymentDetail->TotalPembayaran = $total;
-            $paymentDetail->KodeMetodePembayaran = $paymentMethodId;
-            $paymentDetail->RecordOwnerID = $roid;
-            $paymentDetail->save();
+            // Link F&B Invoice to Payment
+            $paymentDetailFB = new PembayaranPenjualanDetail();
+            $paymentDetailFB->NoTransaksi = $NoTransaksiPembayaran;
+            $paymentDetailFB->NoUrut = 0;
+            $paymentDetailFB->BaseReff = $NoTransaksiFakturFB;
+            $paymentDetailFB->TotalPembayaran = $subtotalCart + $serviceFeeTotal;
+            $paymentDetailFB->KodeMetodePembayaran = $paymentMethodId;
+            $paymentDetailFB->RecordOwnerID = $roid;
+            $paymentDetailFB->save();
+
+            // Link Rental Invoice to Payment if existing
+            if ($NoTransaksiFakturRental != "") {
+                $paymentDetailRental = new PembayaranPenjualanDetail();
+                $paymentDetailRental->NoTransaksi = $NoTransaksiPembayaran;
+                $paymentDetailRental->NoUrut = 1;
+                $paymentDetailRental->BaseReff = $NoTransaksiFakturRental;
+                $paymentDetailRental->TotalPembayaran = $tableRentalPrice + $tablePPN + $tablePajakHiburan;
+                $paymentDetailRental->KodeMetodePembayaran = $paymentMethodId;
+                $paymentDetailRental->RecordOwnerID = $roid;
+                $paymentDetailRental->save();
+            }
 
             DB::commit();
             $data['success'] = true;
             $data['message'] = 'Order and payment processed successfully!';
-            $data['NoTransaksi'] = $NoTransaksiFaktur;
+            $data['NoTransaksi'] = "";
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('EMenu QRIS Error: ' . $e->getMessage());
@@ -726,5 +1050,42 @@ class TitikLampuController extends Controller
         }
 
         return response()->json($data);
+    }
+
+    public function downloadZipQR()
+    {
+        try {
+            $titiklampu = TitikLampu::where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+
+            if ($titiklampu->isEmpty()) {
+                alert()->error('Error', 'Tidak ada data Titik Lampu untuk di download.');
+                return redirect()->back();
+            }
+
+            $zipFileName = 'QR_Codes_' . Auth::user()->RecordOwnerID . '_' . date('YmdHis') . '.zip';
+            $zipPath = storage_path('app/' . $zipFileName);
+
+            $zip = new ZipArchive;
+            if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
+                foreach ($titiklampu as $v) {
+                    $url = url('/emenu/' . base64_encode($v->id) . '/' . base64_encode($v->RecordOwnerID));
+                    $qrCode = QrCode::size(500)->format('svg')->generate($url);
+                    
+                    // Clean filename to avoid issues
+                    $fileName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $v->NamaTitikLampu) . '.svg';
+                    $zip->addFromString($fileName, $qrCode);
+                }
+                $zip->close();
+            } else {
+                throw new \Exception('Gagal membuat file ZIP.');
+            }
+
+            return response()->download($zipPath)->deleteFileAfterSend(true);
+
+        } catch (\Exception $e) {
+            Log::error('Download QR ZIP Error: ' . $e->getMessage());
+            alert()->error('Error', 'Gagal mendownload QR: ' . $e->getMessage());
+            return redirect()->back();
+        }
     }
 }

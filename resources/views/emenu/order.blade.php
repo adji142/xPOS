@@ -345,21 +345,76 @@
                         </div>
                     </div>
 
+                    @if(!$isTableActive)
+                    <div class="bg-white p-3 border-top">
+                        <small class="font-weight-bold text-muted text-uppercase mb-3 d-block">Aktivasi Meja / Paket</small>
+                        <div class="form-group mb-2">
+                            <label class="small font-weight-bold text-muted">Jenis Paket</label>
+                            <select class="form-control" id="JenisPaket" onchange="updatePaketDropdown()" style="border-radius: 8px;">
+                                <option value="">-- Pilih Jenis Paket --</option>
+                                @foreach($jenisLangganan as $jl)
+                                <option value="{{ $jl['Kode'] }}">{{ $jl['Nama'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label class="small font-weight-bold text-muted">Paket</label>
+                            <select class="form-control" id="paketid" style="border-radius: 8px;" onchange="updateTableBookingSummary()">
+                                <option value="">-- Pilih Paket --</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3 d-none" id="durationContainer">
+                            <label class="small font-weight-bold text-muted">Jumlah Durasi (Jam)</label>
+                            <input type="number" class="form-control" id="bookingDuration" value="1" min="1" onchange="updateTableBookingSummary()" onkeyup="updateTableBookingSummary()" style="border-radius: 8px;">
+                        </div>
+
+                        <div class="form-group mb-2">
+                            <label class="small font-weight-bold text-muted">No. Telepon</label>
+                            <input type="text" class="form-control" id="txtNoTlp_EMenu" placeholder="Masukkan nomor telepon..." style="border-radius: 8px;" autocomplete="off">
+                            <input type="hidden" id="txtKodePelanggan_EMenu">
+                        </div>
+                        <div class="form-group mb-2">
+                            <label class="small font-weight-bold text-muted">Nama Pelanggan</label>
+                            <input type="text" class="form-control" id="txtNamaPelanggan_EMenu" placeholder="Nama Pelanggan" style="border-radius: 8px;">
+                        </div>
+
+                        <!-- Table Booking Cost Summary -->
+                        <div id="tableBookingSummary" class="bg-light p-2 rounded d-none" style="border: 1px dashed #dee2e6;">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span class="text-muted">Harga Paket</span>
+                                <span id="summaryTablePrice">Rp 0</span>
+                            </div>
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span class="text-muted">PPN ({{ $company->PPN }}%)</span>
+                                <span id="summaryTablePPN">Rp 0</span>
+                            </div>
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span class="text-muted">Pajak Hiburan ({{ $company->PajakHiburan }}%)</span>
+                                <span id="summaryTablePajakHiburan">Rp 0</span>
+                            </div>
+                            <div class="d-flex justify-content-between font-weight-bold pt-1 border-top mt-1">
+                                <span>Subtotal Meja</span>
+                                <span id="summaryTableSubtotal" class="text-primary">Rp 0</span>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
                     <div class="bg-light p-3">
                         <small class="font-weight-bold text-muted text-uppercase mb-3 d-block">Metode Pembayaran</small>
                         
-                        <div class="payment-option active" onclick="selectPayment('CASH', this, null)">
+                        <div class="payment-option {{ $canUseCash ? 'active' : 'disabled' }}" onclick="selectPayment('CASH', this, null, {{ $canUseCash ? 'false' : 'true' }})">
                             <i class="fas fa-money-bill-wave text-success"></i>
                             <div class="payment-info">
                                 <span class="payment-title">Bayar di Kasir</span>
                                 <span class="payment-desc">Selesaikan pembayaran saat selesai makan</span>
                             </div>
-                            <i class="fas fa-check-circle text-success check-icon"></i>
+                            <i class="fas fa-check-circle text-success check-icon {{ $canUseCash ? '' : 'd-none' }}"></i>
                         </div>
 
                         @foreach($paymentMethods as $pm)
                             @if($pm->MetodeVerifikasi == 'AUTO')
-                            <div class="payment-option" onclick="selectPayment('{{ $pm->id }}', this, {{ json_encode($pm) }})">
+                            <div class="payment-option {{ $canUseQRIS ? '' : 'disabled' }}" onclick="selectPayment('{{ $pm->id }}', this, {{ json_encode($pm) }}, {{ $canUseQRIS ? 'false' : 'true' }})">
                                 <i class="fas fa-qrcode text-primary"></i>
                                 <div class="payment-info">
                                     <span class="payment-title">{{ $pm->NamaMetodePembayaran }}</span>
@@ -395,6 +450,90 @@
         let selectedPayment = 'CASH';
         let selectedPaymentData = null;
 
+        @if(!$canUseCash && $canUseQRIS)
+            @php
+                $firstQRIS = collect($paymentMethods)->where('MetodeVerifikasi', 'AUTO')->first();
+            @endphp
+            @if($firstQRIS)
+                selectedPayment = '{{ $firstQRIS->id }}';
+                selectedPaymentData = {!! json_encode($firstQRIS) !!};
+                
+                $(document).ready(function() {
+                    const firstQRISBase = document.querySelector(`.payment-option[onclick*="'{{ $firstQRIS->id }}'"]`);
+                    if (firstQRISBase) {
+                        firstQRISBase.classList.add('active');
+                        if(firstQRISBase.querySelector('.check-icon')) firstQRISBase.querySelector('.check-icon').classList.remove('d-none');
+                    }
+                });
+            @endif
+        @endif
+
+        const allPackages = {!! json_encode($paket) !!};
+        const companyPPN = {{ $company->PPN ?? 0 }};
+        const companyPajakHiburan = {{ $company->PajakHiburan ?? 0 }};
+
+        function updatePaketDropdown() {
+            const jenis = $('#JenisPaket').val();
+            const paketDropdown = $('#paketid');
+            paketDropdown.empty();
+            paketDropdown.append('<option value="">-- Pilih Paket --</option>');
+
+            if (jenis === 'JAMREALTIME') {
+                $('#durationContainer').removeClass('d-none');
+            } else {
+                $('#durationContainer').addClass('d-none');
+                $('#bookingDuration').val(1);
+            }
+
+            if (jenis) {
+                const filtered = allPackages.filter(p => p.JenisPaket === jenis);
+                filtered.forEach(p => {
+                    // Using HargaNormal from pakettransaksi table
+                    const price = p.HargaNormal ? p.HargaNormal.toLocaleString('id-ID') : '0';
+                    paketDropdown.append(`<option value="${p.id}">${p.NamaPaket} (Rp ${price})</option>`);
+                });
+            }
+            updateTableBookingSummary();
+        }
+
+        function updateTableBookingSummary() {
+            const paketId = $('#paketid').val();
+            const duration = parseFloat($('#bookingDuration').val()) || 1;
+            const summaryDiv = $('#tableBookingSummary');
+
+            if (!paketId) {
+                summaryDiv.addClass('d-none');
+                updateTotal();
+                return;
+            }
+
+            const paket = allPackages.find(p => p.id == paketId);
+            if (!paket) {
+                summaryDiv.addClass('d-none');
+                updateTotal();
+                return;
+            }
+
+            summaryDiv.removeClass('d-none');
+
+            let basePrice = parseFloat(paket.HargaNormal) || 0;
+            // If JAMREALTIME, multiply by duration
+            if ($('#JenisPaket').val() === 'JAMREALTIME') {
+                basePrice = basePrice * duration;
+            }
+
+            const ppn = (companyPPN / 100) * basePrice;
+            const pajakHiburan = (companyPajakHiburan / 100) * basePrice;
+            const subtotalMeja = basePrice + ppn + pajakHiburan;
+
+            $('#summaryTablePrice').text('Rp ' + basePrice.toLocaleString('id-ID'));
+            $('#summaryTablePPN').text('Rp ' + ppn.toLocaleString('id-ID'));
+            $('#summaryTablePajakHiburan').text('Rp ' + pajakHiburan.toLocaleString('id-ID'));
+            $('#summaryTableSubtotal').text('Rp ' + subtotalMeja.toLocaleString('id-ID'));
+
+            updateTotal();
+        }
+
         // Initialize cart from localStorage
         $(document).ready(function() {
             for (const id in cart) {
@@ -405,6 +544,33 @@
                 }
             }
             updateTotal();
+
+            // Phone Number Lookup Logic
+            $('#txtNoTlp_EMenu').on('blur', function() {
+                const noTlp = $(this).val();
+                if (noTlp == "") return;
+
+                $.ajax({
+                    url: "{{ route('pelanggan-viewJson') }}",
+                    type: 'post',
+                    data: {
+                        "KodePelanggan" : "",
+                        "GrupPelanggan" : "",
+                        "NoTlp1" : noTlp,
+                        "_token": "{{ csrf_token() }}"
+                    },
+                    success: function(response) {
+                        if (response.success && response.data.length > 0) {
+                            const p = response.data[0];
+                            $('#txtNamaPelanggan_EMenu').val(p.NamaPelanggan).attr('readonly', true);
+                            $('#txtKodePelanggan_EMenu').val(p.KodePelanggan);
+                        } else {
+                            $('#txtNamaPelanggan_EMenu').val('').attr('readonly', false);
+                            $('#txtKodePelanggan_EMenu').val('');
+                        }
+                    }
+                });
+            });
         });
 
         function filterCategory(catSlug, btn) {
@@ -476,7 +642,14 @@
                 }
             }
 
-            const grandTotal = subtotal + serviceFee;
+            // Calculate Table Subtotal
+            let tableSubtotal = 0;
+            if (!$('#tableBookingSummary').hasClass('d-none')) {
+                const subtotalText = $('#summaryTableSubtotal').text().replace('Rp ', '').replace(/\./g, '');
+                tableSubtotal = parseFloat(subtotalText) || 0;
+            }
+
+            const grandTotal = subtotal + serviceFee + tableSubtotal;
 
             document.querySelector('.total-qty').innerText = totalQty + ' Items';
             document.querySelector('.total-price').innerText = 'Rp ' + grandTotal.toLocaleString('id-ID');
@@ -497,8 +670,8 @@
             }
         }
 
-        function selectPayment(method, element, data) {
-            if (element.classList.contains('disabled')) return;
+        function selectPayment(method, element, data, isDisabled) {
+            if (isDisabled || element.classList.contains('disabled')) return;
             
             selectedPayment = method;
             selectedPaymentData = data;
@@ -530,6 +703,15 @@
         function finishOrder() {
             const btn = document.getElementById('btnSubmitOrder');
             
+            @if(!$isTableActive)
+            const jenisPaket = $('#JenisPaket').val();
+            const paketid = $('#paketid').val();
+            if (!jenisPaket || !paketid) {
+                Swal.fire('Peringatan', 'Silakan pilih Jenis Paket dan Paket terlebih dahulu.', 'warning');
+                return;
+            }
+            @endif
+
             let subtotal = 0;
             for (const key in cart) {
                 subtotal += cart[key].qty * cart[key].price;
@@ -547,7 +729,13 @@
                 }
             }
 
-            const grandTotal = subtotal + serviceFee;
+            let tableSubtotal = 0;
+            if (!$('#tableBookingSummary').hasClass('d-none')) {
+                const subtotalText = $('#summaryTableSubtotal').text().replace('Rp ', '').replace(/\./g, '');
+                tableSubtotal = parseFloat(subtotalText) || 0;
+            }
+
+            const grandTotal = subtotal + serviceFee + tableSubtotal;
 
             if (selectedPayment === 'CASH') {
                 submitOrderToBackend(null);
@@ -636,7 +824,13 @@
                 else if (rupiah > 0) serviceFee = rupiah;
             }
             
-            const grandTotal = subtotal + serviceFee;
+            let tableSubtotal = 0;
+            if (!$('#tableBookingSummary').hasClass('d-none')) {
+                const subtotalText = $('#summaryTableSubtotal').text().replace('Rp ', '').replace(/\./g, '');
+                tableSubtotal = parseFloat(subtotalText) || 0;
+            }
+
+            const grandTotal = subtotal + serviceFee + tableSubtotal;
 
             btn.disabled = true;
             btn.innerText = 'MENYIMPAN PESANAN...';
@@ -654,13 +848,21 @@
                     payment_method: selectedPaymentData.id,
                     total: grandTotal,
                     service_fee: serviceFee,
-                    reff_pembayaran: reffPembayaran
+                    reff_pembayaran: reffPembayaran,
+                    JenisPaket: $('#JenisPaket').val(),
+                    paketid: $('#paketid').val(),
+                    bookingDuration: $('#bookingDuration').val(),
+                    NoTlp1: $('#txtNoTlp_EMenu').val(),
+                    NamaPelanggan: $('#txtNamaPelanggan_EMenu').val(),
+                    KodePelanggan: $('#txtKodePelanggan_EMenu').val()
                 })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    localStorage.removeItem('cart_' + tableId);
+                    localStorage.removeItem('emenu_cart_' + tableId);
+                    cart = {};
+                    updateTotal();
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil!',
@@ -705,7 +907,13 @@
                 }
             }
 
-            const grandTotal = subtotal + serviceFee;
+            let tableSubtotal = 0;
+            if (!$('#tableBookingSummary').hasClass('d-none')) {
+                const subtotalText = $('#summaryTableSubtotal').text().replace('Rp ', '').replace(/\./g, '');
+                tableSubtotal = parseFloat(subtotalText) || 0;
+            }
+
+            const grandTotal = subtotal + serviceFee + tableSubtotal;
 
             fetch('{{ route("emenu.store") }}', {
                 method: 'POST',
@@ -720,13 +928,21 @@
                     payment_method: selectedPayment,
                     reff_pembayaran: reffPembayaran,
                     total: grandTotal,
-                    service_fee: serviceFee
+                    service_fee: serviceFee,
+                    JenisPaket: $('#JenisPaket').val(),
+                    paketid: $('#paketid').val(),
+                    bookingDuration: $('#bookingDuration').val(),
+                    NoTlp1: $('#txtNoTlp_EMenu').val(),
+                    NamaPelanggan: $('#txtNamaPelanggan_EMenu').val(),
+                    KodePelanggan: $('#txtKodePelanggan_EMenu').val()
                 })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     localStorage.removeItem('emenu_cart_{{ $titikLampu->id }}');
+                    cart = {};
+                    updateTotal();
                     Swal.fire({
                         icon: 'success',
                         title: 'Pesanan Berhasil!',

@@ -481,7 +481,7 @@
                                     <div class="checkbox-inline">
                                         <label class="checkbox checkbox-success">
                                             <input type="checkbox" name="JenisLangganan[]" value="MENITREALTIME"/>
-                                            <span>Paket Menit Realtime</span>
+                                            <span>Paket Menit COD</span>
                                             <br>
                                             <small>Paket Untuk bermain dalam hitungan menit dengan billing yang di hitung berdasarkan lama user bermain</small>
                                         </label>
@@ -491,7 +491,7 @@
                                     <div class="checkbox-inline">
                                         <label class="checkbox checkbox-success">
                                             <input type="checkbox" name="JenisLangganan[]" value="JAMREALTIME"/>
-                                            <span>Paket Jam Realtime</span>
+                                            <span>Paket Jam COD</span>
                                             <br>
                                             <small>Paket Untuk bermain secara langsung dengan kelipatan jam</small>
                                         </label>
@@ -501,7 +501,7 @@
                                     <div class="checkbox-inline">
                                         <label class="checkbox checkbox-success">
                                             <input type="checkbox" name="JenisLangganan[]" value="PAYPERUSE"/>
-                                            <span>Paket Pay Per Use</span>
+                                            <span>Paket Open Table</span>
                                             <br>
                                             <small>Paket Untuk bermain dengan mengabaikan waktu, diganti dengan paket permainan yang di ambil</small>
                                         </label>

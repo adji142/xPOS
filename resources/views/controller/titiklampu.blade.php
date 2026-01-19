@@ -27,9 +27,10 @@
 									<h3 class="card-label mb-0 font-weight-bold text-body">Titik Lampu 
 									</h3>
 								</div>
-							    <div class="icons d-flex">
+								    <div class="icons d-flex">
 									<a href="{{ url('titiklampu/form/-') }}" class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1">Tambah Data</a>
 									<a href="{{ url('titiklampu/generate-qrcode') }}" target="_blank" class="btn btn-outline-success rounded-pill font-weight-bold me-1 mb-1">Download QRCode</a>
+									<a href="{{ route('titiklampu-download-qr-zip') }}" class="btn btn-outline-info rounded-pill font-weight-bold me-1 mb-1">Download Per QR</a>
 								</div>
 						
 						</div>

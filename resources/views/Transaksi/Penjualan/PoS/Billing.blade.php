@@ -108,10 +108,25 @@ License: You must have a valid license purchased only from themeforest(the above
 
         li.timer-colon {
             background: none;
-            color: rgb(7, 7, 7);
-            width: auto; /* Adjust width for colons */
-            font-size: 3.2rem; /* Slightly larger than digits */
+            font-size: 2rem;
+            color: #00ff6a;
+            display: flex;
+            align-items: center;
         }
+
+		@media (min-width: 1200px) {
+			.col-xl-custom-5 {
+				flex: 0 0 20%;
+				max-width: 20%;
+			}
+		}
+
+		@media (min-width: 992px) and (max-width: 1199.98px) {
+			.col-lg-custom-5 {
+				flex: 0 0 20%;
+				max-width: 20%;
+			}
+		}
 		.disabled-link {
 			pointer-events: none; /* Disable clicks */
 			color: gray; /* Optional: visually indicate it is disabled */
@@ -128,6 +143,21 @@ License: You must have a valid license purchased only from themeforest(the above
 		.time-slot-card:hover {
 			transform: translateY(-2px);
 			box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+		}
+
+		.card-badge {
+			position: absolute;
+			top: -10px;
+			right: -10px;
+			background-color: #28a745;
+			color: white;
+			padding: 5px 15px;
+			border-radius: 20px;
+			font-size: 0.85rem;
+			font-weight: bold;
+			z-index: 10;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+			text-transform: uppercase;
 		}
 		.time-slot-card.selected {
 			border-color: #3699FF;
@@ -282,8 +312,11 @@ License: You must have a valid license purchased only from themeforest(the above
 											@if (count($titiklampu) > 0)
 												@foreach ($titiklampu as $item)
 													@if ($item->KelompokLampu == $tl->KodeKelompok)
-														<div class="col-xl-3 col-lg-8 col-md-8">
+														<div class="col-xl-custom-5 col-lg-custom-5 col-md-8">
 															<div class="card card-custom gutter-b bg-white border-0 table-contentpos">
+																@if ($item->TotalPembayaran > 0)
+																	<div class="card-badge">PAID</div>
+																@endif
 																<div class="card-header align-items-center  border-0">
 																	<div class="card-title mb-0">
 																		<h3 class="card-label text-body font-weight-bold mb-0">{{ $item->NamaTitikLampu }}</h3>
@@ -377,77 +410,71 @@ License: You must have a valid license purchased only from themeforest(the above
 																	
 																	<center>
 																		@if ($item->Status == -1)
-																			<div class ="row">
-																				<div class="col-xl-4 col-lg-12 col-md-12 ">
-																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
+																			<div class ="row mb-2">
+																				<div class="col-4 px-1">
+																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket btPilihPaket_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="PILIH LAYANAN"><i class="fas fa-play"></i></button>
 																				</div>
-																				<div class="col-xl-4 col-lg-12 col-md-12">
-																					<button disabled class="btn btn-danger text-white font-weight-bold w-100 py-3 item-dropdown btCheckOut_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">CHECKOUT</button>
+																				<div class="col-4 px-1">
+																					<button disabled class="btn btn-danger text-white font-weight-bold w-100 py-3 item-dropdown btCheckOut btCheckOut_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="CHECKOUT"><i class="fas fa-sign-out-alt"></i></button>
 																				</div>
-																				<div class="col-xl-4 col-lg-12 col-md-12">
-																					<button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btDetail_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">DETAIL</button>
+																				<div class="col-4 px-1">
+																					<button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btDetail btDetail_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="DETAIL"><i class="fas fa-info-circle"></i></button>
 																				</div>
 																			</div>
-																			<br>
 																			<div class="row">
-																				<div class="col-xl-12 col-lg-12 col-md-12">
-																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH ITEM</button>
+																				<div class="col-6 px-1">
+																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan btTambahMakanan_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="TAMBAH ITEM"><i class="fas fa-utensils"></i></button>
+																				</div>
+																				<div class="col-6 px-1">
+																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam btTambahJam_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="TAMBAH WAKTU"><i class="fas fa-clock"></i></button>
 																				</div>
 																			</div>
 																		@endif
 
 																		@if ($item->Status == 0)
-																			<div class ="row">
-																				<div class="col-xl-4 col-lg-12 col-md-12 ">
-																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
+																			<div class ="row mb-2">
+																				<div class="col-4 px-1">
+																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket btPilihPaket_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="PILIH LAYANAN"><i class="fas fa-play"></i></button>
 																				</div>
-																				<div class="col-xl-4 col-lg-12 col-md-12">
-																					<button disabled class="btn btn-danger text-white font-weight-bold w-100 py-3 item-dropdown btCheckOut_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">CHECKOUT</button>
+																				<div class="col-4 px-1">
+																					<button disabled class="btn btn-danger text-white font-weight-bold w-100 py-3 item-dropdown btCheckOut btCheckOut_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="CHECKOUT"><i class="fas fa-sign-out-alt"></i></button>
 																				</div>
-																				<div class="col-xl-4 col-lg-12 col-md-12">
-																					<button disabled class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btDetail_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">DETAIL</button>
+																				<div class="col-4 px-1">
+																					<button disabled class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btDetail btDetail_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="DETAIL"><i class="fas fa-info-circle"></i></button>
 																				</div>
 																			</div>
-																			<br>
 																			<div class="row">
-																				<div class="col-xl-12 col-lg-12 col-md-12">
-																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH ITEM</button>
+																				<div class="col-6 px-1">
+																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan btTambahMakanan_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="TAMBAH ITEM"><i class="fas fa-utensils"></i></button>
+																				</div>
+																				<div class="col-6 px-1">
+																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam btTambahJam_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="TAMBAH WAKTU"><i class="fas fa-clock"></i></button>
 																				</div>
 																			</div>
 																		@endif
 
 																		@if ($item->Status == 1 || $item->Status == 99)
-																			<div class ="row">
-																				<div class="col-xl-4 col-lg-12 col-md-12 ">
-																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
+																			<div class ="row mb-2">
+																				<div class="col-4 px-1">
+																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket btPilihPaket_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="PILIH LAYANAN"><i class="fas fa-play"></i></button>
 																				</div>
-																				<div class="col-xl-4 col-lg-12 col-md-12">
-																					<button class="btn btn-danger text-white font-weight-bold w-100 py-3 item-dropdown btCheckOut_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">CHECKOUT</button>
+																				<div class="col-4 px-1">
+																					<button class="btn btn-danger text-white font-weight-bold w-100 py-3 item-dropdown btCheckOut btCheckOut_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="CHECKOUT"><i class="fas fa-sign-out-alt"></i></button>
 																				</div>
-																				<div class="col-xl-4 col-lg-12 col-md-12">
-																					<button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btDetail_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">DETAIL</button>
-																				</div>
-																			</div>
-																			<br>
-																			<div class="row">
-																				<div class="col-xl-12 col-lg-12 col-md-12">
-																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH ITEM</button>
+																				<div class="col-4 px-1">
+																					<button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btDetail btDetail_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="DETAIL"><i class="fas fa-info-circle"></i></button>
 																				</div>
 																			</div>
-																		@endif
-
-																		@if ($item->NoTransaksi != "" && ($item->JenisPaket == "JAM" || $item->JenisPaket == "JAMREALTIME" || $item->JenisPaket == "DAILY" || $item->JenisPaket == "MONTHLY" || $item->JenisPaket == "YEARLY"))
-																			<br>
 																			<div class="row">
-																				<div class="col-xl-12 col-lg-12 col-md-12">
-																					<button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH WAKTU</button>
+																				<div class="col-6 px-1">
+																					<button class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahMakanan btTambahMakanan_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="TAMBAH ITEM"><i class="fas fa-utensils"></i></button>
 																				</div>
-																			</div>
-																		@else
-																			<br>
-																			<div class="row">
-																				<div class="col-xl-12 col-lg-12 col-md-12">
-																					<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH WAKTU</button>
+																				<div class="col-6 px-1">
+																					@if ($item->NoTransaksi != "" && ($item->JenisPaket == "JAM" || $item->JenisPaket == "JAMREALTIME" || $item->JenisPaket == "DAILY" || $item->JenisPaket == "MONTHLY" || $item->JenisPaket == "YEARLY"))
+																						<button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam btTambahJam_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="TAMBAH WAKTU"><i class="fas fa-clock"></i></button>
+																					@else
+																						<button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam btTambahJam_{{ $item->id }}" data-id="{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}" data-toggle="tooltip" title="TAMBAH WAKTU"><i class="fas fa-clock"></i></button>
+																					@endif
 																				</div>
 																			</div>
 																		@endif
@@ -505,6 +532,13 @@ License: You must have a valid license purchased only from themeforest(the above
 													</h3>
 												</div>
 	
+												<div class="col-md-12">
+													<label class="text-body">Tanggal Transaksi</label>
+													<fieldset class="form-group mb-12">
+														<input type="date" class="form-control" id="TglTransaksi" name="TglTransaksi">
+													</fieldset>
+												</div>
+
 												<div class="col-md-6">
 													<label  class="text-body">Jenis Paket</label>
 													<fieldset class="form-group mb-12">
@@ -1540,6 +1574,8 @@ License: You must have a valid license purchased only from themeforest(the above
 	var tglBerlangganan;
 
     jQuery(function () {
+		// Initialize Bootstrap tooltips
+		jQuery('[data-toggle="tooltip"]').tooltip();
 
 		let idleTime = 0; 
 		let maxIdle = 60 * 2; 
@@ -1562,6 +1598,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		var _dataPaket = [];
 
 		var _isFromBooking = false;
+		var _isFromDetailLookup = false;
 		let displayWindow = null;
 
 		function closedWindow(){
@@ -1718,7 +1755,31 @@ License: You must have a valid license purchased only from themeforest(the above
 		});
 
 		jQuery('#webViewModal').on('hidden.bs.modal', function () {
-			location.reload(); // reload seluruh halaman
+			if (_isFromDetailLookup) {
+				Swal.fire({
+					title: "Pembayaran Berhasil",
+					text: "Mau Sekalian checkout?",
+					icon: "question",
+					showCancelButton: true,
+					confirmButtonColor: "#3085d6",
+					cancelButtonColor: "#d33",
+					confirmButtonText: "Ya",
+					cancelButtonText: "Tidak (Refresh Page)"
+				}).then((result) => {
+					if (result.isConfirmed) {
+						// Cari NoTransaksi & JenisPaket
+						const NoTransaksi = jQuery('#txtNoTransaksi_Detail').val();
+						const filteredData = _billing.filter(item => item.NoTransaksi == NoTransaksi);
+						const JenisPaket = (filteredData.length > 0) ? filteredData[0]["JenisPaket"] : "";
+						
+						fnCheckOut(NoTransaksi, JenisPaket);
+					} else {
+						location.reload();
+					}
+				});
+			} else {
+				location.reload();
+			}
 		});
 		jQuery('#btnEmail').on('click', function () {
 			const btn = $(this);
@@ -1839,11 +1900,12 @@ License: You must have a valid license purchased only from themeforest(the above
 
 		jQuery(document).on('click', '.item-dropdown', function(e) {
 			e.preventDefault();
-			const clickedClass = $(this).attr('class');
-			const itemId = clickedClass.match(/_(\d+)/)[1];
-			var NamaTitikLampu = $(this).data('namatitiklampu');
-			var NoTransaksi = $(this).data('notransaksi');
-			var JenisPaket = $(this).data('jenispaket');
+			const $this = $(this);
+			const clickedClass = $this.attr('class');
+			const itemId = $this.data('id') || clickedClass.match(/_(\d+)/)[1];
+			var NamaTitikLampu = $this.data('namatitiklampu');
+			var NoTransaksi = $this.data('notransaksi');
+			var JenisPaket = $this.data('jenispaket');
 			
 			if (clickedClass.includes('btPilihPaket')) {
 				// console.log(`Pilih Paket clicked for item ID: ${itemId}`);
@@ -1851,9 +1913,16 @@ License: You must have a valid license purchased only from themeforest(the above
 				// tableid
 				jQuery('#lblNamaTitikLampu').text(NamaTitikLampu);
 				jQuery('#tableid').val(itemId).change();
+
+				var now = new Date();
+				var localDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+				jQuery('#TglTransaksi').val(localDate);
+				jQuery('#TglTransaksi').attr('min', localDate);
+
 				jQuery('#LookupPilihPaket').modal({backdrop: 'static', keyboard: false})
 		    	jQuery('#LookupPilihPaket').modal('show');
 
+				_isFromDetailLookup = false;
 			} else if (clickedClass.includes('btCheckOut')) {
 				// console.log(`Check Out clicked for item ID: ${itemId}`);
 				Swal.fire({
@@ -1874,6 +1943,8 @@ License: You must have a valid license purchased only from themeforest(the above
 						location.reload();
 					}
 				});
+
+				_isFromDetailLookup = false;
 			} else if (clickedClass.includes('btTambahMakanan')) {
 				jQuery('#LookupTambahMakanan').modal({backdrop: 'static', keyboard: false})
 		    	jQuery('#LookupTambahMakanan').modal('show');
@@ -1918,6 +1989,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 				jQuery('#txtNoTransaksi_TambahMakan').val(NoTransaksi);
 
+				_isFromDetailLookup = false;
 				console.log(`Tambah Makanan clicked for item ID: ${itemId}`);
 			} else if (clickedClass.includes('btDetail')) {
 				// LookupDetailOrder
@@ -1986,6 +2058,7 @@ License: You must have a valid license purchased only from themeforest(the above
 					jQuery("#sectionPayment").hide();
 				}
 
+				_isFromDetailLookup = true;
 				jQuery('#LookupDetailOrder').modal({backdrop: 'static', keyboard: false})
 		    	jQuery('#LookupDetailOrder').modal('show');
 				console.log(`Detail clicked for item ID: ${itemId}`);
@@ -2047,6 +2120,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 				calculateTotalTambahJam();
 				
+				_isFromDetailLookup = false;
 				jQuery('#LookupTambahDurasiPaket').modal({backdrop: 'static', keyboard: false})
 		    	jQuery('#LookupTambahDurasiPaket').modal('show');
 			}
@@ -2336,19 +2410,23 @@ License: You must have a valid license purchased only from themeforest(the above
 				jQuery('#divProrataInfo').hide(); // Hide if previously used
 				jQuery('#divMonthlyPacket').show(); // Show new section
 
-				// Set Date Time Now
+				// Use TglTransaksi if set, otherwise now
+				let baseDateValue = jQuery('#TglTransaksi').val();
+				let baseDate = baseDateValue ? new Date(baseDateValue) : new Date();
+				
+				const year = baseDate.getFullYear();
+				const month = String(baseDate.getMonth() + 1).padStart(2, '0');
+				const day = String(baseDate.getDate()).padStart(2, '0');
+				
 				const now = new Date();
-				const year = now.getFullYear();
-				const month = String(now.getMonth() + 1).padStart(2, '0');
-				const day = String(now.getDate()).padStart(2, '0');
 				const hours = String(now.getHours()).padStart(2, '0');
 				const minutes = String(now.getMinutes()).padStart(2, '0');
 
 				jQuery('#TglMasuk_Monthly').val(`${year}-${month}-${day}`);
 				jQuery('#JamMasuk_Monthly').val(`${hours}:${minutes}`);
 				
-				// Set Default Keluar (Now + 1 Month)
-				const nextMonth = new Date(now);
+				// Set Default Keluar (BaseDate + 1 Month)
+				const nextMonth = new Date(baseDate);
 				nextMonth.setMonth(nextMonth.getMonth() + 1);
 				
 				const tYear = nextMonth.getFullYear();
@@ -2374,19 +2452,23 @@ License: You must have a valid license purchased only from themeforest(the above
 				jQuery('#divMonthlyPacket').hide(); 
 				jQuery('#divYearlyPacket').show();
 
-				// Set Date Time Now
+				// Use TglTransaksi if set, otherwise now
+				let baseDateValue = jQuery('#TglTransaksi').val();
+				let baseDate = baseDateValue ? new Date(baseDateValue) : new Date();
+				
+				const year = baseDate.getFullYear();
+				const month = String(baseDate.getMonth() + 1).padStart(2, '0');
+				const day = String(baseDate.getDate()).padStart(2, '0');
+				
 				const now = new Date();
-				const year = now.getFullYear();
-				const month = String(now.getMonth() + 1).padStart(2, '0');
-				const day = String(now.getDate()).padStart(2, '0');
 				const hours = String(now.getHours()).padStart(2, '0');
 				const minutes = String(now.getMinutes()).padStart(2, '0');
 
 				jQuery('#TglMasuk_Yearly').val(`${year}-${month}-${day}`);
 				jQuery('#JamMasuk_Yearly').val(`${hours}:${minutes}`);
 				
-				// Set Default Keluar (Now + 1 Year)
-				const nextYear = new Date(now);
+				// Set Default Keluar (BaseDate + 1 Year)
+				const nextYear = new Date(baseDate);
 				nextYear.setFullYear(nextYear.getFullYear() + 1);
 				
 				const tYear = nextYear.getFullYear();
@@ -2409,19 +2491,23 @@ License: You must have a valid license purchased only from themeforest(the above
 				jQuery('#chkFlexibleTime').attr('disabled', true).prop('checked', false);
 				jQuery('#divLangsungBayar').show();
 
-				// Set Date Time Now
+				// Use TglTransaksi if set, otherwise now
+				let baseDateValue = jQuery('#TglTransaksi').val();
+				let baseDate = baseDateValue ? new Date(baseDateValue) : new Date();
+				
+				const year = baseDate.getFullYear();
+				const month = String(baseDate.getMonth() + 1).padStart(2, '0');
+				const day = String(baseDate.getDate()).padStart(2, '0');
+				
 				const now = new Date();
-				const year = now.getFullYear();
-				const month = String(now.getMonth() + 1).padStart(2, '0');
-				const day = String(now.getDate()).padStart(2, '0');
 				const hours = String(now.getHours()).padStart(2, '0');
 				const minutes = String(now.getMinutes()).padStart(2, '0');
 
 				jQuery('#TglMasuk_Daily').val(`${year}-${month}-${day}`);
 				jQuery('#JamMasuk_Daily').val(`${hours}:${minutes}`);
 				
-				// Set Default Keluar (Now + 1 Day)
-				const tomorrow = new Date(now);
+				// Set Default Keluar (BaseDate + 1 Day)
+				const tomorrow = new Date(baseDate);
 				tomorrow.setDate(tomorrow.getDate() + 1);
 				
 				const tYear = tomorrow.getFullYear();
@@ -2454,6 +2540,23 @@ License: You must have a valid license purchased only from themeforest(the above
 				// CalculateProrata();
 			} else {
 				jQuery('#divProrataInfo').hide();
+			}
+		});
+
+		jQuery('#TglTransaksi').on('change', function() {
+			const selectedDate = jQuery(this).val();
+			if(!selectedDate) return;
+			
+			jQuery('#TglMasuk_Daily').val(selectedDate);
+			jQuery('#TglMasuk_Monthly').val(selectedDate);
+			jQuery('#TglMasuk_Yearly').val(selectedDate);
+			
+			// Recalculate Keluar for Daily/Monthly/Yearly if needed
+			jQuery('#DurasiPaket').trigger('change');
+
+			// Sync Time Slots Schedule
+			if (jQuery('#JenisPaket').val() == "JAM" || jQuery('#JenisPaket').val() == "PAKETMEMBER") {
+				loadTimeSlots();
 			}
 		});
 
@@ -2718,10 +2821,13 @@ License: You must have a valid license purchased only from themeforest(the above
 						 if(parts.length > 1) {
 							formData.append('JamSelesai', parts[1]);
 						 }
-						 // Use Local Date for TglBooking to avoid TZ issues
-						 var now = new Date();
-						 var localDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-                         formData.append('TglBooking', localDate);
+						 // Use TglTransaksi from the form or default to today
+						 var tglTrx = jQuery('#TglTransaksi').val();
+						 if(!tglTrx) {
+							var now = new Date();
+						 	tglTrx = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+						 }
+                         formData.append('TglBooking', tglTrx);
                      }
                  }
 
@@ -5388,23 +5494,10 @@ License: You must have a valid license purchased only from themeforest(the above
 							maximumFractionDigits: 2
 						});
 						PrintStruk(response.LastTRX);
-						// Swal.fire({
-						// 	title: "KEMBALIAN "+formattedAmount,
-						// 	text: "Cetak Struk ?",
-						// 	icon: "warning",
-						// 	showCancelButton: true,
-						// 	confirmButtonColor: "#3085d6",
-						// 	cancelButtonColor: "#d33",
-						// 	confirmButtonText: "Cetak",
-						// 	cancelButtonText: "Tidak Cetak"
-						// }).then((result) => {
-						// 	if (result.isConfirmed) {
-						// 		PrintStruk(response.LastTRX);
-						// 	}
-						// 	else{
-						// 		location.reload();
-						// 	}
-						// });
+						
+						if (!_isFromDetailLookup) {
+							location.reload();
+						}
 					}
 					else{
 						Swal.fire({
@@ -5825,12 +5918,14 @@ License: You must have a valid license purchased only from themeforest(the above
 			// location.reload();
 
 			const win = window.open(url, '_blank', 'width=800,height=600');
-			win.onload = function () {
-				win.print();
-				win.onafterprint = function () {
-					win.close();
+			if (win) {
+				win.onload = function () {
+					win.print();
+					win.onafterprint = function () {
+						win.close();
+					};
 				};
-			};
+			}
 			showCetakModal(NoTransaksi);
 		}
 
@@ -5893,8 +5988,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				type: 'POST',
 				data: {
 					_token: '{{ csrf_token() }}',
-					// date: new Date().toISOString().split('T')[0], // Send today's date
-					date: (new Date()).getFullYear() + '-' + String((new Date()).getMonth() + 1).padStart(2, '0') + '-' + String((new Date()).getDate()).padStart(2, '0'),
+					date: jQuery('#TglTransaksi').val() || ((new Date()).getFullYear() + '-' + String((new Date()).getMonth() + 1).padStart(2, '0') + '-' + String((new Date()).getDate()).padStart(2, '0')),
 					tableid: jQuery('#tableid').val()
 				},
 				success: function(response) {

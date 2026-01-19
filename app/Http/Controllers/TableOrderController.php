@@ -55,9 +55,20 @@ class TableOrderController extends Controller
                                     ->where('fakturpenjualanheader.Status', '=', 'C')
                                     ->where('fakturpenjualanheader.TotalPembayaran', '>', 0);
                             })
-                            ->where(DB::RAW("COALESCE(fakturpenjualanheader.NoReff, 'POS')"), 'POS')
+                            ->whereIn(DB::RAW("COALESCE(fakturpenjualanheader.NoReff, 'POS')"), ['POS'])
                             ->groupBy('fakturpenjualandetail.BaseReff', 'fakturpenjualandetail.RecordOwnerID');
-
+        
+        $subqueryPembayaran_emenu = FakturPenjualanDetail::selectRaw("fakturpenjualandetail.BaseReff, fakturpenjualandetail.RecordOwnerID,
+                            SUM(COALESCE(CASE WHEN fakturpenjualanheader.TotalPembayaran > fakturpenjualanheader.TotalPembelian THEN fakturpenjualanheader.TotalPembelian ELSE fakturpenjualanheader.TotalPembayaran END ,0)) as TotalPembayaran,
+                            MAX(fakturpenjualanheader.NoReff) as NoReff")
+                            ->join('fakturpenjualanheader', function ($join) {
+                                $join->on('fakturpenjualanheader.NoTransaksi', '=', 'fakturpenjualandetail.NoTransaksi')
+                                    ->on('fakturpenjualanheader.RecordOwnerID', '=', 'fakturpenjualandetail.RecordOwnerID')
+                                    ->where('fakturpenjualanheader.Status', '=', 'C')
+                                    ->where('fakturpenjualanheader.TotalPembayaran', '>', 0);
+                            })
+                            ->whereIn(DB::RAW("COALESCE(fakturpenjualanheader.NoReff, 'POS')"), ['POS'])
+                            ->groupBy('fakturpenjualandetail.BaseReff', 'fakturpenjualandetail.RecordOwnerID');
         $titiklampu = TitikLampu::selectRaw("DISTINCT titiklampu.*,
                             CASE WHEN COALESCE(titiklampu.status,0) = 0 THEN 'KOSONG' ELSE 
                                 CASE WHEN titiklampu.Status = 1 THEN 'AKTIF' ELSE 
@@ -360,7 +371,8 @@ class TableOrderController extends Controller
 
             $model = new TableOrderHeader;
             $model->NoTransaksi = $NoTransaksi;
-            $model->TglTransaksi = Carbon::now();
+            $tglTransaksi = $request->input('TglTransaksi') ? Carbon::parse($request->input('TglTransaksi')) : Carbon::now();
+            $model->TglTransaksi = $tglTransaksi;
             $model->TglPencatatan = Carbon::now();
             $model->JenisPaket = $request->input('JenisPaket');
             $model->paketid = $request->input('paketid');
@@ -376,16 +388,17 @@ class TableOrderController extends Controller
             
             // JamMulai Handling
             // If provided from frontend (Slot selected), use it.
-            // If not provided (Flexible, or Menit), use NOW.
+            // If not provided (Flexible, or Menit), use NOW with the selected date.
             if ($request->input('JenisPaket') == 'DAILY' || $request->input('JenisPaket') == 'MONTHLY' || $request->input('JenisPaket') == 'YEARLY') {
                 $model->JamMulai = Carbon::parse($request->input('JamMulai'));
                 $model->JamSelesai = Carbon::parse($request->input('JamSelesai'));
             } elseif ($request->has('JamMulai') && $request->input('JamMulai') != "") {
-                $tgl = $request->input('TglBooking') ?? Carbon::now()->format('Y-m-d');
+                $tgl = $request->input('TglBooking') ?? $tglTransaksi->toDateString();
                 $jam = $request->input('JamMulai');
                 $model->JamMulai = Carbon::parse($tgl . ' ' . $jam);
             } else {
-                $model->JamMulai = Carbon::now();
+                $now = Carbon::now();
+                $model->JamMulai = Carbon::parse($tglTransaksi->toDateString() . ' ' . $now->toTimeString());
             }
 
             if ($request->input('JenisPaket') == 'JAM' || $request->input('JenisPaket') == 'PAKETMEMBER' || $request->input('JenisPaket') == 'JAMREALTIME') {
@@ -645,7 +658,8 @@ class TableOrderController extends Controller
                             ->update(
                                 [
                                     'Status' => 0 ,
-                                    'JamSelesai' => DB::raw("CASE WHEN '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENIT' OR '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENITREALTIME' THEN NOW() ELSE JamSelesai END")
+                                    'JamSelesai' => DB::raw("CASE WHEN JamSelesai IS NULL THEN NOW() ELSE JamSelesai END")
+                                    // 'JamSelesai' => DB::raw("CASE WHEN '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENIT' OR '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENITREALTIME' THEN NOW() ELSE JamSelesai END")
                                 ]
                             );
 

@@ -107,6 +107,7 @@ Route::post('/emenu/store', [TitikLampuController::class, 'storeOrder'])->name('
 Route::post('/emenu/create-payment', [TitikLampuController::class, 'createPaymentEMenu'])->name('emenu.create-payment');
 Route::post('/emenu/store-qris', [TitikLampuController::class, 'storeOrderEMenuQRIS'])->name('emenu.store-qris');
 Route::get('titiklampu/generate-qrcode', [TitikLampuController::class, 'generateQRCode'])->name('titiklampu-generate-qrcode');
+Route::get('titiklampu/download-qr-zip', [TitikLampuController::class, 'downloadZipQR'])->name('titiklampu-download-qr-zip')->middleware(['auth', 'check.session']);
 /*
 |--------------------------------------------------------------------------
 | Grup Pelanggan
