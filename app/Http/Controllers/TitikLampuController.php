@@ -413,7 +413,10 @@ class TitikLampuController extends Controller
             ->where('tableid', $decodedId)
             ->where('RecordOwnerID', $decodedRoid)
             ->where('JamMulai', '<=', $currentDate)
-            ->where('JamSelesai', '>=', $currentDate)
+            ->where(function ($query) use ($currentDate) {
+                $query->where('JamSelesai', '>=', $currentDate)
+                      ->orWhereNull('JamSelesai');
+            })
             ->where('Status', 1)
             ->where('DocumentStatus', 'O')
             ->first();
@@ -489,7 +492,11 @@ class TitikLampuController extends Controller
 
     public function generateQRCode()
     {
-        $titiklampu = TitikLampu::where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
+        $titiklampu = TitikLampu::selectRaw("titiklampu.*,mastercontroller.NamaController")
+                        ->join('mastercontroller', function ($value)  {
+                            $value->on('titiklampu.ControllerID','=','mastercontroller.id')
+                            ->on('titiklampu.RecordOwnerID','=','mastercontroller.RecordOwnerID');
+                        })->where('titiklampu.RecordOwnerID', Auth::user()->RecordOwnerID)->get();
 
         return view('controller.titiklampu-qrcode', [
             'titiklampu' => $titiklampu
@@ -519,7 +526,10 @@ class TitikLampuController extends Controller
                 ->where('tableid', $tableId)
                 ->where('RecordOwnerID', $roid)
                 ->where('JamMulai', '<=', $currentDate)
-                ->where('JamSelesai', '>=', $currentDate)
+                ->where(function ($query) use ($currentDate) {
+                    $query->where('JamSelesai', '>=', $currentDate)
+                          ->orWhereNull('JamSelesai');
+                })
                 ->where('Status', 1)
                 ->where('DocumentStatus', 'O')
                 ->first();
@@ -752,7 +762,10 @@ class TitikLampuController extends Controller
                 ->where('tableid', $tableId)
                 ->where('RecordOwnerID', $roid)
                 ->where('JamMulai', '<=', $currentDate)
-                ->where('JamSelesai', '>=', $currentDate)
+                ->where(function ($query) use ($currentDate) {
+                    $query->where('JamSelesai', '>=', $currentDate)
+                          ->orWhereNull('JamSelesai');
+                })
                 ->where('Status', 1)
                 ->where('DocumentStatus', 'O')
                 ->first();

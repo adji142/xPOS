@@ -323,7 +323,7 @@
 
     <!-- MEJA AVAILABLE -->
     <div class="grid-box area-available">
-      <div class="box-header">Layanan Available</div>
+      <div class="box-header">Layanan Available Hari ini</div>
       <div class="box-content" id="table-available"></div>
     </div>
 
@@ -411,6 +411,16 @@
     // === QUEUE DATA ===
     const lastSpokenMap={}, SPEAK_INTERVAL_MS=5*60*1000;
     
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '-';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr; // Fallback if invalid
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = String(d.getFullYear()).slice(-2);
+      return `${day}-${month}-${year}`;
+    };
+    
     const getSisaWaktu=(jamSelesai)=>{
       const n=new Date(),e=new Date(),[h,m]=jamSelesai.split(':').map(Number);
       e.setHours(h,m,0,0);const d=(e-n)/1000;if(d<0)return"00:00";
@@ -480,7 +490,7 @@
                  } else if(type === 'avail') {
                      content = `<td><span class="text-highlight">${row.NamaTitikLampu}</span></td>`;
                  } else if(type === 'booking') {
-                     content = `<td>${row.NoTransaksi}</td>
+                     content = `<td>${formatDate(row.TglTransaksi)}</td>
                                 <td>${row.NamaPelanggan}</td>
                                 <td>${row.NamaTitikLampu}</td>
                                 <td>${row.JamMulai}</td>

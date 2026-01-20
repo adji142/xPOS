@@ -197,12 +197,18 @@ class BookingOnlineController extends Controller
 
                 // Cek apakah ada order aktif yang belum selesai (JamSelesai is null)
                 // Jika ada, maka satu harian tersebut full booked
-                $openOrder = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
-                    ->where('tableid', $titik->id)
-                    ->where('Status', '<>', 0)
-                    ->whereNull('JamSelesai')
-                    ->where('JamMulai', '<', Carbon::parse($tanggalBooking)->endOfDay())
-                    ->exists();
+                $currentDate = Carbon::now();
+                // $openOrder = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
+                //     ->where('tableid', $titik->id)
+                //     ->where('Status', "0")
+                //     ->where('DocumentStatus', 'D')
+                //     // ->whereNull('JamSelesai')
+                //     ->where(function ($query) use ($tanggalBooking) {
+                //         $query->where('JamSelesai', '>=', $tanggalBooking)
+                //             ->orWhereNull('JamSelesai');
+                //     })
+                //     ->where('JamMulai', '<', Carbon::parse($tanggalBooking)->endOfDay())
+                //     ->exists();
 
                 while ($start < $jamSelesai) {
                     $next = $start->copy()->addHour();
@@ -237,14 +243,15 @@ class BookingOnlineController extends Controller
                     // Cek Order
                     $adaOrder = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
                         ->where('tableid', $titik->id)
-                        ->where('Status', '<>', 0)
+                        ->where('Status', 0)
+                        ->where('DocumentStatus','D')
                         ->where('JamMulai', '<', $fullEnd->format('Y-m-d H:i:s'))
                         ->where('JamSelesai', '>', $fullStart->format('Y-m-d H:i:s'))
                         ->exists();
 
                     $slotSudahLewat = $fullEnd->lessThan($now);
 
-                    $status = ($adaBooking || $adaOrder || $slotSudahLewat || $openOrder) ? 'booked' : 'available';
+                    $status = ($adaBooking || $adaOrder || $slotSudahLewat ) ? 'booked' : 'available';
 
                     $jadwal[] = [
                         'jam' => $jamString,

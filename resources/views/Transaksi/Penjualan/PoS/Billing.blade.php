@@ -2938,7 +2938,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 								formatCurrency($('#txtSubTotal_Detail'), xHargaNormal);
 
-								if (jQuery('#JenisPaket').val() == "PAKETMEMBER" || (jQuery('#JenisPaket').val() == "MENITREALTIME" || (jQuery('#JenisPaket').val() == "PAYPERUSE" && !jQuery('#chkLangsungbayar').is(':checked')) || ((jQuery('#JenisPaket').val() == "DAILY" || jQuery('#JenisPaket').val() == "MONTHLY" || jQuery('#JenisPaket').val() == "YEARLY") && !jQuery('#chkLangsungbayar').is(':checked')))) {
+								if (jQuery('#JenisPaket').val() == "PAKETMEMBER" || (jQuery('#JenisPaket').val() == "MENITREALTIME" || jQuery('#JenisPaket').val() == "JAMREALTIME" || (jQuery('#JenisPaket').val() == "PAYPERUSE" && !jQuery('#chkLangsungbayar').is(':checked')) || ((jQuery('#JenisPaket').val() == "DAILY" || jQuery('#JenisPaket').val() == "MONTHLY" || jQuery('#JenisPaket').val() == "YEARLY") && !jQuery('#chkLangsungbayar').is(':checked')))) {
                                     Swal.fire({
                                         icon: "success",
                                         title: "Sukses",

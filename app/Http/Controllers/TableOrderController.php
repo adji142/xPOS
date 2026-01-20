@@ -1046,31 +1046,65 @@ class TableOrderController extends Controller
         $tglAwal = $request->input('TglAwal', \Carbon\Carbon::now()->format('Y-m-d'));
         $tglAkhir = $request->input('TglAkhir', \Carbon\Carbon::now()->format('Y-m-d'));
 
-        $field = ['tableorderheader.NoTransaksi', 'titiklampu.NamaTitikLampu', 'tableorderheader.JenisPaket'];
+        $fieldHeader = ['tableorderheader.NoTransaksi', 'titiklampu.NamaTitikLampu', 'tableorderheader.JenisPaket', 'pelanggan.NamaPelanggan'];
+        $fieldBookingOnline = ['bookingtableonline.NoTransaksi', 'titiklampu.NamaTitikLampu', DB::raw("'BOOKING'"), 'pelanggan.NamaPelanggan'];
 
-        $data = DB::table('tableorderheader')
-            ->select('tableorderheader.NoTransaksi', 'tableorderheader.TglTransaksi', 'tableorderheader.JenisPaket', 'tableorderheader.DurasiPaket as Durasi', 'tableorderheader.Status', 'titiklampu.NamaTitikLampu as NamaTable')
+        $dataHeader = DB::table('tableorderheader')
+            ->select('tableorderheader.NoTransaksi', 'tableorderheader.TglTransaksi', 'tableorderheader.JenisPaket', 'tableorderheader.DurasiPaket as Durasi', 'tableorderheader.Status', 'titiklampu.NamaTitikLampu as NamaTable', 'tableorderheader.JamMulai', 'tableorderheader.JamSelesai', 'pelanggan.NamaPelanggan')
             ->join('titiklampu', function($join) {
                 $join->on('tableorderheader.tableid', '=', 'titiklampu.id')
                      ->on('tableorderheader.RecordOwnerID', '=', 'titiklampu.RecordOwnerID');
+            })
+            ->leftJoin('pelanggan', function($join) {
+                $join->on('tableorderheader.KodePelanggan', '=', 'pelanggan.KodePelanggan')
+                     ->on('tableorderheader.RecordOwnerID', '=', 'pelanggan.RecordOwnerID');
             })
             ->where('tableorderheader.RecordOwnerID', Auth::user()->RecordOwnerID)
             ->whereBetween('tableorderheader.TglTransaksi', [$tglAwal . ' 00:00:00', $tglAkhir . ' 23:59:59']);
 
         if ($keyword) {
-            $data->where(function ($query) use ($keyword, $field) {
-                for ($i = 0; $i < count($field); $i++) {
-                    $query->orwhere($field[$i], 'like', '%' . $keyword . '%');
+            $dataHeader->where(function ($query) use ($keyword, $fieldHeader) {
+                for ($i = 0; $i < count($fieldHeader); $i++) {
+                    $query->orwhere($fieldHeader[$i], 'like', '%' . $keyword . '%');
                 }
             });
         }
 
-        $data->orderBy('tableorderheader.TglTransaksi', 'desc');
+        $dataBookingOnline = DB::table('bookingtableonline')
+            ->select('bookingtableonline.NoTransaksi', 'bookingtableonline.TglBooking as TglTransaksi', DB::raw("'BOOKING' as JenisPaket"), DB::raw('0 as Durasi'), 'bookingtableonline.StatusTransaksi as Status', 'titiklampu.NamaTitikLampu as NamaTable', 'bookingtableonline.JamMulai', 'bookingtableonline.JamSelesai', 'pelanggan.NamaPelanggan')
+            ->join('titiklampu', function($join) {
+                $join->on('bookingtableonline.mejaID', '=', 'titiklampu.id')
+                     ->on('bookingtableonline.RecordOwnerID', '=', 'titiklampu.RecordOwnerID');
+            })
+            ->leftJoin('pelanggan', function($join) {
+                $join->on('bookingtableonline.KodePelanggan', '=', 'pelanggan.KodePelanggan')
+                     ->on('bookingtableonline.RecordOwnerID', '=', 'pelanggan.RecordOwnerID');
+            })
+            ->where('bookingtableonline.RecordOwnerID', Auth::user()->RecordOwnerID)
+            ->whereBetween('bookingtableonline.TglBooking', [$tglAwal . ' 00:00:00', $tglAkhir . ' 23:59:59']);
+
+        if ($keyword) {
+            $dataBookingOnline->where(function ($query) use ($keyword, $fieldBookingOnline) {
+                for ($i = 0; $i < count($fieldBookingOnline); $i++) {
+                    $query->orwhere($fieldBookingOnline[$i], 'like', '%' . $keyword . '%');
+                }
+            });
+        }
+
+        $data = $dataHeader->unionAll($dataBookingOnline)
+            ->orderBy('TglTransaksi', 'desc');
+
+        $company = Company::where('KodePartner', Auth::user()->RecordOwnerID)->first();
+        $jenisLangganan = [];
+        if ($company && $company->JenisLangganan) {
+            $jenisLangganan = json_decode($company->JenisLangganan, true);
+        }
 
         return view("Admin.DaftarTableOrder", [
             'data' => $data->get(),
             'tglAwal' => $tglAwal,
             'tglAkhir' => $tglAkhir,
+            'jenisLangganan' => $jenisLangganan
         ]);
     }
 
