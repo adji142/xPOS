@@ -1156,6 +1156,8 @@ class FakturPenjualanController extends Controller
 
 		$errorCount = 0;
 
+		$baseReff = "";
+
 		try {
 			$currentDate = Carbon::now();
 			$Year = $currentDate->format('Y');
@@ -1163,9 +1165,15 @@ class FakturPenjualanController extends Controller
 
 			$numberingData = new DocumentNumbering();
 
-			$NoTransaksi = empty($jsonData['NoTransaksi']) ? $numberingData->GetNewDoc("POS","fakturpenjualanheader","NoTransaksi") : $jsonData['NoTransaksi'];
+			// $NoTransaksi = empty($jsonData['NoTransaksi']) ? $numberingData->GetNewDoc("POS","fakturpenjualanheader","NoTransaksi") : $jsonData['NoTransaksi'];
 			// $NoTransaksi = $numberingData->GetNewDoc("POS","fakturpenjualanheader","NoTransaksi");
 			// $NoTransaksi = $jsonData['NoTransaksi'];
+			$NoTransaksi= $numberingData->GetNewDoc("POS","fakturpenjualanheader","NoTransaksi");
+
+
+			// Cek Eksistensi Data Sebelumnya :
+
+
 
 
 			$data['LastTRX'] = $NoTransaksi;
@@ -1198,6 +1206,22 @@ class FakturPenjualanController extends Controller
 			$model->RecordOwnerID = Auth::user()->RecordOwnerID;
 			$model->PajakHiburan = $jsonData['PajakHiburan'];
 			$model->BiayaLayanan = $jsonData['BiayaLayanan'];
+
+			
+
+			$oExistingData = FakturPenjualanDetail::selectRaw('fakturpenjualandetail.BaseReff, SUM(fakturpenjualandetail.Qty) as Qty')
+								->leftJoin('itemmaster', function ($value)  {
+									$value->on('itemmaster.KodeItem','=','fakturpenjualandetail.KodeItem')
+									->on('itemmaster.RecordOwnerID','=','fakturpenjualandetail.RecordOwnerID');
+								})
+								->where('itemmaster.TypeItem',4)
+								->where('fakturpenjualandetail.BaseReff', $jsonData['Detail'][0]['BaseReff'])
+								->groupBy('fakturpenjualandetail.BaseReff')
+								->first();
+			if($oExistingData){
+				$model->NoReff = "EMENU-CASH";
+			}
+
    
 			$save = $model->save();
 
@@ -1220,7 +1244,7 @@ class FakturPenjualanController extends Controller
 
 						if ($oItem) {
 							if ($oItem->TypeItem != 4) {
-								$data['message'] = "Stock Item ".$key['KodeItem'].' Tidak Cukup';
+								$data['message'] = "Stock Item ".$oItem['NamaItem'].' Tidak Cukup';
 								$errorCount += 1;
 								goto jump;		
 							}
@@ -1233,17 +1257,7 @@ class FakturPenjualanController extends Controller
 					goto jump;
 				}
 
-				$oExistingData = FakturPenjualanDetail::selectRaw('fakturpenjualandetail.BaseReff, SUM(fakturpenjualandetail.Qty) as Qty')
-									->leftJoin('itemmaster', function ($value)  {
-										$value->on('itemmaster.KodeItem','=','fakturpenjualandetail.KodeItem')
-										->on('itemmaster.RecordOwnerID','=','fakturpenjualandetail.RecordOwnerID');
-									})
-									->where('fakturpenjualandetail.KodeItem', $key['KodeItem'])
-									->where('itemmaster.TypeItem',4)
-									->where('fakturpenjualandetail.BaseReff', $key['BaseReff'])
-									->groupBy('fakturpenjualandetail.BaseReff')
-									->first();
-
+				
 				// if($oExistingData){
 				// 	if($key['Qty'] - $oExistingData->Qty > 0){
 				// 		$BaseReffTableOrder = $key['BaseReff'];
@@ -1312,6 +1326,8 @@ class FakturPenjualanController extends Controller
 				// 		goto jump;
 				// 	}
 				// }
+
+				$baseReff= $key['BaseReff'];
 
 				$BaseReffTableOrder = $key['BaseReff'];
 				$modelDetail = new FakturPenjualanDetail;
@@ -1483,12 +1499,21 @@ class FakturPenjualanController extends Controller
 				}
 
 				$update = DB::table('tableorderheader')
-							->where('NoTransaksi','=', $NoTransaksi)
+							->where('NoTransaksi','=', $baseReff)
 							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-							->whereNotIn('JenisPaket', ['JAM', 'MENIT','MENITREALTIME'])
+							->whereNotIn('JenisPaket', ['JAM', 'MENIT','MENITREALTIME','DAILY', 'MONTHLY', 'YEARLY'])
 							->update(
 								[
 									'Status'=>1,
+								]
+							);
+
+				DB::table('tableorderfnb')
+							->where('NoTransaksi','=', $baseReff)
+							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+							->update(
+								[
+									'LineStatus'=>'C',
 								]
 							);
 			}

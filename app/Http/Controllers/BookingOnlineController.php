@@ -243,15 +243,29 @@ class BookingOnlineController extends Controller
                     // Cek Order
                     $adaOrder = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
                         ->where('tableid', $titik->id)
+                        ->where('Status', 1)
+                        ->whereIn('DocumentStatus',['D','O'])
+                        ->where(function ($query) use ($tanggalBooking) {
+                            $query->where('JamSelesai', '>=', $tanggalBooking)
+                            ->orWhereNull('JamSelesai');
+                        })
+                        ->where('JamMulai', '<=', Carbon::parse($tanggalBooking)->endOfDay())
+                        ->exists();
+                    
+
+                    $futureOrders = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
+                        ->where('tableid', $titik->id)
                         ->where('Status', 0)
-                        ->where('DocumentStatus','D')
-                        ->where('JamMulai', '<', $fullEnd->format('Y-m-d H:i:s'))
-                        ->where('JamSelesai', '>', $fullStart->format('Y-m-d H:i:s'))
+                        ->whereIn('DocumentStatus',['D'])
+                        ->where(function ($q) use ($fullStart, $fullEnd) {
+                            $q->where(DB::raw("JamMulai"), '<', $fullEnd->format('Y-m-d H:i:s'))
+                              ->where(DB::raw("JamSelesai"), '>', $fullStart->format('Y-m-d H:i:s'));
+                        })
                         ->exists();
 
                     $slotSudahLewat = $fullEnd->lessThan($now);
 
-                    $status = ($adaBooking || $adaOrder || $slotSudahLewat ) ? 'booked' : 'available';
+                    $status = ($adaBooking || $adaOrder || $slotSudahLewat || $futureOrders ) ? 'booked' : 'available';
 
                     $jadwal[] = [
                         'jam' => $jamString,

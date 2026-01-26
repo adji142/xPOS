@@ -69,6 +69,23 @@ class TableOrderController extends Controller
                             })
                             ->whereIn(DB::RAW("COALESCE(fakturpenjualanheader.NoReff, 'POS')"), ['POS'])
                             ->groupBy('fakturpenjualandetail.BaseReff', 'fakturpenjualandetail.RecordOwnerID');
+
+        $subqueryPembayaranJasa = FakturPenjualanDetail::selectRaw("fakturpenjualandetail.BaseReff, fakturpenjualandetail.RecordOwnerID,
+                            SUM(COALESCE(CASE WHEN fakturpenjualanheader.TotalPembayaran > fakturpenjualanheader.TotalPembelian THEN fakturpenjualanheader.TotalPembelian ELSE fakturpenjualanheader.TotalPembayaran END ,0)) as TotalPembayaran,
+                            MAX(fakturpenjualanheader.NoReff) as NoReff")
+                            ->join('fakturpenjualanheader', function ($join) {
+                                $join->on('fakturpenjualanheader.NoTransaksi', '=', 'fakturpenjualandetail.NoTransaksi')
+                                    ->on('fakturpenjualanheader.RecordOwnerID', '=', 'fakturpenjualandetail.RecordOwnerID')
+                                    ->where('fakturpenjualanheader.Status', '=', 'C')
+                                    ->where('fakturpenjualanheader.TotalPembayaran', '>', 0);
+                            })
+                            ->join('itemmaster', function($join){
+                                $join->on('fakturpenjualandetail.KodeItem', '=', 'itemmaster.KodeItem')
+                                    ->on('itemmaster.RecordOwnerID', '=', 'fakturpenjualandetail.RecordOwnerID');
+                            })
+                            ->whereIn(DB::RAW("COALESCE(fakturpenjualanheader.NoReff, 'POS')"), ['POS'])
+                            ->where('itemmaster.TypeItem', 4)
+                            ->groupBy('fakturpenjualandetail.BaseReff', 'fakturpenjualandetail.RecordOwnerID');
         $titiklampu = TitikLampu::selectRaw("DISTINCT titiklampu.*,
                             CASE WHEN COALESCE(titiklampu.status,0) = 0 THEN 'KOSONG' ELSE 
                                 CASE WHEN titiklampu.Status = 1 THEN 'AKTIF' ELSE 
@@ -104,7 +121,8 @@ class TableOrderController extends Controller
                             COALESCE(payment_summary.TotalPembayaran, 0) as TotalPembayaran,
                             COALESCE(tkelompoklampu.NamaKelompok,'') AS NamaKelompok,
                             pelanggan.TglBerlanggananPaketBulanan,
-                            COALESCE(payment_summary.NoReff, 'POS') NoReff
+                            COALESCE(payment_summary.NoReff, 'POS') NoReff,
+                            CASE WHEN payment_summary_jasa.BaseReff IS NOT NULL then 1 ELSE 0 END as isJasaPaid
                         ")
                         ->leftJoin('tableorderheader', function ($value)  {
                             $value->on('titiklampu.id','=','tableorderheader.tableid')
@@ -143,6 +161,10 @@ class TableOrderController extends Controller
                         ->join('mastercontroller', function ($value)  {
                             $value->on('titiklampu.ControllerID','=','mastercontroller.id')
                             ->on('titiklampu.RecordOwnerID','=','mastercontroller.RecordOwnerID');
+                        })
+                        ->leftJoinSub($subqueryPembayaranJasa, 'payment_summary_jasa', function ($join) {
+                            $join->on('tableorderheader.NoTransaksi', '=', 'payment_summary_jasa.BaseReff')
+                                 ->on('tableorderheader.RecordOwnerID', '=', 'payment_summary_jasa.RecordOwnerID');
                         })
                         ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
                         ->whereIn(DB::raw("COALESCE(payment_summary.NoReff,'POS')"), ['POS','POS-FNB','POS-TAMBAHJAM'])

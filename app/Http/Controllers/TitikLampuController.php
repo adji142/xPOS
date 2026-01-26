@@ -474,7 +474,8 @@ class TitikLampuController extends Controller
                     ->get();
         
         // dd($canUseCash, $canUseQRIS, $activeSession);
-
+        $canUseQRIS = true;
+        $canUseCash = true;
         return view('emenu.order', [
             'titikLampu' => $titikLampu,
             'menus' => $menus,

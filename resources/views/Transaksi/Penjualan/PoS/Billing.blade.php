@@ -1090,6 +1090,7 @@ License: You must have a valid license purchased only from themeforest(the above
 																<th>Pajak</th>
 																<th>Biaya Layanan</th>
 																<th>Total</th>
+																<th>#</th>
 
 																<!-- Other Info -->
 																<th>KodeItem</th>
@@ -1995,9 +1996,9 @@ License: You must have a valid license purchased only from themeforest(the above
 				// LookupDetailOrder
 				const table = jQuery('#TablePenjualan').DataTable({
 					columnDefs: [
-						{ targets: 7, visible: false },
 						{ targets: 8, visible: false },
 						{ targets: 9, visible: false },
+						{ targets: 10, visible: false },
 					]
 				});
 				var oMakananData = [];
@@ -2026,6 +2027,7 @@ License: You must have a valid license purchased only from themeforest(the above
 									`<span data-raw="${item.Tax}">${formatNumber(item.Tax)}</span>`,
 									`<span data-raw="${item.BiayaLayanan}">${formatNumber(item.BiayaLayanan)}</span>`,
 									`<span data-raw="${item.LineTotal}">${formatNumber(item.LineTotal + item.BiayaLayanan)}</span>`,
+									item.LineStatus,
 									item.KodeItem,
 									item.HargaPokokPenjualan,
 									item.Satuan
@@ -2543,6 +2545,23 @@ License: You must have a valid license purchased only from themeforest(the above
 			}
 		});
 
+		function checkJamMasukReadonly() {
+			const tglTransaksi = jQuery('#TglTransaksi').val();
+			if (!tglTransaksi) return;
+
+			const now = new Date();
+			const year = now.getFullYear();
+			const month = String(now.getMonth() + 1).padStart(2, '0');
+			const day = String(now.getDate()).padStart(2, '0');
+			const todayDate = `${year}-${month}-${day}`;
+
+			if (tglTransaksi === todayDate) {
+				jQuery('#JamMasuk_Daily').attr('readonly', true);
+			} else {
+				jQuery('#JamMasuk_Daily').attr('readonly', false);
+			}
+		}
+
 		jQuery('#TglTransaksi').on('change', function() {
 			const selectedDate = jQuery(this).val();
 			if(!selectedDate) return;
@@ -2550,6 +2569,8 @@ License: You must have a valid license purchased only from themeforest(the above
 			jQuery('#TglMasuk_Daily').val(selectedDate);
 			jQuery('#TglMasuk_Monthly').val(selectedDate);
 			jQuery('#TglMasuk_Yearly').val(selectedDate);
+
+			checkJamMasukReadonly();
 			
 			// Recalculate Keluar for Daily/Monthly/Yearly if needed
 			jQuery('#DurasiPaket').trigger('change');
@@ -2630,6 +2651,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				// Daily Packet Logic
 				if (jQuery('#JenisPaket').val() == "DAILY") {
 					jQuery('#divDailyPacket').slideDown();
+					checkJamMasukReadonly();
 					
 					// Format time to HH:mm for input type="time"
 					let checkin = filteredData[0]["JamCheckin"] || "";
@@ -2843,10 +2865,12 @@ License: You must have a valid license purchased only from themeforest(the above
 				formData.append('JamSelesai', tglKeluar + ' ' + jamKeluar);
 				formData.append('TglBooking', tglMasuk); // Use TglMasuk as TglBooking
 				
+				const startDateTime = new Date(tglMasuk + 'T' + jamMasuk);
+				const now = new Date();
 
-				if(jQuery('#chkLangsungbayar').is(':checked')) {
+				if (startDateTime > now) {
 					formData.append('Status', '0');
-					formData.append('DocumentStatus', 'C');
+					formData.append('DocumentStatus', 'D');
 				} else {
 					formData.append('Status', '1');
 					formData.append('DocumentStatus', 'O');
@@ -2866,9 +2890,13 @@ License: You must have a valid license purchased only from themeforest(the above
 				formData.append('JamMulai', tglMasuk + ' ' + jamMasuk);
 				formData.append('JamSelesai', tglKeluar + ' ' + jamKeluar);
 				formData.append('TglBooking', tglMasuk); // Use TglMasuk as TglBooking
-				if(jQuery('#chkLangsungbayar').is(':checked')) {
+				
+				const startDateTime = new Date(tglMasuk + 'T' + jamMasuk);
+				const now = new Date();
+
+				if (startDateTime > now) {
 					formData.append('Status', '0');
-					formData.append('DocumentStatus', 'C');
+					formData.append('DocumentStatus', 'D');
 				} else {
 					formData.append('Status', '1');
 					formData.append('DocumentStatus', 'O');
@@ -2887,9 +2915,13 @@ License: You must have a valid license purchased only from themeforest(the above
 				formData.append('JamMulai', tglMasuk + ' ' + jamMasuk);
 				formData.append('JamSelesai', tglKeluar + ' ' + jamKeluar);
 				formData.append('TglBooking', tglMasuk);
-				if(jQuery('#chkLangsungbayar').is(':checked')) {
+				
+				const startDateTime = new Date(tglMasuk + 'T' + jamMasuk);
+				const now = new Date();
+
+				if (startDateTime > now) {
 					formData.append('Status', '0');
-					formData.append('DocumentStatus', 'C');
+					formData.append('DocumentStatus', 'D');
 				} else {
 					formData.append('Status', '1');
 					formData.append('DocumentStatus', 'O');
@@ -2938,7 +2970,12 @@ License: You must have a valid license purchased only from themeforest(the above
 
 								formatCurrency($('#txtSubTotal_Detail'), xHargaNormal);
 
-								if (jQuery('#JenisPaket').val() == "PAKETMEMBER" || (jQuery('#JenisPaket').val() == "MENITREALTIME" || jQuery('#JenisPaket').val() == "JAMREALTIME" || (jQuery('#JenisPaket').val() == "PAYPERUSE" && !jQuery('#chkLangsungbayar').is(':checked')) || ((jQuery('#JenisPaket').val() == "DAILY" || jQuery('#JenisPaket').val() == "MONTHLY" || jQuery('#JenisPaket').val() == "YEARLY") && !jQuery('#chkLangsungbayar').is(':checked')))) {
+								if (jQuery('#JenisPaket').val() == "MENIT" || 
+									jQuery('#JenisPaket').val() == "JAM" || 
+									jQuery('#JenisPaket').val() == "PAKETMEMBER" || 
+									jQuery('#JenisPaket').val() == "MENITREALTIME" || 
+									(jQuery('#JenisPaket').val() == "JAMREALTIME" && !jQuery('#chkLangsungbayar').is(':checked')) || 
+									(jQuery('#JenisPaket').val() == "PAYPERUSE" && !jQuery('#chkLangsungbayar').is(':checked'))) {
                                     Swal.fire({
                                         icon: "success",
                                         title: "Sukses",
@@ -5357,7 +5394,7 @@ License: You must have a valid license purchased only from themeforest(the above
 					const rawValue = $(cellHtml).data('raw'); // Extract data-raw attribute
 					rowDataObj[colName] = rawValue;
 					} else {
-					rowDataObj[colName] = row[index];
+						rowDataObj[colName] = row[index];
 					}
 				});
 				return rowDataObj;
@@ -5369,51 +5406,55 @@ License: You must have a valid license purchased only from themeforest(the above
 				return;
 			}
 
-			if (TotalHargaNormal > 0) {
-				var oItem = {
-					'NoUrut' : 0,
-					'KodeItem' : oCompany[0]["ItemHiburan"],
-					'Qty' : DurasiLama,
-					'QtyKonversi' : DurasiLama,
-					'Satuan' : SatuanDurasiLama,
-					'Harga' : HargaNormal,
-					'Discount' : 0,
-					'HargaNet' : DurasiLama * HargaNormal,
-					'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
-					'BaseLine' : -1,
-					'KodeGudang' : oCompany[0]['GudangPoS'],
-					'LineStatus': 'O',
-					'VatPercent' : 0,
-					'HargaPokokPenjualan' : HargaNormal,
-					'Pajak' : PPNNormal,
-					'PajakHiburan' : PajakHiburanNormal,
+			if(filteredData[0]["isJasaPaid"] == 0){
+				if (TotalHargaNormal > 0) {
+					var oItem = {
+						'NoUrut' : 0,
+						'KodeItem' : oCompany[0]["ItemHiburan"],
+						'Qty' : DurasiLama,
+						'QtyKonversi' : DurasiLama,
+						'Satuan' : SatuanDurasiLama,
+						'Harga' : HargaNormal,
+						'Discount' : 0,
+						'HargaNet' : DurasiLama * HargaNormal,
+						'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
+						'BaseLine' : -1,
+						'KodeGudang' : oCompany[0]['GudangPoS'],
+						'LineStatus': 'O',
+						'VatPercent' : 0,
+						'HargaPokokPenjualan' : HargaNormal,
+						'Pajak' : PPNNormal,
+						'PajakHiburan' : PajakHiburanNormal,
+					}
+					oDetail.push(oItem);
+					NoUrut += 1;
 				}
-				oDetail.push(oItem);
-				NoUrut += 1;
+
+				if (TotalHargaBaru > 0) {
+					var oItem = {
+						'NoUrut' : 1,
+						'KodeItem' : oCompany[0]["ItemHiburan"],
+						'Qty' : DurasiBaru,
+						'QtyKonversi' : DurasiBaru,
+						'Satuan' : SatuanDurasiBaru,
+						'Harga' : HargaBaru,
+						'Discount' : 0,
+						'HargaNet' : DurasiBaru * HargaBaru,
+						'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
+						'BaseLine' : -1,
+						'KodeGudang' : oCompany[0]['GudangPoS'],
+						'LineStatus': 'O',
+						'VatPercent' : 0,
+						'HargaPokokPenjualan' : HargaBaru,
+						'Pajak' : PPNBaru,
+						'PajakHiburan' : PajakHiburanBaru,
+					}
+					oDetail.push(oItem);
+					NoUrut += 1;
+				}
 			}
 
-			if (TotalHargaBaru > 0) {
-				var oItem = {
-					'NoUrut' : 1,
-					'KodeItem' : oCompany[0]["ItemHiburan"],
-					'Qty' : DurasiBaru,
-					'QtyKonversi' : DurasiBaru,
-					'Satuan' : SatuanDurasiBaru,
-					'Harga' : HargaBaru,
-					'Discount' : 0,
-					'HargaNet' : DurasiBaru * HargaBaru,
-					'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
-					'BaseLine' : -1,
-					'KodeGudang' : oCompany[0]['GudangPoS'],
-					'LineStatus': 'O',
-					'VatPercent' : 0,
-					'HargaPokokPenjualan' : HargaBaru,
-					'Pajak' : PPNBaru,
-					'PajakHiburan' : PajakHiburanBaru,
-				}
-				oDetail.push(oItem);
-				NoUrut += 1;
-			}
+			
 
 			// Makanan
 
@@ -5442,9 +5483,11 @@ License: You must have a valid license purchased only from themeforest(the above
 						'Pajak' : PajakMakanan,
 						'PajakHiburan' : 0,
 					}
-					oDetail.push(oItem);
 
-					NoUrut += 1;
+					if (dataMakanan[i]["#"] == "O") {
+						oDetail.push(oItem);
+						NoUrut += 1;
+					}
 				}
 			}
 

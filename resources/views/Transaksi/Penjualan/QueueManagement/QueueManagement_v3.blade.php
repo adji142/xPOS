@@ -469,7 +469,7 @@
              if(type === 'active') headers = `<tr><th>Layanan</th><th>Nama Pelanggan</th><th>Selesai</th><th>Sisa</th></tr>`;
              if(type === 'warn') headers = `<tr><th>Layanan</th><th>Nama Pelanggan</th><th>Mulai</th><th>Selesai</th><th>Sisa</th></tr>`;
              if(type === 'avail') headers = `<tr><th>Layanan Available</th></tr>`;
-             if(type === 'booking') headers = `<tr><th>No Transaksi</th><th>Nama Pelanggan</th><th>Layanan</th><th>Mulai</th><th>Selesai</th></tr>`;
+             if(type === 'booking') headers = `<tr><th>Tgl Transaksi</th><th>Nama Pelanggan</th><th>Layanan</th><th>Mulai</th><th>Selesai</th></tr>`;
              
              const body = rows.map(row => {
                  const sisa = row.JamSelesai ? getSisaWaktu(row.JamSelesai) : '';
