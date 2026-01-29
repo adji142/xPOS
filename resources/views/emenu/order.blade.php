@@ -549,7 +549,7 @@
             $('#txtNoTlp_EMenu').on('blur', function() {
                 const noTlp = $(this).val();
                 if (noTlp == "") return;
-
+                $('#txtNamaPelanggan_EMenu').val('Sedang mengecek data...').attr('disabled', true);
                 $.ajax({
                     url: "{{ route('pelanggan-viewJson') }}",
                     type: 'post',
@@ -559,15 +559,22 @@
                         "NoTlp1" : noTlp,
                         "_token": "{{ csrf_token() }}"
                     },
+                    beforeSend: function() {
+                        $('#txtNamaPelanggan_EMenu').val('Sedang mengecek data...').attr('disabled', true);
+                    },
                     success: function(response) {
+                        $('#txtNamaPelanggan_EMenu').attr('disabled', false);
                         if (response.success && response.data.length > 0) {
                             const p = response.data[0];
                             $('#txtNamaPelanggan_EMenu').val(p.NamaPelanggan).attr('readonly', true);
                             $('#txtKodePelanggan_EMenu').val(p.KodePelanggan);
                         } else {
-                            $('#txtNamaPelanggan_EMenu').val('').attr('readonly', false);
+                            $('#txtNamaPelanggan_EMenu').val('').attr('readonly', false).attr('placeholder', 'Pelanggan Baru (Silakan isi nama)');
                             $('#txtKodePelanggan_EMenu').val('');
                         }
+                    },
+                    error: function() {
+                        $('#txtNamaPelanggan_EMenu').attr('disabled', false).val('').attr('readonly', false);
                     }
                 });
             });

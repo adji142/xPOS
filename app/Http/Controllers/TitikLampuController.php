@@ -583,8 +583,7 @@ class TitikLampuController extends Controller
                                 'MaxPlay' => 0,
                                 'MemberPrice' => 0,
                                 'maxTimePerPlay' => 0,
-                                'RecordOwnerID' => $roid,
-                                'CreatedBy' => 'EMENU'
+                                'RecordOwnerID' => $roid
                             ]);
                         }
                     }

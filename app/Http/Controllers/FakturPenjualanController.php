@@ -1243,7 +1243,7 @@ class FakturPenjualanController extends Controller
 									->first();
 
 						if ($oItem) {
-							if ($oItem->TypeItem != 4) {
+							if ($oItem->TypeItem != 4 && $oItem->TypeItem != 2) {
 								$data['message'] = "Stock Item ".$oItem['NamaItem'].' Tidak Cukup';
 								$errorCount += 1;
 								goto jump;		

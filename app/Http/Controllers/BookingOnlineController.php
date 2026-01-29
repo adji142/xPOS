@@ -241,16 +241,48 @@ class BookingOnlineController extends Controller
                         })->exists();
 
                     // Cek Order
-                    $adaOrder = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
+
+                    $FindJenisPakai = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
                         ->where('tableid', $titik->id)
                         ->where('Status', 1)
                         ->whereIn('DocumentStatus',['D','O'])
-                        ->where(function ($query) use ($tanggalBooking) {
-                            $query->where('JamSelesai', '>=', $tanggalBooking)
+                        ->where(function ($query) use ($fullEnd) {
+                            $query->where('JamSelesai', '>=', $fullEnd->format('Y-m-d H:i:s'))
                             ->orWhereNull('JamSelesai');
                         })
-                        ->where('JamMulai', '<=', Carbon::parse($tanggalBooking)->endOfDay())
+                        ->where('JamMulai', '<=', $fullEnd->format('Y-m-d H:i:s'))
+                        ->where('tableorderheader.JenisPaket', 'PAYPERUSE')
                         ->exists();
+
+                    if ($FindJenisPakai) {
+                        $adaOrder = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
+                            ->where('tableid', $titik->id)
+                            ->where('Status', 1)
+                            ->whereIn('DocumentStatus',['D','O'])
+                            ->where(function ($query) use ($fullEnd) {
+                                $query->where('JamSelesai', '>=', $fullEnd->format('Y-m-d H:i:s'))
+                                ->orWhereNull('JamSelesai');
+                            })
+                            ->where('JamMulai', '<=', $fullEnd->format('Y-m-d H:i:s'))
+                            ->where('tableorderheader.TglTransaksi', $tanggalBooking)
+                            // ->where(DB::raw("CASE WHEN tableorderheader.JenisPaket = 'PAYPERUSE' THEN DATE(tableorderheader.TglTransaksi) ELSE '" . $tanggalBooking . "' END = '" . $tanggalBooking . "'"))
+                            ->exists();
+                    }
+                    else{
+                        $adaOrder = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
+                        ->where('tableid', $titik->id)
+                        ->where('Status', 1)
+                        ->whereIn('DocumentStatus',['D','O'])
+                        ->where(function ($query) use ($fullEnd) {
+                            $query->where('JamSelesai', '>=', $fullEnd->format('Y-m-d H:i:s'))
+                            ->orWhereNull('JamSelesai');
+                        })
+                        ->where('JamMulai', '<=', $fullEnd->format('Y-m-d H:i:s'))
+                        // ->where(DB::raw("CASE WHEN tableorderheader.JenisPaket = 'PAYPERUSE' THEN DATE(tableorderheader.TglTransaksi) ELSE '" . $tanggalBooking . "' END = '" . $tanggalBooking . "'"))
+                        ->exists();
+                    }
+
+                    
                     
 
                     $futureOrders = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
