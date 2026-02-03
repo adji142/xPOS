@@ -561,7 +561,7 @@ class TitikLampuController extends Controller
                     $company = DB::table('company')->where('KodePartner', $roid)->first();
                     $duration = $request->input('bookingDuration', 1);
                     if ($request->input('JenisPaket') != 'JAMREALTIME') {
-                        $duration = $paket->Durasi;
+                        $duration = 0;
                     }
 
                     $basePrice = $paket->HargaNormal * $duration;
@@ -616,11 +616,12 @@ class TitikLampuController extends Controller
                     
                     if ($model->JenisPaket == 'JAM' || $model->JenisPaket == 'PAKETMEMBER' || $model->JenisPaket == 'JAMREALTIME') {
                          $model->JamSelesai = $model->JamMulai->copy()->addHours($duration)->subMinute();
-                    } elseif ($model->JenisPaket == 'MENIT') {
-                         $model->JamSelesai = $model->JamMulai->copy()->addMinutes($duration)->subMinute();
-                    } else {
-                         $model->JamSelesai = $model->JamMulai->copy()->endOfDay();
-                    }
+                    } 
+                    // elseif ($model->JenisPaket == 'MENIT') {
+                    //      $model->JamSelesai = $model->JamMulai->copy()->addMinutes($duration)->subMinute();
+                    // } else {
+                    //      $model->JamSelesai = $model->JamMulai->copy()->endOfDay();
+                    // }
                     $model->DurasiPaket = $duration;
                     // $model->HargaSewa = $basePrice;
                     $model->TaxTotal = 0;
@@ -807,7 +808,7 @@ class TitikLampuController extends Controller
                     $company = DB::table('company')->where('KodePartner', $roid)->first();
                     $duration = $jsonData['bookingDuration'] ?? 1;
                     if (($jsonData['JenisPaket'] ?? '') != 'JAMREALTIME') {
-                        $duration = $paket->Durasi;
+                        $duration = 0;
                     }
 
                     $basePrice = $paket->HargaNormal * $duration;
@@ -862,11 +863,12 @@ class TitikLampuController extends Controller
                     
                     if ($model->JenisPaket == 'JAM' || $model->JenisPaket == 'PAKETMEMBER' || $model->JenisPaket == 'JAMREALTIME') {
                          $model->JamSelesai = $model->JamMulai->copy()->addHours($duration)->subMinute();
-                    } elseif ($model->JenisPaket == 'MENIT') {
-                         $model->JamSelesai = $model->JamMulai->copy()->addMinutes($duration)->subMinute();
-                    } else {
-                         $model->JamSelesai = $model->JamMulai->copy()->endOfDay();
-                    }
+                    } 
+                    // elseif ($model->JenisPaket == 'MENIT') {
+                    //      $model->JamSelesai = $model->JamMulai->copy()->addMinutes($duration)->subMinute();
+                    // } else {
+                    //      $model->JamSelesai = $model->JamMulai->copy()->endOfDay();
+                    // }
                     $model->DurasiPaket = $duration;
                     // $model->HargaSewa = $basePrice;
                     $model->TaxTotal = 0;
