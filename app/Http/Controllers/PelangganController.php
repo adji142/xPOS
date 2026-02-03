@@ -83,14 +83,14 @@ class PelangganController extends Controller
         $NoHP          = $request->input('NoTlp1');
         $Email         = $request->input('Email');
 
-        $RecordOwnerID = "";
-
-        if(!empty($request->input('RecordOwnerID'))){
-            $RecordOwnerID = $request->input('RecordOwnerID');
+        $RecordOwnerID = $request->input('RecordOwnerID');
+    if (empty($RecordOwnerID)) {
+        if (Auth::check()) {
+            $RecordOwnerID = Auth::user()->RecordOwnerID;
+        } else {
+            return response()->json(['success' => false, 'message' => 'RecordOwnerID is required'], 400);
         }
-        else{
-            $RecordOwnerID =    Auth::user()->RecordOwnerID;
-        }
+    }
 
         $sql = "pelanggan.*, gruppelanggan.DiskonPersen";
         $pelanggan = Pelanggan::selectRaw($sql)

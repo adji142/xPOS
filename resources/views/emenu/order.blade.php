@@ -557,6 +557,7 @@
                         "KodePelanggan" : "",
                         "GrupPelanggan" : "",
                         "NoTlp1" : noTlp,
+                        "RecordOwnerID": "{{ $roid }}",
                         "_token": "{{ csrf_token() }}"
                     },
                     beforeSend: function() {
@@ -573,7 +574,7 @@
                             $('#txtKodePelanggan_EMenu').val('');
                         }
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
                         $('#txtNamaPelanggan_EMenu').attr('disabled', false).val('').attr('readonly', false);
                     }
                 });
@@ -768,6 +769,8 @@
                     'table_id': "{{ $titikLampu->id }}"
                 };
 
+                // alert(oData);
+
                 fetch("{{route('emenu.create-payment')}}", {
                     method: 'POST',
                     headers: {
@@ -922,11 +925,13 @@
 
             const grandTotal = subtotal + serviceFee + tableSubtotal;
 
+            // alert('{{ $roid }}');
+
             fetch('{{ route("emenu.store") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({
                     cart: cart,

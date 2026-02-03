@@ -153,7 +153,7 @@ Route::post('/pelanggan/edit', [PelangganController::class, 'edit'])->name('pela
 Route::delete('/pelanggan/delete/{id}', [PelangganController::class, 'deletedata'])->name('pelanggan-delete')->middleware(['auth', 'check.session']);
 Route::post('/pelanggan/demografi', [PelangganController::class, 'ReadDemografi'])->name('demografipelanggan');
 Route::get('/pelanggan/export', [PelangganController::class,'Export'])->name('pelanggan-export')->middleware(['auth', 'check.session']);
-Route::post('/pelanggan/viewJson', [PelangganController::class, 'ReadPelangganJson'])->name('pelanggan-viewJson')->middleware(['auth', 'check.session']);
+Route::post('/pelanggan/viewJson', [PelangganController::class, 'ReadPelangganJson'])->name('pelanggan-viewJson');
 Route::post('/pelanggan/activate', [PelangganController::class, 'activateMember'])->name('pelanggan-activate')->middleware(['auth', 'check.session']);
 Route::post('/pelanggan/extend', [PelangganController::class, 'extendMember'])->name('pelanggan-extend')->middleware(['auth', 'check.session']);
 Route::post('/pelanggan/payment-gateway', [PelangganController::class, 'paymentGateway'])->name('pelanggan-payment-gateway')->middleware(['auth', 'check.session']);

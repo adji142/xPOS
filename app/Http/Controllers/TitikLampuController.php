@@ -506,6 +506,7 @@ class TitikLampuController extends Controller
 
     public function storeOrder(Request $request)
     {
+        Log::debug('EMenu storeOrder: Start', ['request' => $request->all()]);
         $data = ['success' => false, 'message' => ''];
         DB::beginTransaction();
 
@@ -516,9 +517,15 @@ class TitikLampuController extends Controller
             $paymentMethod = $request->input('payment_method');
             $total = $request->input('total');
 
+            if (empty($roid)) {
+                throw new \Exception('RecordOwnerID (roid) is missing');
+            }
+
             if (empty($cart)) {
                 throw new \Exception('Cart is empty');
             }
+
+            Log::debug('EMenu storeOrder: Validation Passed', ['roid' => $roid, 'table_id' => $tableId]);
 
             $currentDate = Carbon::now();
 
@@ -535,14 +542,18 @@ class TitikLampuController extends Controller
                 ->where('DocumentStatus', 'O')
                 ->first();
 
+            Log::debug('EMenu storeOrder: Active Session Result', ['active' => !empty($activeSession)]);
+
             $NoTransaksi = "";
             if ($activeSession) {
                 $NoTransaksi = $activeSession->NoTransaksi;
             } else {
                 // Check if booking data provided (activation)
                 if ($request->has('paketid') && $request->input('paketid') != "") {
+                    Log::debug('EMenu storeOrder: Activating Table', ['paketid' => $request->input('paketid'), 'JenisPaket' => $request->input('JenisPaket')]);
                     $numberingData = new DocumentNumbering();
-                    $NoTransaksi = $numberingData->GetNewDoc("POS","tableorderheader","NoTransaksi");
+                    $NoTransaksi = $numberingData->GetNewDocMobile("POS","tableorderheader","NoTransaksi", $roid);
+                    Log::debug('EMenu storeOrder: New NoTransaksi Generated', ['NoTransaksi' => $NoTransaksi]);
                     
                     $paket = Paket::find($request->input('paketid'));
                     if (!$paket) throw new \Exception('Paket tidak valid');
@@ -572,7 +583,7 @@ class TitikLampuController extends Controller
                             $kodePelanggan = $pelangganExist->KodePelanggan;
                         } else {
                             $numberingPelanggan = new DocumentNumbering();
-                            $kodePelanggan = $numberingPelanggan->GetNewDoc("PLG","pelanggan","KodePelanggan");
+                            $kodePelanggan = $numberingPelanggan->GetNewDocMobile("PLG","pelanggan","KodePelanggan", $roid);
                             
                             DB::table('pelanggan')->insert([
                                 'KodePelanggan' => $kodePelanggan,
@@ -632,6 +643,7 @@ class TitikLampuController extends Controller
             }
 
             $subtotalCart = 0;
+            Log::debug('EMenu storeOrder: Processing Cart Items', ['cart_count' => count($cart)]);
             foreach ($cart as $id => $item) {
                 $subtotalCart += $item['qty'] * $item['price'];
             }
@@ -645,6 +657,8 @@ class TitikLampuController extends Controller
                 ->max('LineNumber');
             
             $lineNumber = ($lastLine !== null) ? $lastLine + 1 : 0;
+
+            Log::debug('EMenu storeOrder: Saving to tableorderfnb', ['NoTransaksi' => $NoTransaksi, 'StartLineNumber' => $lineNumber]);
 
             foreach ($cart as $id => $item) {
                 $itemMaster = DB::table('itemmaster')->where('RecordOwnerID', $roid)->where('KodeItem', $id)->first();
@@ -668,6 +682,7 @@ class TitikLampuController extends Controller
                 $modelDetail->RecordOwnerID = $roid;
                 $modelDetail->LineStatus = 'O'; // Added LineStatus = 'O'
                 $modelDetail->save();
+                Log::debug('EMenu storeOrder: Saved item', ['id' => $id, 'qty' => $item['qty'], 'price' => $item['price']]);
             }
 
             DB::commit();
@@ -675,7 +690,10 @@ class TitikLampuController extends Controller
             $data['message'] = 'Order placed successfully!';
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('EMenu Error: ' . $e->getMessage());
+            Log::error('EMenu storeOrder Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
             $data['message'] = $e->getMessage();
         }
 
@@ -734,12 +752,16 @@ class TitikLampuController extends Controller
         try {
             $jsonData = $request->json()->all();
             $cart = $jsonData['cart'];
-            $roid = $jsonData['roid'];
+            $roid = $jsonData['roid'] ?? null;
             $tableId = $jsonData['table_id'];
             $paymentMethodId = $jsonData['payment_method'];
             $total = $jsonData['total'];
             $serviceFeeTotal = $jsonData['service_fee'] ?? 0;
             $reffPembayaran = $jsonData['reff_pembayaran'];
+
+            if (empty($roid)) {
+                throw new \Exception('RecordOwnerID (roid) is missing');
+            }
 
             if (empty($cart)) {
                 throw new \Exception('Cart is empty');
@@ -777,7 +799,7 @@ class TitikLampuController extends Controller
                 // Check if booking data provided (activation)
                 if (isset($jsonData['paketid']) && $jsonData['paketid'] != "") {
                     $numberingData = new DocumentNumbering();
-                    $NoTransaksiTableOrder = $numberingData->GetNewDoc("POS","tableorderheader","NoTransaksi");
+                    $NoTransaksiTableOrder = $numberingData->GetNewDocMobile("POS","tableorderheader","NoTransaksi", $roid);
                     
                     $paket = Paket::find($jsonData['paketid']);
                     if (!$paket) throw new \Exception('Paket tidak valid');
@@ -807,7 +829,7 @@ class TitikLampuController extends Controller
                             $kodePelanggan = $pelangganExist->KodePelanggan;
                         } else {
                             $numberingPelanggan = new DocumentNumbering();
-                            $kodePelanggan = $numberingPelanggan->GetNewDoc("PLG","pelanggan","KodePelanggan");
+                            $kodePelanggan = $numberingPelanggan->GetNewDocMobile("PLG","pelanggan","KodePelanggan", $roid);
                             
                             DB::table('pelanggan')->insert([
                                 'KodePelanggan' => $kodePelanggan,
@@ -909,7 +931,7 @@ class TitikLampuController extends Controller
             $numberingData = new DocumentNumbering();
             
             // --- F&B Invoice ---
-            $NoTransaksiFakturFB = $numberingData->GetNewDoc("OINV", "fakturpenjualanheader", "NoTransaksi");
+            $NoTransaksiFakturFB = $numberingData->GetNewDocMobile("OINV", "fakturpenjualanheader", "NoTransaksi", $roid);
             $fakturHeaderFB = new FakturPenjualanHeader();
             $fakturHeaderFB->Periode = $currentDate->format('Ym');
             $fakturHeaderFB->Transaksi= 'POS';

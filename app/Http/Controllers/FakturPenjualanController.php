@@ -823,7 +823,7 @@ class FakturPenjualanController extends Controller
 		
 					
 					foreach ($getPenjualanvalue as $key) {
-						if ($key['TypeItem'] == 1) {
+						if ($key['TypeItem'] == 1 || $key['TypeItem'] == 2) {
 							$getSetting = $Setting->GetSetting("InvAcctPendapatanJual");
 							$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
 											->where('KodeRekening', $getSetting)->get();
