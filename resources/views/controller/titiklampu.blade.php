@@ -51,6 +51,7 @@
                                                 <th>Nama Controller</th>
                                                 <th>Digital Input</th>
 												<th>Kelompok Lampu</th>
+                                                <th>Status Lampu</th>
 												<th class=" no-sort text-end">Action</th>
 											</tr>
 										</thead>
@@ -61,9 +62,23 @@
 													<td>{{ $v['NamaTitikLampu'] }}</td>
 													<td>{{ $v['NamaController'] }}</td>
                                                     <td>{{ $v['DigitalInput'] }}</td>
-													<td>{{ $v['NamaKelompok'] }}</td>
+                                                    <td>{{ $v['NamaKelompok'] }}</td>
+                                                    <td>
+                                                        @if($v['Status'] == 0)
+                                                            <span class="badge bg-danger text-white">Off</span>
+                                                        @elseif($v['Status'] == 1)
+                                                            <span class="badge bg-success text-white">On</span>
+                                                        @elseif($v['Status'] == 2)
+                                                            <span class="badge bg-warning text-white">Hampir Habis</span>
+                                                        @elseif($v['Status'] == -1)
+                                                            <span class="badge bg-info text-white">Checkout</span>
+                                                        @endif
+                                                    </td>
 													<td>
 														<div class="card-toolbar text-end">
+                                                            @if($v['Status'] == 1 && $v['active_order_count'] == 0)
+                                                                <a href="{{ route('titiklampu-power-off', $v['id']) }}" class="btn btn-sm btn-outline-danger rounded-pill font-weight-bold me-1">Power Off</a>
+                                                            @endif
 															<button class="btn p-0 shadow-none" type="button" id="dropdowneditButton1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 																<span class="svg-icon">
 																	<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-three-dots text-body" fill="currentColor" xmlns="http://www.w3.org/2000/svg">

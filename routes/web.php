@@ -973,6 +973,7 @@ Route::delete('/titiklampu/delete/{id}', [TitikLampuController::class, 'deleteda
 Route::get('/titiklampu/export', [TitikLampuController::class,'Export'])->name('titiklampu-export')->middleware(['auth', 'check.session']);
 Route::get('/get-meja', [TitikLampuController::class, 'getMeja'])->name('titiklampu-getMeja')->middleware(['auth', 'check.session']);
 Route::post('/titiklampu/updateStatusMeja', [TitikLampuController::class, 'updateStatusMeja'])->name('titiklampu-updateStatusMeja')->middleware(['auth', 'check.session']);
+Route::get('/titiklampu/power-off/{id}', [TitikLampuController::class, 'powerOff'])->name('titiklampu-power-off')->middleware(['auth', 'check.session']);
 
 /*
 |--------------------------------------------------------------------------

@@ -56,7 +56,8 @@ class TitikLampuController extends Controller
                     for ($i = 0; $i < count($field); $i++){
                         $query->orwhere($field[$i], 'like',  '%' . $keyword .'%');
                     }      
-                })->where('titiklampu.RecordOwnerID','=',Auth::user()->RecordOwnerID);
+                })->where('titiklampu.RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                ->selectRaw("(SELECT COUNT(*) FROM tableorderheader WHERE tableorderheader.tableid = titiklampu.id AND tableorderheader.Status = 1 AND tableorderheader.RecordOwnerID = titiklampu.RecordOwnerID) as active_order_count");
         
                 if ($ControllerID > 0) {
                     $titiklampu->where('titiklampu.ControllerID', $ControllerID);
@@ -343,6 +344,28 @@ class TitikLampuController extends Controller
             return response()->json(['success' => false, 'message' => 'Edit Titik Lampu Gagal'], 400);
         }
 
+    }
+
+    public function powerOff($id)
+    {
+        try {
+            $table = TitikLampu::where('id', $id)
+                        ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                        ->first();
+
+            if ($table) {
+                $table->Status = 0;
+                $table->save();
+                alert()->success('Success', 'Lampu berhasil dimatikan.');
+            } else {
+                alert()->error('Error', 'Titik Lampu tidak ditemukan.');
+            }
+            return redirect()->back();
+        } catch (\Exception $e) {
+            Log::error('Power Off Error: ' . $e->getMessage());
+            alert()->error('Error', 'Gagal mematikan lampu: ' . $e->getMessage());
+            return redirect()->back();
+        }
     }
 
     public function emenu($id, $roid)
