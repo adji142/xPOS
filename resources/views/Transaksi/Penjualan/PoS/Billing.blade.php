@@ -1574,6 +1574,8 @@ License: You must have a valid license purchased only from themeforest(the above
 	const documentBaseUrl = "{{ route('document') }}";
 	var tglBerlangganan;
 
+	const oCompany = <?php echo $company ?>;
+
     jQuery(function () {
 		// Initialize Bootstrap tooltips
 		jQuery('[data-toggle="tooltip"]').tooltip();
@@ -3194,7 +3196,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 		function PaymentGateWayTambahJam(ButonObject, ButtonDefaultText) {
 			// _custdisplayopened
-			const oCompany = <?php echo $company ?>;
+			
 			const NoTransaksi = jQuery('#txtNoTransaksi_RubahDurasi').val();
 			const filteredData = _billing.filter(item => item.NoTransaksi == NoTransaksi);
 
@@ -3332,7 +3334,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			ButonObject.text('Tunggu Sebentar.....');
   			ButonObject.attr('disabled',true);
 
-			const oCompany = <?php echo $company ?>;
+			
 			const NoTransaksi = jQuery('#txtNoTransaksi_RubahDurasi').val();
 			const filteredData = _billing.filter(item => item.NoTransaksi == NoTransaksi);
 
@@ -3549,7 +3551,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 		function PaymentGateWayTambahMakan(ButonObject, ButtonDefaultText) {
 			// _custdisplayopened
-			const oCompany = <?php echo $company ?>;
+			
 			const filteredData = _billing.filter(item => item.NoTransaksi == jQuery('#txtNoTransaksi_TambahMakan').val());
 
 			const now = new Date();
@@ -3703,7 +3705,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			ButonObject.text('Tunggu Sebentar.....');
   			ButonObject.attr('disabled',true);
 
-			const oCompany = <?php echo $company ?>;
+			
 			const filteredData = _billing.filter(item => item.NoTransaksi == jQuery('#txtNoTransaksi_TambahMakan').val());
 
 			const now = new Date();
@@ -3902,7 +3904,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		});
 
 		function CalculateTotalTambahMakanan() {
-			const oCompany = <?php echo $company ?>;
+			
 
 			var subtotal = 0;
 			var diskon = 0;
@@ -4331,7 +4333,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		function SetTimer(tableid, TimerType ,EndTime, StartTime, NoTransaksi, JenisPaket, Status) {
 
 			// clock_
-			const oCompany = <?php echo $company ?>;
+			
 			const _warningMinutes = oCompany[0]["WarningTimer"] == null ? 0 : oCompany[0]["WarningTimer"];
 
 			const ul = document.createElement("ul");
@@ -4556,7 +4558,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		function fnDetails(NoTransaksi, oData) {
 			const filteredData = _billing.filter(item => item.NoTransaksi == NoTransaksi);
 			const DataPaket = <?php echo $paket ?>;
-			const oCompany = <?php echo $company ?>;
+			
 			// console.log(NoTransaksi)
 			// console.log(filteredData);
 			const filteredPaket = DataPaket.filter(item => item.id == filteredData[0]['paketid']);
@@ -5343,7 +5345,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			ButonObject.text('Tunggu Sebentar.....');
   			ButonObject.attr('disabled',true);
 
-			const oCompany = <?php echo $company ?>;
+			
 			const filteredData = _billing.filter(item => item.NoTransaksi == jQuery('#txtNoTransaksi_Detail').val());
 
 			const now = new Date();
@@ -5561,7 +5563,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		}
 
 		function GenerateTotal() {
-			const oCompany = <?php echo $company ?>;
+			
 			const filteredData = _billing.filter(item => item.NoTransaksi == jQuery('#txtNoTransaksi_Detail').val());
 
 			const now = new Date();
@@ -5631,7 +5633,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		}
 
 		function Bayardidepan(Status, ButonObject, ButtonDefaultText){
-			const oCompany = <?php echo $company ?>;
+			
 			const filteredData = _billing.filter(item => item.NoTransaksi == jQuery('#txtNoTransaksi_Detail').val());
 
 			const now = new Date();
@@ -5731,7 +5733,7 @@ License: You must have a valid license purchased only from themeforest(the above
 
 		function PaymentGateWay(Status, ButonObject, ButtonDefaultText) {
 			// _custdisplayopened
-			const oCompany = <?php echo $company ?>;
+			
 			const filteredData = _billing.filter(item => item.NoTransaksi == jQuery('#txtNoTransaksi_Detail').val());
 
 			const now = new Date();

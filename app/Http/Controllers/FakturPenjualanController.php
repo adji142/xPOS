@@ -1207,9 +1207,9 @@ class FakturPenjualanController extends Controller
 			$model->PajakHiburan = $jsonData['PajakHiburan'];
 			$model->BiayaLayanan = $jsonData['BiayaLayanan'];
 
-			
 
-			$oExistingData = FakturPenjualanDetail::selectRaw('fakturpenjualandetail.BaseReff, SUM(fakturpenjualandetail.Qty) as Qty')
+			if (count($jsonData['Detail']) > 0) {
+				$oExistingData = FakturPenjualanDetail::selectRaw('fakturpenjualandetail.BaseReff, SUM(fakturpenjualandetail.Qty) as Qty')
 								->leftJoin('itemmaster', function ($value)  {
 									$value->on('itemmaster.KodeItem','=','fakturpenjualandetail.KodeItem')
 									->on('itemmaster.RecordOwnerID','=','fakturpenjualandetail.RecordOwnerID');
@@ -1218,8 +1218,9 @@ class FakturPenjualanController extends Controller
 								->where('fakturpenjualandetail.BaseReff', $jsonData['Detail'][0]['BaseReff'])
 								->groupBy('fakturpenjualandetail.BaseReff')
 								->first();
-			if($oExistingData){
-				$model->NoReff = "EMENU-CASH";
+				if($oExistingData){
+					$model->NoReff = "EMENU-CASH";
+				}
 			}
 
    
