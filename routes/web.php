@@ -101,6 +101,13 @@ Route::get('/forgotpassword', [LoginController::class, 'forgotpassword'])->name(
 Route::get('/resetpassword/{id}', [LoginController::class, 'resetpassword'])->name('resetpassword');
 Route::post('/SendEmailResetPassword', [LoginController::class, 'SendEmailResetPassword'])->name('SendEmailResetPassword');
 Route::post('/actionResetPassword', [LoginController::class, 'actionResetPassword'])->name('actionResetPassword');
+
+Route::get('/emenu/{id}/{roid}', [TitikLampuController::class, 'emenu'])->name('emenu.order');
+Route::post('/emenu/store', [TitikLampuController::class, 'storeOrder'])->name('emenu.store');
+Route::post('/emenu/create-payment', [TitikLampuController::class, 'createPaymentEMenu'])->name('emenu.create-payment');
+Route::post('/emenu/store-qris', [TitikLampuController::class, 'storeOrderEMenuQRIS'])->name('emenu.store-qris');
+Route::get('titiklampu/generate-qrcode', [TitikLampuController::class, 'generateQRCode'])->name('titiklampu-generate-qrcode');
+Route::get('titiklampu/download-qr-zip', [TitikLampuController::class, 'downloadZipQR'])->name('titiklampu-download-qr-zip')->middleware(['auth', 'check.session']);
 /*
 |--------------------------------------------------------------------------
 | Grup Pelanggan
@@ -146,7 +153,7 @@ Route::post('/pelanggan/edit', [PelangganController::class, 'edit'])->name('pela
 Route::delete('/pelanggan/delete/{id}', [PelangganController::class, 'deletedata'])->name('pelanggan-delete')->middleware(['auth', 'check.session']);
 Route::post('/pelanggan/demografi', [PelangganController::class, 'ReadDemografi'])->name('demografipelanggan');
 Route::get('/pelanggan/export', [PelangganController::class,'Export'])->name('pelanggan-export')->middleware(['auth', 'check.session']);
-Route::post('/pelanggan/viewJson', [PelangganController::class, 'ReadPelangganJson'])->name('pelanggan-viewJson')->middleware(['auth', 'check.session']);
+Route::post('/pelanggan/viewJson', [PelangganController::class, 'ReadPelangganJson'])->name('pelanggan-viewJson');
 Route::post('/pelanggan/activate', [PelangganController::class, 'activateMember'])->name('pelanggan-activate')->middleware(['auth', 'check.session']);
 Route::post('/pelanggan/extend', [PelangganController::class, 'extendMember'])->name('pelanggan-extend')->middleware(['auth', 'check.session']);
 Route::post('/pelanggan/payment-gateway', [PelangganController::class, 'paymentGateway'])->name('pelanggan-payment-gateway')->middleware(['auth', 'check.session']);
@@ -966,6 +973,7 @@ Route::delete('/titiklampu/delete/{id}', [TitikLampuController::class, 'deleteda
 Route::get('/titiklampu/export', [TitikLampuController::class,'Export'])->name('titiklampu-export')->middleware(['auth', 'check.session']);
 Route::get('/get-meja', [TitikLampuController::class, 'getMeja'])->name('titiklampu-getMeja')->middleware(['auth', 'check.session']);
 Route::post('/titiklampu/updateStatusMeja', [TitikLampuController::class, 'updateStatusMeja'])->name('titiklampu-updateStatusMeja')->middleware(['auth', 'check.session']);
+Route::get('/titiklampu/power-off/{id}', [TitikLampuController::class, 'powerOff'])->name('titiklampu-power-off')->middleware(['auth', 'check.session']);
 
 /*
 |--------------------------------------------------------------------------

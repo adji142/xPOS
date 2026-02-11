@@ -46,6 +46,46 @@ class TableOrderController extends Controller
                         ]
                     );
 
+        $subqueryPembayaran = FakturPenjualanDetail::selectRaw("fakturpenjualandetail.BaseReff, fakturpenjualandetail.RecordOwnerID,
+                            SUM(COALESCE(CASE WHEN fakturpenjualanheader.TotalPembayaran > fakturpenjualanheader.TotalPembelian THEN fakturpenjualanheader.TotalPembelian ELSE fakturpenjualanheader.TotalPembayaran END ,0)) as TotalPembayaran,
+                            MAX(fakturpenjualanheader.NoReff) as NoReff")
+                            ->join('fakturpenjualanheader', function ($join) {
+                                $join->on('fakturpenjualanheader.NoTransaksi', '=', 'fakturpenjualandetail.NoTransaksi')
+                                    ->on('fakturpenjualanheader.RecordOwnerID', '=', 'fakturpenjualandetail.RecordOwnerID')
+                                    ->where('fakturpenjualanheader.Status', '=', 'C')
+                                    ->where('fakturpenjualanheader.TotalPembayaran', '>', 0);
+                            })
+                            ->whereIn(DB::RAW("COALESCE(fakturpenjualanheader.NoReff, 'POS')"), ['POS'])
+                            ->groupBy('fakturpenjualandetail.BaseReff', 'fakturpenjualandetail.RecordOwnerID');
+        
+        $subqueryPembayaran_emenu = FakturPenjualanDetail::selectRaw("fakturpenjualandetail.BaseReff, fakturpenjualandetail.RecordOwnerID,
+                            SUM(COALESCE(CASE WHEN fakturpenjualanheader.TotalPembayaran > fakturpenjualanheader.TotalPembelian THEN fakturpenjualanheader.TotalPembelian ELSE fakturpenjualanheader.TotalPembayaran END ,0)) as TotalPembayaran,
+                            MAX(fakturpenjualanheader.NoReff) as NoReff")
+                            ->join('fakturpenjualanheader', function ($join) {
+                                $join->on('fakturpenjualanheader.NoTransaksi', '=', 'fakturpenjualandetail.NoTransaksi')
+                                    ->on('fakturpenjualanheader.RecordOwnerID', '=', 'fakturpenjualandetail.RecordOwnerID')
+                                    ->where('fakturpenjualanheader.Status', '=', 'C')
+                                    ->where('fakturpenjualanheader.TotalPembayaran', '>', 0);
+                            })
+                            ->whereIn(DB::RAW("COALESCE(fakturpenjualanheader.NoReff, 'POS')"), ['POS'])
+                            ->groupBy('fakturpenjualandetail.BaseReff', 'fakturpenjualandetail.RecordOwnerID');
+
+        $subqueryPembayaranJasa = FakturPenjualanDetail::selectRaw("fakturpenjualandetail.BaseReff, fakturpenjualandetail.RecordOwnerID,
+                            SUM(COALESCE(CASE WHEN fakturpenjualanheader.TotalPembayaran > fakturpenjualanheader.TotalPembelian THEN fakturpenjualanheader.TotalPembelian ELSE fakturpenjualanheader.TotalPembayaran END ,0)) as TotalPembayaran,
+                            MAX(fakturpenjualanheader.NoReff) as NoReff")
+                            ->join('fakturpenjualanheader', function ($join) {
+                                $join->on('fakturpenjualanheader.NoTransaksi', '=', 'fakturpenjualandetail.NoTransaksi')
+                                    ->on('fakturpenjualanheader.RecordOwnerID', '=', 'fakturpenjualandetail.RecordOwnerID')
+                                    ->where('fakturpenjualanheader.Status', '=', 'C')
+                                    ->where('fakturpenjualanheader.TotalPembayaran', '>', 0);
+                            })
+                            ->join('itemmaster', function($join){
+                                $join->on('fakturpenjualandetail.KodeItem', '=', 'itemmaster.KodeItem')
+                                    ->on('itemmaster.RecordOwnerID', '=', 'fakturpenjualandetail.RecordOwnerID');
+                            })
+                            ->whereIn(DB::RAW("COALESCE(fakturpenjualanheader.NoReff, 'POS')"), ['POS'])
+                            ->where('itemmaster.TypeItem', 4)
+                            ->groupBy('fakturpenjualandetail.BaseReff', 'fakturpenjualandetail.RecordOwnerID');
         $titiklampu = TitikLampu::selectRaw("DISTINCT titiklampu.*,
                             CASE WHEN COALESCE(titiklampu.status,0) = 0 THEN 'KOSONG' ELSE 
                                 CASE WHEN titiklampu.Status = 1 THEN 'AKTIF' ELSE 
@@ -68,6 +108,7 @@ class TableOrderController extends Controller
                             tableorderheader.TglTransaksi,
                             tableorderheader.KodePelanggan,
                             pelanggan.NamaPelanggan,
+                            pelanggan.TglBerlanggananPaketBulanan,
                             gruppelanggan.NamaGrup,
                             gruppelanggan.DiskonPersen,
                             CASE WHEN COALESCE(bookingtableonline.NoTransaksi,'') != '' THEN 'BOOKING' ELSE 'TIDAKBOOKING' END AS StatusBooking,
@@ -77,8 +118,11 @@ class TableOrderController extends Controller
                             COALESCE(bookingtableonline.TotalLainLain,0) AS BookingTotalLainLain,
                             COALESCE(bookingtableonline.NetTotal,0) AS BookingNetTotal,
                             COALESCE(bookingtableonline.Keterangan,'') AS BookingPaymentReffNumber,
-                            COALESCE(CASE WHEN fakturpenjualanheader.TotalPembayaran > fakturpenjualanheader.TotalPembelian THEN fakturpenjualanheader.TotalPembelian ELSE fakturpenjualanheader.TotalPembayaran END ,0) as TotalPembayaran,
-                            COALESCE(tkelompoklampu.NamaKelompok,'') AS NamaKelompok
+                            COALESCE(payment_summary.TotalPembayaran, 0) as TotalPembayaran,
+                            COALESCE(tkelompoklampu.NamaKelompok,'') AS NamaKelompok,
+                            pelanggan.TglBerlanggananPaketBulanan,
+                            COALESCE(payment_summary.NoReff, 'POS') NoReff,
+                            CASE WHEN payment_summary_jasa.BaseReff IS NOT NULL then 1 ELSE 0 END as isJasaPaid
                         ")
                         ->leftJoin('tableorderheader', function ($value)  {
                             $value->on('titiklampu.id','=','tableorderheader.tableid')
@@ -106,22 +150,25 @@ class TableOrderController extends Controller
                             $value->on('bookingtableonline.NoTransaksi','=','tableorderheader.NoTransaksi')
                             ->on('bookingtableonline.RecordOwnerID','=','tableorderheader.RecordOwnerID');
                         })
-                        ->leftJoin('fakturpenjualandetail', function ($value)  {
-                            $value->on('fakturpenjualandetail.BaseReff','=','tableorderheader.NoTransaksi')
-                            ->on('fakturpenjualandetail.RecordOwnerID','=','tableorderheader.RecordOwnerID');
-                        })
-                        ->leftJoin('fakturpenjualanheader', function ($value)  {
-                            $value->on('fakturpenjualanheader.NoTransaksi','=','fakturpenjualandetail.NoTransaksi')
-                            ->on('fakturpenjualanheader.RecordOwnerID','=','fakturpenjualandetail.RecordOwnerID')
-                            ->where('fakturpenjualanheader.Status', '=', 'C') // kondisi nilai tetap
-                            ->where('fakturpenjualanheader.TotalPembayaran', '>', 0); // kondisi angka tetap
+                        ->leftJoinSub($subqueryPembayaran, 'payment_summary', function ($join) {
+                            $join->on('tableorderheader.NoTransaksi', '=', 'payment_summary.BaseReff')
+                                 ->on('tableorderheader.RecordOwnerID', '=', 'payment_summary.RecordOwnerID');
                         })
                         ->leftjoin('tkelompoklampu', function ($value)  {
                             $value->on('titiklampu.KelompokLampu','=','tkelompoklampu.KodeKelompok')
                             ->on('titiklampu.RecordOwnerID','=','tkelompoklampu.RecordOwnerID');
                         })
+                        ->join('mastercontroller', function ($value)  {
+                            $value->on('titiklampu.ControllerID','=','mastercontroller.id')
+                            ->on('titiklampu.RecordOwnerID','=','mastercontroller.RecordOwnerID');
+                        })
+                        ->leftJoinSub($subqueryPembayaranJasa, 'payment_summary_jasa', function ($join) {
+                            $join->on('tableorderheader.NoTransaksi', '=', 'payment_summary_jasa.BaseReff')
+                                 ->on('tableorderheader.RecordOwnerID', '=', 'payment_summary_jasa.RecordOwnerID');
+                        })
                         ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
-                        ->where(DB::raw("COALESCE(fakturpenjualanheader.NoReff,'POS')"), 'POS')
+                        ->whereIn(DB::raw("COALESCE(payment_summary.NoReff,'POS')"), ['POS','POS-FNB','POS-TAMBAHJAM'])
+                        ->OrderBy('titiklampu.DigitalInput','ASC')
                         ->get();
         $titiklampuoption = TitikLampu::where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
                                 ->where('titiklampu.Status','=','0')->get();
@@ -153,6 +200,11 @@ class TableOrderController extends Controller
         $kelompoklampu = KelompokLampu::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
         $gruppelanggan = GrupPelanggan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
+        $jenisLangganan = [];
+        if (count($company) > 0 && $company[0]->JenisLangganan) {
+            $jenisLangganan = json_decode($company[0]->JenisLangganan, true);
+        }
+
         return view("Transaksi.Penjualan.PoS.Billing",[
             'paket' => $paket, 
             'titiklampu' => $titiklampu,
@@ -166,7 +218,8 @@ class TableOrderController extends Controller
             'MetodePembayaranAutoID' => $MetodePembayaranAutoID,
             'kelompoklampu' => $kelompoklampu,
             'gruppelanggan' => $gruppelanggan,
-            'oKodeSales' => Auth::user()->KodeSales
+            'oKodeSales' => Auth::user()->KodeSales,
+            'jenisLangganan' => $jenisLangganan
         ]);
     }
 
@@ -184,6 +237,18 @@ class TableOrderController extends Controller
                         ]
                     );
                     
+        $subqueryPembayaran = FakturPenjualanDetail::selectRaw("fakturpenjualandetail.BaseReff, fakturpenjualandetail.RecordOwnerID,
+                            SUM(COALESCE(CASE WHEN fakturpenjualanheader.TotalPembayaran > fakturpenjualanheader.TotalPembelian THEN fakturpenjualanheader.TotalPembelian ELSE fakturpenjualanheader.TotalPembayaran END ,0)) as TotalPembayaran,
+                            MAX(fakturpenjualanheader.NoReff) as NoReff")
+                            ->join('fakturpenjualanheader', function ($join) {
+                                $join->on('fakturpenjualanheader.NoTransaksi', '=', 'fakturpenjualandetail.NoTransaksi')
+                                    ->on('fakturpenjualanheader.RecordOwnerID', '=', 'fakturpenjualandetail.RecordOwnerID')
+                                    ->where('fakturpenjualanheader.Status', '=', 'C')
+                                    ->where('fakturpenjualanheader.TotalPembayaran', '>', 0);
+                            })
+                            ->where(DB::RAW("COALESCE(fakturpenjualanheader.NoReff, 'POS')"), 'POS')
+                            ->groupBy('fakturpenjualandetail.BaseReff', 'fakturpenjualandetail.RecordOwnerID');
+
         $titiklampu = TitikLampu::selectRaw("DISTINCT titiklampu.*,
                             CASE WHEN COALESCE(titiklampu.status,0) = 0 THEN 'KOSONG' ELSE 
                                 CASE WHEN titiklampu.Status = 1 THEN 'AKTIF' ELSE 
@@ -206,6 +271,7 @@ class TableOrderController extends Controller
                             tableorderheader.TglTransaksi,
                             tableorderheader.KodePelanggan,
                             pelanggan.NamaPelanggan,
+                            pelanggan.TglBerlanggananPaketBulanan,
                             gruppelanggan.NamaGrup,
                             gruppelanggan.DiskonPersen,
                             CASE WHEN COALESCE(bookingtableonline.NoTransaksi,'') != '' THEN 'BOOKING' ELSE 'TIDAKBOOKING' END AS StatusBooking,
@@ -215,7 +281,7 @@ class TableOrderController extends Controller
                             COALESCE(bookingtableonline.TotalLainLain,0) AS BookingTotalLainLain,
                             COALESCE(bookingtableonline.NetTotal,0) AS BookingNetTotal,
                             COALESCE(bookingtableonline.Keterangan,'') AS BookingPaymentReffNumber,
-                            COALESCE(CASE WHEN fakturpenjualanheader.TotalPembayaran > fakturpenjualanheader.TotalPembelian THEN fakturpenjualanheader.TotalPembelian ELSE fakturpenjualanheader.TotalPembayaran END ,0) as TotalPembayaran,
+                            COALESCE(payment_summary.TotalPembayaran, 0) as TotalPembayaran,
                             COALESCE(tkelompoklampu.NamaKelompok,'') AS NamaKelompok
                         ")
                         ->leftJoin('tableorderheader', function ($value)  {
@@ -244,22 +310,20 @@ class TableOrderController extends Controller
                             $value->on('bookingtableonline.NoTransaksi','=','tableorderheader.NoTransaksi')
                             ->on('bookingtableonline.RecordOwnerID','=','tableorderheader.RecordOwnerID');
                         })
-                        ->leftJoin('fakturpenjualandetail', function ($value)  {
-                            $value->on('fakturpenjualandetail.BaseReff','=','tableorderheader.NoTransaksi')
-                            ->on('fakturpenjualandetail.RecordOwnerID','=','tableorderheader.RecordOwnerID');
-                        })
-                        ->leftJoin('fakturpenjualanheader', function ($value)  {
-                            $value->on('fakturpenjualanheader.NoTransaksi','=','fakturpenjualandetail.NoTransaksi')
-                            ->on('fakturpenjualanheader.RecordOwnerID','=','fakturpenjualandetail.RecordOwnerID')
-                            ->where('fakturpenjualanheader.Status', '=', 'C') // kondisi nilai tetap
-                            ->where('fakturpenjualanheader.TotalPembayaran', '>', 0); // kondisi angka tetap
+                        ->leftJoinSub($subqueryPembayaran, 'payment_summary', function ($join) {
+                            $join->on('tableorderheader.NoTransaksi', '=', 'payment_summary.BaseReff')
+                                 ->on('tableorderheader.RecordOwnerID', '=', 'payment_summary.RecordOwnerID');
                         })
                         ->leftjoin('tkelompoklampu', function ($value)  {
                             $value->on('titiklampu.KelompokLampu','=','tkelompoklampu.KodeKelompok')
                             ->on('titiklampu.RecordOwnerID','=','tkelompoklampu.RecordOwnerID');
                         })
+                        ->join('mastercontroller', function ($value)  {
+                            $value->on('titiklampu.ControllerID','=','mastercontroller.id')
+                            ->on('titiklampu.RecordOwnerID','=','mastercontroller.RecordOwnerID');
+                        })
                         ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
-                        ->where(DB::raw("COALESCE(fakturpenjualanheader.NoReff,'POS')"), 'POS')
+                        ->where(DB::raw("COALESCE(payment_summary.NoReff,'POS')"), 'POS')
                         ->get();
         $titiklampuoption = TitikLampu::where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
                                 ->where('titiklampu.Status','=','0')->get();
@@ -292,6 +356,11 @@ class TableOrderController extends Controller
         }
         $kelompoklampu = KelompokLampu::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
+        $jenisLangganan = [];
+        if (count($company) > 0 && $company[0]->JenisLangganan) {
+            $jenisLangganan = json_decode($company[0]->JenisLangganan, true);
+        }
+
         return view("Transaksi.Penjualan.PoS.BillingSelfService",[
             'paket' => $paket, 
             'titiklampu' => $titiklampu,
@@ -304,7 +373,8 @@ class TableOrderController extends Controller
             'midtransclientkey' => $midtransclientkey,
             'MetodePembayaranAutoID' => $MetodePembayaranAutoID,
             'kelompoklampu' => $kelompoklampu,
-            'oKodeSales' => Auth::user()->KodeSales
+            'oKodeSales' => Auth::user()->KodeSales,
+            'jenisLangganan' => $jenisLangganan
         ]);
     }
 
@@ -331,7 +401,8 @@ class TableOrderController extends Controller
 
             $model = new TableOrderHeader;
             $model->NoTransaksi = $NoTransaksi;
-            $model->TglTransaksi = Carbon::now();
+            $tglTransaksi = $request->input('TglTransaksi') ? Carbon::parse($request->input('TglTransaksi')) : Carbon::now();
+            $model->TglTransaksi = $tglTransaksi;
             $model->TglPencatatan = Carbon::now();
             $model->JenisPaket = $request->input('JenisPaket');
             $model->paketid = $request->input('paketid');
@@ -347,16 +418,20 @@ class TableOrderController extends Controller
             
             // JamMulai Handling
             // If provided from frontend (Slot selected), use it.
-            // If not provided (Flexible, or Menit), use NOW.
-            if ($request->has('JamMulai') && $request->input('JamMulai') != "") {
-                $tgl = $request->input('TglBooking') ?? Carbon::now()->format('Y-m-d');
+            // If not provided (Flexible, or Menit), use NOW with the selected date.
+            if ($request->input('JenisPaket') == 'DAILY' || $request->input('JenisPaket') == 'MONTHLY' || $request->input('JenisPaket') == 'YEARLY') {
+                $model->JamMulai = Carbon::parse($request->input('JamMulai'));
+                $model->JamSelesai = Carbon::parse($request->input('JamSelesai'));
+            } elseif ($request->has('JamMulai') && $request->input('JamMulai') != "") {
+                $tgl = $request->input('TglBooking') ?? $tglTransaksi->toDateString();
                 $jam = $request->input('JamMulai');
                 $model->JamMulai = Carbon::parse($tgl . ' ' . $jam);
             } else {
-                $model->JamMulai = Carbon::now();
+                $now = Carbon::now();
+                $model->JamMulai = Carbon::parse($tglTransaksi->toDateString() . ' ' . $now->toTimeString());
             }
 
-            if ($request->input('JenisPaket') == 'JAM' || $request->input('JenisPaket') == 'PAKETMEMBER') {
+            if ($request->input('JenisPaket') == 'JAM' || $request->input('JenisPaket') == 'PAKETMEMBER' || $request->input('JenisPaket') == 'JAMREALTIME') {
                  // JamSelesai Calculation
                  // If frontend provided JamSelesai, we could uses it, BUT calculation based on Duration is safer/consistent
                  // $model->JamSelesai = $currentDate->addHours($request->input('DurasiPaket'))->subMinute(); <--- This uses NOW, we must use Model's JamMulai
@@ -371,6 +446,17 @@ class TableOrderController extends Controller
                 $model->JamSelesai = $currentDate->addMinutes($request->input('DurasiPaket'))->subMinute();
                 // var_dump($currentDate->addHours($request->input('DurasiPaket')));
             }
+
+            if ($request->input('JenisPaket') == 'MENITREALTIME' || $request->input('JenisPaket') == 'JAMREALTIME' || $request->input('JenisPaket') == 'PAYPERUSE') {
+                $model->DocumentStatus = 'O';
+                $model->Status = 1;
+                if ($request->input('JenisPaket') == 'MENITREALTIME' || $request->input('JenisPaket') == 'PAYPERUSE') {
+                    $model->JamMulai = Carbon::now();
+                    $model->JamSelesai = null;
+                }
+            }
+
+
 
             // Future Booking Logic
             // If JamMulai > NOW, force Status to 0 (Booking/Scheduled)
@@ -602,7 +688,8 @@ class TableOrderController extends Controller
                             ->update(
                                 [
                                     'Status' => 0 ,
-                                    'JamSelesai' => DB::raw("CASE WHEN '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENIT' THEN NOW() ELSE JamSelesai END")
+                                    'JamSelesai' => DB::raw("CASE WHEN JamSelesai IS NULL THEN NOW() ELSE JamSelesai END")
+                                    // 'JamSelesai' => DB::raw("CASE WHEN '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENIT' OR '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENITREALTIME' THEN NOW() ELSE JamSelesai END")
                                 ]
                             );
 
@@ -855,6 +942,10 @@ class TableOrderController extends Controller
                         ->where('fakturpenjualanheader.Status', '=', 'C') // kondisi nilai tetap
                         ->where('fakturpenjualanheader.TotalPembayaran', '>', 0); // kondisi angka tetap
                     })
+                    ->join('mastercontroller', function ($value)  {
+                        $value->on('titiklampu.ControllerID','=','mastercontroller.id')
+                        ->on('titiklampu.RecordOwnerID','=','mastercontroller.RecordOwnerID');
+                    })
                     ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)->get();
         $data['data'] = $titiklampu;
         return response()->json($data);
@@ -917,7 +1008,7 @@ class TableOrderController extends Controller
                 // Check if slot is in the past with 30 minutes tolerance
                 // Ex: Current 20:25, Slot 20:00 -> 20:00 < 19:55 ? False -> Available
                 // Ex: Current 20:35, Slot 20:00 -> 20:00 < 20:05 ? True -> Past
-                $toleranceTime = $currentDateTime->copy()->subMinutes(30);
+                $toleranceTime = $currentDateTime->copy()->subMinutes(10);
                 $isPast = $slotDateTime->lt($toleranceTime);
                 
                 // Check if slot is booked
@@ -977,31 +1068,65 @@ class TableOrderController extends Controller
         $tglAwal = $request->input('TglAwal', \Carbon\Carbon::now()->format('Y-m-d'));
         $tglAkhir = $request->input('TglAkhir', \Carbon\Carbon::now()->format('Y-m-d'));
 
-        $field = ['tableorderheader.NoTransaksi', 'titiklampu.NamaTitikLampu', 'tableorderheader.JenisPaket'];
+        $fieldHeader = ['tableorderheader.NoTransaksi', 'titiklampu.NamaTitikLampu', 'tableorderheader.JenisPaket', 'pelanggan.NamaPelanggan'];
+        $fieldBookingOnline = ['bookingtableonline.NoTransaksi', 'titiklampu.NamaTitikLampu', DB::raw("'BOOKING'"), 'pelanggan.NamaPelanggan'];
 
-        $data = DB::table('tableorderheader')
-            ->select('tableorderheader.NoTransaksi', 'tableorderheader.TglTransaksi', 'tableorderheader.JenisPaket', 'tableorderheader.DurasiPaket as Durasi', 'tableorderheader.Status', 'titiklampu.NamaTitikLampu as NamaTable')
+        $dataHeader = DB::table('tableorderheader')
+            ->select('tableorderheader.NoTransaksi', 'tableorderheader.TglTransaksi', 'tableorderheader.JenisPaket', 'tableorderheader.DurasiPaket as Durasi', 'tableorderheader.Status', 'titiklampu.NamaTitikLampu as NamaTable', 'tableorderheader.JamMulai', 'tableorderheader.JamSelesai', 'pelanggan.NamaPelanggan')
             ->join('titiklampu', function($join) {
                 $join->on('tableorderheader.tableid', '=', 'titiklampu.id')
                      ->on('tableorderheader.RecordOwnerID', '=', 'titiklampu.RecordOwnerID');
+            })
+            ->leftJoin('pelanggan', function($join) {
+                $join->on('tableorderheader.KodePelanggan', '=', 'pelanggan.KodePelanggan')
+                     ->on('tableorderheader.RecordOwnerID', '=', 'pelanggan.RecordOwnerID');
             })
             ->where('tableorderheader.RecordOwnerID', Auth::user()->RecordOwnerID)
             ->whereBetween('tableorderheader.TglTransaksi', [$tglAwal . ' 00:00:00', $tglAkhir . ' 23:59:59']);
 
         if ($keyword) {
-            $data->where(function ($query) use ($keyword, $field) {
-                for ($i = 0; $i < count($field); $i++) {
-                    $query->orwhere($field[$i], 'like', '%' . $keyword . '%');
+            $dataHeader->where(function ($query) use ($keyword, $fieldHeader) {
+                for ($i = 0; $i < count($fieldHeader); $i++) {
+                    $query->orwhere($fieldHeader[$i], 'like', '%' . $keyword . '%');
                 }
             });
         }
 
-        $data->orderBy('tableorderheader.TglTransaksi', 'desc');
+        $dataBookingOnline = DB::table('bookingtableonline')
+            ->select('bookingtableonline.NoTransaksi', 'bookingtableonline.TglBooking as TglTransaksi', DB::raw("'BOOKING' as JenisPaket"), DB::raw('0 as Durasi'), 'bookingtableonline.StatusTransaksi as Status', 'titiklampu.NamaTitikLampu as NamaTable', 'bookingtableonline.JamMulai', 'bookingtableonline.JamSelesai', 'pelanggan.NamaPelanggan')
+            ->join('titiklampu', function($join) {
+                $join->on('bookingtableonline.mejaID', '=', 'titiklampu.id')
+                     ->on('bookingtableonline.RecordOwnerID', '=', 'titiklampu.RecordOwnerID');
+            })
+            ->leftJoin('pelanggan', function($join) {
+                $join->on('bookingtableonline.KodePelanggan', '=', 'pelanggan.KodePelanggan')
+                     ->on('bookingtableonline.RecordOwnerID', '=', 'pelanggan.RecordOwnerID');
+            })
+            ->where('bookingtableonline.RecordOwnerID', Auth::user()->RecordOwnerID)
+            ->whereBetween('bookingtableonline.TglBooking', [$tglAwal . ' 00:00:00', $tglAkhir . ' 23:59:59']);
+
+        if ($keyword) {
+            $dataBookingOnline->where(function ($query) use ($keyword, $fieldBookingOnline) {
+                for ($i = 0; $i < count($fieldBookingOnline); $i++) {
+                    $query->orwhere($fieldBookingOnline[$i], 'like', '%' . $keyword . '%');
+                }
+            });
+        }
+
+        $data = $dataHeader->unionAll($dataBookingOnline)
+            ->orderBy('TglTransaksi', 'desc');
+
+        $company = Company::where('KodePartner', Auth::user()->RecordOwnerID)->first();
+        $jenisLangganan = [];
+        if ($company && $company->JenisLangganan) {
+            $jenisLangganan = json_decode($company->JenisLangganan, true);
+        }
 
         return view("Admin.DaftarTableOrder", [
             'data' => $data->get(),
             'tglAwal' => $tglAwal,
             'tglAkhir' => $tglAkhir,
+            'jenisLangganan' => $jenisLangganan
         ]);
     }
 

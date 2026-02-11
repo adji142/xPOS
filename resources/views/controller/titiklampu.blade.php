@@ -27,10 +27,11 @@
 									<h3 class="card-label mb-0 font-weight-bold text-body">Titik Lampu 
 									</h3>
 								</div>
-							    <div class="icons d-flex">
+								    <div class="icons d-flex">
 									<a href="{{ url('titiklampu/form/-') }}" class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1">Tambah Data</a>
+									<a href="{{ url('titiklampu/generate-qrcode') }}" target="_blank" class="btn btn-outline-success rounded-pill font-weight-bold me-1 mb-1">Download QRCode</a>
+									<a href="{{ route('titiklampu-download-qr-zip') }}" class="btn btn-outline-info rounded-pill font-weight-bold me-1 mb-1">Download Per QR</a>
 								</div>
-							</div>
 						
 						</div>
 
@@ -50,6 +51,7 @@
                                                 <th>Nama Controller</th>
                                                 <th>Digital Input</th>
 												<th>Kelompok Lampu</th>
+                                                <th>Status Lampu</th>
 												<th class=" no-sort text-end">Action</th>
 											</tr>
 										</thead>
@@ -60,9 +62,23 @@
 													<td>{{ $v['NamaTitikLampu'] }}</td>
 													<td>{{ $v['NamaController'] }}</td>
                                                     <td>{{ $v['DigitalInput'] }}</td>
-													<td>{{ $v['NamaKelompok'] }}</td>
+                                                    <td>{{ $v['NamaKelompok'] }}</td>
+                                                    <td>
+                                                        @if($v['Status'] == 0)
+                                                            <span class="badge bg-danger text-white">Off</span>
+                                                        @elseif($v['Status'] == 1)
+                                                            <span class="badge bg-success text-white">On</span>
+                                                        @elseif($v['Status'] == 2)
+                                                            <span class="badge bg-warning text-white">Hampir Habis</span>
+                                                        @elseif($v['Status'] == -1)
+                                                            <span class="badge bg-info text-white">Checkout</span>
+                                                        @endif
+                                                    </td>
 													<td>
 														<div class="card-toolbar text-end">
+                                                            @if($v['Status'] == 1 && $v['active_order_count'] == 0)
+                                                                <a href="{{ route('titiklampu-power-off', $v['id']) }}" class="btn btn-sm btn-outline-danger rounded-pill font-weight-bold me-1">Power Off</a>
+                                                            @endif
 															<button class="btn p-0 shadow-none" type="button" id="dropdowneditButton1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 																<span class="svg-icon">
 																	<svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-three-dots text-body" fill="currentColor" xmlns="http://www.w3.org/2000/svg">

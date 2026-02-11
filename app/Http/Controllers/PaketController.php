@@ -9,6 +9,7 @@ use DB;
 use Log;
 
 use App\Models\Paket;
+use App\Models\Company;
 
 class PaketController extends Controller
 {
@@ -22,8 +23,8 @@ class PaketController extends Controller
                     for ($i = 0; $i < count($field); $i++){
                         $query->orwhere($field[$i], 'like',  '%' . $keyword .'%');
                     }      
-                })->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-                ->where('JenisPaket', '=', $JenisPaket)->get();
+                })->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+                // ->where('JenisPaket', '=', $JenisPaket)->get();
 
         // $bank = $bank->paginate(4);
 
@@ -54,9 +55,16 @@ class PaketController extends Controller
     public function Form($id = null)
     {
     	$paket = Paket::where('id','=',$id)->get();
+
+        $company = Company::where('KodePartner', Auth::user()->RecordOwnerID)->first();
+        $jenisLangganan = [];
+        if ($company && $company->JenisLangganan) {
+            $jenisLangganan = json_decode($company->JenisLangganan, true);
+        }
         
         return view("master.Sewa.Paket-Input",[
-            'paket' => $paket
+            'paket' => $paket,
+            'jenisLangganan' => $jenisLangganan
         ]);
     }
 
@@ -82,6 +90,8 @@ class PaketController extends Controller
             $model->JenisPaket = $request->input('JenisPaket');
             $model->DurasiPaket = $request->input('DurasiPaket');
             $model->BisaDipesan = $request->input('BisaDipesan');
+            $model->JamCheckin = $request->input('JamCheckin');
+            $model->JamCheckout = $request->input('JamCheckout');
             $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 
             $save = $model->save();
@@ -131,6 +141,8 @@ class PaketController extends Controller
                                     'JenisPaket' => $request->input('JenisPaket'),
                                     'DurasiPaket' => $request->input('DurasiPaket'),
                                     'BisaDipesan' => $request->input('BisaDipesan'),
+                                    'JamCheckin' => $request->input('JamCheckin'),
+                                    'JamCheckout' => $request->input('JamCheckout'),
                                     'RecordOwnerID' => Auth::user()->RecordOwnerID
                 				]
                 			);

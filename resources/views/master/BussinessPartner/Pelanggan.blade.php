@@ -54,9 +54,9 @@
 												<th>Limit Piutang</th>
 												<th>Status</th>
 												<th>Membership</th>
-                                            <th>Sisa Jatah</th>
-                                            <th>Harga Member</th>
-												<th>Menit Bermain</th>
+												<th>Sisa Jatah (x)</th>
+												<th>Harga Member</th>
+												<th>Lama Bermain</th>
 												<th>Email</th>
 												<th>No. HP</th>
 												<th>Alamat</th>
@@ -64,6 +64,7 @@
 												<th>Kota</th>
 												<th>Kelurahan</th>
 												<th>Kecamatan</th>
+												<th>Tgl Paket bulanan</th>
 												<th class=" no-sort text-end">Action</th>
 											</tr>
 										</thead>
@@ -87,6 +88,7 @@
 													<td>{{ $v['city_name'] }}</td>
 													<td>{{ $v['subdis_name'] }}</td>
 													<td>{{ $v['dis_name'] }}</td>
+													<td>{{ $v['TglBerlanggananPaketBulanan'] }}</td>
 													<td>
 														<div class="card-toolbar text-end">
 															<button class="btn p-0 shadow-none" type="button" id="dropdowneditButton1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

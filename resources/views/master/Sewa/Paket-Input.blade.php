@@ -59,9 +59,16 @@
 	                            			<fieldset class="form-group mb-3">
 	                            				<select name="JenisPaket" id="JenisPaket" class="js-example-basic-single js-states form-control bg-transparent" >
                                                     <option value="">Pilih Jenis Paket</option>
-                                                    <option value="MENIT" {{ 'MENIT' == (count($paket) > 0 ? $paket[0]['JenisPaket'] : '') ? 'selected' : '' }}>Paket Menit</option>
-                                                    <option value="JAM" {{ 'JAM' == (count($paket) > 0 ? $paket[0]['JenisPaket'] : '') ? 'selected' : '' }}>Paket Jam</option>
-                                                    <option value="PAKET" {{ 'PAKET' == (count($paket) > 0 ? $paket[0]['JenisPaket'] : '') ? 'selected' : '' }}>Paket Berlangganan</option>
+                                                    @if(isset($jenisLangganan) && count($jenisLangganan) > 0)
+                                                        @foreach($jenisLangganan as $item)
+                                                            @php
+                                                                $value = is_array($item) ? $item['Kode'] : $item;
+                                                                $label = is_array($item) ? $item['Nama'] : $item;
+																$selected = (count($paket) > 0 && $paket[0]['JenisPaket'] == $value) ? 'selected' : '';
+                                                            @endphp
+                                                            <option value="{{ $value }}" {{ $selected }}>{{ $label }}</option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
                                                 <input type="hidden" class="form-control" id="id" name="id" value="{{ count($paket) > 0 ? $paket[0]['id'] : '' }}">
 	                            			</fieldset>
@@ -141,6 +148,23 @@
                                                 </select>
 	                            			</fieldset>
 	                            		</div>
+										<div class="row" id="divPaketDaily">
+											<div class="col-md-6">
+												<label  class="text-body">Jam Checkin</label>
+												<fieldset class="form-group mb-3">
+													<input type="time" class="form-control" id="JamCheckin" name="JamCheckin" placeholder="Masukan Jam Checkin" value="{{ count($paket) > 0 ? \Carbon\Carbon::parse($paket[0]['JamCheckin'])->format('H:i') : '' }}" >
+													<small>AM: 00:00 - 11:59, PM : 12:00 - 23:59</small>
+												</fieldset>
+											</div>
+											<div class="col-md-6">
+												<label  class="text-body">Jam Checkout</label>
+												<fieldset class="form-group mb-3">
+													<input type="time" class="form-control" id="JamCheckout" name="JamCheckout" placeholder="Masukan Jam Checkout" value="{{ count($paket) > 0 ? \Carbon\Carbon::parse($paket[0]['JamCheckout'])->format('H:i') : '' }}" >
+													<small>AM: 00:00 - 11:59, PM : 12:00 - 23:59</small>
+												</fieldset>
+											</div>
+										</div>
+										
 
 	                            		<div class="col-md-12">
 	                            			<button type="submit" class="btn btn-success text-white font-weight-bold me-1 mb-1">Simpan</button>
@@ -165,7 +189,13 @@
 <script type="text/javascript">
 	$(function () {
 		$(document).ready(function () {
-			
+			// var oData = {{ json_encode($paket) }};
+            // Only trigger if we are in edit mode (data exists)
+            if (jQuery('#id').val() != "") {
+                jQuery('#JenisPaket').trigger('change');
+            } else {
+                 jQuery('#divPaketDaily').hide();
+            }
 		});
 
         jQuery('#JenisPaket').change(function () {
@@ -179,7 +209,24 @@
                 jQuery('#divJamHargaBaru').hide();
                 jQuery('#divPerubahanHarga').hide();
                 jQuery('#divAkhirJamNormal').hide();
+				jQuery('#divPaketDaily').hide();
             }
+			else if(JenisPaket == "DAILY"){
+				jQuery('#SatuanDurasi').text('HARI');
+                jQuery('#DurasiPaket').attr('readonly',false);
+
+				jQuery('#divPaketDaily').show();
+			}
+			else if(JenisPaket == "MONTHLY"){
+				jQuery('#SatuanDurasi').text('BULAN');
+                jQuery('#DurasiPaket').attr('readonly',false);
+				jQuery('#divPaketDaily').hide();
+			}
+			else if(JenisPaket == "YEARLY"){
+				jQuery('#SatuanDurasi').text('TAHUN');
+                jQuery('#DurasiPaket').attr('readonly',false);
+				jQuery('#divPaketDaily').hide();
+			}
             else{
                 jQuery('#SatuanDurasi').text(JenisPaket);
                 jQuery('#DurasiPaket').attr('readonly',true);
@@ -188,6 +235,7 @@
                 jQuery('#divJamHargaBaru').show();
                 jQuery('#divPerubahanHarga').show();
                 jQuery('#divAkhirJamNormal').show();
+				jQuery('#divPaketDaily').hide();
             }
         });
 	});

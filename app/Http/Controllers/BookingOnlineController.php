@@ -195,11 +195,29 @@ class BookingOnlineController extends Controller
                 $start = $jamMulai->copy();
                 $jadwal = [];
 
+                // Cek apakah ada order aktif yang belum selesai (JamSelesai is null)
+                // Jika ada, maka satu harian tersebut full booked
+                $currentDate = Carbon::now();
+                // $openOrder = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
+                //     ->where('tableid', $titik->id)
+                //     ->where('Status', "0")
+                //     ->where('DocumentStatus', 'D')
+                //     // ->whereNull('JamSelesai')
+                //     ->where(function ($query) use ($tanggalBooking) {
+                //         $query->where('JamSelesai', '>=', $tanggalBooking)
+                //             ->orWhereNull('JamSelesai');
+                //     })
+                //     ->where('JamMulai', '<', Carbon::parse($tanggalBooking)->endOfDay())
+                //     ->exists();
+
                 while ($start < $jamSelesai) {
                     $next = $start->copy()->addHour();
                     $jamString = $start->format('H:i') . ' - ' . $next->format('H:i');
-                    $fullStart = Carbon::parse($tanggalBooking . ' ' . $start->format('H:i:s'));
-                    $fullEnd = Carbon::parse($tanggalBooking . ' ' . $next->format('H:i:s'));
+                    $daysOffset = $start->copy()->startOfDay()->diffInDays($jamMulai->copy()->startOfDay());
+                    $fullStart = Carbon::parse($tanggalBooking)->addDays($daysOffset)->setTimeFrom($start);
+                    
+                    $daysOffsetNext = $next->copy()->startOfDay()->diffInDays($jamMulai->copy()->startOfDay());
+                    $fullEnd = Carbon::parse($tanggalBooking)->addDays($daysOffsetNext)->setTimeFrom($next);
 
                     // Harga dinamis berdasarkan jam
 
@@ -214,24 +232,72 @@ class BookingOnlineController extends Controller
                     // }
 
                     // Cek Booking
-                    $adaBooking = BookingOnline::where(DB::raw("DATE(TglBooking)"), $tanggalBooking)
+                    $adaBooking = BookingOnline::where('RecordOwnerID', $RecordOwnerID)
                         ->where('mejaID', $titik->id)
-                        ->where(function ($q) use ($start, $next) {
-                            $q->where('JamMulai', '<', $next->format('H:i:s'))
-                              ->where('JamSelesai', '>', $start->format('H:i:s'));
+                        ->where('StatusTransaksi', 0)
+                        ->where(function ($q) use ($fullStart, $fullEnd) {
+                            $q->where(DB::raw("CONCAT(CAST(TglBooking AS DATE), ' ', JamMulai)"), '<', $fullEnd->format('Y-m-d H:i:s'))
+                              ->where(DB::raw("CONCAT(CAST(TglBooking AS DATE), ' ', JamSelesai)"), '>', $fullStart->format('Y-m-d H:i:s'));
                         })->exists();
 
                     // Cek Order
-                    $adaOrder = TableOrderHeader::where(DB::raw("DATE(TglTransaksi)"), $tanggalBooking)
+
+                    $FindJenisPakai = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
                         ->where('tableid', $titik->id)
-                        ->where(function ($q) use ($start, $next) {
-                            $q->where('JamMulai', '<', $next->format('H:i:s'))
-                              ->where('JamSelesai', '>', $start->format('H:i:s'));
-                        })->exists();
+                        ->where('Status', 1)
+                        ->whereIn('DocumentStatus',['D','O'])
+                        ->where(function ($query) use ($fullEnd) {
+                            $query->where('JamSelesai', '>=', $fullEnd->format('Y-m-d H:i:s'))
+                            ->orWhereNull('JamSelesai');
+                        })
+                        ->where('JamMulai', '<=', $fullEnd->format('Y-m-d H:i:s'))
+                        ->where('tableorderheader.JenisPaket', 'PAYPERUSE')
+                        ->exists();
+
+                    if ($FindJenisPakai) {
+                        $adaOrder = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
+                            ->where('tableid', $titik->id)
+                            ->where('Status', 1)
+                            ->whereIn('DocumentStatus',['D','O'])
+                            ->where(function ($query) use ($fullEnd) {
+                                $query->where('JamSelesai', '>=', $fullEnd->format('Y-m-d H:i:s'))
+                                ->orWhereNull('JamSelesai');
+                            })
+                            ->where('JamMulai', '<=', $fullEnd->format('Y-m-d H:i:s'))
+                            ->where('tableorderheader.TglTransaksi', $tanggalBooking)
+                            // ->where(DB::raw("CASE WHEN tableorderheader.JenisPaket = 'PAYPERUSE' THEN DATE(tableorderheader.TglTransaksi) ELSE '" . $tanggalBooking . "' END = '" . $tanggalBooking . "'"))
+                            ->exists();
+                    }
+                    else{
+                        $adaOrder = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
+                        ->where('tableid', $titik->id)
+                        ->where('Status', 1)
+                        ->whereIn('DocumentStatus',['D','O'])
+                        ->where(function ($query) use ($fullEnd) {
+                            $query->where('JamSelesai', '>=', $fullEnd->format('Y-m-d H:i:s'))
+                            ->orWhereNull('JamSelesai');
+                        })
+                        ->where('JamMulai', '<=', $fullEnd->format('Y-m-d H:i:s'))
+                        // ->where(DB::raw("CASE WHEN tableorderheader.JenisPaket = 'PAYPERUSE' THEN DATE(tableorderheader.TglTransaksi) ELSE '" . $tanggalBooking . "' END = '" . $tanggalBooking . "'"))
+                        ->exists();
+                    }
+
+                    
+                    
+
+                    $futureOrders = TableOrderHeader::where('RecordOwnerID', $RecordOwnerID)
+                        ->where('tableid', $titik->id)
+                        ->where('Status', 0)
+                        ->whereIn('DocumentStatus',['D'])
+                        ->where(function ($q) use ($fullStart, $fullEnd) {
+                            $q->where(DB::raw("JamMulai"), '<', $fullEnd->format('Y-m-d H:i:s'))
+                              ->where(DB::raw("JamSelesai"), '>', $fullStart->format('Y-m-d H:i:s'));
+                        })
+                        ->exists();
 
                     $slotSudahLewat = $fullEnd->lessThan($now);
 
-                    $status = ($adaBooking || $adaOrder || $slotSudahLewat) ? 'booked' : 'available';
+                    $status = ($adaBooking || $adaOrder || $slotSudahLewat || $futureOrders ) ? 'booked' : 'available';
 
                     $jadwal[] = [
                         'jam' => $jamString,

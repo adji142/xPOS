@@ -344,6 +344,31 @@ class CompanyController extends Controller
             $model = Company::where('KodePartner','=',$request->input('KodePartner'));
 
             if ($model) {
+                $jenisLangganan = null;
+                if ($request->has('JenisLangganan')) {
+                    $codes = $request->input('JenisLangganan');
+                    $map = [
+                        'MENIT' => 'Paket Menit',
+                        'JAM' => 'Paket Jam',
+                        'PAKETMEMBER' => 'Paket Berlangganan',
+                        'MENITREALTIME' => 'Paket Menit COD',
+                        'JAMREALTIME' => 'Paket Jam COD',
+                        'PAYPERUSE' => 'Paket Open Table',
+                        'DAILY' => 'Paket Harian',
+                        'MONTHLY' => 'Paket Bulanan',
+                        'YEARLY' => 'Paket Tahunan',
+                    ];
+                    $data = [];
+                    foreach ($codes as $code) {
+                        if (isset($map[$code])) {
+                            $data[] = ['Kode' => $code, 'Nama' => $map[$code]];
+                        } else {
+                            $data[] = ['Kode' => $code, 'Nama' => $code];
+                        }
+                    }
+                    $jenisLangganan = json_encode($data);
+                }
+
                 $update = DB::table('company')
                         ->where('KodePartner','=',$request->input('KodePartner'))
                         ->update(
@@ -353,6 +378,7 @@ class CompanyController extends Controller
                                 'KodePaketLangganan' => empty($request->input('PaketAplikasi')) ? "" : $request->input('PaketAplikasi'),
                                 'StartSubs' => empty($request->input('StartSubs')) ? "" : $request->input('StartSubs'),
                                 'EndSubs' => empty($request->input('EndSubs')) ? "" : $request->input('EndSubs'),
+                                'JenisLangganan' => $jenisLangganan,
                             ]
                         );
                 alert()->success('Success','Data Perusahaan berhasil disimpan.');

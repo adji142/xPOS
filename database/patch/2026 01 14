@@ -1,0 +1,25 @@
+SET FOREIGN_KEY_CHECKS=0;
+
+ALTER TABLE `company` ADD COLUMN `JenisLangganan` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL AFTER `QueueDesignSetting`;
+
+ALTER TABLE `itemmaster` ADD COLUMN `TampilkanEMenu` int(1) NULL DEFAULT 0 AFTER `VatPercent`;
+
+ALTER TABLE `itemmaster` MODIFY COLUMN `Gambar` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL AFTER `Barcode`;
+
+ALTER TABLE `jenisitem` ADD COLUMN `TampilkanEMenu` int(1) NULL DEFAULT 0 AFTER `RecordOwnerID`;
+
+ALTER TABLE `pakettransaksi` ADD COLUMN `JamCheckin` time(6) NULL DEFAULT NULL AFTER `BisaDipesan`;
+
+ALTER TABLE `pakettransaksi` ADD COLUMN `JamCheckout` time(6) NULL DEFAULT NULL AFTER `JamCheckin`;
+
+ALTER TABLE `pelanggan` ADD COLUMN `TglBerlanggananPaketBulanan` date NULL DEFAULT NULL AFTER `ValidUntil`;
+
+ALTER TABLE `pelanggan` MODIFY COLUMN `AllowedDay` varchar(55) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL AFTER `RecordOwnerID`;
+
+ALTER TABLE `pelanggan` MODIFY COLUMN `ValidUntil` datetime(6) NULL DEFAULT NULL AFTER `AllowedDay`;
+
+ALTER TABLE `tableorderfnb` ADD COLUMN `BiayaLayanan` double NOT NULL DEFAULT 0 AFTER `Discount`;
+
+ALTER TABLE `tableorderfnb` ADD COLUMN `LineStatus` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'O' AFTER `BiayaLayanan`;
+
+SET FOREIGN_KEY_CHECKS=1;

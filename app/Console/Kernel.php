@@ -17,6 +17,8 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('booking:update-status')->everyMinute();
+        $schedule->command('table:sync-status')->everyMinute();
+        $schedule->command('table:check-finished')->everyMinute();
     }
 
     /**

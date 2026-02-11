@@ -341,13 +341,19 @@
     // === QUEUE DATA ===
     const lastSpokenMap={}, SPEAK_INTERVAL_MS=5*60*1000;
     const getSisaWaktu=(jamSelesai)=>{
-      const n=new Date(),e=new Date(),[h,m]=jamSelesai.split(':').map(Number);
+      if (!jamSelesai) return "00:00";
+      const parts = jamSelesai.split(':');
+      if (parts.length < 2) return "00:00";
+      const n=new Date(),e=new Date(),[h,m]=parts.map(Number);
       e.setHours(h,m,0,0);const d=(e-n)/1000;if(d<0)return"00:00";
       const mm=Math.floor(d/60),ss=Math.floor(d%60);
       return `${mm.toString().padStart(2,'0')}:${ss.toString().padStart(2,'0')}`;
     };
     const getSisaMenit=(jamSelesai)=>{
-      const n=new Date(),e=new Date(),[h,m]=jamSelesai.split(':').map(Number);
+      if (!jamSelesai) return -1;
+      const parts = jamSelesai.split(':');
+      if (parts.length < 2) return -1;
+      const n=new Date(),e=new Date(),[h,m]=parts.map(Number);
       e.setHours(h,m,0,0);
       return Math.floor((e-n)/60000);
     };
@@ -374,7 +380,7 @@
 
     function updateTables(data){
         const hampirHabisHTML = `<table class="table table-bordered text-center">
-        <thead class="table-danger"><tr><th colspan="5">Hampir Habis</th></tr><tr><th>Nama Layanan</th><th>Nama Pelanggan</th><th>Jam Mulai</th><th>Jam Selesai</th><th>Sisa Waktu</th></tr></thead>
+        <thead class="table-danger"><tr><th>Nama Layanan</th><th>Nama Pelanggan</th><th>Jam Mulai</th><th>Jam Selesai</th><th>Sisa Waktu</th></tr></thead>
         <tbody>${data.hampirHabisTable.map(row => {
             const sisa = getSisaWaktu(row.JamSelesai);
             const icon = lastSpokenMap[row.NamaTitikLampu] ? ` <span class="spoken-indicator">🔊</span>` : '';
@@ -382,14 +388,14 @@
         }).join('')}</tbody></table>`;
 
         const usedHTML = `<table class="table table-bordered text-center">
-        <thead class="table-warning"><tr><th colspan="5">Sedang Digunakan</th></tr><tr><th>Nama Layanan</th><th>Nama Pelanggan</th><th>Jam Mulai</th><th>Jam Selesai</th><th>Sisa Waktu</th></tr></thead>
+        <thead class="table-warning"><tr><th>Nama Layanan</th><th>Nama Pelanggan</th><th>Jam Mulai</th><th>Jam Selesai</th><th>Sisa Waktu</th></tr></thead>
         <tbody>${data.usedTable.map(row => {
             const sisa = getSisaWaktu(row.JamSelesai);
             return `<tr><td>${row.NamaTitikLampu}</td><td>${row.NamaPelanggan || '-'}</td><td>${row.JamMulai}</td><td>${row.JamSelesai}</td><td>${sisa}</td></tr>`;
         }).join('')}</tbody></table>`;
 
         const bookingHTML = `<table class="table table-bordered text-center">
-        <thead class="table-info"><tr><th colspan="5">Booking List</th></tr><tr><th>No Transaksi</th><th>Nama Pelanggan</th><th>Layanan</th><th>Jam Mulai</th><th>Jam Selesai</th></tr></thead>
+        <thead class="table-info"><tr><th>No Transaksi</th><th>Nama Pelanggan</th><th>Layanan</th><th>Jam Mulai</th><th>Jam Selesai</th></tr></thead>
         <tbody>${data.bookingTable && data.bookingTable.length > 0 ? data.bookingTable.map(row => {
             return `<tr><td>${row.NoTransaksi}</td><td>${row.NamaPelanggan}</td><td>${row.NamaTitikLampu}</td><td>${row.JamMulai}</td><td>${row.JamSelesai}</td></tr>`;
         }).join('') : '<tr><td colspan="5">Tidak ada booking</td></tr>'}</tbody></table>`;

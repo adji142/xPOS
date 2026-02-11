@@ -823,7 +823,7 @@ class FakturPenjualanController extends Controller
 		
 					
 					foreach ($getPenjualanvalue as $key) {
-						if ($key['TypeItem'] == 1) {
+						if ($key['TypeItem'] == 1 || $key['TypeItem'] == 2) {
 							$getSetting = $Setting->GetSetting("InvAcctPendapatanJual");
 							$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
 											->where('KodeRekening', $getSetting)->get();
@@ -1156,6 +1156,8 @@ class FakturPenjualanController extends Controller
 
 		$errorCount = 0;
 
+		$baseReff = "";
+
 		try {
 			$currentDate = Carbon::now();
 			$Year = $currentDate->format('Y');
@@ -1163,9 +1165,15 @@ class FakturPenjualanController extends Controller
 
 			$numberingData = new DocumentNumbering();
 
-			$NoTransaksi = empty($jsonData['NoTransaksi']) ? $numberingData->GetNewDoc("POS","fakturpenjualanheader","NoTransaksi") : $jsonData['NoTransaksi'];
+			// $NoTransaksi = empty($jsonData['NoTransaksi']) ? $numberingData->GetNewDoc("POS","fakturpenjualanheader","NoTransaksi") : $jsonData['NoTransaksi'];
 			// $NoTransaksi = $numberingData->GetNewDoc("POS","fakturpenjualanheader","NoTransaksi");
 			// $NoTransaksi = $jsonData['NoTransaksi'];
+			$NoTransaksi= $numberingData->GetNewDoc("POS","fakturpenjualanheader","NoTransaksi");
+
+
+			// Cek Eksistensi Data Sebelumnya :
+
+
 
 
 			$data['LastTRX'] = $NoTransaksi;
@@ -1198,6 +1206,23 @@ class FakturPenjualanController extends Controller
 			$model->RecordOwnerID = Auth::user()->RecordOwnerID;
 			$model->PajakHiburan = $jsonData['PajakHiburan'];
 			$model->BiayaLayanan = $jsonData['BiayaLayanan'];
+
+
+			if (count($jsonData['Detail']) > 0) {
+				$oExistingData = FakturPenjualanDetail::selectRaw('fakturpenjualandetail.BaseReff, SUM(fakturpenjualandetail.Qty) as Qty')
+								->leftJoin('itemmaster', function ($value)  {
+									$value->on('itemmaster.KodeItem','=','fakturpenjualandetail.KodeItem')
+									->on('itemmaster.RecordOwnerID','=','fakturpenjualandetail.RecordOwnerID');
+								})
+								->where('itemmaster.TypeItem',4)
+								->where('fakturpenjualandetail.BaseReff', $jsonData['Detail'][0]['BaseReff'])
+								->groupBy('fakturpenjualandetail.BaseReff')
+								->first();
+				if($oExistingData){
+					$model->NoReff = "EMENU-CASH";
+				}
+			}
+
    
 			$save = $model->save();
 
@@ -1219,8 +1244,8 @@ class FakturPenjualanController extends Controller
 									->first();
 
 						if ($oItem) {
-							if ($oItem->TypeItem != 4) {
-								$data['message'] = "Stock Item ".$key['KodeItem'].' Tidak Cukup';
+							if ($oItem->TypeItem != 4 && $oItem->TypeItem != 2) {
+								$data['message'] = "Stock Item ".$oItem['NamaItem'].' Tidak Cukup';
 								$errorCount += 1;
 								goto jump;		
 							}
@@ -1233,17 +1258,7 @@ class FakturPenjualanController extends Controller
 					goto jump;
 				}
 
-				$oExistingData = FakturPenjualanDetail::selectRaw('fakturpenjualandetail.BaseReff, SUM(fakturpenjualandetail.Qty) as Qty')
-									->leftJoin('itemmaster', function ($value)  {
-										$value->on('itemmaster.KodeItem','=','fakturpenjualandetail.KodeItem')
-										->on('itemmaster.RecordOwnerID','=','fakturpenjualandetail.RecordOwnerID');
-									})
-									->where('fakturpenjualandetail.KodeItem', $key['KodeItem'])
-									->where('itemmaster.TypeItem',4)
-									->where('fakturpenjualandetail.BaseReff', $key['BaseReff'])
-									->groupBy('fakturpenjualandetail.BaseReff')
-									->first();
-
+				
 				// if($oExistingData){
 				// 	if($key['Qty'] - $oExistingData->Qty > 0){
 				// 		$BaseReffTableOrder = $key['BaseReff'];
@@ -1313,6 +1328,8 @@ class FakturPenjualanController extends Controller
 				// 	}
 				// }
 
+				$baseReff= $key['BaseReff'];
+
 				$BaseReffTableOrder = $key['BaseReff'];
 				$modelDetail = new FakturPenjualanDetail;
 				$modelDetail->NoTransaksi = $NoTransaksi;
@@ -1346,16 +1363,53 @@ class FakturPenjualanController extends Controller
 				}
 
 				if($jsonData['NoReff'] == "POS-TAMBAHJAM"){
-					$update = DB::table('tableorderheader')
-								->where('NoTransaksi','=', $key['BaseReff'])
-								->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-								->update(
-									[
-										'Status' => '1',
-										'DurasiPaket' => DB::raw('DurasiPaket + ' . $key['Qty']),
-										'JamSelesai' => DB::raw('DATE_ADD(JamMulai, INTERVAL DurasiPaket HOUR)')
-									]
-								);
+					$tableInfo = DB::table('tableorderheader')
+						->leftJoin('pakettransaksi', function($join) {
+							$join->on('tableorderheader.paketid', '=', 'pakettransaksi.id')
+								->on('tableorderheader.RecordOwnerID', '=', 'pakettransaksi.RecordOwnerID');
+						})
+						->where('tableorderheader.NoTransaksi', $key['BaseReff'])
+						->where('tableorderheader.RecordOwnerID', Auth::user()->RecordOwnerID)
+						->select('pakettransaksi.JenisPaket')
+						->first();
+
+					if ($tableInfo) {
+						$interval = 'HOUR';
+						$durasi = 0;
+						
+						if (in_array($tableInfo->JenisPaket, ['DAILY', 'MONTHLY', 'YEARLY'])) {
+							$interval = 'DAY';
+						} elseif (in_array($tableInfo->JenisPaket, ['JAM', 'JAMREALTIME'])) {
+							$interval = 'HOUR';
+						} elseif ($tableInfo->JenisPaket == 'MENIT') {
+							$interval = 'MINUTE';
+						}
+
+						if($interval == "DAY"){
+							$update = DB::table('tableorderheader')
+									->where('NoTransaksi','=', $key['BaseReff'])
+									->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+									->update(
+										[
+											'Status' => '1',
+											'JamSelesai' => DB::raw("DATE_ADD(JamSelesai, INTERVAL (" . $key['Qty'] . ") " . $interval . ")")
+										]
+									);
+						}
+						else{
+							$update = DB::table('tableorderheader')
+									->where('NoTransaksi','=', $key['BaseReff'])
+									->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+									->update(
+										[
+											'Status' => '1',
+											'DurasiPaket' => DB::raw('DurasiPaket + ' . $key['Qty']),
+											'JamSelesai' => DB::raw("DATE_ADD(JamMulai, INTERVAL (DurasiPaket + " . $key['Qty'] . ") " . $interval . ")")
+										]
+									);
+						}
+						
+					}
 				}
 
 				if($jsonData['NoReff'] == "POS-FNB"){
@@ -1369,6 +1423,7 @@ class FakturPenjualanController extends Controller
                     $fnb->Discount = $key['Discount'];
                     $fnb->LineTotal = ($key['Qty'] * $key['Harga']) + $key['Pajak'];
                     $fnb->RecordOwnerID = Auth::user()->RecordOwnerID;
+					$fnb->LineStatus = "C";
                     $fnb->save();
 				}
 
@@ -1376,16 +1431,23 @@ class FakturPenjualanController extends Controller
 			}
 
 			// Update Table Order
-			if ($BaseReffTableOrder != "") {
-				DB::table('tableorderheader')
-				->where('RecordOwnerID', Auth::user()->RecordOwnerID)
-				->where('NoTransaksi', $BaseReffTableOrder)
-				->where(function ($query) {
-					$query->where('JenisPaket', 'MENIT')
-						->orWhere('Status', -1);
-				})
-				->update(['Status' => 0]);
+			if ($jsonData['NoReff'] != "POS-FNB" || $jsonData['NoReff'] != "POS-TAMBAHJAM") {
+				if ($BaseReffTableOrder != "") {
+					// dd($BaseReffTableOrder);
+					DB::table('tableorderheader')
+					->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+					->where('NoTransaksi', $BaseReffTableOrder)
+					->where(function ($query) {
+						$query->whereIn('JenisPaket', ['MENIT', 'MENITREALTIME'])
+							->orWhere('Status', -1);
+					})
+					->update([
+						'Status' => 0,
+						'JamSelesai' => DB::raw('NOW()')
+					]);
+				}
 			}
+			
 
 			// Pembayaran
 
@@ -1438,12 +1500,21 @@ class FakturPenjualanController extends Controller
 				}
 
 				$update = DB::table('tableorderheader')
-							->where('NoTransaksi','=', $NoTransaksi)
+							->where('NoTransaksi','=', $baseReff)
 							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-							->where('JenisPaket','<>', 'JAM')
+							->whereNotIn('JenisPaket', ['JAM', 'MENIT','MENITREALTIME','DAILY', 'MONTHLY', 'YEARLY'])
 							->update(
 								[
 									'Status'=>1,
+								]
+							);
+
+				DB::table('tableorderfnb')
+							->where('NoTransaksi','=', $baseReff)
+							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+							->update(
+								[
+									'LineStatus'=>'C',
 								]
 							);
 			}
@@ -1588,7 +1659,7 @@ class FakturPenjualanController extends Controller
 										->get();
 
 				foreach ($getPenjualanvalue as $key) {
-					if ($key['TypeItem'] == 1) {
+					if ($key['TypeItem'] == 1 || $key['TypeItem'] == 2) {
 						$getSetting = $Setting->GetSetting("InvAcctPendapatanJual");
 						$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
 										->where('KodeRekening', $getSetting)->get();
@@ -2210,7 +2281,7 @@ class FakturPenjualanController extends Controller
 		
 					
 					foreach ($getPenjualanvalue as $key) {
-						if ($key['TypeItem'] == 1) {
+						if ($key['TypeItem'] == 1 || $key['TypeItem'] == 2) {
 							$getSetting = $Setting->GetSetting("InvAcctPendapatanJual");
 							$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
 											->where('KodeRekening', $getSetting)->get();
@@ -2844,7 +2915,7 @@ class FakturPenjualanController extends Controller
     				->get();
     		}
 			foreach ($getPenjualanvalue as $key) {
-				if ($key['TypeItem'] == 1) {
+				if ($key['TypeItem'] == 1 || $key['TypeItem'] == 2) {
 					$getSetting = $Setting->GetSetting("InvAcctPendapatanJual");
 					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
 									->where('KodeRekening', $getSetting)->get();
@@ -3296,7 +3367,7 @@ class FakturPenjualanController extends Controller
 	        				->get();
 	        		}
 					foreach ($getPenjualanvalue as $key) {
-						if ($key['TypeItem'] == 1) {
+						if ($key['TypeItem'] == 1 || $key['TypeItem'] == 2) {
 							$getSetting = $Setting->GetSetting("InvAcctPendapatanJual");
 							$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
 											->where('KodeRekening', $getSetting)->get();
@@ -3915,7 +3986,7 @@ class FakturPenjualanController extends Controller
 		
 					
 					foreach ($getPenjualanvalue as $key) {
-						if ($key['TypeItem'] == 1) {
+						if ($key['TypeItem'] == 1 || $key['TypeItem'] == 2) {
 							$getSetting = $Setting->GetSetting("InvAcctPendapatanJual");
 							$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
 											->where('KodeRekening', $getSetting)->get();
@@ -4439,10 +4510,7 @@ class FakturPenjualanController extends Controller
 			->get();
 
 			// 1. Update status header ke 'D'
-			DB::table('fakturpenjualanheader')
-				->where('NoTransaksi', $NoTransaksi)
-				->where('RecordOwnerID', Auth::user()->RecordOwnerID)
-				->update(['Status' => 'D']);
+			
 
 			// 2. Delete detail sebelumnya
 			DB::table('fakturpenjualandetail')
@@ -4477,6 +4545,7 @@ class FakturPenjualanController extends Controller
 				]);
 			}
 
+			
 			// 4. Update status Jurnal ke 'D'
 			DB::table('headerjurnal')
 				->where('NoReff', $NoTransaksi)
@@ -4491,37 +4560,105 @@ class FakturPenjualanController extends Controller
 								->where('RecordOwnerID', Auth::user()->RecordOwnerID)
 								->where('KodeTransaksi', 'OINV')
 								->first();
-			$journalDetail = JournalDetail::where('NoTransaksi', $journalHeader->NoTransaksi)
+			
+			if($journalHeader){
+				$journalDetail = JournalDetail::where('NoTransaksi', $journalHeader->NoTransaksi)
 								->where('RecordOwnerID', Auth::user()->RecordOwnerID)
 								->where('KodeTransaksi', 'OINV')
 								->get();
 
-			// 6. Delete Journal Detail
+				// 6. Delete Journal Detail
 
-			$bank = DB::table('detailjurnal')
-	                ->where('NoTransaksi','=', $journalHeader->NoTransaksi)
-	                ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-					->where('KodeTransaksi', 'OINV')
-	                ->delete();
-			
-			foreach ($journalDetail as $jrdetail) {
-				DB::table('detailjurnal')->insert([
-					'KodeTransaksi' => $jrdetail->KodeTransaksi,
-					'NoTransaksi' => $jrdetail->NoTransaksi,
-					'NoUrut' => $jrdetail->NoUrut,
-					'KodeRekening' => $jrdetail->KodeRekening,
-					'KodeRekeningBukuBesar' => $jrdetail->KodeRekeningBukuBesar,
-					'DK' => ($jrdetail->DK == 1) ? 2 : 1,
-					'KodeMataUang' => $jrdetail->KodeMataUang,
-					'Valas' => $jrdetail->Valas,
-					'NilaiTukar' => $jrdetail->NilaiTukar,
-					'Jumlah' => $jrdetail->Jumlah,
-					'Keterangan' => $jrdetail->Keterangan,
-					'HeaderKas' => $jrdetail->HeaderKas,
-					'RecordOwnerID' => Auth::user()->RecordOwnerID,
-					'created_at' => $jrdetail->created_at,
-				]);
+				$bank = DB::table('detailjurnal')
+						->where('NoTransaksi','=', $journalHeader->NoTransaksi)
+						->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+						->where('KodeTransaksi', 'OINV')
+						->delete();
+				
+				foreach ($journalDetail as $jrdetail) {
+					DB::table('detailjurnal')->insert([
+						'KodeTransaksi' => $jrdetail->KodeTransaksi,
+						'NoTransaksi' => $jrdetail->NoTransaksi,
+						'NoUrut' => $jrdetail->NoUrut,
+						'KodeRekening' => $jrdetail->KodeRekening,
+						'KodeRekeningBukuBesar' => $jrdetail->KodeRekeningBukuBesar,
+						'DK' => ($jrdetail->DK == 1) ? 2 : 1,
+						'KodeMataUang' => $jrdetail->KodeMataUang,
+						'Valas' => $jrdetail->Valas,
+						'NilaiTukar' => $jrdetail->NilaiTukar,
+						'Jumlah' => $jrdetail->Jumlah,
+						'Keterangan' => $jrdetail->Keterangan,
+						'HeaderKas' => $jrdetail->HeaderKas,
+						'RecordOwnerID' => Auth::user()->RecordOwnerID,
+						'created_at' => $jrdetail->created_at,
+					]);
+				}
 			}
+
+			// 7. Check Payment
+			$pembayaranDetails = PembayaranPenjualanDetail::where('BaseReff', $NoTransaksi)
+									->where('RecordOwnerID',Auth::user()->RecordOwnerID)
+									->get();
+
+			foreach ($pembayaranDetails as $payDetail) {
+				// Void Pembayaran Header
+				DB::table('pembayaranpenjualanheader')
+					->where('NoTransaksi', $payDetail->NoTransaksi)
+					->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+					->update(['Status' => 'D']);
+				
+				// Void Jurnal Pembayaran
+				DB::table('headerjurnal')
+					->where('NoReff', $payDetail->NoTransaksi)
+					->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+					->where('KodeTransaksi', 'INPAY')
+					->update(['StatusTransaksi' => 'D']);
+
+				// Reverse Jurnal Pembayaran
+				$payJournalHeader = JournalHeader::where('NoReff', $payDetail->NoTransaksi)
+									->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+									->where('KodeTransaksi', 'INPAY')
+									->first();
+				
+				if ($payJournalHeader) {
+					$payJournalDetail = JournalDetail::where('NoTransaksi', $payJournalHeader->NoTransaksi)
+										->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+										->where('KodeTransaksi', 'INPAY')
+										->get();
+
+					// Delete original detail to handle reverse logic clean insertion or just reverse insert? 
+					// Logic above deletes original detail and re-inserts reversed. I will follow that.
+					DB::table('detailjurnal')
+						->where('NoTransaksi','=', $payJournalHeader->NoTransaksi)
+						->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+						->where('KodeTransaksi', 'INPAY')
+						->delete();
+
+					foreach ($payJournalDetail as $jrdetail) {
+						DB::table('detailjurnal')->insert([
+							'KodeTransaksi' => $jrdetail->KodeTransaksi,
+							'NoTransaksi' => $jrdetail->NoTransaksi,
+							'NoUrut' => $jrdetail->NoUrut,
+							'KodeRekening' => $jrdetail->KodeRekening,
+							'KodeRekeningBukuBesar' => $jrdetail->KodeRekeningBukuBesar,
+							'DK' => ($jrdetail->DK == 1) ? 2 : 1, // Reverse DK
+							'KodeMataUang' => $jrdetail->KodeMataUang,
+							'Valas' => $jrdetail->Valas,
+							'NilaiTukar' => $jrdetail->NilaiTukar,
+							'Jumlah' => $jrdetail->Jumlah,
+							'Keterangan' => $jrdetail->Keterangan . ' (VOID)',
+							'HeaderKas' => $jrdetail->HeaderKas,
+							'RecordOwnerID' => Auth::user()->RecordOwnerID,
+							'created_at' => $jrdetail->created_at,
+						]);
+					}
+				}
+			}
+
+			DB::table('fakturpenjualanheader')
+				->where('NoTransaksi', $NoTransaksi)
+				->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+				->update(['Status' => 'D']);
 
 			DB::commit();
 

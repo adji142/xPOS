@@ -36,6 +36,7 @@ class ItemMaster extends BaseModel
       'AcctPersediaan',
       'VatPercent',
       'RecordOwnerID',
+      'TampilkanEMenu',
       'created_at',
       'updated_at'
     ];
@@ -57,7 +58,7 @@ class ItemMaster extends BaseModel
           END 
         END 
       END ItemType, 
-      itemmaster.Rak, 1 As QtyKonversi, itemmaster.Satuan, COALESCE(itemmaster.VatPercent,0) VatPercent, COALESCE(itemmaster.Gambar,'') Gambar ";
+      itemmaster.Rak, 1 As QtyKonversi, itemmaster.Satuan, COALESCE(itemmaster.VatPercent,0) VatPercent, COALESCE(itemmaster.Gambar,'') Gambar, itemmaster.TampilkanEMenu ";
         $itemmaster = ItemMaster::selectRaw($sql)
                 ->leftJoin('jenisitem', function ($value){
                   $value->on('jenisitem.KodeJenis','=','itemmaster.KodeJenisItem')

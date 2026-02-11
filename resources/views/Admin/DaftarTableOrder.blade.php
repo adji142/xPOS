@@ -71,8 +71,11 @@
 												<th>No</th>
 												<th>No Transaksi</th>
 												<th>Tgl Transaksi</th>
+                                                <th>Pelanggan</th>
 												<th>Jenis Paket</th>
 												<th>Nama Table</th>
+                                                <th>Jam Mulai</th>
+                                                <th>Jam Selesai</th>
 												<th>Durasi</th>
 												<th>Status</th>
 												<th class=" no-sort text-end">Action</th>
@@ -85,9 +88,25 @@
 												<tr>
 													<td>{{ $no++ }}</td>
 													<td>{{ $v->NoTransaksi }}</td>
-													<td>{{ $v->TglTransaksi }}</td>
-													<td>{{ $v->JenisPaket }}</td>
+													<td>{{ date('d-m-Y', strtotime($v->TglTransaksi)) }}</td>
+                                                    <td>{{ $v->NamaPelanggan ?? '-' }}</td>
+                                                    @php
+                                                        $paketNama = $v->JenisPaket;
+                                                        if ($v->JenisPaket == 'BOOKING') {
+                                                            $paketNama = 'Booking Online';
+                                                        } elseif (isset($jenisLangganan) && is_array($jenisLangganan)) {
+                                                            foreach ($jenisLangganan as $jl) {
+                                                                if ($jl['Kode'] == $v->JenisPaket) {
+                                                                    $paketNama = $jl['Nama'];
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+                                                    @endphp
+													<td>{{ $paketNama }}</td>
 													<td>{{ $v->NamaTable }}</td>
+                                                    <td>{{ $v->JamMulai ? date('H:i', strtotime($v->JamMulai)) : '-' }}</td>
+                                                    <td>{{ $v->JamSelesai ? date('H:i', strtotime($v->JamSelesai)) : '-' }}</td>
 													<td>{{ $v->Durasi }}</td>
 													<td>
                                                         @php
