@@ -445,6 +445,7 @@ class TableOrderController extends Controller
             if ($request->input('JenisPaket') == 'MENIT') {
                 $model->JamSelesai = $currentDate->addMinutes($request->input('DurasiPaket'))->subMinute();
                 // var_dump($currentDate->addHours($request->input('DurasiPaket')));
+                $model->Status = 1;
             }
 
             if ($request->input('JenisPaket') == 'MENITREALTIME' || $request->input('JenisPaket') == 'JAMREALTIME' || $request->input('JenisPaket') == 'PAYPERUSE') {
