@@ -82,7 +82,13 @@ class TitikLampuController extends Controller
 
     public function Form($id = null)
     {
-        $controller = MasterController::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
+        $controller = MasterController::selectRaw("mastercontroller.*, serial_numbers.MaximalNode")
+                ->leftJoin('serial_numbers', function ($value){
+                    $value->on('serial_numbers.SerialNumber','=','mastercontroller.SN')
+                    ->on('serial_numbers.KodePartner','=','mastercontroller.RecordOwnerID');
+                })
+                ->where('mastercontroller.RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                ->get();
     	$titiklampu = TitikLampu::where('id','=',$id)->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
         $kelompoklampu = KelompokLampu::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 
@@ -525,6 +531,23 @@ class TitikLampuController extends Controller
         return view('controller.titiklampu-qrcode', [
             'titiklampu' => $titiklampu
         ]);
+    }
+
+    public function downloadPDFQRCode()
+    {
+        $titiklampu = TitikLampu::selectRaw("titiklampu.*,mastercontroller.NamaController")
+                        ->join('mastercontroller', function ($value)  {
+                            $value->on('titiklampu.ControllerID','=','mastercontroller.id')
+                            ->on('titiklampu.RecordOwnerID','=','mastercontroller.RecordOwnerID');
+                        })
+                        ->where('titiklampu.RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                        ->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('controller.titiklampu-pdf', [
+            'titiklampu' => $titiklampu,
+        ]);
+
+        return $pdf->download('titiklampu-qrcode.pdf');
     }
 
     public function storeOrder(Request $request)
