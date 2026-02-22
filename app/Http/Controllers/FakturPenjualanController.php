@@ -1437,6 +1437,8 @@ class FakturPenjualanController extends Controller
 					DB::table('tableorderheader')
 					->where('RecordOwnerID', Auth::user()->RecordOwnerID)
 					->where('NoTransaksi', $BaseReffTableOrder)
+					->whereNotNull('JamSelesai')
+					->where('JamSelesai', '<', Carbon::now())
 					->where(function ($query) {
 						$query->whereIn('JenisPaket', ['MENIT', 'MENITREALTIME'])
 							->orWhere('Status', -1);

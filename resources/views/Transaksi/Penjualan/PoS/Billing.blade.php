@@ -1769,7 +1769,9 @@ License: You must have a valid license purchased only from themeforest(the above
 					confirmButtonText: "Ya",
 					cancelButtonText: "Tidak (Refresh Page)"
 				}).then((result) => {
+					console.log(result);
 					if (result.isConfirmed) {
+						console.log("Langsung Checkout");
 						// Cari NoTransaksi & JenisPaket
 						const NoTransaksi = jQuery('#txtNoTransaksi_Detail').val();
 						const filteredData = _billing.filter(item => item.NoTransaksi == NoTransaksi);
@@ -2243,8 +2245,8 @@ License: You must have a valid license purchased only from themeforest(the above
 			var $options = $kodePelanggan.data('options');
 			$kodePelanggan.empty();
 			
-			jQuery('#divLangsungBayar').hide();
-			jQuery('#chkLangsungbayar').prop('checked', false);
+			jQuery('#divLangsungBayar').show();
+			// jQuery('#chkLangsungbayar').prop('checked', false);
 
 			if (jQuery('#JenisPaket').val() == "PAKETMEMBER") {
 				$options.each(function() {
@@ -2972,10 +2974,10 @@ License: You must have a valid license purchased only from themeforest(the above
 
 								formatCurrency($('#txtSubTotal_Detail'), xHargaNormal);
 
-								if (jQuery('#JenisPaket').val() == "MENIT" || 
-									jQuery('#JenisPaket').val() == "JAM" || 
-									jQuery('#JenisPaket').val() == "PAKETMEMBER" || 
-									jQuery('#JenisPaket').val() == "MENITREALTIME" || 
+								if ((jQuery('#JenisPaket').val() == "MENIT"  && !jQuery('#chkLangsungbayar').is(':checked')) || 
+									(jQuery('#JenisPaket').val() == "JAM"   && !jQuery('#chkLangsungbayar').is(':checked'))|| 
+									(jQuery('#JenisPaket').val() == "PAKETMEMBER" && !jQuery('#chkLangsungbayar').is(':checked')) || 
+									(jQuery('#JenisPaket').val() == "MENITREALTIME" && !jQuery('#chkLangsungbayar').is(':checked')) || 
 									(jQuery('#JenisPaket').val() == "JAMREALTIME" && !jQuery('#chkLangsungbayar').is(':checked')) || 
 									(jQuery('#JenisPaket').val() == "PAYPERUSE" && !jQuery('#chkLangsungbayar').is(':checked'))) {
                                     Swal.fire({

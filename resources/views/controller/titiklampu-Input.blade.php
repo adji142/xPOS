@@ -94,7 +94,7 @@
                                                 <select name="ControllerID" id="ControllerID" class="js-example-basic-single js-states form-control bg-transparent">
                                                     <option value="">Pilih Kelompok Meja</option>
                                                     @foreach($controller as $ko)
-                                                        <option value="{{ $ko->id }}" {{ $ko->id == (count($titiklampu) > 0 ? $titiklampu[0]['ControllerID'] : '') ? 'selected' : '' }}>
+                                                        <option value="{{ $ko->id }}" data-maximal-node="{{ $ko->MaximalNode }}" {{ $ko->id == (count($titiklampu) > 0 ? $titiklampu[0]['ControllerID'] : '') ? 'selected' : '' }}>
                                                             {{ $ko->NamaController }}
                                                         </option>
                                                     @endforeach
@@ -186,10 +186,10 @@
 
 		var _URL = window.URL || window.webkitURL;
 		jQuery('#image_result').click(function(){
-            $('#Attachment').click();
+            jQuery('#Attachment').click();
         });
 
-        $("#Attachment").change(function(){
+        jQuery("#Attachment").change(function(){
             var file = $(this)[0].files[0];
             var img = new Image();
             img.src = _URL.createObjectURL(file);
@@ -203,24 +203,50 @@
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
                 reader.onload = function (e) {
-                    $('#image_result').html("<img src ='"+e.target.result+"'> ");
+                    jQuery('#image_result').html("<img src ='"+e.target.result+"'> ");
                 }
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
         function encodeImagetoBase64(element) {
-            $('#image_base64').val('');
+            jQuery('#image_base64').val('');
             var file = element.files[0];
             var reader = new FileReader();
             reader.onloadend = function() {
-                $('#image_base64').val(reader.result);
+                jQuery('#image_base64').val(reader.result);
             }
             reader.readAsDataURL(file);
         }
 
-		$(document).ready(function () {
-			$('#LevelHarga').select2();
+		jQuery(document).ready(function () {
+			var oTestData = "<?php echo json_encode($titiklampu); ?>";
+			console.log(oTestData);
+			jQuery('#LevelHarga').select2();
+
+            function updateDigitalInputPorts() {
+                var selectedController = jQuery('#ControllerID').find(':selected');
+                var maximalNode = selectedController.data('maximal-node');
+                var currentDigitalInput = "{{ count($titiklampu) > 0 ? $titiklampu[0]['DigitalInput'] : '' }}";
+                
+                var digitalInputSelect = jQuery('#DigitalInput');
+                digitalInputSelect.empty();
+                digitalInputSelect.append('<option value="-1">Digital Input Port</option>');
+                
+                if (maximalNode) {
+                    for (var i = 1; i <= maximalNode; i++) {
+                        var selected = (i == currentDigitalInput) ? 'selected' : '';
+                        digitalInputSelect.append('<option value="' + i + '" ' + selected + '>' + i + '</option>');
+                    }
+                }
+            }
+
+            jQuery('#ControllerID').on('change', function() {
+                updateDigitalInputPorts();
+            });
+
+            // Initial call
+            updateDigitalInputPorts();
 		});
 
 		jQuery('form').submit(function(e) {
