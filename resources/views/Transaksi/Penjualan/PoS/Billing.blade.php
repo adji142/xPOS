@@ -5410,52 +5410,50 @@ License: You must have a valid license purchased only from themeforest(the above
 				return;
 			}
 
-			if(filteredData[0]["isJasaPaid"] == 0){
-				if (TotalHargaNormal > 0) {
-					var oItem = {
-						'NoUrut' : 0,
-						'KodeItem' : oCompany[0]["ItemHiburan"],
-						'Qty' : DurasiLama,
-						'QtyKonversi' : DurasiLama,
-						'Satuan' : SatuanDurasiLama,
-						'Harga' : HargaNormal,
-						'Discount' : 0,
-						'HargaNet' : DurasiLama * HargaNormal,
-						'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
-						'BaseLine' : -1,
-						'KodeGudang' : oCompany[0]['GudangPoS'],
-						'LineStatus': 'O',
-						'VatPercent' : 0,
-						'HargaPokokPenjualan' : HargaNormal,
-						'Pajak' : PPNNormal,
-						'PajakHiburan' : PajakHiburanNormal,
-					}
-					oDetail.push(oItem);
-					NoUrut += 1;
+			if (TotalHargaNormal > 0) {
+				var oItem = {
+					'NoUrut' : 0,
+					'KodeItem' : oCompany[0]["ItemHiburan"],
+					'Qty' : DurasiLama,
+					'QtyKonversi' : DurasiLama,
+					'Satuan' : SatuanDurasiLama,
+					'Harga' : HargaNormal,
+					'Discount' : 0,
+					'HargaNet' : DurasiLama * HargaNormal,
+					'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
+					'BaseLine' : -1,
+					'KodeGudang' : oCompany[0]['GudangPoS'],
+					'LineStatus': 'O',
+					'VatPercent' : 0,
+					'HargaPokokPenjualan' : HargaNormal,
+					'Pajak' : PPNNormal,
+					'PajakHiburan' : PajakHiburanNormal,
 				}
+				oDetail.push(oItem);
+				NoUrut += 1;
+			}
 
-				if (TotalHargaBaru > 0) {
-					var oItem = {
-						'NoUrut' : 1,
-						'KodeItem' : oCompany[0]["ItemHiburan"],
-						'Qty' : DurasiBaru,
-						'QtyKonversi' : DurasiBaru,
-						'Satuan' : SatuanDurasiBaru,
-						'Harga' : HargaBaru,
-						'Discount' : 0,
-						'HargaNet' : DurasiBaru * HargaBaru,
-						'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
-						'BaseLine' : -1,
-						'KodeGudang' : oCompany[0]['GudangPoS'],
-						'LineStatus': 'O',
-						'VatPercent' : 0,
-						'HargaPokokPenjualan' : HargaBaru,
-						'Pajak' : PPNBaru,
-						'PajakHiburan' : PajakHiburanBaru,
-					}
-					oDetail.push(oItem);
-					NoUrut += 1;
+			if (TotalHargaBaru > 0) {
+				var oItem = {
+					'NoUrut' : 1,
+					'KodeItem' : oCompany[0]["ItemHiburan"],
+					'Qty' : DurasiBaru,
+					'QtyKonversi' : DurasiBaru,
+					'Satuan' : SatuanDurasiBaru,
+					'Harga' : HargaBaru,
+					'Discount' : 0,
+					'HargaNet' : DurasiBaru * HargaBaru,
+					'BaseReff' : jQuery('#txtNoTransaksi_Detail').val(),
+					'BaseLine' : -1,
+					'KodeGudang' : oCompany[0]['GudangPoS'],
+					'LineStatus': 'O',
+					'VatPercent' : 0,
+					'HargaPokokPenjualan' : HargaBaru,
+					'Pajak' : PPNBaru,
+					'PajakHiburan' : PajakHiburanBaru,
 				}
+				oDetail.push(oItem);
+				NoUrut += 1;
 			}
 
 			
@@ -5543,7 +5541,7 @@ License: You must have a valid license purchased only from themeforest(the above
 						PrintStruk(response.LastTRX);
 						
 						if (!_isFromDetailLookup) {
-							location.reload();
+							// location.reload();
 						}
 					}
 					else{
