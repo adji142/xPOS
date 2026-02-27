@@ -349,7 +349,8 @@ class ReportController extends Controller
             'OldBulan' => empty($Bulan) ? Carbon::now()->month : $Bulan,
             'OldTipeLaporan' => $TipeLaporan,
             'OldShowZero' => $ShowZero,
-            'AksesAccounting' => $ocompany->isPostingAkutansi
+            'AksesAccounting' => $ocompany->isPostingAkutansi,
+            'ocompany' => $ocompany
 		]);
     }
 }

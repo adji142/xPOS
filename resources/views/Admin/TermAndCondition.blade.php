@@ -1,4 +1,4 @@
-@extends('partadmin.headeradmin')
+@extends('parts.header')
 	
 @section('content')
 <style>
