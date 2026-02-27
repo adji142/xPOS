@@ -122,7 +122,7 @@ class ItemMaster extends BaseModel
               END 
             END 
           END ItemType, itemmaster.Rak, CASE WHEN COALESCE(itemkonversi.QtyKonversi,0) = 0 then 1 else COALESCE(itemkonversi.QtyKonversi,0) end QtyKonversi,
-          itemkonversi.Satuan, COALESCE(itemmaster.VatPercent,0) VatPercent, COALESCE(itemmaster.Gambar,'') Gambar  ";
+          itemkonversi.Satuan, COALESCE(itemmaster.VatPercent,0) VatPercent, COALESCE(itemmaster.Gambar,'') Gambar,itemmaster.TampilkanEMenu  ";
           $itemmaster2 = ItemMaster::selectRaw($sql2)
                   ->leftJoin('jenisitem', function ($value){
                     $value->on('jenisitem.KodeJenis','=','itemmaster.KodeJenisItem')
