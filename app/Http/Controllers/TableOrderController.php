@@ -122,7 +122,9 @@ class TableOrderController extends Controller
                             COALESCE(tkelompoklampu.NamaKelompok,'') AS NamaKelompok,
                             pelanggan.TglBerlanggananPaketBulanan,
                             COALESCE(payment_summary.NoReff, 'POS') NoReff,
-                            CASE WHEN payment_summary_jasa.BaseReff IS NOT NULL then 1 ELSE 0 END as isJasaPaid
+                            CASE WHEN payment_summary_jasa.BaseReff IS NOT NULL then 1 ELSE 0 END as isJasaPaid,
+                            COALESCE(serial_numbers.isBlocked, 0) as isBlocked,
+                            COALESCE(serial_numbers.BlockedReason, '') as BlockedReason
                         ")
                         ->leftJoin('tableorderheader', function ($value)  {
                             $value->on('titiklampu.id','=','tableorderheader.tableid')
@@ -165,6 +167,10 @@ class TableOrderController extends Controller
                         ->leftJoinSub($subqueryPembayaranJasa, 'payment_summary_jasa', function ($join) {
                             $join->on('tableorderheader.NoTransaksi', '=', 'payment_summary_jasa.BaseReff')
                                  ->on('tableorderheader.RecordOwnerID', '=', 'payment_summary_jasa.RecordOwnerID');
+                        })
+                        ->leftJoin('serial_numbers', function ($value) {
+                            $value->on('mastercontroller.SN', '=', 'serial_numbers.SerialNumber')
+                                  ->on('mastercontroller.RecordOwnerID', '=', 'serial_numbers.KodePartner');
                         })
                         ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
                         ->whereIn(DB::raw("COALESCE(payment_summary.NoReff,'POS')"), ['POS','POS-FNB','POS-TAMBAHJAM'])
@@ -282,7 +288,9 @@ class TableOrderController extends Controller
                             COALESCE(bookingtableonline.NetTotal,0) AS BookingNetTotal,
                             COALESCE(bookingtableonline.Keterangan,'') AS BookingPaymentReffNumber,
                             COALESCE(payment_summary.TotalPembayaran, 0) as TotalPembayaran,
-                            COALESCE(tkelompoklampu.NamaKelompok,'') AS NamaKelompok
+                            COALESCE(tkelompoklampu.NamaKelompok,'') AS NamaKelompok,
+                            COALESCE(serial_numbers.isBlocked, 0) as isBlocked,
+                            COALESCE(serial_numbers.BlockedReason, '') as BlockedReason
                         ")
                         ->leftJoin('tableorderheader', function ($value)  {
                             $value->on('titiklampu.id','=','tableorderheader.tableid')
@@ -321,6 +329,10 @@ class TableOrderController extends Controller
                         ->join('mastercontroller', function ($value)  {
                             $value->on('titiklampu.ControllerID','=','mastercontroller.id')
                             ->on('titiklampu.RecordOwnerID','=','mastercontroller.RecordOwnerID');
+                        })
+                        ->leftJoin('serial_numbers', function ($value) {
+                            $value->on('mastercontroller.SN', '=', 'serial_numbers.SerialNumber')
+                                  ->on('mastercontroller.RecordOwnerID', '=', 'serial_numbers.KodePartner');
                         })
                         ->where('titiklampu.RecordOwnerID', '=', Auth::user()->RecordOwnerID)
                         ->where(DB::raw("COALESCE(payment_summary.NoReff,'POS')"), 'POS')
@@ -688,7 +700,7 @@ class TableOrderController extends Controller
                             ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
                             ->update(
                                 [
-                                    'Status' => 0 ,
+                                    'Status' => $Status,
                                     'JamSelesai' => DB::raw("CASE WHEN JamSelesai IS NULL THEN NOW() ELSE JamSelesai END")
                                     // 'JamSelesai' => DB::raw("CASE WHEN '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENIT' OR '" . $request->input('txtJenisPaket_CheckOut') . "' = 'MENITREALTIME' THEN NOW() ELSE JamSelesai END")
                                 ]
