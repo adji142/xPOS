@@ -74,7 +74,7 @@
 									</div>
 									<div class="col-md-3">
 										<br>
-										<button class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1">Cari Data</button>
+										<button class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1" id="btSearch">Cari Data</button>
 									</div>
 								</div>
 							</div>
@@ -162,6 +162,9 @@
         GetHeader();
 		bindGridDetail([]);
 	});
+    jQuery('#btSearch').click(function () {
+        GetHeader();
+    });
 
     jQuery('#btnPrint').on('click', function () {
         const iframeSrc = $('#webViewModal iframe').attr('src');
