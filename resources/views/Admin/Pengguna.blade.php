@@ -27,8 +27,10 @@
 									</h3>
 								</div>
                                 <div class="icons d-flex">
+									<button type="button" class="btn btn-outline-primary rounded-pill font-weight-bold me-1 mb-1" data-bs-toggle="modal" data-bs-target="#ModalBlastMessage">Blast Message</button>
 									<a href="{{ url('penggunaaplikasi/export/') }}" class="btn btn-outline-success rounded-pill font-weight-bold me-1 mb-1">Download Excel</a>
 								</div>
+
 							</div>
 						
 						</div>
@@ -443,6 +445,12 @@
                                 <input type="date" id="ModalEndSubsRubahLangganan" name="EndSubs" class="form-control" required>
                             </fieldset>
                         </div>
+                        <div class="col-md-6">
+                            <label  class="text-body">Maximal User</label>
+                            <fieldset class="form-group mb-3">
+                                <input type="number" id="ModalMaximalUserRubahLangganan" name="MaximalUser" class="form-control" required>
+                            </fieldset>
+                        </div>
     
                         <div class="col-md-12" id="SectionJenisLangganan" style="display: none;">
                             <label class="text-body font-weight-bold">Jenis Layanan</label>
@@ -554,12 +562,61 @@
 	</div>	  	  
 </div>
 
+<div class="modal fade text-left" id="ModalBlastMessage" tabindex="-1" role="dialog" aria-labelledby="ModalBlastMessage" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h3 class="modal-title" id="myModalLabel1444">Blast Message Ke Seluruh Pengguna</h3>
+			<button type="button" class="close rounded-pill btn btn-sm btn-icon btn-light btn-hover-primary m-0" data-bs-dismiss="modal" aria-label="Close">
+			  <svg width="20px" height="20px" viewBox="0 0 16 16" class="bi bi-x" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+				  <path fill-rule="evenodd" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+			  </svg>
+			</button>
+		  </div>
+		  <div class="modal-body">
+			<div class="col-md-12">
+				<div class="form-group row">
+            		<div class="col-md-12">
+            			<label  class="text-body">Subject</label>
+            			<fieldset class="form-group mb-3">
+            				<input type="text" class="form-control" id="BlastSubject" name="BlastSubject" placeholder="Masukan Subject Email" required="">
+            			</fieldset>
+            		</div>
+                    <div class="col-md-12">
+                        <label  class="text-body">Isi Pesan</label>
+            			<fieldset class="form-group mb-3">
+            				<textarea class="form-control" id="BlastMessageBody" name="BlastMessageBody" rows="10"></textarea>
+            			</fieldset>
+                    </div>
+                    <div class="col-md-12 mt-3" id="BlastProgressSection" style="display: none;">
+                        <label class="text-body" id="BlastStatusText">Sending: 0/0</label>
+                        <!-- <div class="progress">
+                            <div id="BlastProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div> -->
+                    </div>
+				</div>
+
+			</div>
+			<hr>
+			<div class="form-group row justify-content-end mb-0">
+				<div class="col-md-6  text-end">
+					<button type="button" class="btn btn-primary" id="btSendBlast">Kirim Pesan</button>
+				</div>
+			</div>
+		  </div>
+		</div>
+	</div>	  	  
+</div>
+
+
 @endsection
 
 @push('scripts')
 <script type="text/javascript">
     var oCompany;
     var oSubs;
+    var blastEditor;
+
 
 	jQuery(document).ready(function() {
         var now = new Date();
@@ -597,6 +654,16 @@
         jQuery('#ModalPaketAplikasiRubahLangganan').select2({
             dropdownParent: $('#LookupRubahPaket')
         })
+
+        ClassicEditor
+            .create(document.querySelector('#BlastMessageBody'))
+            .then(editor => {
+                blastEditor = editor;
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
 
         oCompany = <?php echo $oCompany; ?>;
         oSubs = <?php echo $subs; ?>;
@@ -708,6 +775,7 @@
 
         jQuery('#ModalStartSubsRubahLangganan').val(filterPelanggan[0]['StartSubs']);
         jQuery('#ModalEndSubsRubahLangganan').val(filterPelanggan[0]['EndSubs']);
+        jQuery('#ModalMaximalUserRubahLangganan').val(filterPelanggan[0]['MaximalUser']);
 
         // Load Jenis Langganan
         jQuery('input[name="JenisLangganan[]"]').prop('checked', false); // Reset first
@@ -843,5 +911,101 @@
             }
         });
     });
+
+    jQuery('#btSendBlast').click(function () {
+        var subject = jQuery('#BlastSubject').val();
+        var message = blastEditor.getData();
+
+        if (subject == "" || message == "") {
+            Swal.fire('Error!', 'Subject dan Isi Pesan harus diisi.', 'error');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Konfirmasi',
+            text: "Kirim pesan ini ke seluruh pengguna?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Kirim',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                sendBlastIterative(subject, message);
+            }
+        });
+    });
+
+    async function sendBlastIterative(subject, message) {
+        jQuery('#btSendBlast').attr('disabled', true);
+        jQuery('#BlastProgressSection').show();
+        jQuery('#BlastProgressBar').css('width', '0%').attr('aria-valuenow', 0);
+        jQuery('#BlastStatusText').text('Mengambil daftar email...');
+
+        try {
+            const listResponse = await $.ajax({
+                type: 'post',
+                url: "{{route('penggunaaplikasi-getblastlist')}}",
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                dataType: 'json'
+            });
+
+            if (!listResponse.success || listResponse.emails.length === 0) {
+                Swal.fire('Error!', 'Gagal mengambil daftar email atau daftar kosong.', 'error');
+                resetBlastUI();
+                return;
+            }
+
+            const emails = listResponse.emails;
+            const total = emails.length;
+            let successCount = 0;
+            let current = 0;
+
+            for (const email of emails) {
+                current++;
+                jQuery('#BlastStatusText').text(`Mengirim ke: ${email} (${current}/${total})`);
+                
+                try {
+                    const sendResponse = await $.ajax({
+                        type: 'post',
+                        url: "{{route('penggunaaplikasi-sendsingleblast')}}",
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        data: { email, subject, message },
+                        dataType: 'json'
+                    });
+
+                    if (sendResponse.success) {
+                        successCount++;
+                    }
+                } catch (err) {
+                    console.error(`Failed to send email to ${email}`, err);
+                }
+
+                const percent = Math.round((current / total) * 100);
+                jQuery('#BlastProgressBar').css('width', percent + '%').attr('aria-valuenow', percent);
+            }
+
+            Swal.fire('Selesai!', `Berhasil mengirim ${successCount} dari ${total} email.`, 'success');
+            jQuery('#ModalBlastMessage').modal('hide');
+            
+            // Log if there were failures
+            if (successCount < total) {
+                console.warn(`${total - successCount} emails failed to send.`);
+            }
+
+        } catch (error) {
+            Swal.fire('Error!', 'Terjadi kesalahan sistem saat memproses blast.', 'error');
+        } finally {
+            resetBlastUI();
+        }
+    }
+
+    function resetBlastUI() {
+        jQuery('#btSendBlast').attr('disabled', false);
+        jQuery('#BlastProgressSection').hide();
+        jQuery('#BlastSubject').val('');
+        blastEditor.setData('');
+    }
+
+
 </script>
 @endpush

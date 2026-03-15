@@ -377,6 +377,10 @@
                             <label class="small font-weight-bold text-muted">Nama Pelanggan</label>
                             <input type="text" class="form-control" id="txtNamaPelanggan_EMenu" placeholder="Nama Pelanggan" style="border-radius: 8px;">
                         </div>
+                        <div class="form-group mb-2">
+                            <label class="small font-weight-bold text-muted">Email</label>
+                            <input type="email" class="form-control" id="txtEmail_EMenu" placeholder="nama@email.com" style="border-radius: 8px;">
+                        </div>
 
                         <!-- Table Booking Cost Summary -->
                         <div id="tableBookingSummary" class="bg-light p-2 rounded d-none" style="border: 1px dashed #dee2e6;">
@@ -403,6 +407,7 @@
                     <div class="bg-light p-3">
                         <small class="font-weight-bold text-muted text-uppercase mb-3 d-block">Metode Pembayaran</small>
                         
+                        @if(substr($company->ShowMetodePembayaran ?? '11', 0, 1) == '1')
                         <div class="payment-option {{ $canUseCash ? 'active' : 'disabled' }}" onclick="selectPayment('CASH', this, null, {{ $canUseCash ? 'false' : 'true' }})">
                             <i class="fas fa-money-bill-wave text-success"></i>
                             <div class="payment-info">
@@ -411,7 +416,9 @@
                             </div>
                             <i class="fas fa-check-circle text-success check-icon {{ $canUseCash ? '' : 'd-none' }}"></i>
                         </div>
+                        @endif
 
+                        @if(substr($company->ShowMetodePembayaran ?? '11', 1, 1) == '1')
                         @foreach($paymentMethods as $pm)
                             @if($pm->MetodeVerifikasi == 'AUTO')
                             <div class="payment-option {{ $canUseQRIS ? '' : 'disabled' }}" onclick="selectPayment('{{ $pm->id }}', this, {{ json_encode($pm) }}, {{ $canUseQRIS ? 'false' : 'true' }})">
@@ -424,6 +431,7 @@
                             </div>
                             @endif
                         @endforeach
+                        @endif
                     </div>
                 </div>
                 <div class="modal-footer border-0">
@@ -447,13 +455,16 @@
 
     <script>
         let cart = JSON.parse(localStorage.getItem('emenu_cart_{{ $titikLampu->id }}')) || {};
-        let selectedPayment = 'CASH';
+        let selectedPayment = '{{ (substr($company->ShowMetodePembayaran ?? "11", 0, 1) == "1" && $canUseCash) ? "CASH" : "" }}';
         let selectedPaymentData = null;
 
-        @if(!$canUseCash && $canUseQRIS)
-            @php
-                $firstQRIS = collect($paymentMethods)->where('MetodeVerifikasi', 'AUTO')->first();
-            @endphp
+        @php
+            $showCash = (substr($company->ShowMetodePembayaran ?? '11', 0, 1) == '1');
+            $showQRIS = (substr($company->ShowMetodePembayaran ?? '11', 1, 1) == '1');
+            $firstQRIS = collect($paymentMethods)->where('MetodeVerifikasi', 'AUTO')->first();
+        @endphp
+
+        @if((!$showCash || !$canUseCash) && ($showQRIS && $canUseQRIS))
             @if($firstQRIS)
                 selectedPayment = '{{ $firstQRIS->id }}';
                 selectedPaymentData = {!! json_encode($firstQRIS) !!};
@@ -568,9 +579,11 @@
                         if (response.success && response.data.length > 0) {
                             const p = response.data[0];
                             $('#txtNamaPelanggan_EMenu').val(p.NamaPelanggan).attr('readonly', true);
+                            $('#txtEmail_EMenu').val(p.Email);
                             $('#txtKodePelanggan_EMenu').val(p.KodePelanggan);
                         } else {
                             $('#txtNamaPelanggan_EMenu').val('').attr('readonly', false).attr('placeholder', 'Pelanggan Baru (Silakan isi nama)');
+                            $('#txtEmail_EMenu').val('');
                             $('#txtKodePelanggan_EMenu').val('');
                         }
                     },
@@ -714,8 +727,22 @@
             @if(!$isTableActive)
             const jenisPaket = $('#JenisPaket').val();
             const paketid = $('#paketid').val();
+            const namaPelanggan = $('#txtNamaPelanggan_EMenu').val();
+            const noTlp = $('#txtNoTlp_EMenu').val();
+            const email = $('#txtEmail_EMenu').val();
+
             if (!jenisPaket || !paketid) {
                 Swal.fire('Peringatan', 'Silakan pilih Jenis Paket dan Paket terlebih dahulu.', 'warning');
+                return;
+            }
+            if (!namaPelanggan || !noTlp || !email) {
+                Swal.fire('Peringatan', 'Nama, Nomor Telepon, dan Email wajib diisi untuk aktivasi meja.', 'warning');
+                return;
+            }
+            // Basic email validation
+            const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailReg.test(email)) {
+                Swal.fire('Peringatan', 'Format email tidak valid.', 'warning');
                 return;
             }
             @endif
@@ -879,7 +906,10 @@
                         text: 'Pesanan Anda telah diterima dan dibayar.',
                         confirmButtonText: 'OK'
                     }).then(() => {
-                        location.reload();
+                        triggerEmailNotification(data.NoTransaksi);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 500);
                     });
                 } else {
                     Swal.fire('Error', 'Gagal menyimpan pesanan: ' + data.message, 'error');
@@ -946,6 +976,7 @@
                     bookingDuration: $('#bookingDuration').val(),
                     NoTlp1: $('#txtNoTlp_EMenu').val(),
                     NamaPelanggan: $('#txtNamaPelanggan_EMenu').val(),
+                    Email: $('#txtEmail_EMenu').val(),
                     KodePelanggan: $('#txtKodePelanggan_EMenu').val()
                 })
             })
@@ -961,7 +992,10 @@
                         text: 'Terima kasih atas pesanan Anda. Kami akan segera menyajikannya.',
                         confirmButtonColor: '#28a745'
                     }).then(() => {
-                        location.reload();
+                        triggerEmailNotification(data.NoTransaksi);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 500);
                     });
                 } else {
                     Swal.fire({
@@ -982,6 +1016,28 @@
                 });
                 btn.disabled = false;
                 btn.innerText = 'PESAN SEKARANG';
+            });
+        }
+
+        function triggerEmailNotification(noTransaksi) {
+            console.log('Triggering email for:', noTransaksi);
+            fetch("{{ route('emenu.send-email') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    NoTransaksi: noTransaksi,
+                    roid: "{{ $roid }}"
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Email trigger status:', data);
+            })
+            .catch(error => {
+                console.error('Email trigger failed:', error);
             });
         }
     </script>

@@ -25,6 +25,12 @@ use App\Imports\ItemMasterImport;
 use App\Imports\HargaJualImport;
 use App\Imports\PelangganImport;
 use App\Imports\SupplierImport;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\LaporanPenggunaExport;
+use App\Mail\BlastMail;
+
+
+
 
 use App\Exceptions\CustomImportException;
 use Throwable;
@@ -77,22 +83,38 @@ class CompanyController extends Controller
                                         END
                                     END
                                 END
-                            END StatusSubscription, users.email ")
+                            END StatusSubscription")
                         ->leftJoin('subscriptionheader','company.KodePaketLangganan','subscriptionheader.NoTransaksi')
                         ->leftJoinSub($subquery, 'inv', function ($join) {
                             // Bind the placeholder value during the join
                             $join->on('company.KodePartner', '=', 'inv.KodePelanggan');
                         })
-                        ->join('userrole', 'company.KodePartner', '=', 'userrole.RecordOwnerID')
-                        ->join('roles', function($join) {
-                            $join->on('userrole.roleid', '=', 'roles.id')
-                                ->on('userrole.RecordOwnerID', '=', 'roles.RecordOwnerID');
-                        })
-                        ->join('users', function($join) {
-                            $join->on('userrole.userid', '=', 'users.id')
-                                ->on('userrole.RecordOwnerID', '=', 'users.RecordOwnerID');
-                        })
+                        ->selectRaw("(SELECT u.email FROM users u 
+                                      JOIN userrole ur ON u.id = ur.userid AND u.RecordOwnerID = ur.RecordOwnerID
+                                      JOIN roles r ON ur.roleid = r.id AND ur.RecordOwnerID = r.RecordOwnerID
+                                      WHERE ur.RecordOwnerID = company.KodePartner AND r.RoleName = 'SuperAdmin'
+                                      ORDER BY u.created_at ASC LIMIT 1) as email")
+                        ->selectRaw("(SELECT u.created_at FROM users u 
+                                      JOIN userrole ur ON u.id = ur.userid AND u.RecordOwnerID = ur.RecordOwnerID
+                                      JOIN roles r ON ur.roleid = r.id AND ur.RecordOwnerID = r.RecordOwnerID
+                                      WHERE ur.RecordOwnerID = company.KodePartner AND r.RoleName = 'SuperAdmin'
+                                      ORDER BY u.created_at ASC LIMIT 1) as oldest_superadmin_at")
                         ->where('company.isActive', '!=', '-1')
+                        ->whereExists(function ($query) {
+                            $query->select(DB::raw(1))
+                                ->from('users')
+                                ->join('userrole', function($join) {
+                                    $join->on('users.id', '=', 'userrole.userid')
+                                        ->on('users.RecordOwnerID', '=', 'userrole.RecordOwnerID');
+                                })
+                                ->join('roles', function($join) {
+                                    $join->on('userrole.roleid', '=', 'roles.id')
+                                        ->on('userrole.RecordOwnerID', '=', 'roles.RecordOwnerID');
+                                })
+                                ->whereRaw('userrole.RecordOwnerID = company.KodePartner')
+                                ->where('roles.RoleName', 'SuperAdmin');
+                        })
+                        ->orderBy('oldest_superadmin_at', 'asc')
                         // ->leftJoin('tagihanpenggunaheader', 'tagihanpenggunaheader.NoTransaksi','inv.NoTransaksi')
                         ->get();
         $subs = SubscriptionHeader::all();
@@ -102,6 +124,126 @@ class CompanyController extends Controller
             'subs' => $subs,
         ]);
     }
+
+    public function LaporanPengguna(Request $request) {
+        $subquery = DB::table('tagihanpenggunaheader')
+                        ->selectRaw("KodePelanggan,MAX(tagihanpenggunaheader.TotalBayar) TotalBayar, MAX(created_at) created")
+                        ->groupBy('KodePelanggan');
+
+        $oCompany = Company::selectRaw("company.KodePartner, company.NamaPartner, company.NoTlp, company.NamaPIC, company.StartSubs, company.EndSubs, company.ExtraDays, company.JenisUsaha, subscriptionheader.NamaSubscription, DATE_ADD(company.EndSubs, INTERVAL company.ExtraDays DAY) JatuhTempo, 
+                            CASE WHEN inv.TotalBayar = 0 THEN 'Belum Bayar-warning' ELSE 
+                                CASE WHEN NOW() BETWEEN DATE_ADD(company.EndSubs,INTERVAL -10 DAY) AND company.EndSubs THEN 'Akan Jatuh Tempo-warning' ELSE 
+                                    CASE WHEN NOW() > company.EndSubs THEN 'Expired-danger' ELSE 
+                                        CASE WHEN inv.TotalBayar > 0 AND company.EndSubs > NOW() THEN 'Aktif-success' ELSE 
+                                            CASE WHEN company.EndSubs > NOW() THEN 'Aktif-success' ELSE 
+                                                CASE WHEN company.StartSubs is null THEN 'Perlu Aktivasi-danger' ELSE '' END
+                                            END
+                                        END
+                                    END
+                                END
+                            END StatusSubscription")
+                        ->leftJoin('subscriptionheader','company.KodePaketLangganan','subscriptionheader.NoTransaksi')
+                        ->leftJoinSub($subquery, 'inv', function ($join) {
+                            $join->on('company.KodePartner', '=', 'inv.KodePelanggan');
+                        })
+                        ->selectRaw("(SELECT u.email FROM users u 
+                                      JOIN userrole ur ON u.id = ur.userid AND u.RecordOwnerID = ur.RecordOwnerID
+                                      JOIN roles r ON ur.roleid = r.id AND ur.RecordOwnerID = r.RecordOwnerID
+                                      WHERE ur.RecordOwnerID = company.KodePartner AND r.RoleName = 'SuperAdmin'
+                                      ORDER BY u.created_at ASC LIMIT 1) as email")
+                        ->selectRaw("(SELECT u.created_at FROM users u 
+                                      JOIN userrole ur ON u.id = ur.userid AND u.RecordOwnerID = ur.RecordOwnerID
+                                      JOIN roles r ON ur.roleid = r.id AND ur.RecordOwnerID = r.RecordOwnerID
+                                      WHERE ur.RecordOwnerID = company.KodePartner AND r.RoleName = 'SuperAdmin'
+                                      ORDER BY u.created_at ASC LIMIT 1) as oldest_superadmin_at")
+                        ->where('company.isActive', '!=', '-1')
+                        ->orderBy('oldest_superadmin_at', 'asc')
+                        ->get();
+
+        return view("Admin.LaporanPengguna",[
+            'oCompany' => $oCompany
+        ]);
+    }
+
+    public function ExportLaporanPenggunaExcel() {
+        return Excel::download(new LaporanPenggunaExport, 'LaporanPengguna.xlsx');
+    }
+
+    public function ExportLaporanPenggunaPDF() {
+        $subquery = DB::table('tagihanpenggunaheader')
+                        ->selectRaw("KodePelanggan,MAX(tagihanpenggunaheader.TotalBayar) TotalBayar, MAX(created_at) created")
+                        ->groupBy('KodePelanggan');
+
+        $oCompany = Company::selectRaw("company.KodePartner, company.NamaPartner, company.NoTlp, company.NamaPIC, company.StartSubs, company.EndSubs, company.ExtraDays, company.JenisUsaha, subscriptionheader.NamaSubscription, DATE_ADD(company.EndSubs, INTERVAL company.ExtraDays DAY) JatuhTempo, 
+                            CASE WHEN inv.TotalBayar = 0 THEN 'Belum Bayar' ELSE 
+                                CASE WHEN NOW() BETWEEN DATE_ADD(company.EndSubs,INTERVAL -10 DAY) AND company.EndSubs THEN 'Akan Jatuh Tempo' ELSE 
+                                    CASE WHEN NOW() > company.EndSubs THEN 'Expired' ELSE 
+                                        CASE WHEN inv.TotalBayar > 0 AND company.EndSubs > NOW() THEN 'Aktif' ELSE 
+                                            CASE WHEN company.EndSubs > NOW() THEN 'Aktif' ELSE 
+                                                CASE WHEN company.StartSubs is null THEN 'Perlu Aktivasi' ELSE '' END
+                                            END
+                                        END
+                                    END
+                                END
+                            END StatusSubscription")
+                        ->leftJoin('subscriptionheader','company.KodePaketLangganan','subscriptionheader.NoTransaksi')
+                        ->leftJoinSub($subquery, 'inv', function ($join) {
+                            $join->on('company.KodePartner', '=', 'inv.KodePelanggan');
+                        })
+                        ->selectRaw("(SELECT u.email FROM users u 
+                                      JOIN userrole ur ON u.id = ur.userid AND u.RecordOwnerID = ur.RecordOwnerID
+                                      JOIN roles r ON ur.roleid = r.id AND ur.RecordOwnerID = r.RecordOwnerID
+                                      WHERE ur.RecordOwnerID = company.KodePartner AND r.RoleName = 'SuperAdmin'
+                                      ORDER BY u.created_at ASC LIMIT 1) as email")
+                        ->selectRaw("(SELECT u.created_at FROM users u 
+                                      JOIN userrole ur ON u.id = ur.userid AND u.RecordOwnerID = ur.RecordOwnerID
+                                      JOIN roles r ON ur.roleid = r.id AND ur.RecordOwnerID = r.RecordOwnerID
+                                      WHERE ur.RecordOwnerID = company.KodePartner AND r.RoleName = 'SuperAdmin'
+                                      ORDER BY u.created_at ASC LIMIT 1) as oldest_superadmin_at")
+                        ->where('company.isActive', '!=', '-1')
+                        ->orderBy('oldest_superadmin_at', 'asc')
+                        ->get();
+
+        $pdf = Pdf::loadView('Admin.LaporanPenggunaPDF', ['oCompany' => $oCompany])->setPaper('a4', 'landscape');
+        return $pdf->download('LaporanPengguna.pdf');
+    }
+
+    public function GetBlastList(Request $request) {
+        $oCompany = Company::selectRaw("(SELECT u.email FROM users u 
+                                      JOIN userrole ur ON u.id = ur.userid AND u.RecordOwnerID = ur.RecordOwnerID
+                                      JOIN roles r ON ur.roleid = r.id AND ur.RecordOwnerID = r.RecordOwnerID
+                                      WHERE ur.RecordOwnerID = company.KodePartner AND r.RoleName = 'SuperAdmin'
+                                      ORDER BY u.created_at ASC LIMIT 1) as email")
+                        ->where('company.isActive', '!=', '-1')
+                        ->get();
+
+        $emails = [];
+        foreach ($oCompany as $v) {
+            if ($v->email) {
+                $emails[] = $v->email;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'emails' => $emails
+        ]);
+    }
+
+    public function SendSingleBlast(Request $request) {
+        $email = $request->input('email');
+        $subject = $request->input('subject');
+        $message = $request->input('message');
+
+        try {
+            Mail::to($email)->send(new BlastMail($subject, $message));
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+
     public function View(Request $request)
     {
         $clientOS = "";
@@ -231,7 +373,8 @@ class CompanyController extends Controller
                     'TypeBackgraund' => $request->input('TypeBackgraund'),
                     'Backgraund' => empty($request->input('BackgraundBase64')) ? $request->input('Backgraund') : $request->input('BackgraundBase64'),
                     'RunningTextSelfServices' => empty($request->input('RunningTextSelfServices')) ? $request->input('RunningTextSelfServices') : $request->input('RunningTextSelfServices'),
-                    'QueueDesignSetting' => empty($request->input('QueueDesignSetting')) ? "QueueManagement" : $request->input('QueueDesignSetting')
+                    'QueueDesignSetting' => empty($request->input('QueueDesignSetting')) ? "QueueManagement" : $request->input('QueueDesignSetting'),
+                    'ShowMetodePembayaran' => ($request->has('showBayarDiMeja') ? "1" : "0") . ($request->has('showLangsungBayar') ? "1" : "0")
                 ]);
             
                 
@@ -378,6 +521,7 @@ class CompanyController extends Controller
                                 'KodePaketLangganan' => empty($request->input('PaketAplikasi')) ? "" : $request->input('PaketAplikasi'),
                                 'StartSubs' => empty($request->input('StartSubs')) ? "" : $request->input('StartSubs'),
                                 'EndSubs' => empty($request->input('EndSubs')) ? "" : $request->input('EndSubs'),
+                                'MaximalUser' => empty($request->input('MaximalUser')) ? 1 : $request->input('MaximalUser'),
                                 'JenisLangganan' => $jenisLangganan,
                             ]
                         );

@@ -17,7 +17,7 @@ class SerialNumberController extends Controller
 
         $data = DB::table('serial_numbers')
             ->select('serial_numbers.*')
-            ->selectRaw("CASE WHEN (SELECT COUNT(*) FROM mastercontroller WHERE mastercontroller.SN = serial_numbers.SerialNumber) > 0 THEN 'CLAIMED' ELSE 'RELEASED' END as Status")
+            ->selectRaw("CASE WHEN serial_numbers.isBlocked = 1 THEN 'BLOCKED' WHEN (SELECT COUNT(*) FROM mastercontroller WHERE mastercontroller.SN = serial_numbers.SerialNumber) > 0 THEN 'CLAIMED' ELSE 'RELEASED' END as Status")
             ->where('serial_numbers.RecordOwnerID', Auth::user()->RecordOwnerID);
 
         if ($keyword) {
@@ -150,5 +150,43 @@ class SerialNumberController extends Controller
         }
 
         return $randomString;
+    }
+
+    public function block(Request $request)
+    {
+        try {
+            DB::table('serial_numbers')
+                ->where('SerialNumber', $request->input('SerialNumber'))
+                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                ->update([
+                    'isBlocked' => 1,
+                    'BlockedReason' => $request->input('BlockedReason'),
+                    'Keterangan' => 'blocked',
+                    'updated_at' => now(),
+                ]);
+
+            return response()->json(['success' => true, 'message' => 'Serial Number berhasil diblokir.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function unblock(Request $request)
+    {
+        try {
+            DB::table('serial_numbers')
+                ->where('SerialNumber', $request->input('SerialNumber'))
+                ->where('RecordOwnerID', Auth::user()->RecordOwnerID)
+                ->update([
+                    'isBlocked' => 0,
+                    'BlockedReason' => null,
+                    'Keterangan' => 'ACTIVE',
+                    'updated_at' => now(),
+                ]);
+
+            return response()->json(['success' => true, 'message' => 'Serial Number berhasil di-unblock.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 }

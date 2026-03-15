@@ -18,6 +18,9 @@ use App\Exports\TagihanPelangganExport;
 
 use Midtrans\Config;
 use Midtrans\Snap;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\PenjualanPaketExport;
+
 class InvoicePenggunaController extends Controller
 {
     public function View(Request $request){
@@ -359,6 +362,48 @@ class InvoicePenggunaController extends Controller
         return Excel::download(new TagihanPelangganExport($TglAwal, $TglAkhir), 'Daftar Tagihan Pengguna Aplikasi.xlsx');
     }
 
+    public function LaporanPenjualanPaket(Request $request) {
+        return view("Admin.LaporanPenjualanPaket");
+    }
+
+    public function GetPenjualanPaket(Request $request) {
+        $data = array('success' => false, 'message' => '', 'data' => array());
+
+        $TglAwal = $request->input('TglAwal');
+        $TglAkhir = $request->input('TglAkhir');
+
+        $tagihan = InvoicePenggunaHeader::selectRaw("tagihanpenggunaheader.*, subscriptionheader.NamaSubscription, company.NamaPartner ,
+                    pembayarantagihan.TglTransaksi AS TglBayar")
+                    ->leftJoin('subscriptionheader', 'subscriptionheader.NoTransaksi', 'tagihanpenggunaheader.KodePaketLangganan')
+                    ->leftJoin('company', 'company.KodePartner', 'tagihanpenggunaheader.KodePelanggan')
+                    ->leftJoin('pembayarantagihan', 'pembayarantagihan.BaseReff','tagihanpenggunaheader.NoTransaksi')
+                    ->whereBetween('tagihanpenggunaheader.TglTransaksi', [$TglAwal, $TglAkhir])
+                    ->where('tagihanpenggunaheader.Status','<>', 'D')
+                    ->get();
+        $data['data'] = $tagihan;
+        $data['success'] = true;
+        return response()->json($data);
+    }
+
+    public function ExportPenjualanPaketExcel($TglAwal, $TglAkhir) {
+        return Excel::download(new PenjualanPaketExport($TglAwal, $TglAkhir), 'LaporanPenjualanPaket.xlsx');
+    }
+
+    public function ExportPenjualanPaketPDF($TglAwal, $TglAkhir) {
+        $tagihan = InvoicePenggunaHeader::selectRaw("tagihanpenggunaheader.*, subscriptionheader.NamaSubscription, company.NamaPartner ,
+                    pembayarantagihan.TglTransaksi AS TglBayar")
+                    ->leftJoin('subscriptionheader', 'subscriptionheader.NoTransaksi', 'tagihanpenggunaheader.KodePaketLangganan')
+                    ->leftJoin('company', 'company.KodePartner', 'tagihanpenggunaheader.KodePelanggan')
+                    ->leftJoin('pembayarantagihan', 'pembayarantagihan.BaseReff','tagihanpenggunaheader.NoTransaksi')
+                    ->whereBetween('tagihanpenggunaheader.TglTransaksi', [$TglAwal, $TglAkhir])
+                    ->where('tagihanpenggunaheader.Status','<>', 'D')
+                    ->get();
+
+        $pdf = Pdf::loadView('Admin.LaporanPenjualanPaketPDF', ['tagihan' => $tagihan, 'TglAwal' => $TglAwal, 'TglAkhir' => $TglAkhir])->setPaper('a4', 'landscape');
+        return $pdf->download('LaporanPenjualanPaket.pdf');
+    }
+
+
     function CreateNewInvoice(Request $request) {
         $data = array('success' => false, 'message' => '', 'data' => array());
         // Carbon::now()->format('Y-m-d');
@@ -366,6 +411,7 @@ class InvoicePenggunaController extends Controller
         $TglAkhir = Carbon::now()->format('Y-m-d');
         $oCompany = Company::whereBetween('company.EndSubs', [$TglAwal, $TglAkhir])->get();
 
+        $errorCount = 0;
         if (count($oCompany)) {
             foreach ($oCompany as $key) {
                 $subs = SubscriptionHeader::where('NoTransaksi',$key->KodePaketLangganan)->first();
@@ -396,11 +442,11 @@ class InvoicePenggunaController extends Controller
                         goto jump;
                     }
 
-                    if (count($jsonData['Detail']) == 0) {
-                        $data['message'] = "Data Detail Item Harus diisi";
-                        $errorCount += 1;
-                        goto jump;
-                    }
+                    // if (count($jsonData['Detail']) == 0) {
+                    //     $data['message'] = "Data Detail Item Harus diisi";
+                    //     $errorCount += 1;
+                    //     goto jump;
+                    // }
 
                     $index = 0;
                     // var_dump($jsonData['Detail']["Harga"]);

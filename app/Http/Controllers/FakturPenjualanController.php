@@ -38,6 +38,8 @@ use App\Models\MenuRestoAddon;
 use App\Models\JournalHeader;
 use App\Models\JournalDetail;
 use App\Models\TableOrderFnB;
+use App\Models\JenisItem;
+use App\Models\Meja;
 
 class FakturPenjualanController extends Controller
 {
@@ -1501,24 +1503,35 @@ class FakturPenjualanController extends Controller
 					goto jump;
 				}
 
+				// $update = DB::table('tableorderheader')
+				// 			->where('NoTransaksi','=', $baseReff)
+				// 			->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+				// 			->whereNotIn('JenisPaket', ['JAM', 'MENIT','MENITREALTIME','DAILY', 'MONTHLY', 'YEARLY'])
+				// 			->update(
+				// 				[
+				// 					'Status'=>1,
+				// 				]
+				// 			);
+
 				$update = DB::table('tableorderheader')
 							->where('NoTransaksi','=', $baseReff)
 							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-							->whereNotIn('JenisPaket', ['JAM', 'MENIT','MENITREALTIME','DAILY', 'MONTHLY', 'YEARLY'])
+							// ->whereNotIn('JenisPaket', ['JAM', 'MENIT','MENITREALTIME','DAILY', 'MONTHLY', 'YEARLY'])
+							// ->where(DB::Raw("COALESCE(JamSelesai, NOW())"),'<', DB::raw("NOW()"))
 							->update(
 								[
-									'Status'=>1,
+									'Status'=>DB::raw("CASE WHEN COALESCE(JamSelesai, NOW()) < NOW() THEN 0 ELSE 1 END "),
 								]
 							);
 
-				DB::table('tableorderfnb')
-							->where('NoTransaksi','=', $baseReff)
-							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-							->update(
-								[
-									'LineStatus'=>'C',
-								]
-							);
+				// DB::table('tableorderfnb')
+				// 			->where('NoTransaksi','=', $baseReff)
+				// 			->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+				// 			->update(
+				// 				[
+				// 					'LineStatus'=>'C',
+				// 				]
+				// 			);
 			}
 
 			if ($oCompany->isPostingAkutansi == 1) {
@@ -4674,4 +4687,69 @@ class FakturPenjualanController extends Controller
 		return response()->json($data);
 	}
 
+    public function InfoKitchen()
+    {
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+        $jenisItems = DB::table('jenisitem')
+            ->where('RecordOwnerID', $RecordOwnerID)
+            ->get();
+        
+        return view('Transaksi.Penjualan.InfoKitchen', compact('jenisItems'));
+    }
+
+    public function InfoKitchenData(Request $request)
+    {
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+        $KodeJenisItem = $request->input('KodeJenisItem');
+
+        $query = DB::table('tableorderfnb')
+            ->join('itemmaster', function($join) {
+                $join->on('tableorderfnb.KodeItem', '=', 'itemmaster.KodeItem')
+                     ->on('tableorderfnb.RecordOwnerID', '=', 'itemmaster.RecordOwnerID');
+            })
+            ->leftJoin('tableorderheader', function($join) {
+                $join->on('tableorderfnb.NoTransaksi', '=', 'tableorderheader.NoTransaksi')
+                     ->on('tableorderfnb.RecordOwnerID', '=', 'tableorderheader.RecordOwnerID');
+            })
+            ->leftJoin('titiklampu', function($join) {
+                $join->on('tableorderheader.tableid', '=', 'titiklampu.id')
+                     ->on('tableorderheader.RecordOwnerID', '=', 'titiklampu.RecordOwnerID');
+            })
+            ->select(
+                'tableorderfnb.*',
+                'itemmaster.NamaItem',
+                'titiklampu.NamaTitikLampu',
+                'tableorderheader.TglTransaksi'
+            )
+            ->where('tableorderfnb.isCompleted', 0)
+            ->where('itemmaster.TypeItem', '<>', 4)
+            ->where('tableorderfnb.RecordOwnerID', $RecordOwnerID);
+
+        if (!empty($KodeJenisItem)) {
+            $query->where('itemmaster.KodeJenisItem', $KodeJenisItem);
+        }
+
+        $items = $query->orderBy('tableorderfnb.created_at', 'desc')->get();
+
+        return response()->json($items);
+    }
+
+    public function InfoKitchenMarkDone(Request $request)
+    {
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+        $NoTransaksi = $request->input('NoTransaksi');
+        $LineNumber = $request->input('LineNumber');
+
+        try {
+            DB::table('tableorderfnb')
+                ->where('NoTransaksi', $NoTransaksi)
+                ->where('LineNumber', $LineNumber)
+                ->where('RecordOwnerID', $RecordOwnerID)
+                ->update(['isCompleted' => 1]);
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
 }

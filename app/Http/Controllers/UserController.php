@@ -15,6 +15,7 @@ use App\Models\Roles;
 use App\Models\User;
 use App\Models\UserRole;
 use App\Models\Sales;
+use App\Models\Company;
 
 class UserController extends Controller
 {
@@ -91,12 +92,21 @@ class UserController extends Controller
 	            'email' => 'required|email|unique:users,email',
 	            'password' => 'required|string|min:8|confirmed',
 	        ]);
-
 	        // if ($validator->fails()) {
 	        //     return redirect()->back()
 	        //                 ->withErrors($validator)
 	        //                 ->withInput();
 	        // }
+            
+            $roid = Auth::user()->RecordOwnerID;
+            $company = Company::where('KodePartner', $roid)->first();
+            $maxUser = $company->MaximalUser ?? 1;
+
+            $currentUserCount = User::where('RecordOwnerID', $roid)->count();
+
+            if ($currentUserCount >= $maxUser && $roid != '999999') {
+                throw new \Exception("Jumlah user sudah mencapai batas maksimal ($maxUser user). Silakan hubungi admin untuk menambah kuota user.");
+            }
             
             $KelompokAkses = $request->input('KelompokAkses');
 

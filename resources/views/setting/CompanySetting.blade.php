@@ -919,6 +919,21 @@
 															</fieldset>
 														</div>
 
+														<div class="col-md-12">
+															<div class="form-group mb-3">
+																<label class="checkbox checkbox-outline checkbox-success">
+																	<input type="checkbox" id="showBayarDiMeja" name="showBayarDiMeja" {{ (count($company) > 0 && substr($company[0]['ShowMetodePembayaran'] ?? '00', 0, 1) == '1') ? 'checked' : '' }}>
+																	<span></span>Tampilkan Metode Pembayaran <i><b>Bayar dikasir</b></i> di pemesanan meja
+																</label>
+															</div>
+															<div class="form-group mb-3">
+																<label class="checkbox checkbox-outline checkbox-success">
+																	<input type="checkbox" id="showLangsungBayar" name="showLangsungBayar" {{ (count($company) > 0 && substr($company[0]['ShowMetodePembayaran'] ?? '00', 1, 1) == '1') ? 'checked' : '' }}>
+																	<span></span>Tampilkan Metode Pembayaran <i><b>Langsung Bayar</b></i> di pemesanan meja
+																</label>
+															</div>
+														</div>
+
 													</div>
 												</div>
 
