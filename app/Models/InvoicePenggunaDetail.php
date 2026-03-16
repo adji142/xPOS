@@ -9,4 +9,7 @@ class InvoicePenggunaDetail extends BaseModel
 {
     use HasFactory;
     protected $table ='tagihanpenggunadetail';
+    protected $primaryKey = 'NoTransaksi';
+    public $incrementing = false;
+    protected $keyType = 'string';
 }

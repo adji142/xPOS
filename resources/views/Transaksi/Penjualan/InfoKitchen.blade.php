@@ -10,10 +10,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <style>
     :root {
-      --bg-color: #1e1e2f;
+      --bg-color: {{ ($company && $company->TypeKitchenBackgraund == 'Color') ? ($company->KitchenBackgraund ?? '#1e1e2f') : '#1e1e2f' }};
       --card-bg: #27293d;
       --text-main: #ffffff;
       --text-muted: #9a9a9a;
@@ -27,11 +28,36 @@
       height: 100%;
       margin: 0;
       background-color: var(--bg-color);
+      @if($company && $company->TypeKitchenBackgraund == 'Image' && !empty($company->KitchenBackgraund))
+      background-image: url('{{ $company->KitchenBackgraund }}');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      @endif
       font-family: 'Poppins', sans-serif;
       color: var(--text-main);
       display: flex;
       flex-direction: column;
+      position: relative;
     }
+
+    @if($company && $company->TypeKitchenBackgraund == 'Image' && !empty($company->KitchenBackgraund))
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 0;
+    }
+    header, .filter-section, .content-area {
+        position: relative;
+        z-index: 1;
+    }
+    @endif
 
     /* === HEADER === */
     header {
@@ -144,6 +170,15 @@
         height: 60vh;
         color: var(--text-muted);
     }
+
+    .item-row {
+        padding: 8px 0;
+        border-bottom: 1px solid #333;
+    }
+
+    .item-row:last-child {
+        border-bottom: none;
+    }
   </style>
 </head>
 <body>
@@ -156,14 +191,31 @@
     </div>
   </header>
 
-  <div class="filter-section">
-      <label for="categoryFilter" class="form-label mb-0">Kelompok Item:</label>
-      <select id="categoryFilter" class="form-select">
-          <option value="">Semua Kategori</option>
-          @foreach($jenisItems as $jenis)
-            <option value="{{ $jenis->KodeJenis }}">{{ $jenis->NamaJenis }}</option>
-          @endforeach
-      </select>
+  <div class="filter-section flex-wrap">
+      <div class="d-flex align-items-center gap-2">
+          <label for="categoryFilter" class="form-label mb-0">Kelompok Item:</label>
+          <select id="categoryFilter" class="form-select" style="width: 200px;">
+              <option value="">Semua Kategori</option>
+              @foreach($jenisItems as $jenis)
+                <option value="{{ $jenis->KodeJenis }}">{{ $jenis->NamaJenis }}</option>
+              @endforeach
+          </select>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+          <label for="tableFilter" class="form-label mb-0">Meja:</label>
+          <select id="tableFilter" class="form-select" style="width: 200px;">
+              <option value="">Semua Meja</option>
+              @foreach($tables as $table)
+                <option value="{{ $table->id }}">{{ $table->NamaTitikLampu }}</option>
+              @endforeach
+          </select>
+      </div>
+      <div class="ms-md-auto">
+          <div class="input-group">
+              <span class="input-group-text bg-dark border-secondary text-light"><i class="bi bi-search"></i></span>
+              <input type="text" id="searchInput" class="form-control bg-dark border-secondary text-light" placeholder="Cari No. Trx, Nama Item, Kode Item..." style="border-radius: 0 8px 8px 0; width: 250px;">
+          </div>
+      </div>
   </div>
 
   <div class="content-area" id="kitchenContent">
@@ -184,9 +236,21 @@
     setInterval(updateClock,1000);updateClock();
 
     let currentFilter = '';
+    let currentTable = '';
+    let currentSearch = '';
 
     $('#categoryFilter').on('change', function() {
         currentFilter = $(this).val();
+        fetchKitchenData();
+    });
+
+    $('#tableFilter').on('change', function() {
+        currentTable = $(this).val();
+        fetchKitchenData();
+    });
+
+    $('#searchInput').on('keyup', function() {
+        currentSearch = $(this).val();
         fetchKitchenData();
     });
 
@@ -197,7 +261,9 @@
             data: {
                 _token: "{{ csrf_token() }}",
                 RecordOwnerID: "{{ Auth::user()->RecordOwnerID }}",
-                KodeJenisItem: currentFilter
+                KodeJenisItem: currentFilter,
+                tableid: currentTable,
+                searchTerm: currentSearch
             },
             success: function(data) {
                 renderKitchenData(data);
@@ -219,30 +285,47 @@
             return;
         }
 
-        let html = '<div class="row">';
+        // Group items by NoTransaksi
+        const groupedItems = {};
         items.forEach(item => {
+            if (!groupedItems[item.NoTransaksi]) {
+                groupedItems[item.NoTransaksi] = {
+                    NoTransaksi: item.NoTransaksi,
+                    NamaTitikLampu: item.NamaTitikLampu || 'Take Away',
+                    TglTransaksi: item.TglTransaksi,
+                    created_at: item.created_at,
+                    details: []
+                };
+            }
+            groupedItems[item.NoTransaksi].details.push(item);
+        });
+
+        let html = '<div class="row">';
+        Object.values(groupedItems).forEach(group => {
             html += `
                 <div class="col-md-6 col-lg-4">
                     <div class="kitchen-card fade-in">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <div class="item-name">${item.NamaItem}</div>
-                                <div class="brand-text text-info">${item.NamaJenis || ''}</div>
-                            </div>
-                            <div class="item-qty">x${item.Qty}</div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                             <div class="table-name">TABLE: ${group.NamaTitikLampu}</div>
+                             <div class="item-detail">${group.NoTransaksi}</div>
                         </div>
-                        <hr style="border-color: #444">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="table-name">TABLE: ${item.NamaTitikLampu || 'Take Away'}</div>
-                                <div class="item-detail">${item.NoTransaksi}</div>
-                            </div>
-                            <button class="btn btn-success btn-sm px-4" onclick="markItemDone('${item.NoTransaksi}', '${item.LineNumber}')">
-                                SELESAI
-                            </button>
+                        <hr style="border-color: #444; margin-top: 5px; margin-bottom: 10px;">
+                        <div class="order-items">
+                            ${group.details.map(item => `
+                                <div class="item-row d-flex justify-content-between align-items-center">
+                                    <div style="flex: 1;">
+                                        <div class="item-name" style="font-size: 1.1rem;">${item.NamaItem}</div>
+                                        <div class="brand-text text-info" style="font-size: 0.8rem;">${item.NamaJenis || ''}</div>
+                                    </div>
+                                    <div class="item-qty me-3" style="font-size: 1.1rem; padding: 2px 10px;">x${item.Qty}</div>
+                                    <button class="btn btn-success btn-sm px-3" onclick="markItemDone('${item.NoTransaksi}', '${item.LineNumber}')">
+                                        <i class="bi bi-check2"></i>
+                                    </button>
+                                </div>
+                            `).join('')}
                         </div>
-                        <div class="item-detail text-end mt-1" style="font-size: 0.8rem">
-                            Ordered at: ${item.created_at}
+                        <div class="item-detail text-end mt-2" style="font-size: 0.75rem">
+                            Ordered at: ${group.created_at}
                         </div>
                     </div>
                 </div>

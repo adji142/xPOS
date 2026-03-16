@@ -9,6 +9,9 @@ class Company extends BaseModel
 {
     use HasFactory;
     protected $table = 'company';
+    protected $primaryKey = 'KodePartner';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     public function ReadSetting()
     {

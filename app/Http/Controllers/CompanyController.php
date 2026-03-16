@@ -337,6 +337,7 @@ class CompanyController extends Controller
                     'ImageCustDisplay2' => empty($request->input('ImageCustDisplay2Base64')) ? "" : $request->input('ImageCustDisplay2Base64'),
                     'ImageCustDisplay3' => empty($request->input('ImageCustDisplay3Base64')) ? "" : $request->input('ImageCustDisplay3Base64'),
                     'ImageCustDisplay4' => empty($request->input('ImageCustDisplay4Base64')) ? "" : $request->input('ImageCustDisplay4Base64'),
+                    'ImageCustDisplay5' => empty($request->input('ImageCustDisplay5Base64')) ? "" : $request->input('ImageCustDisplay5Base64'),
                     'PromoDsiplay' => empty($request->input('PromoDsiplay')) ? "" : $request->input('PromoDsiplay'),
                     'RunningText' => empty($request->input('RunningText')) ? "" : $request->input('RunningText'),
                     'PajakHiburan' => empty($request->input('PajakHiburan')) ? "0" : $request->input('PajakHiburan'),
@@ -372,6 +373,8 @@ class CompanyController extends Controller
                     'DefaultLandingPages' => $request->input('DefaultLandingPages'),
                     'TypeBackgraund' => $request->input('TypeBackgraund'),
                     'Backgraund' => empty($request->input('BackgraundBase64')) ? $request->input('Backgraund') : $request->input('BackgraundBase64'),
+                    'TypeKitchenBackgraund' => $request->input('TypeKitchenBackgraund'),
+                    'KitchenBackgraund' => empty($request->input('KitchenBackgraundBase64')) ? $request->input('KitchenBackgraund') : $request->input('KitchenBackgraundBase64'),
                     'RunningTextSelfServices' => empty($request->input('RunningTextSelfServices')) ? $request->input('RunningTextSelfServices') : $request->input('RunningTextSelfServices'),
                     'QueueDesignSetting' => empty($request->input('QueueDesignSetting')) ? "QueueManagement" : $request->input('QueueDesignSetting'),
                     'ShowMetodePembayaran' => ($request->has('showBayarDiMeja') ? "1" : "0") . ($request->has('showLangsungBayar') ? "1" : "0")

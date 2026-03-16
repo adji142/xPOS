@@ -585,6 +585,7 @@ Route::get('/fpenjualan/printthermal/{id}', [FakturPenjualanController::class, '
 Route::post('/fpenjualan/retailPosFnb', [FakturPenjualanController::class, 'storePoSFnB'])->name('fpenjualan-retailPosFnB')->middleware(['auth', 'check.session']);
 Route::post('/fpenjualan/editJsonPosFnb', [FakturPenjualanController::class, 'editJsonPoSFnB'])->name('fpenjualan-editJsonPosFnB')->middleware(['auth', 'check.session']);
 Route::get('/fpenjualan/custdisplay', [CustDisplayController::class, 'View'])->name('fpenjualan-custdisplay')->middleware(['auth', 'check.session']);
+Route::get('/fpenjualan/custdisplay_new', [CustDisplayController::class, 'ViewNew'])->name('fpenjualan-custdisplay-new')->middleware(['auth', 'check.session']);
 Route::post('/fpenjualan/hiburanPoS', [FakturPenjualanController::class, 'storePoSHiburan'])->name('fpenjualan-hiburanPoS')->middleware(['auth', 'check.session']);
 Route::post('/fpenjualan/void', [FakturPenjualanController::class, 'void'])->name('fpenjualan-void')->middleware(['auth', 'check.session']);
 Route::post('/fpenjualan/getTimeSlots', [TableOrderController::class, 'getAvailableTimeSlots'])->name('fpenjualan-getTimeSlots')->middleware(['auth', 'check.session']);
@@ -805,7 +806,7 @@ Route::get('/penggunaaplikasi', [CompanyController::class,'AdminPelanggan'])->na
 Route::post('/penggunaaplikasi/suspend', [CompanyController::class, 'UpdateSuspend'])->name('penggunaaplikasi-suspend')->middleware(['auth', 'check.session']);
 Route::post('/penggunaaplikasi/rubahlangganan', [CompanyController::class, 'UpdatePaket'])->name('penggunaaplikasi-rubahlangganan')->middleware(['auth', 'check.session']);
 Route::get('/penggunaaplikasi/export', [CompanyController::class,'Export'])->name('penggunaaplikasi-export')->middleware(['auth', 'check.session']);
-Route::get('/penggunaaplikasi/remove', [CompanyController::class,'DeletePengguna'])->name('penggunaaplikasi-remove')->middleware(['auth', 'check.session']);
+Route::post('/penggunaaplikasi/remove', [CompanyController::class,'DeletePengguna'])->name('penggunaaplikasi-remove')->middleware(['auth', 'check.session']);
 
 Route::get('/laporanpengguna', [CompanyController::class,'LaporanPengguna'])->name('laporanpengguna')->middleware(['auth', 'check.session']);
 Route::get('/laporanpengguna/export/excel', [CompanyController::class,'ExportLaporanPenggunaExcel'])->name('laporanpengguna-export-excel')->middleware(['auth', 'check.session']);
@@ -1057,6 +1058,7 @@ Route::post('/billing/midtrans-cancel', [TableOrderController::class, 'handleMid
 Route::post('/billing/store-fnb-order', [TableOrderController::class, 'storeFnBOrder'])->name('billing-store-fnb-order')->middleware(['auth', 'check.session']);
 Route::post('/billing/store-tambah-durasi', [TableOrderController::class, 'storeTambahDurasi'])->name('billing-store-tambah-durasi')->middleware(['auth', 'check.session']);
 Route::get('/billing/get-table-statuses', [TableOrderController::class, 'getTableStatuses'])->name('billing-get-table-statuses')->middleware(['auth', 'check.session']);
+Route::post('/billing/jual-fnb-standalone', [TableOrderController::class, 'jualFnBStandalone'])->name('billing-jual-fnb-standalone')->middleware(['auth', 'check.session']);
 // GetMaximalPaketMenit
 /*
 |--------------------------------------------------------------------------

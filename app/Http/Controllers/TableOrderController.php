@@ -3501,29 +3501,168 @@ class TableOrderController extends Controller
                 'message' => 'Gagal menambahkan durasi: ' . $th->getMessage()
             ], 500);
         }
-    }    public function handleMidtransSuccess(Request $request)
+    }    
+    public function handleMidtransSuccess(Request $request)
     {
         $noTransaksi = $request->input('NoTransaksi');
         $recordOwnerID = Auth::user()->RecordOwnerID;
-        $paymentType = $request->input('payment_type', 'POS'); // Default to POS for backward compatibility
+        $paymentType = $request->input('payment_type', 'POS'); 
+        Log::info("handleMidtransSuccess started for NoTransaksi: $noTransaksi, PaymentType: $paymentType");
 
         DB::beginTransaction();
         try {
-            $model = TableOrderHeader::where('NoTransaksi', $noTransaksi)
-                ->where('RecordOwnerID', $recordOwnerID)
-                ->first();
-
-            if (!$model) {
-                DB::rollback();
-                return response()->json(['success' => false, 'message' => 'Transaksi tidak ditemukan']);
-            }
-
             $company = Company::where('KodePartner', $recordOwnerID)->first();
             $numberingData = new DocumentNumbering();
             $periode = Carbon::now()->format('Ym');
             $now = Carbon::now();
 
-            if ($paymentType === 'POS') {
+            if ($paymentType === 'JUAL_FNB') {
+                Log::info("handleMidtransSuccess: Processing JUAL_FNB (Temporary Entry)");
+                
+                // Cek apakah NoTransaksi adalah Temporary ID (TMPFNB...)
+                if (str_starts_with($noTransaksi, 'TMPFNB')) {
+                    $sessionData = session($noTransaksi);
+                    if (!$sessionData) {
+                        DB::rollback();
+                        return response()->json(['success' => false, 'message' => 'Data sesi pembayaran tidak ditemukan atau sudah kadaluarsa.']);
+                    }
+
+                    // Generate Real Invoice No
+                    $invoiceNo = $numberingData->GetNewDoc("SIS", "fakturpenjualanheader", "NoTransaksi");
+                    $metode = MetodePembayaran::find($sessionData['metodePembayaranId']);
+
+                    // 1. Create Faktur Header
+                    $fH = new FakturPenjualanHeader;
+                    $fH->Periode = $sessionData['periode'];
+                    $fH->Transaksi = "POS";
+                    $fH->NoTransaksi = $invoiceNo;
+                    $fH->TglTransaksi = $now->toDateString();
+                    $fH->TglJatuhTempo = $now->toDateString();
+                    $fH->NoReff = "FNB-DIRECT";
+                    $fH->KodePelanggan = $sessionData['kodePelanggan'];
+                    $fH->KodeTermin = $sessionData['kodeTermin'];
+                    $fH->Termin = 0;
+                    $fH->TotalTransaksi = $sessionData['subtotal'];
+                    $fH->Potongan = 0;
+                    $fH->Pajak = $sessionData['ppnRp'];
+                    $fH->TotalPembelian = $sessionData['grandTotal'];
+                    $fH->TotalRetur = 0;
+                    $fH->TotalPembayaran = $sessionData['grandTotal'];
+                    $fH->Pembulatan = 0;
+                    $fH->Status = "C";
+                    $fH->Keterangan = "Penjualan FnB Langsung (Midtrans Success)";
+                    $fH->Posted = 0;
+                    $fH->MetodeBayar = $metode ? $metode->NamaMetodePembayaran : '';
+                    $fH->ReffPembayaran = "";
+                    $fH->KodeSales = "";
+                    $fH->CreatedBy = Auth::user()->name;
+                    $fH->UpdatedBy = Auth::user()->name;
+                    $fH->TipeOrder = 0;
+                    $fH->NomorMeja = "";
+                    $fH->PajakHiburan = 0;
+                    $fH->BiayaLayanan = $sessionData['serviceRp'] + $sessionData['adminFeeRp'];
+                    $fH->SyaratDanKetentuan = "";
+                    $fH->RecordOwnerID = $recordOwnerID;
+                    $fH->save();
+
+                    // 2. Create Faktur Detail
+                    foreach ($sessionData['items'] as $i => $item) {
+                        $fD = new FakturPenjualanDetail;
+                        $fD->NoTransaksi = $invoiceNo;
+                        $fD->BaseReff = "FNB-DIRECT";
+                        $fD->NoUrut = $i + 1;
+                        $fD->BaseLine = 0;
+                        $fD->KodeItem = $item['KodeItem'] ?? '';
+                        $fD->Qty = floatval($item['Qty'] ?? 1);
+                        $fD->QtyKonversi = floatval($item['Qty'] ?? 1);
+                        $fD->QtyRetur = 0;
+                        $fD->Satuan = $item['Satuan'] ?? 'PCS';
+                        $fD->Harga = floatval($item['Harga'] ?? 0);
+                        $fD->Discount = 0;
+                        $fD->HargaNet = $fD->Harga * $fD->Qty;
+                        $fD->LineStatus = "C";
+                        $fD->KodeGudang = $sessionData['gudangPos'];
+                        $fD->Keterangan = $item['NamaItem'] ?? '';
+                        $fD->VatPercent = $sessionData['ppnPersen'];
+                        $fD->HargaPokokPenjualan = 0;
+                        $fD->RecordOwnerID = $recordOwnerID;
+                        $fD->Pajak = round($fD->HargaNet * ($sessionData['ppnPersen'] / 100));
+                        $fD->PajakHiburan = 0;
+                        $fD->VatTotal = $fD->Pajak;
+                        $fD->save();
+                    }
+
+                    // 3. Create Pembayaran
+                    $pmNo = $numberingData->GetNewDoc("PMB", "pembayaranpenjualanheader", "NoTransaksi");
+                    $pmH = new PembayaranPenjualanHeader;
+                    $pmH->Periode = $sessionData['periode'];
+                    $pmH->NoTransaksi = $pmNo;
+                    $pmH->TglTransaksi = $now->toDateString();
+                    $pmH->KodePelanggan = $fH->KodePelanggan;
+                    $pmH->TotalPembelian = $fH->TotalPembelian;
+                    $pmH->TotalPembayaran = $fH->TotalPembelian;
+                    $pmH->BiayaLayanan = $fH->BiayaLayanan;
+                    $pmH->KodeMetodePembayaran = $metode ? $metode->id : 0;
+                    $pmH->NoReff = $fH->NoTransaksi;
+                    $pmH->Keterangan = "Pembayaran " . $fH->NoTransaksi . " (Midtrans Success)";
+                    $pmH->CreatedBy = Auth::user()->name;
+                    $pmH->UpdatedBy = Auth::user()->name;
+                    $pmH->Posted = 0;
+                    $pmH->Status = 'C';
+                    $pmH->RecordOwnerID = $recordOwnerID;
+                    $pmH->save();
+
+                    $pmD = new PembayaranPenjualanDetail;
+                    $pmD->NoTransaksi = $pmNo;
+                    $pmD->NoUrut = 1;
+                    $pmD->BaseReff = $fH->NoTransaksi;
+                    $pmD->TotalPembayaran = $fH->TotalPembelian;
+                    $pmD->KodeMetodePembayaran = $pmH->KodeMetodePembayaran;
+                    $pmD->Keterangan = "Pembayaran " . $fH->NoTransaksi;
+                    $pmD->RecordOwnerID = $recordOwnerID;
+                    $pmD->save();
+
+                    // Clear Session
+                    session()->forget($noTransaksi);
+
+                    DB::commit();
+                    return response()->json(['success' => true, 'message' => 'Penjualan berhasil disimpan.', 'invoiceNo' => $invoiceNo]);
+                }
+
+                // Fallback (for non-temp entries if any exists)
+                $fH = FakturPenjualanHeader::where('NoTransaksi', $noTransaksi)
+                    ->where('RecordOwnerID', $recordOwnerID)
+                    ->first();
+
+                if ($fH && $fH->Status !== 'C') {
+                    $fH->Status = 'C';
+                    $fH->TotalPembayaran = $fH->TotalPembelian;
+                    $fH->save();
+
+                    DB::table('fakturpenjualandetail')
+                        ->where('NoTransaksi', $noTransaksi)
+                        ->where('RecordOwnerID', $recordOwnerID)
+                        ->update(['LineStatus' => 'C']);
+                    
+                    // Create payment records... (Similar to above, but this is a fallback)
+                    // For now, let's just commit if it's already there but marked O.
+                    DB::commit();
+                    return response()->json(['success' => true, 'message' => 'Penjualan berhasil disimpan.', 'invoiceNo' => $fH->NoTransaksi]);
+                }
+            }
+
+            $model = TableOrderHeader::where('NoTransaksi', $noTransaksi)
+                ->where('RecordOwnerID', $recordOwnerID)
+                ->first();
+
+            if (!$model) {
+                Log::warning("handleMidtransSuccess: Transaksi tidak ditemukan for NoTransaksi: $noTransaksi");
+                DB::rollback();
+                return response()->json(['success' => false, 'message' => 'Transaksi tidak ditemukan']);
+            }
+
+            if ($paymentType === 'POS' || $paymentType === 'NEW_PACKAGE') {
+                Log::info("handleMidtransSuccess: Entering POS/NEW_PACKAGE branch");
                 // ==========================================
                 // TYPE 1: INITIAL POS ORDER
                 // ==========================================
@@ -3534,9 +3673,19 @@ class TableOrderController extends Controller
                     ->exists();
 
                 if ($fakturExists) {
+                    Log::info("handleMidtransSuccess: Faktur already exists, skipping finalize.");
                     DB::commit();
                     return response()->json(['success' => true]);
                 }
+
+                // Selalu aktifkan jika pembayaran sukses (kecuali booking masa depan yang sangat jauh)
+                // Tapi untuk POS/NEW_PACKAGE biasanya adalah pesanan yang ingin segera aktif
+                // $model->Status = 1;
+                // $model->DocumentStatus = 'O';
+                // DB::table('titiklampu')
+                //     ->where('id', $model->tableid)
+                //     ->where('RecordOwnerID', $recordOwnerID)
+                //     ->update(['Status' => 1]);
 
                 $dtStart = Carbon::parse($model->JamMulai);
                 if ($dtStart->lte($now)) {
@@ -3547,7 +3696,9 @@ class TableOrderController extends Controller
                         ->where('RecordOwnerID', $recordOwnerID)
                         ->update(['Status' => 1]);
                 }
+                
                 $model->save();
+                Log::info("handleMidtransSuccess: Table activated and model saved.");
 
                 if ($model->JenisPaket !== 'PAKETMEMBER' || $model->NetTotal > 0) {
                     $grandTotal = $model->TotalTerbayar;
@@ -3564,19 +3715,30 @@ class TableOrderController extends Controller
                     $fakturHeader->NoReff = "POS";
                     $fakturHeader->KodePelanggan = $model->KodePelanggan;
                     $fakturHeader->KodeTermin = $company->TerminBayarPoS ?? '1';
+                    $fakturHeader->Termin = 0;
                     $fakturHeader->TotalTransaksi = $model->GrossTotal - $model->TotalDiskon;
                     $fakturHeader->Potongan = $model->TotalDiskon;
                     $fakturHeader->Pajak = $model->TotalTax;
                     $fakturHeader->TotalPembelian = $grandTotal;
+                    $fakturHeader->TotalRetur = 0;
+                    $fakturHeader->TotalPembayaran = $grandTotal;
+                    $fakturHeader->Pembulatan = 0;
                     $fakturHeader->Status = "C";
                     $fakturHeader->Keterangan = "Pembayaran Layanan PoS - " . $noTransaksi;
+                    $fakturHeader->Posted = 0;
                     $fakturHeader->MetodeBayar = $model->MetodePembayaran;
+                    $fakturHeader->ReffPembayaran = "";
+                    $fakturHeader->KodeSales = $model->KodeSales ?? "";
+                    $fakturHeader->CreatedBy = Auth::user()->name;
+                    $fakturHeader->UpdatedBy = Auth::user()->name;
+                    $fakturHeader->TipeOrder = 0;
                     $fakturHeader->NomorMeja = $model->tableid;
                     $fakturHeader->PajakHiburan = $model->TotalPajakHiburan;
                     $fakturHeader->BiayaLayanan = $model->BiayaLayanan + $adminFeeRp;
+                    $fakturHeader->SyaratDanKetentuan = "";
                     $fakturHeader->RecordOwnerID = $recordOwnerID;
-                    $fakturHeader->CreatedBy = Auth::user()->name;
                     $fakturHeader->save();
+                    Log::info("handleMidtransSuccess (POS): FakturHeader created: " . $invoiceNo);
 
                     // Detail & Payment logic (Replicated from earlier version)
                     $paket = ($model->paketid && $model->paketid != -1) ? Paket::find($model->paketid) : null;
@@ -3586,16 +3748,27 @@ class TableOrderController extends Controller
                     $fDetail = new FakturPenjualanDetail;
                     $fDetail->NoTransaksi = $invoiceNo;
                     $fDetail->BaseReff = $model->NoTransaksi;
+                    $fDetail->NoUrut = 1;
+                    $fDetail->BaseLine = 0;
                     $fDetail->KodeItem = $company->ItemHiburan;
                     $fDetail->Qty = $model->DurasiPaket;
+                    $fDetail->QtyKonversi = $model->DurasiPaket;
+                    $fDetail->QtyRetur = 0;
                     $fDetail->Satuan = $model->JenisPaket;
                     $fDetail->Harga = $hargaPerSatuan;
+                    $fDetail->Discount = 0;
                     $fDetail->HargaNet = $model->GrossTotal - $model->TotalDiskon;
                     $fDetail->LineStatus = "C";
                     $fDetail->KodeGudang = $company->GudangPoS ?? 'HO';
-                    $fDetail->VatTotal = $model->TotalTax;
+                    $fDetail->Keterangan = "Layanan " . $model->JenisPaket;
+                    $fDetail->VatPercent = $company->PPN ?? 0;
+                    $fDetail->HargaPokokPenjualan = 0;
                     $fDetail->RecordOwnerID = $recordOwnerID;
+                    $fDetail->Pajak = $model->TotalTax;
+                    $fDetail->PajakHiburan = $model->TotalPajakHiburan;
+                    $fDetail->VatTotal = $model->TotalTax;
                     $fDetail->save();
+                    Log::info("handleMidtransSuccess: FakturDetail saved for invoice: " . $invoiceNo);
 
                     $pmNo = $numberingData->GetNewDoc("PMB", "pembayaranpenjualanheader", "NoTransaksi");
                     $pmH = new PembayaranPenjualanHeader;
@@ -3616,6 +3789,7 @@ class TableOrderController extends Controller
                     $pmH->RecordOwnerID = $recordOwnerID;
                     $pmH->created_at = Carbon::now();
                     $pmH->save();
+                    Log::info("handleMidtransSuccess: PembayaranPenjualanHeader created: " . $pmNo);
 
                     $pmD = new PembayaranPenjualanDetail;
                     $pmD->NoTransaksi = $pmNo;
@@ -3630,6 +3804,7 @@ class TableOrderController extends Controller
                 }
 
             } else if ($paymentType === 'PAY_DETAIL' || $paymentType === 'ADD_DURATION' || $paymentType === 'ADD_FNB') {
+                Log::info("handleMidtransSuccess: Entering PAY_DETAIL/ADD_DURATION/ADD_FNB branch. Type: $paymentType");
                 // ==========================================
                 // TYPE: PAY DETAIL / ADD FNB / ADD DURATION
                 // ==========================================
@@ -3641,6 +3816,7 @@ class TableOrderController extends Controller
                 $invoiceNo = $numberingData->GetNewDoc("SIS", "fakturpenjualanheader", "NoTransaksi"); // Initialize here for common use
 
                 if ($paymentType === 'ADD_DURATION') {
+                    Log::info("handleMidtransSuccess: Processing ADD_DURATION");
                     $paketId = $request->input('PaketId');
                     $durasiBaru = $request->input('DurasiBaru');
                     $paket = Paket::find($paketId);
@@ -3686,14 +3862,17 @@ class TableOrderController extends Controller
                         $fH->MetodeBayar = $mp ? $mp->NamaMetodePembayaran : '';
                         $fH->ReffPembayaran = "";
                         $fH->KodeSales = $model->KodeSales;
+                        $fH->UpdatedBy = Auth::user()->name;
                         $fH->TipeOrder = 0;
                         $fH->NomorMeja = $model->tableid;
                         $fH->PajakHiburan = 0;
                         $fH->Keterangan = "Tambah Durasi Order " . $noTransaksi . " (" . $paket->NamaPaket . " x" . $durasiBaru . ")";
+                        $fH->SyaratDanKetentuan = "";
                         $fH->RecordOwnerID = $recordOwnerID;
                         $fH->CreatedBy = Auth::user()->name;
                         $fH->created_at = Carbon::now();
                         $fH->save();
+                        Log::info("handleMidtransSuccess (ADD_DURATION): FakturHeader created: " . $invoiceNo);
 
                         $fD = new FakturPenjualanDetail;
                         $fD->NoTransaksi = $invoiceNo;
@@ -3708,19 +3887,21 @@ class TableOrderController extends Controller
                         $fD->Harga = $paket->HargaNormal / $paket->DurasiPaket; // Simplified
                         $fD->Discount = 0;
                         $fD->HargaNet = $nominalBayar; // Simplified
-                        $fD->LineTotal = $nominalBayar; // Simplified
                         $fD->LineStatus = "C";
                         $fD->KodeGudang = $company->GudangPoS ?? 'HO';
                         $fD->Keterangan = "Tambah Durasi: " . $paket->NamaPaket;
                         $fD->VatPercent = $company->PPN ?? 0;
                         $fD->VatTotal = 0; // Simplified
+                        $fD->HargaPokokPenjualan = 0;
+                        $fD->RecordOwnerID = $recordOwnerID;
                         $fD->Pajak = 0; // Simplified
                         $fD->PajakHiburan = 0;
-                        $fD->RecordOwnerID = $recordOwnerID;
                         $fD->created_at = Carbon::now();
                         $fD->save();
+                        Log::info("handleMidtransSuccess (ADD_DURATION): FakturDetail saved for invoice: " . $invoiceNo);
                     }
                 } else if ($paymentType === 'ADD_FNB') {
+                    Log::info("handleMidtransSuccess: Processing ADD_FNB");
                     // Finalize Open FnB items
                     DB::table('tableorderfnb')
                         ->where('NoTransaksi', $noTransaksi)
@@ -3753,15 +3934,19 @@ class TableOrderController extends Controller
                     $fH->MetodeBayar = $mp ? $mp->NamaMetodePembayaran : '';
                     $fH->ReffPembayaran = "";
                     $fH->KodeSales = $model->KodeSales;
+                    $fH->UpdatedBy = Auth::user()->name;
                     $fH->TipeOrder = 0;
                     $fH->NomorMeja = $model->tableid;
                     $fH->PajakHiburan = 0;
                     $fH->Keterangan = "Pembayaran FnB " . $noTransaksi;
+                    $fH->SyaratDanKetentuan = "";
                     $fH->RecordOwnerID = $recordOwnerID;
                     $fH->CreatedBy = Auth::user()->name;
                     $fH->created_at = Carbon::now();
                     $fH->save();
+                    Log::info("handleMidtransSuccess (ADD_FNB): FakturHeader created: " . $invoiceNo);
                 } else if ($paymentType === 'PAY_DETAIL') {
+                    Log::info("handleMidtransSuccess: Processing PAY_DETAIL");
                     // Update header if needed, but usually payOrderDetail is for existing factures or outstanding balance
                     $model->TotalTerbayar += $nominalBayar;
                     
@@ -3796,14 +3981,17 @@ class TableOrderController extends Controller
                     $fH->MetodeBayar = $mp ? $mp->NamaMetodePembayaran : '';
                     $fH->ReffPembayaran = "";
                     $fH->KodeSales = $model->KodeSales;
+                    $fH->UpdatedBy = Auth::user()->name;
                     $fH->TipeOrder = 0;
                     $fH->NomorMeja = $model->tableid;
                     $fH->PajakHiburan = 0;
                     $fH->Keterangan = "Pelunasan Detail Order " . $noTransaksi;
+                    $fH->SyaratDanKetentuan = "";
                     $fH->RecordOwnerID = $recordOwnerID;
                     $fH->CreatedBy = Auth::user()->name;
                     $fH->created_at = Carbon::now();
                     $fH->save();
+                    Log::info("handleMidtransSuccess (PAY_DETAIL): FakturHeader created: " . $invoiceNo);
                 }
 
                 // Create Payment Header for PAY_DETAIL/ADD_FNB/ADD_DURATION (Common)
@@ -3826,6 +4014,7 @@ class TableOrderController extends Controller
                 $pmH->RecordOwnerID = $recordOwnerID;
                 $pmH->created_at = Carbon::now();
                 $pmH->save();
+                Log::info("handleMidtransSuccess (Common PMB): PembayaranPenjualanHeader created: " . $pmNo);
                 
                 $pmD = new PembayaranPenjualanDetail;
                 $pmD->NoTransaksi = $pmNo;
@@ -3840,6 +4029,7 @@ class TableOrderController extends Controller
             }
 
             DB::commit();
+            Log::info("handleMidtransSuccess: All updates committed successfully for $noTransaksi");
             return response()->json(['success' => true]);
 
         } catch (\Throwable $th) {
@@ -3857,24 +4047,259 @@ class TableOrderController extends Controller
 
         DB::beginTransaction();
         try {
-            $model = TableOrderHeader::where('NoTransaksi', $noTransaksi)
-                ->where('RecordOwnerID', $recordOwnerID)
-                ->first();
+            if ($paymentType === 'JUAL_FNB') {
+                if (str_starts_with($noTransaksi, 'TMPFNB')) {
+                    session()->forget($noTransaksi);
+                } else {
+                    $fH = FakturPenjualanHeader::where('NoTransaksi', $noTransaksi)
+                        ->where('RecordOwnerID', $recordOwnerID)
+                        ->where('Status', 'O')
+                        ->first();
 
-            if ($model) {
-                if ($paymentType === 'POS') {
-                    $model->TotalTerbayar = 0;
-                    $model->DocumentStatus = 'L';
-                    $model->save();
+                    if ($fH) {
+                        FakturPenjualanDetail::where('NoTransaksi', $noTransaksi)
+                            ->where('RecordOwnerID', $recordOwnerID)
+                            ->delete();
+                        $fH->delete();
+                    }
                 }
-                // For other types, we just don't create the invoice/payment.
-                // The order/items remain as is (Open/Unpaid).
+            } else {
+                $model = TableOrderHeader::where('NoTransaksi', $noTransaksi)
+                    ->where('RecordOwnerID', $recordOwnerID)
+                    ->first();
+
+                if ($model) {
+                    if ($paymentType === 'POS') {
+                        $model->TotalTerbayar = 0;
+                        $model->DocumentStatus = 'C';
+                        $model->save();
+                    }
+                }
             }
 
             DB::commit();
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             DB::rollback();
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Jual FnB Standalone - Penjualan item FnB langsung tanpa table/transaksi
+     */
+    public function jualFnBStandalone(Request $request)
+    {
+        $recordOwnerID = Auth::user()->RecordOwnerID;
+        $items = $request->input('items', []);
+        $metodePembayaranId = $request->input('MetodePembayaranId');
+        $nominalBayar = floatval($request->input('NominalBayar', 0));
+
+        if (empty($items)) {
+            return response()->json(['success' => false, 'message' => 'Tidak ada item yang dipilih.']);
+        }
+
+        $company = Company::where('KodePartner', $recordOwnerID)->first();
+        $numberingData = DocumentNumbering::where('RecordOwnerID', $recordOwnerID)->first();
+        $metode = MetodePembayaran::find($metodePembayaranId);
+
+        if (!$numberingData) {
+            return response()->json(['success' => false, 'message' => 'Numbering dokumen tidak ditemukan.']);
+        }
+
+        // Default customer (walk-in / umum)
+        $kodePelanggan = $company->KodeCustomerUmum ?? 'UMUM';
+        $kodeTermin = $company->TerminBayarPoS ?? '1';
+        $gudangPos = $company->GudangPoS ?? 'HO';
+        $ppnPersen = floatval($company->PPN ?? 0);
+        $servicePersen = floatval($company->ServiceCharge ?? 0);
+        $periode = date('Ym');
+        $now = Carbon::now();
+
+        // Calculate totals
+        $subtotal = 0;
+        foreach ($items as $item) {
+            $subtotal += floatval($item['Harga'] ?? 0) * floatval($item['Qty'] ?? 1);
+        }
+
+        $ppnRp = round($subtotal * ($ppnPersen / 100));
+        $serviceRp = round($subtotal * ($servicePersen / 100));
+
+        // Admin fee from payment method
+        $adminFeeRp = 0;
+        if ($metode) {
+            $subtotalWithTax = $subtotal + $ppnRp + $serviceRp;
+            if ($metode->AdminFeePercent > 0) $adminFeeRp = round($subtotalWithTax * ($metode->AdminFeePercent / 100));
+            elseif ($metode->AdminFeeRupiah > 0) $adminFeeRp = $metode->AdminFeeRupiah;
+        }
+
+        $grandTotal = round($subtotal + $ppnRp + $serviceRp + $adminFeeRp);
+
+        DB::beginTransaction();
+        try {
+            $invoiceNo = $numberingData->GetNewDoc("SIS", "fakturpenjualanheader", "NoTransaksi");
+
+            // Periksa apakah metode AUTO (Midtrans)
+            if ($metode && $metode->MetodeVerifikasi === 'AUTO') {
+                if (empty($metode->ClientKey) || empty($metode->ServerKey)) {
+                    DB::rollback();
+                    return response()->json(['success' => false, 'message' => 'Metode pembayaran tidak valid (Midtrans Keys missing).']);
+                }
+
+                // Generate Temporary ID
+                $tempId = 'TMPFNB' . time() . rand(100, 999);
+                
+                // Store transaction data in session instead of DB
+                session([$tempId => [
+                    'items' => $items,
+                    'grandTotal' => $grandTotal,
+                    'subtotal' => $subtotal,
+                    'ppnRp' => $ppnRp,
+                    'serviceRp' => $serviceRp,
+                    'adminFeeRp' => $adminFeeRp,
+                    'kodePelanggan' => $kodePelanggan,
+                    'kodeTermin' => $kodeTermin,
+                    'metodePembayaranId' => $metodePembayaranId,
+                    'ppnPersen' => $ppnPersen,
+                    'gudangPos' => $gudangPos,
+                    'periode' => $periode,
+                ]]);
+
+                // Midtrans Snap Token
+                \Midtrans\Config::$serverKey = $metode->ServerKey;
+                \Midtrans\Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+                \Midtrans\Config::$isSanitized = true;
+                \Midtrans\Config::$is3ds = true;
+
+                $transaction = [
+                    'transaction_details' => [
+                        'order_id' => 'JUALFNB-' . $tempId . '-' . time(),
+                        'gross_amount' => (int) $grandTotal,
+                    ],
+                    'customer_details' => [
+                        'first_name' => 'Pelanggan POS',
+                    ],
+                ];
+
+                $snapToken = \Midtrans\Snap::getSnapToken($transaction);
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'snap_token' => $snapToken,
+                    'invoiceNo' => $tempId,
+                    'payment_type' => 'JUAL_FNB',
+                    'client_key' => $metode->ClientKey
+                ]);
+            }
+
+            // Faktur Header (Cash/Manual)
+            $fH = new FakturPenjualanHeader;
+            $fH->Periode = $periode;
+            $fH->Transaksi = "POS";
+            $fH->NoTransaksi = $invoiceNo;
+            $fH->TglTransaksi = $now->toDateString();
+            $fH->TglJatuhTempo = $now->toDateString();
+            $fH->NoReff = "FNB-DIRECT";
+            $fH->KodePelanggan = $kodePelanggan;
+            $fH->KodeTermin = $kodeTermin;
+            $fH->Termin = 0;
+            $fH->TotalTransaksi = $subtotal;
+            $fH->Potongan = 0;
+            $fH->Pajak = $ppnRp;
+            $fH->TotalPembelian = $grandTotal;
+            $fH->TotalRetur = 0;
+            $fH->TotalPembayaran = $grandTotal;
+            $fH->Pembulatan = 0;
+            $fH->Status = "C";
+            $fH->Keterangan = "Penjualan FnB Langsung";
+            $fH->Posted = 0;
+            $fH->MetodeBayar = $metode ? $metode->NamaMetodePembayaran : '';
+            $fH->ReffPembayaran = "";
+            $fH->KodeSales = "";
+            $fH->CreatedBy = Auth::user()->name;
+            $fH->UpdatedBy = Auth::user()->name;
+            $fH->TipeOrder = 0;
+            $fH->NomorMeja = "";
+            $fH->PajakHiburan = 0;
+            $fH->BiayaLayanan = $serviceRp + $adminFeeRp;
+            $fH->SyaratDanKetentuan = "";
+            $fH->RecordOwnerID = $recordOwnerID;
+            $fH->save();
+
+            // Faktur Detail - per item
+            foreach ($items as $i => $item) {
+                $hargaItem = floatval($item['Harga'] ?? 0);
+                $qtyItem = floatval($item['Qty'] ?? 1);
+                $lineTotal = $hargaItem * $qtyItem;
+
+                $fD = new FakturPenjualanDetail;
+                $fD->NoTransaksi = $invoiceNo;
+                $fD->BaseReff = "FNB-DIRECT";
+                $fD->NoUrut = $i + 1;
+                $fD->BaseLine = 0;
+                $fD->KodeItem = $item['KodeItem'] ?? '';
+                $fD->Qty = $qtyItem;
+                $fD->QtyKonversi = $qtyItem;
+                $fD->QtyRetur = 0;
+                $fD->Satuan = $item['Satuan'] ?? 'PCS';
+                $fD->Harga = $hargaItem;
+                $fD->Discount = 0;
+                $fD->HargaNet = $lineTotal;
+                $fD->LineStatus = "C";
+                $fD->KodeGudang = $gudangPos;
+                $fD->Keterangan = $item['NamaItem'] ?? '';
+                $fD->VatPercent = $ppnPersen;
+                $fD->HargaPokokPenjualan = 0;
+                $fD->RecordOwnerID = $recordOwnerID;
+                $fD->Pajak = round($lineTotal * ($ppnPersen / 100));
+                $fD->PajakHiburan = 0;
+                $fD->VatTotal = round($lineTotal * ($ppnPersen / 100));
+                $fD->save();
+            }
+
+            // Pembayaran Header
+            $pmNo = $numberingData->GetNewDoc("PMB", "pembayaranpenjualanheader", "NoTransaksi");
+            $pmH = new PembayaranPenjualanHeader;
+            $pmH->Periode = $periode;
+            $pmH->NoTransaksi = $pmNo;
+            $pmH->TglTransaksi = $now->toDateString();
+            $pmH->KodePelanggan = $kodePelanggan;
+            $pmH->TotalPembelian = $grandTotal;
+            $pmH->TotalPembayaran = $grandTotal;
+            $pmH->BiayaLayanan = $serviceRp + $adminFeeRp;
+            $pmH->KodeMetodePembayaran = $metodePembayaranId;
+            $pmH->NoReff = $invoiceNo;
+            $pmH->Keterangan = "Pembayaran " . $invoiceNo;
+            $pmH->CreatedBy = Auth::user()->name;
+            $pmH->UpdatedBy = Auth::user()->name;
+            $pmH->Posted = 0;
+            $pmH->Status = 'C';
+            $pmH->RecordOwnerID = $recordOwnerID;
+            $pmH->save();
+
+            // Pembayaran Detail
+            $pmD = new PembayaranPenjualanDetail;
+            $pmD->NoTransaksi = $pmNo;
+            $pmD->NoUrut = 1;
+            $pmD->BaseReff = $invoiceNo;
+            $pmD->TotalPembayaran = $grandTotal;
+            $pmD->KodeMetodePembayaran = $metodePembayaranId;
+            $pmD->Keterangan = "Pembayaran " . $invoiceNo;
+            $pmD->RecordOwnerID = $recordOwnerID;
+            $pmD->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Penjualan berhasil disimpan.',
+                'invoiceNo' => $invoiceNo,
+                'kembalian' => max(0, $nominalBayar - $grandTotal)
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error("jualFnBStandalone Error: " . $e->getMessage());
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }

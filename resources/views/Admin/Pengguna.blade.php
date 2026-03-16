@@ -70,7 +70,7 @@
                                                     @if ($v['KodePartner'] != "999999")
                                                         <tr>
                                                             <th class=" no-sort text-end">
-                                                                @if ($v['Subscription'] == "Bill" && $v['StatusSubscription'=='Belum Bayar'])
+                                                                @if ($v['Subscription'] == "Bill" && $v['StatusSubscription'] == 'Belum Bayar')
                                                                     <button class="btn btn-outline-primary" onclick="ShowDetail('{{ $v['KodePartner'] }}')"  data-bs-toggle="tooltip" title="Buat Tagihan"><i class="bi bi-receipt"></i></button>
                                                                 @endif
 
@@ -85,7 +85,7 @@
                                                                 @endif
 
                                                                 <button class="btn btn-outline-success btn-sm" onclick="RubahPaket('{{ $v['KodePartner'] }}')" data-bs-toggle="tooltip" title="Rubah Paket"><i class="bi bi-box-seam"></i></button>
-                                                                <button class="btn btn-outline-danger btn-sm" onclick="RemovePartner(\'{{ $v['KodePartner'] }}\' )" data-bs-toggle="tooltip" title="Delete"><i class="bi bi-trash"></i></button>
+                                                                <button class="btn btn-outline-danger btn-sm" onclick="RemovePartner('{{ $v['KodePartner'] }}')" data-bs-toggle="tooltip" title="Delete"><i class="bi bi-trash"></i></button>
                                                             </th>
                                                             <th>{{ $v['KodePartner'] }}</th>
                                                             <th>{{ $v['NamaPartner'] }}</th>

@@ -469,7 +469,7 @@
     <!-- ===== HEADER ===== -->
     <header class="pos-header">
         <div class="brand">
-            <i class="fas fa-bolt"></i> xPOS Billing
+            <i class="fas fa-bolt"></i> {{ $company[0]['NamaPartner'] }}
         </div>
         <div class="clock-display" id="posHeaderClock">--:--:--</div>
         <div class="d-flex align-items-center gap-3 header-actions">
@@ -485,8 +485,10 @@
                 </select>
             </div>
             <span class="user-info"><i class="fas fa-user-circle"></i> {{ Auth::user()->name }}</span>
+            <a href="javascript:void(0)" onclick="openCustomerDisplay()"><i class="fas fa-desktop"></i> Customer Display</a>
+            <a href="javascript:void(0)" onclick="openJualFnbModal()" style="background: linear-gradient(135deg,#e65100,#ff8f00); color:#fff; padding:5px 12px; border-radius:6px; font-weight:600;"><i class="fas fa-utensils"></i> Jual FnB</a>
             <a href="{{ route('bookinglist') }}" target="_blank"><i class="fas fa-calendar-alt"></i> Booking</a>
-            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+            <a href="{{ route('logout') }}">
                 <i class="fas fa-power-off"></i> Logout
             </a>
         </div>
@@ -872,6 +874,13 @@
         renderRightPanel(data);
     }
 
+    function isAnyModalOpen() {
+        return $('#modalPilihPaket').hasClass('open') || 
+               $('#modalTambahMakanan').hasClass('open') || 
+               $('#modalTambahDurasi').hasClass('open') || 
+               $('#modalDetailOrder').hasClass('open');
+    }
+
     function renderRightPanel(data) {
         // Hide placeholder, show detail
         document.getElementById('rightPlaceholder').style.display = 'none';
@@ -932,6 +941,99 @@
 
         // Tambah Layanan: enabled when status = 1 or 99
         setBtn('btnTambahLayanan', (s === 1 || s === 99) && noTrx);
+
+        // Sync with Customer Display (full detail if available)
+        // Skip sync if a modal is open, to avoid overwriting unsaved modal state
+        if (!isAnyModalOpen()) {
+            syncCustomerDisplayFromSelected(data);
+        }
+    }
+
+    function fetchAndSyncCustomerDisplay(noTransaksi) {
+        if (!noTransaksi) return;
+
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        $.ajax({
+            url: '{{ route("billing-get-order-detail") }}',
+            method: 'POST',
+            data: {
+                _token: token,
+                NoTransaksi: noTransaksi
+            },
+            success: function(response) {
+                if (response.success) {
+                    const h = response.header;
+                    const fnb = response.fnb;
+                    
+                    let fnbTotal = 0;
+                    fnb.forEach(item => {
+                        const sub = parseFloat(item.Harga || 0) * parseFloat(item.Qty || 0);
+                        fnbTotal += sub;
+                    });
+
+                    const syncData = {
+                        data: [],
+                        Total: (h.TotalPaket || 0) + fnbTotal,
+                        Discount: h.TotalDiskon || 0,
+                        Tax: (h.TotalPajak || 0) + (h.TotalPajakHiburan || 0) + (h.TotalLayanan || 0),
+                        Net: (h.GrandTotal || 0) + fnbTotal
+                    };
+
+                    if (h.NamaPaket) {
+                        syncData.data.push({ NamaItem: h.NamaPaket, Qty: 1, Harga: h.HargaPaket });
+                    }
+
+                    fnb.forEach(item => {
+                        syncData.data.push({ NamaItem: item.NamaItem || item.KodeItem, Qty: item.Qty, Harga: item.Harga });
+                    });
+
+                    syncCustomerDisplay(syncData);
+                }
+            }
+        });
+    }
+
+    let custDisplayWindow = null;
+    function openCustomerDisplay() {
+        if (custDisplayWindow && !custDisplayWindow.closed) {
+            custDisplayWindow.focus();
+        } else {
+            const url = "{{ route('fpenjualan-custdisplay-new') }}";
+            custDisplayWindow = window.open(url, 'CustomerDisplay', 'width=1280,height=720');
+        }
+    }
+
+    function syncCustomerDisplay(data) {
+        localStorage.setItem('PoSData', JSON.stringify(data));
+    }
+
+    function syncCustomerGreeting(name) {
+        if (!name) return;
+        localStorage.setItem('PoSGreeting', JSON.stringify({ name: name, timestamp: Date.now() }));
+    }
+
+
+
+    function isCustDisplayOpen() {
+        return (custDisplayWindow && !custDisplayWindow.closed);
+    }
+
+    function syncCustomerDisplayFromSelected(data) {
+        // If there's a transaction, fetch full details for accurate item list and totals
+        if (data.notransaksi && data.notransaksi.trim() !== '') {
+            fetchAndSyncCustomerDisplay(data.notransaksi);
+            return;
+        }
+
+        // Fast initial sync for empty/new tables
+        const syncData = {
+            data: data.namapaket ? [{ NamaItem: data.namapaket, Qty: 1, Harga: 0 }] : [],
+            Total: 0,
+            Discount: 0,
+            Tax: 0,
+            Net: 0
+        };
+        syncCustomerDisplay(syncData);
     }
 
     function setBtn(id, enabled) {
@@ -1187,6 +1289,24 @@
             $('#mdPaymentSection').hide();
             $('#mdBtnCheckOut').show().prop('disabled', isStillRunning);
         }
+
+        // Sync with Customer Display (full detail)
+        const syncData = {
+            data: [],
+            Total: h.TotalPaket,
+            Discount: h.TotalDiskon,
+            Tax: h.TotalPajak + h.TotalPajakHiburan + h.TotalLayanan,
+            Net: grandTotalAll
+        };
+        // Add Paket if exists
+        if (h.NamaPaket) {
+            syncData.data.push({ NamaItem: h.NamaPaket, Qty: 1, Harga: h.HargaPaket });
+        }
+        // Add FnB items
+        res.fnb.forEach(item => {
+            syncData.data.push({ NamaItem: item.NamaItem || item.KodeItem, Qty: item.Qty, Harga: item.Harga });
+        });
+        syncCustomerDisplay(syncData);
     }
 
     function onDetailMetodeChange() {
@@ -1534,6 +1654,17 @@
         }).join('');
         $body.html(html);
         $('#fnbTotalItem').text(formatRp(total));
+        
+        // Sync with Customer Display
+        const syncData = {
+            data: fnbCart.map(item => ({ NamaItem: item.NamaItem, Qty: item.Qty, Harga: item.Harga })),
+            Total: total,
+            Discount: 0,
+            Tax: 0,
+            Net: total
+        };
+        syncCustomerDisplay(syncData);
+
         calculateFnbTotal();
     }
 
@@ -1613,6 +1744,21 @@
         } else {
             $('#fnbKembalian').css('color', 'green');
         }
+
+        // Sync with Customer Display (with tax)
+        const syncData = {
+            data: fnbCart.map(item => ({ NamaItem: item.NamaItem, Qty: item.Qty, Harga: item.Harga })),
+            Total: totalPesanan,
+            Discount: 0,
+            Tax: ppnRp + serviceRp + adminFee,
+            Net: grandTotal
+        };
+        syncCustomerDisplay(syncData);
+    }
+
+    function syncSnapToken(token) {
+        if (!token) return;
+        localStorage.setItem('PoSSnapToken', JSON.stringify({ token: token, timestamp: Date.now() }));
     }
 
     function submitFnbOrder() {
@@ -1664,7 +1810,8 @@
                 if (res.success) {
                     if (res.snap_token) {
                         $btn.html('<i class="fas fa-spinner fa-spin"></i> Menunggu Bayar...');
-                        window.snap.pay(res.snap_token, {
+                        
+                        const handlers = {
                             onSuccess: function (result) {
                                 fetch('{{ route("billing-midtrans-success") }}', {
                                     method: 'POST',
@@ -1674,7 +1821,8 @@
                                     },
                                     body: JSON.stringify({ 
                                         NoTransaksi: res.NoTransaksi,
-                                        payment_type: 'ADD_FNB'
+                                        payment_type: 'ADD_FNB',
+                                        NominalBayar: payload.NominalBayar
                                     })
                                 })
                                 .then(r => r.json())
@@ -1714,7 +1862,10 @@
                                     swal("Batal", "Pembayaran dibatalkan.", "warning");
                                 });
                             }
-                        });
+                        };
+
+                        // Show Snap directly on billing
+                        window.snap.pay(res.snap_token, handlers);
                     } else {
                         $btn.prop('disabled', false).html(oldHtml);
                         swal({
@@ -1874,6 +2025,16 @@
             const kembali = bayar - grandTotal;
             document.getElementById('tdKembalian').value = formatRupiahVal(kembali);
         }
+
+        // Sync with Customer Display
+        const syncData = {
+            data: [{ NamaItem: "Tambah Durasi: " + sel.options[sel.selectedIndex].text, Qty: durasi, Harga: harga }],
+            Total: subtotal,
+            Discount: 0,
+            Tax: ppnRp + serviceRp + (isLangsung ? adminRp : 0),
+            Net: grandTotal
+        };
+        syncCustomerDisplay(syncData);
     }
 
     function submitTambahDurasi() {
@@ -1926,7 +2087,8 @@
             if (res.success) {
                 if (res.snap_token) {
                     $btn.html('<i class="fas fa-spinner fa-spin"></i> Menunggu Bayar...');
-                    window.snap.pay(res.snap_token, {
+                    
+                    const handlers = {
                         onSuccess: function (result) {
                             fetch('{{ route("billing-midtrans-success") }}', {
                                 method: 'POST',
@@ -1938,7 +2100,8 @@
                                     NoTransaksi: res.NoTransaksi,
                                     payment_type: 'ADD_DURATION',
                                     DurasiBaru: res.DurasiBaru,
-                                    PaketId: res.PaketId
+                                    PaketId: res.PaketId,
+                                    NominalBayar: nominalBayar
                                 })
                             })
                             .then(r => r.json())
@@ -1978,7 +2141,15 @@
                                 swal("Batal", "Pembayaran dibatalkan.", "warning");
                             });
                         }
-                    });
+                    };
+
+                    // Decide where to show Snap
+                    const $mp = $('#tdMetodePembayaran option:selected');
+                    if (isCustDisplayOpen() && $mp.data('verifikasi') === 'AUTO') {
+                        syncSnapToken(res.snap_token, handlers);
+                    } else {
+                        window.snap.pay(res.snap_token, handlers);
+                    }
                 } else {
                     $btn.prop('disabled', false).html(oldHtml);
                     swal({
@@ -2237,7 +2408,8 @@
                                         <option value="{{ $mp->id }}" 
                                             data-tipe="{{ $mp->TipePembayaran }}"
                                             data-percent="{{ $mp->BiayaAdminPercent ?? 0 }}"
-                                            data-rupiah="{{ $mp->BiayaAdminRupiah ?? 0 }}">
+                                            data-rupiah="{{ $mp->BiayaAdminRupiah ?? 0 }}"
+                                            data-verifikasi="{{ $mp->MetodeVerifikasi }}">
                                             {{ $mp->NamaMetodePembayaran }}
                                         </option>
                                     @endforeach
@@ -2379,7 +2551,8 @@
                                 @foreach($metodepembayaran as $mp)
                                     <option value="{{ $mp->id }}" 
                                         data-percent="{{ $mp->BiayaAdminPercent ?? 0 }}"
-                                        data-rupiah="{{ $mp->BiayaAdminRupiah ?? 0 }}">
+                                        data-rupiah="{{ $mp->BiayaAdminRupiah ?? 0 }}"
+                                        data-verifikasi="{{ $mp->MetodeVerifikasi }}">
                                         {{ $mp->NamaMetodePembayaran }}
                                     </option>
                                 @endforeach
@@ -2489,7 +2662,8 @@
                                 @foreach($metodepembayaran as $mp)
                                     <option value="{{ $mp->id }}" 
                                         data-percent="{{ $mp->BiayaAdminPercent ?? 0 }}"
-                                        data-rupiah="{{ $mp->BiayaAdminRupiah ?? 0 }}">
+                                        data-rupiah="{{ $mp->BiayaAdminRupiah ?? 0 }}"
+                                        data-verifikasi="{{ $mp->MetodeVerifikasi }}">
                                         {{ $mp->NamaMetodePembayaran }}
                                     </option>
                                 @endforeach
@@ -3193,6 +3367,14 @@
     });
 
     document.getElementById('ppKodePelanggan').addEventListener('change', function() {
+        var memberId = this.value;
+        if (memberId) {
+            var memberData = dataPelangganAll.find(m => m.KodePelanggan == memberId);
+            if (memberData) {
+                syncCustomerGreeting(memberData.NamaPelanggan);
+            }
+        }
+
         var jenis = document.getElementById('ppJenisPaket').value;
         if(jenis === 'PAKETMEMBER') {
             updateJamSelesai();
@@ -3336,9 +3518,6 @@
     }
 
     function calculateTotal(isFromInput = false) {
-        // Skip if panel hidden
-        if(document.querySelector('input[name="OpsiBayar"]:checked').value !== 'LANGSUNG') return;
-
         // Base Data
         var durasi = parseInt(document.getElementById('ppDurasi').value) || 1;
         var baseDurasi = window.activePaketDurasi || 1; // Kelipatan durasi paket asli
@@ -3403,6 +3582,22 @@
 
         // Add Admin Fee to Grand Total
         grandTotal += adminFeeRp;
+
+        // Sync with Customer Display (Estimation)
+        var paketIdSel = document.getElementById('ppPaketId');
+        var selectedPaketText = (paketIdSel && paketIdSel.selectedIndex >= 0) ? paketIdSel.options[paketIdSel.selectedIndex].text : "-";
+        
+        const syncData = {
+            data: [{ NamaItem: selectedPaketText, Qty: durasi, Harga: harga }],
+            Total: subtotal,
+            Discount: diskonRp + voucherRp,
+            Tax: ppnRp + pb1Rp + adminFeeRp,
+            Net: grandTotal
+        };
+        syncCustomerDisplay(syncData);
+
+        // UI Panel - Langsung only
+        if(document.querySelector('input[name="OpsiBayar"]:checked').value !== 'LANGSUNG') return;
 
         // Tampilkan/Sembunyikan Row Biaya Admin
         var rowAdmin = document.getElementById('rowBiayaAdmin');
@@ -3613,25 +3808,26 @@
                 })
                 .then(res => res.json())
                 .then(res => {
+                    console.log(res);
                     if (res.success) {
                         
                         // Cek apakah ada snap_token untuk pembayaran Midtrans
                         if (res.snap_token) {
                             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menunggu Pembayaran...';
                             
-                            // Gunakan client_key jika diberikan dari backend untuk inisialisasi on-the-fly jika support
-                            // Namun script Snap idealnya sudah di-load dengan client key yang valid
-                            
-                            window.snap.pay(res.snap_token, {
+                            const handlers = {
                                 onSuccess: function (result) {
                                     // Panggil backend untuk finalize payment
                                     fetch('{{ route("billing-midtrans-success") }}', {
                                         method: 'POST',
                                         headers: {
                                             'Content-Type': 'application/json',
-                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                            'X-CSRF-TOKEN': token
                                         },
-                                        body: JSON.stringify({ NoTransaksi: res.NoTransaksi })
+                                        body: JSON.stringify({ 
+                                            NoTransaksi: res.NoTransaksi,
+                                            payment_type: 'POS'
+                                        })
                                     })
                                     .then(r => r.json())
                                     .then(r => {
@@ -3646,7 +3842,6 @@
                                         });
                                     })
                                     .catch(err => {
-                                        // Secara teknis pembayaran sukses di Midtrans, tapih backend gagal proses
                                         swal("Perhatian", "Pembayaran berhasil, tapi sinkronisasi gagal. Harap lapor admin.", "warning").then(() => location.reload());
                                     });
                                 },
@@ -3668,14 +3863,16 @@
                                     btn.disabled = false;
                                     btn.innerHTML = oldHtml;
                                     
-                                    // Panggil backend untuk mark 'L' (Lost/Cancelled) agar tidak rancu
                                     fetch('{{ route("billing-midtrans-cancel") }}', {
                                         method: 'POST',
                                         headers: {
                                             'Content-Type': 'application/json',
-                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                            'X-CSRF-TOKEN': token
                                         },
-                                        body: JSON.stringify({ NoTransaksi: res.NoTransaksi })
+                                        body: JSON.stringify({ 
+                                            NoTransaksi: res.NoTransaksi,
+                                            payment_type: 'POS'
+                                        })
                                     })
                                     .then(() => {
                                         swal("Perhatian", "Anda menutup halaman pembayaran sebelum selesai. Transaksi dibatalkan.", "warning").then(() => {
@@ -3683,7 +3880,10 @@
                                         });
                                     });
                                 }
-                            });
+                            };
+
+                            // Show Snap directly on billing
+                            window.snap.pay(res.snap_token, handlers);
                         } else {
                             // Flow normal (Cash / Piutang / Metode Manual)
                             swal({
@@ -3714,6 +3914,345 @@
         });
     }
     </script>
+    <!-- ===== MODAL JUAL FnB STANDALONE ===== -->
+    <div id="modalJualFnb" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9000; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:16px; width:96%; max-width:820px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3); overflow:hidden;">
+            <!-- Header -->
+            <div style="background:linear-gradient(135deg,#e65100,#ff8f00); color:#fff; padding:16px 24px; display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="margin:0; font-size:1.2rem;"><i class="fas fa-utensils"></i> Jual FnB Langsung</h2>
+                <button onclick="closeJualFnbModal()" style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+            <!-- Body -->
+            <div style="flex:1; overflow-y:auto; padding:20px; display:flex; gap:16px;">
+                <!-- Left: Item Search -->
+                <div style="flex:1; min-width:0;">
+                    <div style="margin-bottom:12px;">
+                        <label style="font-size:0.8rem; color:#555; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Cari Item</label>
+                        <div style="position:relative; margin-top:4px;">
+                            <input type="text" id="jualFnbSearchInput" placeholder="Ketik nama atau kode item..." oninput="searchJualFnbItems(this.value)"
+                                style="width:100%; padding:10px 12px; border:1.5px solid #e0e0e0; border-radius:8px; font-size:0.9rem; box-sizing:border-box;">
+                            <div id="jualFnbSearchResults" style="display:none; position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #e0e0e0; border-radius:0 0 8px 8px; max-height:200px; overflow-y:auto; z-index:100; box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+                        </div>
+                    </div>
+                    <!-- Cart Table -->
+                    <div style="border:1px solid #eee; border-radius:8px; overflow:hidden;">
+                        <table style="width:100%; border-collapse:collapse;">
+                            <thead style="background:#f5f7fa;">
+                                <tr>
+                                    <th style="padding:10px 12px; text-align:left; font-size:0.8rem; color:#666;">Item</th>
+                                    <th style="padding:10px 8px; text-align:center; font-size:0.8rem; color:#666; width:110px;">Qty</th>
+                                    <th style="padding:10px 8px; text-align:right; font-size:0.8rem; color:#666;">Harga</th>
+                                    <th style="padding:10px 8px; text-align:right; font-size:0.8rem; color:#666;">Subtotal</th>
+                                    <th style="padding:10px 8px; width:36px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="jualFnbCartItems">
+                                <tr><td colspan="5" style="text-align:center; padding:20px; color:#90a4ae;">Belum ada item.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Right: Payment -->
+                <div style="width:260px; flex-shrink:0;">
+                    <!-- Summary -->
+                    <div style="background:#f8f9ff; border:1px solid #e8eaf6; border-radius:10px; padding:16px; margin-bottom:16px;">
+                        <div style="font-weight:700; color:#1a237e; margin-bottom:12px; font-size:0.95rem;">Ringkasan</div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.88rem; color:#555;"><span>Subtotal</span><span id="jualFnbSubtotal">Rp 0</span></div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.88rem; color:#555;"><span>PPN</span><span id="jualFnbPpn">Rp 0</span></div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.88rem; color:#555;"><span>Layanan</span><span id="jualFnbLayanan">Rp 0</span></div>
+                        <div id="jualFnbAdminRow" style="display:none; justify-content:space-between; margin-bottom:6px; font-size:0.88rem; color:#555;"><span>Admin Fee</span><span id="jualFnbAdminFee">Rp 0</span></div>
+                        <hr style="border:none; border-top:2px solid #3f51b5; margin:10px 0;">
+                        <div style="display:flex; justify-content:space-between; font-size:1.1rem; font-weight:800; color:#1a237e;"><span>TOTAL</span><span id="jualFnbGrandTotal">Rp 0</span></div>
+                    </div>
+                    <!-- Payment Method -->
+                    <div style="margin-bottom:12px;">
+                        <label style="font-size:0.8rem; color:#555; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:4px;">Metode Bayar <span style="color:red;">*</span></label>
+                        <select id="jualFnbMetode" onchange="calculateJualFnbTotal()" style="width:100%; padding:9px 10px; border:1.5px solid #e0e0e0; border-radius:8px; font-size:0.9rem;">
+                            @foreach($metodepembayaran as $mp)
+                                <option value="{{ $mp->id }}"
+                                    data-percent="{{ $mp->AdminFeePercent ?? 0 }}"
+                                    data-rupiah="{{ $mp->AdminFeeRupiah ?? 0 }}"
+                                    data-tipe="{{ $mp->TipePembayaran ?? '' }}"
+                                    data-nama="{{ $mp->NamaMetodePembayaran }}">{{ $mp->NamaMetodePembayaran }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <!-- Nominal Bayar -->
+                    <div style="margin-bottom:8px;">
+                        <label style="font-size:0.8rem; color:#555; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:4px;">Nominal Bayar</label>
+                        <input type="text" id="jualFnbNominal" placeholder="0" oninput="onJualFnbNominalChange()" style="width:100%; padding:9px 10px; border:1.5px solid #e0e0e0; border-radius:8px; font-size:0.9rem; box-sizing:border-box;">
+                    </div>
+                    <!-- Kembalian -->
+                    <div style="display:flex; justify-content:space-between; font-size:0.88rem; font-weight:600; margin-bottom:16px;">
+                        <span style="color:#555;">Kembalian:</span>
+                        <span id="jualFnbKembalian" style="color:#2e7d32;">Rp 0</span>
+                    </div>
+                    <small style="color:#888; display:block; margin-bottom:16px;">PPN: <span id="jualFnbPpnPersen">{{ $company[0]['PPN'] ?? 0 }}</span>% | Layanan: <span id="jualFnbServicePersen">{{ $company[0]['ServiceCharge'] ?? 0 }}</span>%</small>
+                    <!-- Submit -->
+                    <button id="jualFnbBtnSubmit" onclick="submitJualFnb()" style="width:100%; background:linear-gradient(135deg,#e65100,#ff8f00); color:#fff; border:none; border-radius:8px; padding:12px; font-size:1rem; font-weight:700; cursor:pointer;">
+                        <i class="fas fa-check-circle"></i> Simpan & Bayar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ===== JUAL FnB STANDALONE =====
+    let jualFnbCart = [];
+
+    function openJualFnbModal() {
+        jualFnbCart = [];
+        updateJualFnbCartTable();
+        $('#jualFnbSearchInput').val('');
+        $('#jualFnbSearchResults').hide();
+        calculateJualFnbTotal();
+        document.getElementById('modalJualFnb').style.display = 'flex';
+    }
+
+    function closeJualFnbModal() {
+        document.getElementById('modalJualFnb').style.display = 'none';
+    }
+
+    // Close on backdrop click
+    document.getElementById('modalJualFnb').addEventListener('click', function(e) {
+        if (e.target === this) closeJualFnbModal();
+    });
+
+    function searchJualFnbItems(query) {
+        let $results = $('#jualFnbSearchResults');
+        if (query.length < 2) { $results.hide(); return; }
+        $.ajax({
+            url: "{{ route('itemmaster-ViewJson') }}",
+            method: 'POST',
+            data: { Scan: query, Active: 'Y', TipeItemIN: '1,2,3,5' },
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            success: function(res) {
+                if (res.data && res.data.length > 0) {
+                    let html = res.data.map(item => `
+                        <div onclick='addJualFnbToCart(${JSON.stringify(item).replace(/"/g, "&quot;")})'
+                            style="padding:10px 12px; cursor:pointer; border-bottom:1px solid #f0f0f0; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <div style="font-weight:600; font-size:0.88rem;">${item.NamaItem}</div>
+                                <div style="font-size:0.75rem; color:#999;">${item.KodeItem}</div>
+                            </div>
+                            <div style="font-weight:700; color:#2e7d32; font-size:0.88rem;">${formatRp(item.HargaJual)}</div>
+                        </div>`).join('');
+                    $results.html(html).show();
+                } else {
+                    $results.html('<div style="padding:10px; color:#999; font-size:0.88rem;">Tidak ditemukan.</div>').show();
+                }
+            }
+        });
+    }
+
+    function addJualFnbToCart(item) {
+        let existing = jualFnbCart.find(c => c.KodeItem === item.KodeItem);
+        if (existing) { existing.Qty += 1; }
+        else { jualFnbCart.push({ KodeItem: item.KodeItem, NamaItem: item.NamaItem, Harga: item.HargaJual, Satuan: item.Satuan || 'PCS', Qty: 1 }); }
+        $('#jualFnbSearchInput').val('');
+        $('#jualFnbSearchResults').hide();
+        updateJualFnbCartTable();
+    }
+
+    function changeJualFnbQty(index, delta) {
+        jualFnbCart[index].Qty = Math.max(1, jualFnbCart[index].Qty + delta);
+        updateJualFnbCartTable();
+    }
+
+    function setJualFnbQty(index, val) {
+        let v = parseInt(val);
+        if (v < 1 || isNaN(v)) v = 1;
+        jualFnbCart[index].Qty = v;
+        updateJualFnbCartTable();
+    }
+
+    function removeJualFnbItem(index) {
+        jualFnbCart.splice(index, 1);
+        updateJualFnbCartTable();
+    }
+
+    function updateJualFnbCartTable() {
+        let $body = $('#jualFnbCartItems');
+        if (jualFnbCart.length === 0) {
+            $body.html('<tr><td colspan="5" style="text-align:center; padding:20px; color:#90a4ae;">Belum ada item.</td></tr>');
+        } else {
+            let html = jualFnbCart.map((item, i) => {
+                let sub = item.Qty * item.Harga;
+                return `<tr>
+                    <td style="padding:10px 12px; font-size:0.88rem;">${item.NamaItem}</td>
+                    <td style="padding:8px;">
+                        <div style="display:flex; align-items:center; gap:4px; justify-content:center;">
+                            <button type="button" class="pp-dur-btn" style="padding:2px 7px;" onclick="changeJualFnbQty(${i}, -1)">−</button>
+                            <input type="number" class="pp-input" style="width:46px; text-align:center; padding:4px;" value="${item.Qty}" onchange="setJualFnbQty(${i}, this.value)">
+                            <button type="button" class="pp-dur-btn" style="padding:2px 7px;" onclick="changeJualFnbQty(${i}, 1)">+</button>
+                        </div>
+                    </td>
+                    <td style="padding:8px; text-align:right; font-size:0.88rem;">${formatRp(item.Harga)}</td>
+                    <td style="padding:8px; text-align:right; font-size:0.88rem; font-weight:600;">${formatRp(sub)}</td>
+                    <td style="padding:8px; text-align:center;"><button type="button" onclick="removeJualFnbItem(${i})" style="background:none; border:none; color:#e53935; cursor:pointer;"><i class="fas fa-trash"></i></button></td>
+                </tr>`;
+            }).join('');
+            $body.html(html);
+        }
+        calculateJualFnbTotal();
+    }
+
+    function calculateJualFnbTotal(isFromInput = false) {
+        let subtotal = jualFnbCart.reduce((s, i) => s + i.Qty * i.Harga, 0);
+        let ppnPersen = parseFloat($('#jualFnbPpnPersen').text()) || 0;
+        let servicePersen = parseFloat($('#jualFnbServicePersen').text()) || 0;
+
+        let ppnRp = subtotal * (ppnPersen / 100);
+        let serviceRp = subtotal * (servicePersen / 100);
+
+        let $opt = $('#jualFnbMetode option:selected');
+        let adminPercent = parseFloat($opt.data('percent')) || 0;
+        let adminRupiah = parseFloat($opt.data('rupiah')) || 0;
+        let tipe = $opt.data('tipe') || '';
+
+        let subtotalWithTax = subtotal + ppnRp + serviceRp;
+        let adminFee = adminPercent > 0 ? subtotalWithTax * (adminPercent / 100) : (adminRupiah > 0 ? adminRupiah : 0);
+        let grandTotal = Math.round(subtotalWithTax + adminFee);
+
+        $('#jualFnbSubtotal').text(formatRp(Math.round(subtotal)));
+        $('#jualFnbPpn').text(formatRp(Math.round(ppnRp)));
+        $('#jualFnbLayanan').text(formatRp(Math.round(serviceRp)));
+        $('#jualFnbGrandTotal').text(formatRp(grandTotal));
+
+        if (adminFee > 0) {
+            $('#jualFnbAdminFee').text(formatRp(Math.round(adminFee)));
+            $('#jualFnbAdminRow').css('display', 'flex');
+        } else {
+            $('#jualFnbAdminRow').hide();
+        }
+
+        const nominalInp = document.getElementById('jualFnbNominal');
+        if (tipe === 'NON TUNAI' || tipe === 'NONTUNAI') {
+            nominalInp.value = new Intl.NumberFormat('id-ID').format(grandTotal);
+            nominalInp.readOnly = true;
+            nominalInp.style.backgroundColor = '#f3f6f9';
+        } else {
+            nominalInp.readOnly = false;
+            nominalInp.style.backgroundColor = '';
+            if (!isFromInput) nominalInp.value = new Intl.NumberFormat('id-ID').format(grandTotal);
+        }
+
+        let nominal = parseFormattedRp(nominalInp.value || '0');
+        let kembalian = nominal - grandTotal;
+        if (kembalian < 0) {
+            $('#jualFnbKembalian').text('Kurang: ' + formatRp(Math.abs(kembalian))).css('color', '#c62828');
+        } else {
+            $('#jualFnbKembalian').text(formatRp(kembalian)).css('color', '#2e7d32');
+        }
+    }
+
+    function onJualFnbNominalChange() {
+        calculateJualFnbTotal(true);
+    }
+
+    function submitJualFnb() {
+        if (jualFnbCart.length === 0) {
+            swal("Perhatian", "Tidak ada item di keranjang.", "warning");
+            return;
+        }
+
+        let grandTotalText = $('#jualFnbGrandTotal').text();
+        let grandTotal = parseFormattedRp(grandTotalText);
+        let nominal = parseFormattedRp($('#jualFnbNominal').val() || '0');
+
+        if (nominal < grandTotal) {
+            swal("Perhatian", "Nominal bayar kurang dari Grand Total.", "warning");
+            return;
+        }
+
+        swal({
+            title: "Konfirmasi",
+            text: "Simpan penjualan FnB sebesar " + formatRp(grandTotal) + "?",
+            type: "question",
+            showCancelButton: true,
+            confirmButtonColor: "#e65100",
+            confirmButtonText: "Ya, Simpan",
+            cancelButtonText: "Batal"
+        }).then((result) => {
+            if (!result.value) return;
+
+            const $btn = $('#jualFnbBtnSubmit');
+            const oldHtml = $btn.html();
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Memproses...');
+
+            fetch('{{ route("billing-jual-fnb-standalone") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                body: JSON.stringify({
+                    items: jualFnbCart,
+                    MetodePembayaranId: $('#jualFnbMetode').val(),
+                    NominalBayar: nominal
+                })
+            })
+            .then(r => r.json())
+            .then(r => {
+                if (r.success) {
+                    if (r.snap_token) {
+                        $btn.html('<i class="fas fa-spinner fa-spin"></i> Menunggu Pembayaran...');
+                        window.snap.pay(r.snap_token, {
+                            onSuccess: function (result) {
+                                fetch('{{ route("billing-midtrans-success") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                    },
+                                    body: JSON.stringify({ 
+                                        NoTransaksi: r.invoiceNo,
+                                        payment_type: 'JUAL_FNB'
+                                    })
+                                })
+                                .then(res => res.json())
+                                .then(res => {
+                                    if (res.success) {
+                                        swal({ title: "Berhasil!", text: "Penjualan berhasil disimpan.\nNo Faktur: " + res.invoiceNo, type: "success", timer: 3000, showConfirmButton: true })
+                                            .then(() => closeJualFnbModal());
+                                    } else {
+                                        swal("Gagal", res.message || "Gagal finalisasi data.", "error");
+                                    }
+                                });
+                            },
+                            onPending: function (result) {
+                                swal("Info", "Selesaikan pembayaran Anda.", "info").then(() => closeJualFnbModal());
+                            },
+                            onError: function (result) {
+                                $btn.prop('disabled', false).html(oldHtml);
+                                swal("Gagal", "Pembayaran gagal.", "error");
+                            },
+                            onClose: function () {
+                                $btn.prop('disabled', false).html(oldHtml);
+                                swal("Batal", "Pembayaran dibatalkan.", "warning");
+                            }
+                        });
+                    } else {
+                        $btn.prop('disabled', false).html(oldHtml);
+                        let msg = 'No Faktur: ' + r.invoiceNo;
+                        if (r.kembalian > 0) msg += '\nKembalian: ' + formatRp(r.kembalian);
+                        swal({ title: "Berhasil!", text: msg, type: "success", timer: 3000, showConfirmButton: true })
+                            .then(() => closeJualFnbModal());
+                    }
+                } else {
+                    $btn.prop('disabled', false).html(oldHtml);
+                    swal("Gagal", r.message || "Terjadi kesalahan.", "error");
+                }
+            })
+            .catch(err => {
+                $btn.prop('disabled', false).html(oldHtml);
+                swal("Error", "Gagal menghubungi server.", "error");
+            });
+        });
+    }
+    </script>
+
     <script src="{{ asset('js/sweetalert.js') }}"></script>
 </body>
 </html>

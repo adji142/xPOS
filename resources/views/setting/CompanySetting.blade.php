@@ -325,6 +325,23 @@
 																{{-- This content is generated dynamically by JavaScript --}}
 															</fieldset>
 														</div>
+
+														<div class="col-md-6">
+															<label class="text-body">Type Kitchen Background</label>
+															<fieldset class="form-group mb-3">
+																<select name="TypeKitchenBackgraund" id="TypeKitchenBackgraund" class="js-example-basic-single js-states form-control bg-transparent">
+																	<option value="Color" {{ count($company) > 0 && $company[0]['TypeKitchenBackgraund'] == 'Color' ? 'selected' : '' }}>Color</option>
+																	<option value="Image" {{ count($company) > 0 && $company[0]['TypeKitchenBackgraund'] == 'Image' ? 'selected' : '' }}>Image</option>
+																</select>
+															</fieldset>
+														</div>
+
+														<div class="col-md-6">
+															<label class="text-body">Kitchen Background</label>
+															<fieldset class="form-group mb-3" id="kitchenBackgroundInput">
+																{{-- This content is generated dynamically by JavaScript --}}
+															</fieldset>
+														</div>
 													</div>
 												</div>
 
@@ -797,6 +814,23 @@
 																		<div id="ImageCustDisplay4" class="image_result_sample">
 																			@if ($company[0]['ImageCustDisplay4'] != '')
 																				<img src=" {{$company[0]['ImageCustDisplay4']}} ">
+																			@else
+																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+																			@endif
+																		</div>
+																	</div>
+																</fieldset>
+															</div>
+
+															<div class="col-sm-3">
+																<fieldset class="form-group mb-3">
+																	<textarea id = "ImageCustDisplay5Base64" name = "ImageCustDisplay5Base64" style="display: none;"> {{ count($company) > 0 ? $company[0]['ImageCustDisplay5'] : '' }} </textarea>
+																	
+																	<input type="file" id="fileImageCustDisplay5" name="fileImageCustDisplay5" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+																	<div class="xContainer">
+																		<div id="ImageCustDisplay5" class="image_result_sample">
+																			@if (!empty($company[0]['ImageCustDisplay5']) && $company[0]['ImageCustDisplay5'] != '')
+																				<img src=" {{$company[0]['ImageCustDisplay5']}} ">
 																			@else
 																				<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
 																			@endif
@@ -1475,6 +1509,7 @@ var oCompany;
 
 			// var initialType = jQuery('#TypeBackgraund').val();
 			updateBackgroundInput(oCompany[0]['TypeBackgraund']);
+			updateKitchenBackgroundInput(oCompany[0]['TypeKitchenBackgraund']);
 
 		});
 
@@ -1619,6 +1654,65 @@ var oCompany;
 			updateBackgroundInput(jQuery(this).val());
 		});
 
+		function updateKitchenBackgroundInput(type) {
+			var backgroundInput = jQuery('#kitchenBackgroundInput');
+			backgroundInput.empty(); // Clear current input
+
+			if (type === 'Image') {
+				var imageInputHTML = `
+					<fieldset class="form-group mb-3">
+						<textarea id="KitchenBackgraundBase64" name="KitchenBackgraundBase64" style="display: none;">{{ count($company) > 0 ? $company[0]['KitchenBackgraund'] : '' }}</textarea>
+						<input type="file" id="fileKitchenBackgraund" name="fileKitchenBackgraund" accept=".jpg, .png" class="btn btn-warning" style="display: none;"/>
+						<div class="xContainer">
+							<div id="KitchenBackgraundPreview" class="image_result_sample">
+								@if (count($company) > 0 && $company[0]['KitchenBackgraund'] != '' && $company[0]['TypeKitchenBackgraund'] == 'Image')
+									<img src="{{$company[0]['KitchenBackgraund']}}">
+								@else
+									<img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-blank-avatar-modern-vector-png-image_40962406.jpg">
+								@endif
+							</div>
+						</div>
+					</fieldset>
+				`;
+				backgroundInput.append(imageInputHTML);
+
+				jQuery('#KitchenBackgraundPreview').click(function(){
+					$('#fileKitchenBackgraund').click();
+				});
+
+				jQuery("#fileKitchenBackgraund").change(function(){
+					var file = $(this)[0].files[0];
+					var img = new Image();
+					img.src = _URL.createObjectURL(file);
+					img.onload = function () {
+						// You can add width/height validation if needed
+					}
+					readURL(this, "KitchenBackgraundPreview");
+					encodeImagetoBase64(this, "KitchenBackgraundBase64");
+				});
+
+			} else { // Color
+				var input = jQuery('<input>').attr({
+					type: 'color',
+					class: 'form-control',
+					name: 'KitchenBackgraund',
+					id: 'KitchenBackgraund'
+				});
+
+				if (oCompany && oCompany.length > 0 && oCompany[0]['TypeKitchenBackgraund'] === 'Color') {
+					input.val(oCompany[0]['KitchenBackgraund']);
+				}
+				else {
+					input.val('#ffffff'); // default color
+				}
+				backgroundInput.append(input);
+			}
+		}
+
+		jQuery('#TypeKitchenBackgraund').on('change', function(){
+			updateKitchenBackgroundInput(jQuery(this).val());
+		});
+
 		jQuery('#btTestPrint').click(function () {
 			// alert('asd')
 			$.ajax({
@@ -1694,6 +1788,10 @@ var oCompany;
 		});
 		jQuery('#ImageCustDisplay4').click(function(){
 			$('#fileImageCustDisplay4').click();
+		});
+
+		jQuery('#ImageCustDisplay5').click(function(){
+			$('#fileImageCustDisplay5').click();
 		});
 
 		jQuery('#ImageGallery1').click(function(){

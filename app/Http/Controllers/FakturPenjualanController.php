@@ -4694,13 +4694,34 @@ class FakturPenjualanController extends Controller
             ->where('RecordOwnerID', $RecordOwnerID)
             ->get();
         
-        return view('Transaksi.Penjualan.InfoKitchen', compact('jenisItems'));
+        $tables = DB::table('tableorderfnb')
+            ->join('tableorderheader', function($join) {
+                $join->on('tableorderfnb.NoTransaksi', '=', 'tableorderheader.NoTransaksi')
+                     ->on('tableorderfnb.RecordOwnerID', '=', 'tableorderheader.RecordOwnerID');
+            })
+            ->join('titiklampu', function($join) {
+                $join->on('tableorderheader.tableid', '=', 'titiklampu.id')
+                     ->on('tableorderheader.RecordOwnerID', '=', 'titiklampu.RecordOwnerID');
+            })
+            ->where('tableorderfnb.isCompleted', 0)
+            ->where('tableorderfnb.RecordOwnerID', $RecordOwnerID)
+            ->select('titiklampu.id', 'titiklampu.NamaTitikLampu')
+            ->distinct()
+            ->get();
+        
+        $company = DB::table('company')
+            ->where('KodePartner', $RecordOwnerID)
+            ->first();
+
+        return view('Transaksi.Penjualan.InfoKitchen', compact('jenisItems', 'tables', 'company'));
     }
 
     public function InfoKitchenData(Request $request)
     {
         $RecordOwnerID = Auth::user()->RecordOwnerID;
         $KodeJenisItem = $request->input('KodeJenisItem');
+        $tableid = $request->input('tableid');
+        $searchTerm = $request->input('searchTerm');
 
         $query = DB::table('tableorderfnb')
             ->join('itemmaster', function($join) {
@@ -4727,6 +4748,18 @@ class FakturPenjualanController extends Controller
 
         if (!empty($KodeJenisItem)) {
             $query->where('itemmaster.KodeJenisItem', $KodeJenisItem);
+        }
+
+        if (!empty($tableid)) {
+            $query->where('tableorderheader.tableid', $tableid);
+        }
+
+        if (!empty($searchTerm)) {
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('tableorderfnb.NoTransaksi', 'like', "%{$searchTerm}%")
+                  ->orWhere('itemmaster.NamaItem', 'like', "%{$searchTerm}%")
+                  ->orWhere('tableorderfnb.KodeItem', 'like', "%{$searchTerm}%");
+            });
         }
 
         $items = $query->orderBy('tableorderfnb.created_at', 'desc')->get();
