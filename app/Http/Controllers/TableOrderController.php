@@ -1001,11 +1001,42 @@ class TableOrderController extends Controller
             }
 
             $grandTotalPaket = $totalPaket - $diskon + $pajak + $pajakHiburan + $layanan;
-
+            // dd($totalPaket ,$diskon , $pajak , $pajakHiburan , $layanan);
             // 2. Get FnB List
-            $fnb = DB::table('tableorderfnb')
+            $fnb = DB::table('tableorderfnb as a')
+                ->leftJoin('fakturpenjualandetail as b', function($join) {
+                    $join->on('a.NoTransaksi', '=', 'b.BaseReff')
+                         ->on('a.RecordOwnerID', '=', 'b.RecordOwnerID')
+                         ->on('a.KodeItem', '=', 'b.KodeItem');
+                })
+                ->leftJoin('fakturpenjualanheader as c', function($join) {
+                    $join->on('b.NoTransaksi', '=', 'c.NoTransaksi')
+                         ->on('b.RecordOwnerID', '=', 'c.RecordOwnerID')
+                         ->where('c.NoReff', '=', 'POS-FNB');
+                })
+                ->leftJoin('itemmaster as d', function($join) {
+                    $join->on('a.KodeItem', '=', 'd.KodeItem')
+                         ->on('a.RecordOwnerID', '=', 'd.RecordOwnerID');
+                })
+                ->select(
+                    DB::raw("CASE WHEN b.NoTransaksi IS NULL THEN '-' ELSE b.NoTransaksi END AS NoTransaksi"),
+                    DB::raw("COALESCE(c.TglTransaksi, NOW()) as TglTransaksi"),
+                    'a.KodeItem',
+                    'd.NamaItem',
+                    'a.Qty',
+                    'a.Harga',
+                    'a.LineStatus',
+                    DB::raw('a.Qty * a.Harga as Total')
+                )
+                ->where('a.NoTransaksi', $noTransaksi)
+                ->where('a.RecordOwnerID', $recordOwnerID)
+                ->get();
+
+            $fnbCalculate = DB::table('tableorderfnb')
+                ->selectRaw("(Harga * Qty) as TotalHarga")
                 ->where('NoTransaksi', $noTransaksi)
                 ->where('RecordOwnerID', $recordOwnerID)
+                ->where('LineStatus', 'O')
                 ->get();
 
             // 3. Get Payment Info (untuk outstanding)
@@ -1021,11 +1052,11 @@ class TableOrderController extends Controller
                 ->first();
 
             
-            $totalFnB = (float)($fnb->sum('Harga'));
+            $totalFnB = (float)($fnbCalculate->sum('TotalHarga'));
             $totalTagihanAktual = $grandTotalPaket + $totalFnB;
             $totalTerbayar = (float)($paymentData ? $paymentData->TotalTerbayar : 0);
 
-            // dd($totalTagihanAktual, $totalTerbayar, $paymentData);
+            // dd($grandTotalPaket, $totalFnB, $totalTerbayar);
             
             $outstanding = $totalTagihanAktual - $totalTerbayar;
             $needsPayment = $outstanding > 0;
@@ -1060,7 +1091,13 @@ class TableOrderController extends Controller
                     'TotalTagihanAktual' => $totalTagihanAktual,
                     'TotalTerbayar' => $totalTerbayar,
                     'Outstanding' => $outstanding,
-                    'NeedsPayment' => $needsPayment
+                    'NeedsPayment' => $needsPayment,
+                    'totalPaket' => $totalPaket,
+                    'totalFnB' => $totalFnB,
+                    'diskon' => $diskon,
+                    'pajak' => $pajak,
+                    'pajakHiburan' => $pajakHiburan,
+                    'layanan' => $layanan,
                 ]
             ]);
 

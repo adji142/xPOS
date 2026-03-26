@@ -462,6 +462,36 @@
         }
         .btn-modal-close { background: #e0e0e0; color: #424242; }
         .btn-modal-pay { background: #43a047; color: #fff; }
+
+        /* TreeView Styles for FnB Grouping */
+        .fnb-group-header {
+            background-color: #f8f9fa !important;
+            cursor: pointer;
+            font-weight: 700;
+            color: #1a237e;
+            border-bottom: 2px solid #e8eaf6 !important;
+        }
+        .fnb-group-header:hover {
+            background-color: #ede7f6 !important;
+        }
+        .fnb-group-header i {
+            margin-right: 8px;
+            transition: transform 0.2s;
+            width: 14px;
+            text-align: center;
+        }
+        .fnb-group-header.expanded i {
+            transform: rotate(90deg);
+        }
+        .fnb-details-row {
+            background-color: #ffffff;
+        }
+        .fnb-details-row td {
+            padding-left: 35px !important;
+            border-bottom: 1px solid #f1f1f1 !important;
+            font-size: 0.82rem !important;
+            color: #455a64;
+        }
     </style>
 </head>
 
@@ -1244,20 +1274,75 @@
         $('#mdPajakHiburan').text(formatRp(h.TotalPajakHiburan));
         $('#mdLayanan').text(formatRp(h.TotalLayanan));
 
-        // FnB List
+        // Group FnB by NoTransaksi
+        const groupedFnb = {};
+        res.fnb.forEach(item => {
+            if (!groupedFnb[item.NoTransaksi]) {
+                groupedFnb[item.NoTransaksi] = {
+                    TglTransaksi: item.TglTransaksi,
+                    items: []
+                };
+            }
+            groupedFnb[item.NoTransaksi].items.push(item);
+        });
+
+        // FnB List with Grouping (Treeview)
         let fnbHtml = '';
         let fnbTotal = 0;
-        res.fnb.forEach(item => {
-            fnbTotal += parseFloat(item.Harga || 0) *  parseFloat(item.Qty || 0);
+        
+        Object.keys(groupedFnb).forEach(noTrans => {
+            const group = groupedFnb[noTrans];
+            const tgl = group.TglTransaksi ? group.TglTransaksi.substring(0, 10) : '-';
+            
+            let subtotalGroup = 0;
+            let groupItemsHtml = '';
+            let groupStatus = 'C'; // Default to Paid, we'll check if any item is 'O' or null
+
+            // Group Items (Treeview Children)
+            group.items.forEach(item => {
+                const totalItem = parseFloat(item.Harga || 0) * parseFloat(item.Qty || 0);
+                subtotalGroup += totalItem;
+
+                // jika LineStatus = 'C' maka transaksi itu terbayar, jika 'O' atau null belum terbayar
+                // Jika ada satu saja yang bukan 'C', anggap grup belum terbayar (atau check first item)
+                if (item.LineStatus !== 'C') {
+                    groupStatus = 'O';
+                }
+
+                groupItemsHtml += `
+                <tr class="fnb-details-row fnb-group-${noTrans}">
+                    <td>${item.NamaItem || item.KodeItem}</td>
+                    <td>${item.Qty}</td>
+                    <td>${formatRp(item.Harga)}</td>
+                    <td style="text-align:right;">${formatRp(totalItem)}</td>
+                </tr>`;
+            });
+
+            fnbTotal += subtotalGroup;
+
+            const statusLabel = groupStatus === 'C' ? 'TERBAYAR' : 'BELUM TERBAYAR';
+            const statusColor = groupStatus === 'C' ? '#2e7d32' : '#c62828';
+            const statusBg = groupStatus === 'C' ? '#e8f5e9' : '#ffebee';
+
+            // Header Group (Treeview Parent)
             fnbHtml += `
-            <tr>
-                <td>${item.NamaItem || item.KodeItem}</td>
-                <td>${item.Qty}</td>
-                <td>${formatRp(item.Harga)}</td>
-                <td style="text-align:right;">${formatRp(item.Harga * item.Qty)}</td>
+            <tr class="fnb-group-header expanded" onclick="toggleFnbGroup('${noTrans}', this)">
+                <td colspan="3">
+                    <i class="fas fa-chevron-right"></i> 
+                    ${noTrans} 
+                    <span style="font-weight:400; font-size:0.75rem; color:#666; margin-left:10px;">(${tgl})</span>
+                    <span style="margin-left:10px; font-size:0.7rem; padding:2px 8px; border-radius:12px; background:${statusBg}; color:${statusColor}; border:1px solid ${statusColor}; font-weight:700;">
+                        ${statusLabel}
+                    </span>
+                </td>
+                <td style="text-align:right;">${formatRp(subtotalGroup)}</td>
             </tr>`;
+            
+            fnbHtml += groupItemsHtml;
         });
+
         $('#mdFnBList').html(fnbHtml || '<tr><td colspan="4" style="text-align:center; color:#999;">Tidak ada pesanan FnB</td></tr>');
+
         $('#fnbCountBadge').text(res.fnb.length + ' Item');
         $('#mdTotalMakanan').text(formatRp(fnbTotal));
 
@@ -1308,6 +1393,20 @@
         });
         syncCustomerDisplay(syncData);
     }
+
+    function toggleFnbGroup(noTrans, elm) {
+        const rows = document.querySelectorAll('.fnb-group-' + noTrans);
+        const isExpanded = elm.classList.contains('expanded');
+        
+        if (isExpanded) {
+            rows.forEach(r => r.style.display = 'none');
+            elm.classList.remove('expanded');
+        } else {
+            rows.forEach(r => r.style.display = 'table-row');
+            elm.classList.add('expanded');
+        }
+    }
+
 
     function onDetailMetodeChange() {
         const sel = document.getElementById('mdMetodePembayaran');
