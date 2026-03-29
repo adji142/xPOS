@@ -27,6 +27,9 @@ use App\Models\KelompokLampu;
 use App\Models\GrupPelanggan;
 use App\Models\BookingOnline;
 
+use App\Mail\ReceiptMail;
+use Illuminate\Support\Facades\Mail;
+
 class TableOrderController extends Controller
 {
     public function View(Request $request)
@@ -1033,7 +1036,7 @@ class TableOrderController extends Controller
                 ->get();
 
             $fnbCalculate = DB::table('tableorderfnb')
-                ->selectRaw("(Harga * Qty) as TotalHarga")
+                ->selectRaw("(LineTotal) as TotalHarga")
                 ->where('NoTransaksi', $noTransaksi)
                 ->where('RecordOwnerID', $recordOwnerID)
                 ->where('LineStatus', 'O')
@@ -1061,6 +1064,18 @@ class TableOrderController extends Controller
             $outstanding = $totalTagihanAktual - $totalTerbayar;
             $needsPayment = $outstanding > 0;
 
+            $packetInvoice = DB::table('fakturpenjualandetail as a')
+                ->join('fakturpenjualanheader as b', function($join) {
+                    $join->on('a.NoTransaksi', '=', 'b.NoTransaksi')
+                         ->on('a.RecordOwnerID', '=', 'b.RecordOwnerID');
+                })
+                ->where('a.BaseReff', $noTransaksi)
+                ->where('a.RecordOwnerID', $recordOwnerID)
+                ->whereIn('b.NoReff', ['POS', 'POS-TAMBAHJAM'])
+                ->where('b.Status', 'C')
+                ->select('b.NoTransaksi')
+                ->first();
+
             // Prepare return data to match frontend expectations
             $headerData = [
                 'NoTransaksi' => $header->NoTransaksi,
@@ -1081,6 +1096,7 @@ class TableOrderController extends Controller
                 'DocumentStatus'   => $header->DocumentStatus,
                 'JenisPaket'       => $header->JenisPaket,
                 'IsLiveDuration'   => $isLiveRunning,
+                'PacketInvoiceNo'  => $packetInvoice ? $packetInvoice->NoTransaksi : null,
             ];
 
             return response()->json([
@@ -1364,6 +1380,7 @@ class TableOrderController extends Controller
             // STEP 2: Cek FnB yang belum difakturkan (LineStatus = 'O')
             // =============================================
             $fnbOpen = DB::table('tableorderfnb')
+                ->selectRaw("NoTransaksi, LineNumber, KodeItem, Qty, Harga, Tax, Discount, BiayaLayanan, LineStatus, isCompleted, RecordOwnerID, (Harga * Qty) as LineTotal")
                 ->where('NoTransaksi', $noTransaksi)
                 ->where('RecordOwnerID', $recordOwnerID)
                 ->where('LineStatus', 'O')
@@ -1474,17 +1491,27 @@ class TableOrderController extends Controller
                     ->where('LineStatus', 'O')
                     ->update(['LineStatus' => 'C']);
 
-                // Sync TotalMakanan
-                $totalMakanan = DB::table('tableorderfnb')
-                    ->where('NoTransaksi', $noTransaksi)
-                    ->where('RecordOwnerID', $recordOwnerID)
-                    ->sum('LineTotal');
-                DB::table('tableorderheader')
-                    ->where('NoTransaksi', $noTransaksi)
-                    ->where('RecordOwnerID', $recordOwnerID)
-                    ->update(['TotalMakanan' => $totalMakanan]);
-            }
+                // Sync FnB Totals to Header (Berdasarkan yang BARU saja dibayar)
+                $newMakanan = 0;
+                $newTax = 0;
+                $newService = 0;
+                foreach ($fnbOpen as $fItem) {
+                    $newMakanan += ($fItem->Qty * $fItem->Harga);
+                    $newTax += ($fItem->Tax ?? 0);
+                    $newService += ($fItem->BiayaLayanan ?? 0);
+                }
 
+                $h = TableOrderHeader::where('NoTransaksi', $noTransaksi)->where('RecordOwnerID', $recordOwnerID)->first();
+                if ($h) {
+                    $h->TotalMakanan += $newMakanan;
+                    $h->TotalTax += $newTax;
+                    $h->BiayaLayanan += $newService;
+                    // Recalculate NetTotal based on all components
+                    $h->NetTotal = (floatval($h->Gross) - floatval($h->TotalDiskon)) + $h->TotalTax + $h->BiayaLayanan + $h->TotalMakanan;
+                    $h->save();
+                }
+            }
+            
             // =============================================
             // STEP 3: Auto-close logic based on JamSelesai and DoCheckout
             // =============================================
@@ -1599,6 +1626,9 @@ class TableOrderController extends Controller
                 ->where('NoTransaksi', $noTransaksi)
                 ->where('RecordOwnerID', $recordOwnerID)
                 ->first();
+
+            $company = DB::table('company')->where('KodePartner', $recordOwnerID)->first();
+
 
             if (!$order) {
                 return response()->json(['success' => false, 'message' => 'Order tidak ditemukan']);
@@ -3114,12 +3144,17 @@ class TableOrderController extends Controller
                     ->decrement('Qty', $qty);
             }
 
-            // Update Header
-            $header->TotalMakanan += $totalFnB;
-            $header->TotalTax += $totalTax;
-            $header->BiayaLayanan += $totalService;
-            $header->NetTotal += ($totalFnB + $totalTax + $totalService);
-            $header->save();
+            // Update Header (Hanya jika LANGSUNG dan bukan Midtrans, karena Midtrans dihandle di callback)
+            if ($opsiBayar === 'LANGSUNG') {
+                $header->Gross += $totalFnB;
+                $header->GrossTotal += $totalFnB;
+                $header->TotalMakanan += $totalFnB;
+                $header->TotalTax += $totalTax;
+                $header->BiayaLayanan += $totalService;
+                $header->NetTotal += ($totalFnB + $totalTax + $totalService);
+                $header->save();
+            }
+            // dd($opsiBayar, $header);
 
             if ($opsiBayar === 'LANGSUNG') {
                 if ($isMidtrans) {
@@ -3982,6 +4017,63 @@ class TableOrderController extends Controller
                     $fH->created_at = Carbon::now();
                     $fH->save();
                     Log::info("handleMidtransSuccess (ADD_FNB): FakturHeader created: " . $invoiceNo);
+
+                    // Sync FnB Totals to Header
+                    // Kita gunakan data fnb yang tadi kita update ke 'C'
+                    // Dalam handleMidtransSuccess, kita belum punya list detail item secara langsung sebagai object,
+                    // tapi kita bisa query yang baru saja diupdate jika kita tahu mana saja itu.
+                    // Karena semua 'O' diupdate ke 'C', kita bisa sum yang sekarang 'C' tapi sebelumnya 'O'
+                    // Namun di handleMidtransSuccess, ini biasanya batch yang baru masuk.
+                    
+                    // Cara paling aman: Sum SEMUA yang 'C' dan update header fields.
+                    $fnbTotals = DB::table('tableorderfnb')
+                        ->where('NoTransaksi', $noTransaksi)
+                        ->where('RecordOwnerID', $recordOwnerID)
+                        ->where('LineStatus', 'C')
+                        ->selectRaw('SUM(Qty * Harga) as total_makanan, SUM(Tax) as total_tax, SUM(BiayaLayanan) as total_service')
+                        ->first();
+
+                    if ($model) {
+                        $model->TotalMakanan = $fnbTotals->total_makanan ?? 0;
+                        // Untuk Tax dan Service, jika kita reset ke 'fnb only', kita kehilangan Packet Tax.
+                        // Jadi kita harus hati-hati.
+                        
+                        // User ingin 'akumulasi'. Jika header.TotalTax adalah total,
+                        // maka kita butuh cara membedakan tax packet dan tax fnb.
+                        // Alternatif: Kita asumsikan NetTotal dihitung sebagai (Gross-Disc) + AllPaidTax + AllPaidService + AllPaidMakanan.
+                        
+                        // Kita update incremental saja berdasarkan apa yang baru difakturkan (nominalBayar) 
+                        // tapi nominalBayar di ADD_FNB Midtrans adalah total (Subtotal + Tax + Service).
+                        // Kita sudah punya fnbTotals (SUM ALL 'C').
+                        
+                        $model->TotalMakanan = $fnbTotals->total_makanan ?? 0;
+                        // Kita tidak bisa asal += tax karena fnbTotals adalah semua yang 'C'.
+                        // Jika ini fnb kedua, fnbTotals include fnb pertama.
+                        
+                        // SOLUSI: Simpan komponen FnB saja di field tsb? 
+                        // Tidak, field tsb biasanya total.
+                        
+                        // Kita gunakan incremental tax/service dari items yang baru saja di-C-kan.
+                        // Tapi kita tidak punya listnya di sini kecuali query ulang status 'C' yang NoFaktur matching? No.
+                        
+                        // Oke, kita hitung incremental dari nominalBayar (gross_amount)
+                        // Namun lebih akurat jika kita query items yang 'C' tapi belum masuk ke previous summary.
+                        // Ribet. Mari gunakan SUM ALL 'C' dan asumsikan header fields (Tax, Service) 
+                        // akan kita sinkronkan dengan (Packet Comp + FnB Comp).
+                        
+                        // Mari hitung Packet Tax/Service
+                        $ppnPer = $company->PPN ?? 0;
+                        $pb1Per = $company->PajakHiburan ?? 0;
+                        $svcPer = $company->ServiceCharge ?? 0;
+                        $dppPaket = floatval($model->Gross) - floatval($model->TotalDiskon);
+                        $taxPaket = $dppPaket * (($ppnPer + $pb1Per) / 100);
+                        $svcPaket = $dppPaket * ($svcPer / 100);
+                        
+                        $model->TotalTax = $taxPaket + ($fnbTotals->total_tax ?? 0);
+                        $model->BiayaLayanan = $svcPaket + ($fnbTotals->total_service ?? 0);
+                        $model->NetTotal = $dppPaket + $model->TotalTax + $model->BiayaLayanan + $model->TotalMakanan;
+                        $model->save();
+                    }
                 } else if ($paymentType === 'PAY_DETAIL') {
                     Log::info("handleMidtransSuccess: Processing PAY_DETAIL");
                     // Update header if needed, but usually payOrderDetail is for existing factures or outstanding balance
@@ -4340,4 +4432,135 @@ class TableOrderController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
+
+    public function sendReceiptEmail(Request $request)
+    {
+        $noTransaksi = $request->NoTransaksi;
+        $email = $request->Email;
+        $recordOwnerID = Auth::user()->RecordOwnerID;
+
+        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return response()->json(['success' => false, 'message' => 'Email tidak valid.']);
+        }
+
+        // Fetch Header (Logic from getFakturDetail)
+        $header = FakturPenjualanHeader::selectRaw("
+                fakturpenjualanheader.*, 
+                pembayaranpenjualanheader.TotalPembayaran as Bayar, 
+                (COALESCE(pembayaranpenjualanheader.TotalPembayaran,0) - fakturpenjualanheader.TotalPembelian) as Kembali, 
+                metodepembayaran.NamaMetodePembayaran,
+                pelanggan.NamaPelanggan,
+                pelanggan.Email
+            ")
+            ->join('fakturpenjualandetail', function($join) {
+                $join->on('fakturpenjualanheader.NoTransaksi', '=', 'fakturpenjualandetail.NoTransaksi')
+                     ->on('fakturpenjualanheader.RecordOwnerID', '=', 'fakturpenjualandetail.RecordOwnerID');
+            })
+            ->join('itemmaster', function($join) {
+                $join->on('fakturpenjualandetail.KodeItem', '=', 'itemmaster.KodeItem')
+                     ->on('fakturpenjualandetail.RecordOwnerID', '=', 'itemmaster.RecordOwnerID');
+            })
+            ->leftJoin('pembayaranpenjualanheader', function($join) {
+                $join->on('fakturpenjualanheader.NoTransaksi', '=', 'pembayaranpenjualanheader.NoReff')
+                     ->on('fakturpenjualanheader.RecordOwnerID', '=', 'pembayaranpenjualanheader.RecordOwnerID');
+            })
+            ->leftJoin('metodepembayaran', function($join) {
+                $join->on('pembayaranpenjualanheader.KodeMetodePembayaran', '=', 'metodepembayaran.id')
+                     ->on('pembayaranpenjualanheader.RecordOwnerID', '=', 'metodepembayaran.RecordOwnerID');
+            })
+            ->leftJoin('pelanggan', function($join) {
+                $join->on('fakturpenjualanheader.KodePelanggan', '=', 'pelanggan.KodePelanggan')
+                     ->on('fakturpenjualanheader.RecordOwnerID', '=', 'pelanggan.RecordOwnerID');
+            })
+            ->where('fakturpenjualanheader.RecordOwnerID', $recordOwnerID)
+            ->where(function($q) use ($noTransaksi) {
+                $q->where('fakturpenjualanheader.NoTransaksi', $noTransaksi)
+                  ->orWhere(function($sq) use ($noTransaksi) {
+                      $sq->where('fakturpenjualandetail.BaseReff', $noTransaksi)
+                         ->where('itemmaster.TypeItem', 4);
+                  });
+            })
+            ->first();
+
+        if (!$header) {
+            return response()->json(['success' => false, 'message' => 'Data faktur tidak ditemukan.']);
+        }
+
+        // Fetch Details
+        $details = FakturPenjualanDetail::where('NoTransaksi', $header->NoTransaksi)
+            ->where('RecordOwnerID', $recordOwnerID)
+            ->get();
+
+        // Fetch Company Info
+        $company = Company::where('KodePartner', $recordOwnerID)->first();
+
+        try {
+            Mail::to($email)->send(new ReceiptMail($header, $details, $company));
+            return response()->json(['success' => true, 'message' => 'Email berhasil dikirim ke ' . $email]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Gagal mengirim email: ' . $e->getMessage()]);
+        }
+    }
+
+    public function getFakturDetail(Request $request)
+    {
+        $noTransaksi = $request->NoTransaksi;
+        $recordOwnerID = Auth::user()->RecordOwnerID;
+
+        $header = FakturPenjualanHeader::selectRaw("
+                fakturpenjualanheader.*, 
+                pembayaranpenjualanheader.TotalPembayaran as Bayar, 
+                (COALESCE(pembayaranpenjualanheader.TotalPembayaran,0) - fakturpenjualanheader.TotalPembelian) as Kembali, 
+                metodepembayaran.NamaMetodePembayaran,
+                pelanggan.NamaPelanggan,
+                pelanggan.Email
+            ")
+            ->join('fakturpenjualandetail', function($join) {
+                $join->on('fakturpenjualanheader.NoTransaksi', '=', 'fakturpenjualandetail.NoTransaksi')
+                     ->on('fakturpenjualanheader.RecordOwnerID', '=', 'fakturpenjualandetail.RecordOwnerID');
+            })
+            ->join('itemmaster', function($join) {
+                $join->on('fakturpenjualandetail.KodeItem', '=', 'itemmaster.KodeItem')
+                     ->on('fakturpenjualandetail.RecordOwnerID', '=', 'itemmaster.RecordOwnerID');
+            })
+            ->leftJoin('pembayaranpenjualanheader', function($join) {
+                $join->on('fakturpenjualanheader.NoTransaksi', '=', 'pembayaranpenjualanheader.NoReff')
+                     ->on('fakturpenjualanheader.RecordOwnerID', '=', 'pembayaranpenjualanheader.RecordOwnerID');
+            })
+            ->leftJoin('metodepembayaran', function($join) {
+                $join->on('pembayaranpenjualanheader.KodeMetodePembayaran', '=', 'metodepembayaran.id')
+                     ->on('pembayaranpenjualanheader.RecordOwnerID', '=', 'metodepembayaran.RecordOwnerID');
+            })
+            ->leftJoin('pelanggan', function($join) {
+                $join->on('fakturpenjualanheader.KodePelanggan', '=', 'pelanggan.KodePelanggan')
+                     ->on('fakturpenjualanheader.RecordOwnerID', '=', 'pelanggan.RecordOwnerID');
+            })
+            ->where('fakturpenjualanheader.RecordOwnerID', $recordOwnerID)
+            ->where(function($q) use ($noTransaksi) {
+                $q->where('fakturpenjualanheader.NoTransaksi', $noTransaksi)
+                  ->orWhere(function($sq) use ($noTransaksi) {
+                      $sq->where('fakturpenjualandetail.BaseReff', $noTransaksi)
+                         ->where('itemmaster.TypeItem', 4);
+                  });
+            })
+            ->first();
+
+        if (!$header) {
+            return response()->json(['success' => false, 'message' => 'Data faktur tidak ditemukan.']);
+        }
+
+        $details = FakturPenjualanDetail::where('NoTransaksi', $header->NoTransaksi)
+            ->where('RecordOwnerID', $recordOwnerID)
+            ->get();
+
+        $company = Company::where('KodePartner', $recordOwnerID)->first();
+
+        return response()->json([
+            'success' => true,
+            'header' => $header,
+            'details' => $details,
+            'company' => $company
+        ]);
+    }
 }
+

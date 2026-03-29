@@ -94,8 +94,7 @@
                 background-color: {{ $company[0]->Backgraund }};
             @elseif(count($company) > 0 && $company[0]->TypeBackgraund == 'Image' && !empty($company[0]->Backgraund))
                 background: linear-gradient(rgba(244, 246, 251, 0.3), rgba(244, 246, 251, 0.3)), url('{{ $company[0]->Backgraund }}') no-repeat center center;
-                background-size: cover;
-                background-attachment: fixed;
+                background-size: 100% 100%;
             @else
                 background: #f4f6fb;
             @endif
@@ -229,7 +228,7 @@
         /* Image */
         .detail-img-wrap {
             width: 100%;
-            height: 150px;
+            height: 250px;
             overflow: hidden;
             background: #e9ecef;
             border-bottom: 1px solid #eee;
@@ -237,6 +236,7 @@
         .detail-img-wrap img {
             width: 100%;
             height: 100%;
+            /* background-size: 100% 100%; */
             object-fit: cover;
         }
 
@@ -492,7 +492,201 @@
             font-size: 0.82rem !important;
             color: #455a64;
         }
+        /* ========== RECEIPT PREVIEW MODAL (THERMAL) ========== */
+        .receipt-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 9000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .receipt-overlay.open { display: flex; }
+
+        .receipt-container {
+            background: #fff;
+            width: 400px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            overflow: hidden;
+            animation: receiptPop 0.3s ease-out;
+        }
+        @keyframes receiptPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .receipt-paper {
+            background: #fff;
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+            font-family: 'Courier New', Courier, monospace;
+            color: #000;
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .receipt-logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .receipt-address {
+            font-size: 0.85rem;
+            line-height: 1.2;
+            margin-bottom: 2px;
+        }
+
+        .receipt-divider {
+            border-top: 1px dashed #000;
+            margin: 10px 0;
+        }
+
+        .receipt-info {
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+        .receipt-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+
+        .receipt-table {
+            width: 100%;
+            font-size: 0.85rem;
+            border-collapse: collapse;
+        }
+        .receipt-table th {
+            text-align: left;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 5px;
+        }
+        .receipt-table td {
+            padding: 4px 0;
+            vertical-align: top;
+        }
+
+        .receipt-totals {
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        .receipt-total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+        }
+        .receipt-grand-total {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px double #000;
+        }
+
+        .receipt-footer {
+            text-align: center;
+            font-size: 0.8rem;
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        .receipt-actions {
+            background: #f1f3f4;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .btn-receipt {
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-receipt-print { background: #1a237e; color: #fff; }
+        .btn-receipt-email { background: #e91e63; color: #fff; }
+        .btn-receipt-wa { background: #25d366; color: #fff; }
+        .btn-receipt:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-reprint {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #1a237e;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 0.75rem;
+            margin-left: 10px;
+            transition: all 0.2s ease;
+            padding: 0;
+            vertical-align: middle;
+        }
+        .btn-reprint:hover {
+            background-color: #3949ab;
+            transform: scale(1.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .btn-reprint i {
+            pointer-events: none;
+        }
+
+        @media print {
+            /* Hide everything that is not the receipt */
+            .pos-header, .pos-main, .receipt-actions, .modal-close, .swal2-container, .swal-overlay, .modal-pos {
+                display: none !important;
+            }
+            
+            /* Show the modal overlay as a simple block */
+            #modalReceiptPreview {
+                display: block !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                background: white !important;
+                z-index: 9999 !important;
+            }
+            
+            .receipt-container {
+                box-shadow: none !important;
+                border: none !important;
+                width: 80mm !important;
+                margin: 0 auto !important;
+            }
+            
+            .receipt-paper {
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+            
+            /* Ensure text is black for printing */
+            #modalReceiptPreview * {
+                color: #000 !important;
+                background: transparent !important;
+            }
+        }
+
     </style>
+
 </head>
 
 <body>
@@ -1268,7 +1462,7 @@
         $('#mdPaketDurasi').html(durasiLabel);
         $('#mdHargaSatuan').text(formatRp(h.HargaPaket));
         
-        $('#mdTotalPaket').text(formatRp(h.TotalPaket));
+        
         $('#mdDiskon').text('- ' + formatRp(h.TotalDiskon));
         $('#mdPajak').text(formatRp(h.TotalPajak));
         $('#mdPajakHiburan').text(formatRp(h.TotalPajakHiburan));
@@ -1324,6 +1518,8 @@
             const statusColor = groupStatus === 'C' ? '#2e7d32' : '#c62828';
             const statusBg = groupStatus === 'C' ? '#e8f5e9' : '#ffebee';
 
+            const reprintBtn = groupStatus === 'C' ? `<button class="btn-reprint" onclick="event.stopPropagation(); showReceiptPreview('${noTrans}')" title="Reprint Struk"><i class="fas fa-print"></i></button>` : '';
+
             // Header Group (Treeview Parent)
             fnbHtml += `
             <tr class="fnb-group-header expanded" onclick="toggleFnbGroup('${noTrans}', this)">
@@ -1334,6 +1530,7 @@
                     <span style="margin-left:10px; font-size:0.7rem; padding:2px 8px; border-radius:12px; background:${statusBg}; color:${statusColor}; border:1px solid ${statusColor}; font-weight:700;">
                         ${statusLabel}
                     </span>
+                    ${reprintBtn}
                 </td>
                 <td style="text-align:right;">${formatRp(subtotalGroup)}</td>
             </tr>`;
@@ -1347,7 +1544,15 @@
         $('#mdTotalMakanan').text(formatRp(fnbTotal));
 
         // Final Grand Total = Paket + FnB
-        const grandTotalAll = (h.GrandTotal || 0) + fnbTotal;
+        const grandTotalAll = (h.GrandTotal || 0);
+        $('#mdTotalPaket').text(formatRp(h.TotalPaket - fnbTotal));
+        
+        // Add Reprint button for main packet if paid
+        console.log(h);
+        if (h.PacketInvoiceNo) {
+            $('#mdTotalPaket').append(`<button class="btn-reprint" onclick="showReceiptPreview('${h.NoTransaksi}')" title="Reprint Struk Paket"><i class="fas fa-print"></i></button>`);
+        }
+        
         $('#mdGrandTotal').text(formatRp(grandTotalAll));
 
         // Payment Info
@@ -1361,6 +1566,9 @@
             isStillRunning = (h.Status != -1);
         }
 
+        console.log(p.NeedsPayment);
+        console.log(isStillRunning);
+
         if (p.NeedsPayment && !isStillRunning) {
             $('#mdSumTagihan').text(formatRp(p.TotalTagihanAktual));
             $('#mdSumTerbayar').text(formatRp(p.TotalTerbayar));
@@ -1371,8 +1579,9 @@
             $('#mdBtnCheckOut').show().prop('disabled', false);
             onDetailMetodeChange(); // Trigger admin fee calc on open
         } else {
+            console.log('disable')
             $('#mdPaymentSection').hide();
-            $('#mdBtnCheckOut').show().prop('disabled', isStillRunning);
+            $('#mdBtnCheckOut').show().prop('disabled', true);
         }
 
         // Sync with Customer Display (full detail)
@@ -1406,6 +1615,231 @@
             elm.classList.add('expanded');
         }
     }
+
+    function showReceiptPreview(noFaktur) {
+        if (!noFaktur) return;
+
+        // Show loading
+        swal({
+            title: "Memuat Struk...",
+            text: "Mohon tunggu sebentar",
+            type: "info",
+            showConfirmButton: false,
+            allowOutsideClick: false
+        });
+
+        $.ajax({
+            url: '{{ route("billing-get-faktur-detail") }}',
+            method: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                NoTransaksi: noFaktur
+            },
+            success: function(res) {
+                swal.close();
+                if (res.success) {
+                    populateReceipt(res);
+                    $('#modalReceiptPreview').addClass('open');
+                } else {
+                    swal("Gagal", res.message, "error");
+                }
+            },
+            error: function() {
+                swal.close();
+                swal("Error", "Gagal mengambil data struk", "error");
+            }
+        });
+    }
+
+    function populateReceipt(res) {
+        const h = res.header;
+        const d = res.details;
+        const c = res.company;
+
+        // Company
+        $('#rcptCompanyName').text(c ? c.NamaPartner : "D'BILLIARD");
+        $('#rcptCompanyAddress').text(c ? c.Alamat : "");
+        $('#rcptCompanyPhone').text(c ? "Telp: " + c.NoTlp : "");
+
+        // Header Info
+        $('#rcptNoFaktur').text("#" + h.NoTransaksi);
+        
+        // Date formatting
+        const dateObj = new Date(h.TglTransaksi);
+        const dateStr = dateObj.toLocaleDateString('id-ID') + ' ' + dateObj.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+        $('#rcptDate').text(dateStr);
+        
+        $('#rcptTable').text(h.NomorMeja || '-');
+        $('#rcptCustomer').text(h.NamaPelanggan || 'Umum');
+        $('#rcptCustomerEmail').text(h.Email || '');
+
+        // Items
+        let itemsHtml = '';
+        d.forEach(item => {
+            itemsHtml += `
+                <tr>
+                    <td>
+                        <div style="font-weight:600;">${item.Keterangan || item.KodeItem}</div>
+                        <div style="font-size:0.75rem;">${formatRp(item.Harga)}</div>
+                    </td>
+                    <td style="text-align:center;">${item.Qty}</td>
+                    <td style="text-align:right;">${formatRp(item.HargaNet)}</td>
+                </tr>
+            `;
+        });
+        $('#rcptItems').html(itemsHtml);
+
+        // Totals
+        $('#rcptSubtotal').text(formatRp(h.TotalTransaksi));
+        
+        if (parseFloat(h.Potongan) > 0) {
+            $('#rcptRowDiskon').show();
+            $('#rcptDiskon').text("- " + formatRp(h.Potongan));
+        } else {
+            $('#rcptRowDiskon').hide();
+        }
+
+        $('#rcptPajak').text(formatRp(h.Pajak));
+
+        if (parseFloat(h.PajakHiburan) > 0) {
+            $('#rcptRowPajakHiburan').show();
+            $('#rcptPajakHiburan').text(formatRp(h.PajakHiburan));
+        } else {
+            $('#rcptRowPajakHiburan').hide();
+        }
+
+        $('#rcptLayanan').text(formatRp(h.BiayaLayanan));
+        $('#rcptGrandTotal').text(formatRp(h.TotalPembelian));
+
+        // Payment
+        $('#rcptMetode').text(h.NamaMetodePembayaran || h.MetodeBayar || '-');
+        $('#rcptBayar').text(formatRp(h.Bayar || h.TotalPembelian));
+        $('#rcptKembali').text(formatRp(Math.max(0, h.Kembali || 0)));
+    }
+
+    function closeReceiptModal() {
+        $('#modalReceiptPreview').removeClass('open');
+        // Refresh page to sync all statuses after payment
+        location.reload();
+    }
+
+    function shareReceiptWhatsApp() {
+        const noFaktur = $('#rcptNoFaktur').text().replace('#', '').trim();
+        const total = $('#rcptGrandTotal').text().trim();
+        const date = $('#rcptDate').text().trim();
+        const company = $('#rcptCompanyName').text().trim();
+        const customer = $('#rcptCustomer').text().trim();
+        
+        const text = `Halo, berikut adalah struk digital Anda:\n\n*${company}*\nNo: ${noFaktur}\nTanggal: ${date}\nPelanggan: ${customer}\n*Total: ${total}*\n\nTerima kasih atas kunjungan Anda!`;
+        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+
+    function sendReceiptEmail() {
+        const noFaktur = $('#rcptNoFaktur').text().replace('#', '').trim();
+        const defaultEmail = $('#rcptCustomerEmail').text().trim();
+        
+        swal({
+            title: 'Kirim Struk via Email',
+            text: 'Masukkan alamat email penerima:',
+            input: 'email',
+            inputValue: defaultEmail,
+            inputPlaceholder: 'email@example.com',
+            showCancelButton: true,
+            confirmButtonColor: '#1a237e',
+            confirmButtonText: 'Kirim Sekarang',
+            cancelButtonText: 'Batal',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Alamat email harus diisi!'
+                }
+            }
+        }).then((result) => {
+            if (result.value) {
+                // Show loading
+                swal({
+                    title: "Sedang Mengirim...",
+                    text: "Mohon tunggu sebentar",
+                    type: "info",
+                    showConfirmButton: false,
+                    allowOutsideClick: false
+                });
+
+                $.ajax({
+                    url: '{{ route("billing-send-receipt-email") }}',
+                    method: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        NoTransaksi: noFaktur,
+                        Email: result.value
+                    },
+                    success: function(res) {
+                        if (res.success) {
+                            swal("Berhasil", res.message, "success");
+                        } else {
+                            swal("Gagal", res.message, "error");
+                        }
+                    },
+                    error: function() {
+                        swal("Error", "Gagal menghubungi server.", "error");
+                    }
+                });
+            }
+        });
+    }
+
+    function printReceipt() {
+        const receiptContent = document.getElementById('receiptContent').innerHTML;
+        const companyName = document.getElementById('rcptCompanyName').innerText;
+        const noFaktur = document.getElementById('rcptNoFaktur').innerText;
+        
+        const printWindow = window.open('', '_blank', 'width=400,height=600');
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Print Receipt - ${noFaktur}</title>
+                    <style>
+                        body {
+                            font-family: 'Courier New', Courier, monospace;
+                            margin: 0;
+                            padding: 20px;
+                            width: 80mm;
+                            background: white;
+                        }
+                        .receipt-header { text-align: center; margin-bottom: 15px; }
+                        .receipt-logo { font-size: 1.4rem; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+                        .receipt-address { font-size: 0.85rem; line-height: 1.2; margin-bottom: 2px; }
+                        .receipt-divider { border-top: 1px dashed #000; margin: 10px 0; }
+                        .receipt-info { font-size: 0.85rem; margin-bottom: 10px; }
+                        .receipt-info-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
+                        .receipt-table { width: 100%; font-size: 0.85rem; border-collapse: collapse; }
+                        .receipt-table th { text-align: left; border-bottom: 1px dashed #000; padding-bottom: 5px; }
+                        .receipt-table td { padding: 4px 0; vertical-align: top; }
+                        .receipt-totals { margin-top: 10px; font-size: 0.9rem; }
+                        .receipt-total-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+                        .receipt-grand-total { font-size: 1.1rem; font-weight: 700; margin-top: 5px; padding-top: 5px; border-top: 1px double #000; }
+                        .receipt-footer { text-align: center; font-size: 0.8rem; margin-top: 20px; font-style: italic; }
+                        @media print {
+                            body { padding: 0; margin: 0; width: 80mm; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="receipt-paper">
+                        ${receiptContent}
+                    </div>
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                            // window.close(); // Optional: close window after print
+                        };
+                    <\/script>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+
 
 
     function onDetailMetodeChange() {
@@ -1544,16 +1978,8 @@
                                 })
                                 .then(r => r.json())
                                 .then(r => {
-                                    swal({
-                                        title: "Berhasil!",
-                                        text: "Pembayaran berhasil diproses.",
-                                        type: "success",
-                                        timer: 2000,
-                                        showConfirmButton: false
-                                    }).then(() => {
-                                        closeDetailModal();
-                                        location.reload();
-                                    });
+                                    closeDetailModal();
+                                    showReceiptPreview(res.NoTransaksi);
                                 });
                             },
                             onPending: function (result) {
@@ -1585,16 +2011,8 @@
                     } else {
                         btn.disabled = false;
                         btn.innerHTML = oldHtml;
-                        swal({
-                            title: "Berhasil!",
-                            text: res.message || "Pembayaran berhasil diproses.",
-                            type: "success",
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            closeDetailModal();
-                            location.reload();
-                        });
+                        closeDetailModal();
+                        showReceiptPreview(res.NoTransaksi);
                     }
                 } else {
                     btn.disabled = false;
@@ -1926,16 +2344,8 @@
                                 })
                                 .then(r => r.json())
                                 .then(r => {
-                                    swal({
-                                        title: "Berhasil",
-                                        text: "Pesanan makanan berhasil disimpan.",
-                                        type: "success",
-                                        timer: 2000,
-                                        showConfirmButton: false
-                                    }).then(() => {
-                                        closeTambahMakananModal();
-                                        location.reload();
-                                    });
+                                    closeTambahMakananModal();
+                                    showReceiptPreview(res.NoTransaksi);
                                 });
                             },
                             onPending: function (result) {
@@ -1967,16 +2377,8 @@
                         window.snap.pay(res.snap_token, handlers);
                     } else {
                         $btn.prop('disabled', false).html(oldHtml);
-                        swal({
-                            title: "Berhasil",
-                            text: res.message,
-                            type: "success",
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            closeTambahMakananModal();
-                            location.reload();
-                        });
+                        closeTambahMakananModal();
+                        showReceiptPreview(res.NoTransaksi);
                     }
                 } else {
                     $btn.prop('disabled', false).html(oldHtml);
@@ -2205,16 +2607,8 @@
                             })
                             .then(r => r.json())
                             .then(r => {
-                                swal({
-                                    title: "Berhasil",
-                                    text: "Durasi berhasil diperpanjang.",
-                                    type: "success",
-                                    timer: 2000,
-                                    showConfirmButton: false
-                                }).then(() => {
-                                    closeTambahDurasiModal();
-                                    location.reload();
-                                });
+                                closeTambahDurasiModal();
+                                showReceiptPreview(res.NoTransaksi);
                             });
                         },
                         onPending: function (result) {
@@ -2251,16 +2645,8 @@
                     }
                 } else {
                     $btn.prop('disabled', false).html(oldHtml);
-                    swal({
-                        title: "Berhasil",
-                        text: "Durasi berhasil ditambahkan.",
-                        type: "success",
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        closeTambahDurasiModal();
-                        location.reload();
-                    });
+                    closeTambahDurasiModal();
+                    showReceiptPreview(res.NoTransaksi);
                 }
             } else {
                 $btn.prop('disabled', false).html(oldHtml);
@@ -2794,7 +3180,111 @@
         </div>
     </div>
 
+    <!-- ===== MODAL RECEIPT PREVIEW ===== -->
+    <div id="modalReceiptPreview" class="receipt-overlay">
+        <div class="receipt-container">
+            <div class="receipt-paper" id="receiptContent">
+                <div class="receipt-header">
+                    <div class="receipt-logo" id="rcptCompanyName">D'BILLIARD</div>
+                    <div class="receipt-address" id="rcptCompanyAddress">Alamat Perusahaan</div>
+                    <div class="receipt-address" id="rcptCompanyPhone">Telp: 08123456789</div>
+                </div>
+
+                <div class="receipt-divider"></div>
+
+                <div class="receipt-info">
+                    <div class="receipt-info-row">
+                        <span>No: <strong id="rcptNoFaktur">#12345</strong></span>
+                        <span id="rcptDate">27/03/2026 15:30</span>
+                    </div>
+                    <div class="receipt-info-row">
+                        <span>Kasir: <span id="rcptCashier">{{ Auth::user()->name }}</span></span>
+                        <span>Meja: <span id="rcptTable">-</span></span>
+                    </div>
+                    <div class="receipt-info-row">
+                        <span>Pelanggan:</span>
+                        <span id="rcptCustomer">Umum</span>
+                        <span id="rcptCustomerEmail" style="display:none;"></span>
+                    </div>
+                </div>
+
+                <div class="receipt-divider"></div>
+
+                <table class="receipt-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th style="text-align:center;">Qty</th>
+                            <th style="text-align:right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rcptItems">
+                        <!-- Items populate here -->
+                    </tbody>
+                </table>
+
+                <div class="receipt-divider"></div>
+
+                <div class="receipt-totals">
+                    <div class="receipt-total-row">
+                        <span>Subtotal:</span>
+                        <span id="rcptSubtotal">Rp 0</span>
+                    </div>
+                    <div class="receipt-total-row" id="rcptRowDiskon" style="display:none;">
+                        <span>Diskon:</span>
+                        <span id="rcptDiskon">-Rp 0</span>
+                    </div>
+                    <div class="receipt-total-row">
+                        <span>Pajak:</span>
+                        <span id="rcptPajak">Rp 0</span>
+                    </div>
+                    <div class="receipt-total-row" id="rcptRowPajakHiburan" style="display:none;">
+                        <span>Pajak Hiburan:</span>
+                        <span id="rcptPajakHiburan">Rp 0</span>
+                    </div>
+                    <div class="receipt-total-row">
+                        <span>Layanan / Admin:</span>
+                        <span id="rcptLayanan">Rp 0</span>
+                    </div>
+                    <div class="receipt-total-row receipt-grand-total">
+                        <span>GRAND TOTAL:</span>
+                        <span id="rcptGrandTotal">Rp 0</span>
+                    </div>
+                </div>
+
+                <div class="receipt-divider"></div>
+
+                <div class="receipt-info">
+                    <div class="receipt-info-row">
+                        <span>Metode: <span id="rcptMetode">Tunai</span></span>
+                    </div>
+                    <div class="receipt-info-row">
+                        <span>Bayar:</span>
+                        <span id="rcptBayar">Rp 0</span>
+                    </div>
+                    <div class="receipt-info-row" style="font-weight:700;">
+                        <span>Kembali:</span>
+                        <span id="rcptKembali">Rp 0</span>
+                    </div>
+                </div>
+
+                <div class="receipt-footer">
+                    Terima kasih atas kunjungan Anda!<br>
+                    Silahkan datang kembali.
+                </div>
+            </div>
+
+            <div class="receipt-actions">
+                <button class="btn-receipt btn-receipt-print" onclick="printReceipt()"><i class="fas fa-print"></i> Cetak</button>
+                <button class="btn-receipt btn-receipt-email" onclick="sendReceiptEmail()"><i class="fas fa-envelope"></i> Email</button>
+                <button class="btn-receipt btn-receipt-wa" onclick="shareReceiptWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                <button class="btn-receipt btn-receipt-close" onclick="closeReceiptModal()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DETAIL ORDER -->
+
 
     <div id="modalDetailOrder" class="modal-pos">
         <div class="modal-pos-content">
@@ -3930,15 +4420,7 @@
                                     })
                                     .then(r => r.json())
                                     .then(r => {
-                                        swal({
-                                            title: "Pembayaran Berhasil!",
-                                            text: "Paket berhasil dibayar dan disimpan. No Transaksi: " + res.NoTransaksi,
-                                            type: "success",
-                                            timer: 2000,
-                                            showConfirmButton: false
-                                        }).then(() => {
-                                            location.reload();
-                                        });
+                                        showReceiptPreview(res.NoTransaksi);
                                     })
                                     .catch(err => {
                                         swal("Perhatian", "Pembayaran berhasil, tapi sinkronisasi gagal. Harap lapor admin.", "warning").then(() => location.reload());
@@ -3985,15 +4467,7 @@
                             window.snap.pay(res.snap_token, handlers);
                         } else {
                             // Flow normal (Cash / Piutang / Metode Manual)
-                            swal({
-                                title: "Berhasil!",
-                                text: "Paket berhasil disimpan. No Transaksi: " + res.NoTransaksi,
-                                type: "success",
-                                timer: 2000,
-                                showConfirmButton: false
-                            }).then(() => {
-                                location.reload();
-                            });
+                                showReceiptPreview(res.NoTransaksi);
                         }
                     } else {
                         // Restore button

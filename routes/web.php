@@ -591,6 +591,9 @@ Route::post('/fpenjualan/void', [FakturPenjualanController::class, 'void'])->nam
 Route::post('/fpenjualan/getTimeSlots', [TableOrderController::class, 'getAvailableTimeSlots'])->name('fpenjualan-getTimeSlots')->middleware(['auth', 'check.session']);
 Route::post('/billing/store-fnb', [TableOrderController::class, 'storeFnBOrder'])->name('billing-store-fnb')->middleware(['auth', 'check.session']);
 Route::post('/billing/store-tambah-durasi', [TableOrderController::class, 'storeTambahDurasi'])->name('billing-store-tambah-durasi')->middleware(['auth', 'check.session']);
+Route::post('/billing/get-faktur-detail', [TableOrderController::class, 'getFakturDetail'])->name('billing-get-faktur-detail')->middleware(['auth', 'check.session']);
+Route::post('/billing/send-receipt-email', [TableOrderController::class, 'sendReceiptEmail'])->name('billing-send-receipt-email')->middleware(['auth', 'check.session']);
+
 
 Route::get('/daftartableorder', [TableOrderController::class, 'DaftarTableOrder'])->name('daftartableorder')->middleware(['auth', 'check.session']);
 Route::post('/daftartableorder/reset', [TableOrderController::class, 'ResetController'])->name('daftartableorder-reset')->middleware(['auth', 'check.session']);
