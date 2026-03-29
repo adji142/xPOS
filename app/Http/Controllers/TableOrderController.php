@@ -4537,8 +4537,7 @@ class TableOrderController extends Controller
             })
             ->where('fakturpenjualanheader.RecordOwnerID', $recordOwnerID)
             ->where(function($q) use ($noTransaksi) {
-                $q->where('fakturpenjualanheader.NoTransaksi', $noTransaksi)
-                  ->orWhere(function($sq) use ($noTransaksi) {
+                $q->Where(function($sq) use ($noTransaksi) {
                       $sq->where('fakturpenjualandetail.BaseReff', $noTransaksi)
                          ->where('itemmaster.TypeItem', 4);
                   });
