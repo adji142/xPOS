@@ -3132,7 +3132,7 @@ class TableOrderController extends Controller
                 // Jika Midtrans, set 'O' dulu, nanti handleMidtransSuccess yang ubah jadi 'C'
                 $fnb->LineStatus = ($opsiBayar === 'LANGSUNG' && !$isMidtrans) ? 'C' : 'O';
                 $fnb->LineTotal = $lineTotal + $tax + $service;
-                $fnb->isCompleted = 1;
+                $fnb->isCompleted = 0;
                 $fnb->RecordOwnerID = $recordOwnerID;
                 $fnb->save();
 
@@ -3306,7 +3306,11 @@ class TableOrderController extends Controller
             }
 
             DB::commit();
-            return response()->json(['success' => true, 'message' => 'FnB berhasil ditambahkan']);
+            return response()->json([
+                'success' => true, 
+                'message' => 'FnB berhasil ditambahkan',
+                'NoTransaksi' => ($opsiBayar === 'LANGSUNG' && isset($invoiceNo)) ? $invoiceNo : null
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             Log::error("storeFnBOrder Error: " . $th->getMessage() . " at " . $th->getFile() . ":" . $th->getLine());
@@ -3562,7 +3566,8 @@ class TableOrderController extends Controller
             DB::commit();
             return response()->json([
                 'success' => true,
-                'message' => 'Durasi berhasil ditambahkan'
+                'message' => 'Durasi berhasil ditambahkan',
+                'NoTransaksi' => ($opsiBayar === 'LANGSUNG' && isset($invoiceNo)) ? $invoiceNo : null
             ]);
 
         } catch (\Throwable $th) {
@@ -4236,8 +4241,47 @@ class TableOrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Numbering dokumen tidak ditemukan.']);
         }
 
-        // Default customer (walk-in / umum)
-        $kodePelanggan = $company->KodeCustomerUmum ?? 'UMUM';
+        // Customer logic
+        $isNewCustomer = $request->input('isNewCustomer', false);
+        $kodePelanggan = $request->input('KodePelanggan', $company->KodeCustomerUmum ?? 'UMUM');
+
+        if ($isNewCustomer) {
+            $namaPelanggan = $request->input('NamaPelanggan');
+            $noTlp1 = $request->input('NoTlp1');
+            $email = $request->input('Email');
+
+            if (empty($namaPelanggan) || empty($noTlp1)) {
+                return response()->json(['success' => false, 'message' => 'Nama dan No Tlp Pelanggan Baru wajib diisi.']);
+            }
+
+            // Check if already exists by phone
+            $pelangganExist = DB::table('pelanggan')
+                                ->where('NoTlp1', $noTlp1)
+                                ->where('RecordOwnerID', $recordOwnerID)
+                                ->first();
+            
+            if ($pelangganExist) {
+                $kodePelanggan = $pelangganExist->KodePelanggan;
+            } else {
+                $numPelanggan = new \App\Models\DocumentNumbering();
+                $kodePelanggan = $numPelanggan->GetNewDocMobile("PLG", "pelanggan", "KodePelanggan", $recordOwnerID);
+                
+                DB::table('pelanggan')->insert([
+                    'KodePelanggan' => $kodePelanggan,
+                    'NamaPelanggan' => $namaPelanggan,
+                    'KodeGrupPelanggan' => '',
+                    'NoTlp1' => $noTlp1,
+                    'Email' => $email,
+                    'isPaidMembership' => 0,
+                    'MaxPlay' => 0,
+                    'MemberPrice' => 0,
+                    'maxTimePerPlay' => 0,
+                    'RecordOwnerID' => $recordOwnerID,
+                    'Status' => 1
+                ]);
+            }
+        }
+
         $kodeTermin = $company->TerminBayarPoS ?? '1';
         $gudangPos = $company->GudangPoS ?? 'HO';
         $ppnPersen = floatval($company->PPN ?? 0);
@@ -4300,13 +4344,21 @@ class TableOrderController extends Controller
                 \Midtrans\Config::$isSanitized = true;
                 \Midtrans\Config::$is3ds = true;
 
+                $customerName = 'Pelanggan POS';
+                if ($isNewCustomer) {
+                    $customerName = $namaPelanggan;
+                } else {
+                    $pData = DB::table('pelanggan')->where('KodePelanggan', $kodePelanggan)->where('RecordOwnerID', $recordOwnerID)->first();
+                    if ($pData) $customerName = $pData->NamaPelanggan;
+                }
+
                 $transaction = [
                     'transaction_details' => [
                         'order_id' => 'JUALFNB-' . $tempId . '-' . time(),
                         'gross_amount' => (int) $grandTotal,
                     ],
                     'customer_details' => [
-                        'first_name' => 'Pelanggan POS',
+                        'first_name' => $customerName,
                     ],
                 ];
 
@@ -4536,20 +4588,32 @@ class TableOrderController extends Controller
                      ->on('fakturpenjualanheader.RecordOwnerID', '=', 'pelanggan.RecordOwnerID');
             })
             ->where('fakturpenjualanheader.RecordOwnerID', $recordOwnerID)
-            ->where(function($q) use ($noTransaksi) {
-                $q->Where(function($sq) use ($noTransaksi) {
-                      $sq->where('fakturpenjualandetail.BaseReff', $noTransaksi)
-                         ->where('itemmaster.TypeItem', 4);
-                  });
-            })
+            ->where('fakturpenjualanheader.NoTransaksi', $noTransaksi)
+            // ->where(function($q) use ($noTransaksi) {
+            //     // Scenario 1: Table order receipt - look up by BaseReff (tableorder NoTransaksi) with TypeItem=4
+            //     $q->Where(function($sq) use ($noTransaksi) {
+            //           $sq->where('fakturpenjualandetail.BaseReff', $noTransaksi)
+            //              ->where('itemmaster.TypeItem', 4);
+            //       })
+            //     // Scenario 2: Direct FnB sale receipt - look up by faktur NoTransaksi directly
+            //     ->orWhere(function($sq) use ($noTransaksi) {
+            //           $sq->where('fakturpenjualanheader.NoTransaksi', $noTransaksi)
+            //              ->where('fakturpenjualanheader.NoReff', 'FNB-DIRECT');
+            //       });
+            // })
             ->first();
 
         if (!$header) {
             return response()->json(['success' => false, 'message' => 'Data faktur tidak ditemukan.']);
         }
 
-        $details = FakturPenjualanDetail::where('NoTransaksi', $header->NoTransaksi)
-            ->where('RecordOwnerID', $recordOwnerID)
+        $details = FakturPenjualanDetail::selectRaw('fakturpenjualandetail.*, COALESCE(itemmaster.NamaItem, fakturpenjualandetail.Keterangan) as NamaItem')
+            ->leftJoin('itemmaster', function($join) use ($recordOwnerID) {
+                $join->on('fakturpenjualandetail.KodeItem', '=', 'itemmaster.KodeItem')
+                     ->on('fakturpenjualandetail.RecordOwnerID', '=', 'itemmaster.RecordOwnerID');
+            })
+            ->where('fakturpenjualandetail.NoTransaksi', $header->NoTransaksi)
+            ->where('fakturpenjualandetail.RecordOwnerID', $recordOwnerID)
             ->get();
 
         $company = Company::where('KodePartner', $recordOwnerID)->first();

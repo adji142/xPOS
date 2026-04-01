@@ -153,6 +153,27 @@
         color: #fd5d93;
     }
 
+    .btn-print {
+        background: linear-gradient(45deg, #f3a641, #ef8157);
+        border: none;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .btn-print:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(239, 129, 87, 0.4);
+        color: white;
+    }
+
+    .btn-print:disabled {
+        opacity: 0.7;
+        transform: none;
+    }
+
     /* === HELPERS === */
     .fade-in {
       animation: fadeIn 0.5s ease-in;
@@ -210,6 +231,10 @@
               @endforeach
           </select>
       </div>
+      <div class="d-flex align-items-center gap-2">
+          <label for="dateFilter" class="form-label mb-0">Tanggal:</label>
+          <input type="date" id="dateFilter" class="form-select" style="width: 160px;" value="{{ date('Y-m-d') }}">
+      </div>
       <div class="ms-md-auto">
           <div class="input-group">
               <span class="input-group-text bg-dark border-secondary text-light"><i class="bi bi-search"></i></span>
@@ -238,6 +263,7 @@
     let currentFilter = '';
     let currentTable = '';
     let currentSearch = '';
+    let currentDate = $('#dateFilter').val();
 
     $('#categoryFilter').on('change', function() {
         currentFilter = $(this).val();
@@ -254,6 +280,11 @@
         fetchKitchenData();
     });
 
+    $('#dateFilter').on('change', function() {
+        currentDate = $(this).val();
+        fetchKitchenData();
+    });
+
     function fetchKitchenData() {
         $.ajax({
             url: "{{ route('infokitchen-data') }}",
@@ -263,7 +294,8 @@
                 RecordOwnerID: "{{ Auth::user()->RecordOwnerID }}",
                 KodeJenisItem: currentFilter,
                 tableid: currentTable,
-                searchTerm: currentSearch
+                searchTerm: currentSearch,
+                tgl: currentDate
             },
             success: function(data) {
                 renderKitchenData(data);
@@ -307,7 +339,12 @@
                     <div class="kitchen-card fade-in">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                              <div class="table-name">TABLE: ${group.NamaTitikLampu}</div>
-                             <div class="item-detail">${group.NoTransaksi}</div>
+                             <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-print btn-sm" onclick="printOrder('${group.NoTransaksi}', this)">
+                                    <i class="bi bi-printer"></i> Print
+                                </button>
+                                <div class="item-detail">${group.NoTransaksi}</div>
+                             </div>
                         </div>
                         <hr style="border-color: #444; margin-top: 5px; margin-bottom: 10px;">
                         <div class="order-items">
@@ -358,6 +395,11 @@
                 console.error("Error marking as done:", err);
             }
         });
+    }
+
+    function printOrder(noTrx, btn) {
+        const url = "{{ route('infokitchen-print') }}?NoTransaksi=" + noTrx;
+        window.open(url, '_blank', 'width=400,height=600');
     }
 
     // Initial fetch

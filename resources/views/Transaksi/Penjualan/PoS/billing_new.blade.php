@@ -879,6 +879,7 @@
     </div>
 
     <script src="{{ asset('devexpress/jquery.min.js') }}"></script>
+    <script src="{{ asset('api/select2/select2.min.js') }}"></script>
 
     <script>
     // ===== DATA from PHP =====
@@ -1679,7 +1680,7 @@
             itemsHtml += `
                 <tr>
                     <td>
-                        <div style="font-weight:600;">${item.Keterangan || item.KodeItem}</div>
+                        <div style="font-weight:600;">${item.NamaItem || item.Keterangan || item.KodeItem}</div>
                         <div style="font-size:0.75rem;">${formatRp(item.Harga)}</div>
                     </td>
                     <td style="text-align:center;">${item.Qty}</td>
@@ -2378,7 +2379,11 @@
                     } else {
                         $btn.prop('disabled', false).html(oldHtml);
                         closeTambahMakananModal();
-                        showReceiptPreview(res.NoTransaksi);
+                        if (res.NoTransaksi) {
+                            showReceiptPreview(res.NoTransaksi);
+                        } else {
+                            location.reload();
+                        }
                     }
                 } else {
                     $btn.prop('disabled', false).html(oldHtml);
@@ -2646,7 +2651,11 @@
                 } else {
                     $btn.prop('disabled', false).html(oldHtml);
                     closeTambahDurasiModal();
-                    showReceiptPreview(res.NoTransaksi);
+                    if (res.NoTransaksi) {
+                        showReceiptPreview(res.NoTransaksi);
+                    } else {
+                        location.reload();
+                    }
                 }
             } else {
                 $btn.prop('disabled', false).html(oldHtml);
@@ -4537,6 +4546,30 @@
                         <hr style="border:none; border-top:2px solid #3f51b5; margin:10px 0;">
                         <div style="display:flex; justify-content:space-between; font-size:1.1rem; font-weight:800; color:#1a237e;"><span>TOTAL</span><span id="jualFnbGrandTotal">Rp 0</span></div>
                     </div>
+                    <!-- Customer Selection -->
+                    <div style="margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <label style="font-size:0.8rem; color:#555; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Pelanggan</label>
+                            <div style="font-size:0.75rem;">
+                                <input type="checkbox" id="jualFnbIsNewCustomer" onchange="toggleJualFnbNewCustomer()">
+                                <label for="jualFnbIsNewCustomer" style="color:#1a237e; font-weight:600; cursor:pointer;">Baru?</label>
+                            </div>
+                        </div>
+                        
+                        <div id="jualFnbExistingCustomerRow">
+                            <select id="jualFnbPelanggan" class="js-select2" style="width:100%;">
+                                @foreach($pelanggan as $p)
+                                    <option value="{{ $p->KodePelanggan }}">{{ $p->NamaPelanggan }} - {{ $p->NoTlp1 }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div id="jualFnbNewCustomerRow" style="display:none; background:#fff3e0; padding:10px; border-radius:8px; border:1px solid #ffe0b2;">
+                            <input type="text" id="jualFnbNewNama" placeholder="Nama Pelanggan *" style="width:100%; padding:8px; margin-bottom:6px; border:1px solid #ddd; border-radius:4px; font-size:0.85rem;">
+                            <input type="text" id="jualFnbNewTlp" placeholder="No Tlp / WA *" style="width:100%; padding:8px; margin-bottom:6px; border:1px solid #ddd; border-radius:4px; font-size:0.85rem;">
+                            <input type="email" id="jualFnbNewEmail" placeholder="Email (Opsional)" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; font-size:0.85rem;">
+                        </div>
+                    </div>
                     <!-- Payment Method -->
                     <div style="margin-bottom:12px;">
                         <label style="font-size:0.8rem; color:#555; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:4px;">Metode Bayar <span style="color:red;">*</span></label>
@@ -4585,6 +4618,17 @@
 
     function closeJualFnbModal() {
         document.getElementById('modalJualFnb').style.display = 'none';
+    }
+
+    function toggleJualFnbNewCustomer() {
+        const isNew = $('#jualFnbIsNewCustomer').is(':checked');
+        if (isNew) {
+            $('#jualFnbExistingCustomerRow').hide();
+            $('#jualFnbNewCustomerRow').show();
+        } else {
+            $('#jualFnbExistingCustomerRow').show();
+            $('#jualFnbNewCustomerRow').hide();
+        }
     }
 
     // Close on backdrop click
@@ -4763,7 +4807,12 @@
                 body: JSON.stringify({
                     items: jualFnbCart,
                     MetodePembayaranId: $('#jualFnbMetode').val(),
-                    NominalBayar: nominal
+                    NominalBayar: nominal,
+                    isNewCustomer: $('#jualFnbIsNewCustomer').is(':checked'),
+                    KodePelanggan: $('#jualFnbPelanggan').val(),
+                    NamaPelanggan: $('#jualFnbNewNama').val(),
+                    NoTlp1: $('#jualFnbNewTlp').val(),
+                    Email: $('#jualFnbNewEmail').val()
                 })
             })
             .then(r => r.json())
@@ -4787,8 +4836,11 @@
                                 .then(res => res.json())
                                 .then(res => {
                                     if (res.success) {
-                                        swal({ title: "Berhasil!", text: "Penjualan berhasil disimpan.\nNo Faktur: " + res.invoiceNo, type: "success", timer: 3000, showConfirmButton: true })
-                                            .then(() => closeJualFnbModal());
+                                        swal({ title: "Berhasil!", text: "Penjualan berhasil disimpan.\nNo Faktur: " + res.invoiceNo, type: "success", timer: 2000, showConfirmButton: true })
+                                            .then(() => {
+                                                closeJualFnbModal();
+                                                showReceiptPreview(res.invoiceNo);
+                                            });
                                     } else {
                                         swal("Gagal", res.message || "Gagal finalisasi data.", "error");
                                     }
@@ -4810,8 +4862,11 @@
                         $btn.prop('disabled', false).html(oldHtml);
                         let msg = 'No Faktur: ' + r.invoiceNo;
                         if (r.kembalian > 0) msg += '\nKembalian: ' + formatRp(r.kembalian);
-                        swal({ title: "Berhasil!", text: msg, type: "success", timer: 3000, showConfirmButton: true })
-                            .then(() => closeJualFnbModal());
+                        swal({ title: "Berhasil!", text: msg, type: "success", timer: 2000, showConfirmButton: true })
+                            .then(() => {
+                                closeJualFnbModal();
+                                showReceiptPreview(r.invoiceNo);
+                            });
                     }
                 } else {
                     $btn.prop('disabled', false).html(oldHtml);
@@ -4824,6 +4879,12 @@
             });
         });
     }
+
+    $(document).ready(function() {
+        $('.js-select2').select2({
+            dropdownParent: $('#modalJualFnb')
+        });
+    });
     </script>
 
     <script src="{{ asset('js/sweetalert.js') }}"></script>

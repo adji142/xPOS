@@ -4703,6 +4703,7 @@ class FakturPenjualanController extends Controller
                 $join->on('tableorderheader.tableid', '=', 'titiklampu.id')
                      ->on('tableorderheader.RecordOwnerID', '=', 'titiklampu.RecordOwnerID');
             })
+            ->whereDate('tableorderheader.TglTransaksi', date('Y-m-d'))
             ->where('tableorderfnb.isCompleted', 0)
             ->where('tableorderfnb.RecordOwnerID', $RecordOwnerID)
             ->select('titiklampu.id', 'titiklampu.NamaTitikLampu')
@@ -4722,6 +4723,7 @@ class FakturPenjualanController extends Controller
         $KodeJenisItem = $request->input('KodeJenisItem');
         $tableid = $request->input('tableid');
         $searchTerm = $request->input('searchTerm');
+        $tgl = $request->input('tgl', date('Y-m-d'));
 
         $query = DB::table('tableorderfnb')
             ->join('itemmaster', function($join) {
@@ -4745,6 +4747,10 @@ class FakturPenjualanController extends Controller
             ->where('tableorderfnb.isCompleted', 0)
             ->where('itemmaster.TypeItem', '<>', 4)
             ->where('tableorderfnb.RecordOwnerID', $RecordOwnerID);
+
+        if (!empty($tgl)) {
+            $query->whereDate('tableorderheader.TglTransaksi', $tgl);
+        }
 
         if (!empty($KodeJenisItem)) {
             $query->where('itemmaster.KodeJenisItem', $KodeJenisItem);
@@ -4784,5 +4790,62 @@ class FakturPenjualanController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
+    }
+
+    public function InfoKitchenPrint(Request $request)
+    {
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+        $NoTransaksi = $request->input('NoTransaksi');
+
+        $company = DB::table('company')->where('KodePartner', $RecordOwnerID)->first();
+        
+        $items = DB::table('tableorderfnb')
+            ->join('itemmaster', function($join) {
+                $join->on('tableorderfnb.KodeItem', '=', 'itemmaster.KodeItem')
+                     ->on('tableorderfnb.RecordOwnerID', '=', 'itemmaster.RecordOwnerID');
+            })
+            ->leftJoin('jenisitem', function($join) {
+                $join->on('itemmaster.KodeJenisItem', '=', 'jenisitem.KodeJenis')
+                     ->on('itemmaster.RecordOwnerID', '=', 'jenisitem.RecordOwnerID');
+            })
+            ->leftJoin('tableorderheader', function($join) {
+                $join->on('tableorderfnb.NoTransaksi', '=', 'tableorderheader.NoTransaksi')
+                     ->on('tableorderfnb.RecordOwnerID', '=', 'tableorderheader.RecordOwnerID');
+            })
+            ->leftJoin('titiklampu', function($join) {
+                $join->on('tableorderheader.tableid', '=', 'titiklampu.id')
+                     ->on('tableorderheader.RecordOwnerID', '=', 'titiklampu.RecordOwnerID');
+            })
+            ->where('tableorderfnb.NoTransaksi', $NoTransaksi)
+            ->where('tableorderfnb.RecordOwnerID', $RecordOwnerID)
+            ->where('tableorderfnb.isCompleted', 0)
+            ->select(
+                'tableorderfnb.*',
+                'itemmaster.NamaItem',
+                'jenisitem.NamaJenis',
+                'titiklampu.NamaTitikLampu'
+            )
+            ->get();
+
+        if ($items->isEmpty()) {
+            return "Tidak ada item yang perlu dimasak.";
+        }
+
+        // Group by NamaJenis
+        $grouped = [];
+        foreach ($items as $item) {
+            $groupName = $item->NamaJenis ?: 'Lain-lain';
+            if (!isset($grouped[$groupName])) {
+                $grouped[$groupName] = [];
+            }
+            $grouped[$groupName][] = $item;
+        }
+
+        return view('Transaksi.Penjualan.slip.KitchenInfoSlip', [
+            'NoTransaksi' => $NoTransaksi,
+            'company' => $company,
+            'groupedItems' => $grouped,
+            'TableName' => $items[0]->NamaTitikLampu ?? 'Take Away'
+        ]);
     }
 }

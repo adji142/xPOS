@@ -600,6 +600,7 @@ Route::post('/daftartableorder/reset', [TableOrderController::class, 'ResetContr
 Route::get('/fpenjualan/infokitchen', [FakturPenjualanController::class, 'InfoKitchen'])->name('infokitchen')->middleware(['auth', 'check.session']);
 Route::post('/fpenjualan/infokitchen-data', [FakturPenjualanController::class, 'InfoKitchenData'])->name('infokitchen-data')->middleware(['auth', 'check.session']);
 Route::post('/fpenjualan/infokitchen-markdone', [FakturPenjualanController::class, 'InfoKitchenMarkDone'])->name('infokitchen-markdone')->middleware(['auth', 'check.session']);
+Route::get('/fpenjualan/infokitchen-print', [FakturPenjualanController::class, 'InfoKitchenPrint'])->name('infokitchen-print')->middleware(['auth', 'check.session']);
 
 /*
 |--------------------------------------------------------------------------
