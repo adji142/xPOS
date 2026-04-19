@@ -9,4 +9,7 @@ class TableOrderHeader extends BaseModel
 {
     use HasFactory;
     protected $table = 'tableorderheader';
+    protected $primaryKey = 'NoTransaksi';
+    public $incrementing = false;
+    protected $keyType = 'string';
 }

@@ -324,7 +324,10 @@ License: You must have a valid license purchased only from themeforest(the above
 
                                                     @if ($item->KelompokLampu == $tl->KodeKelompok )
                                                         <div class="col-xl-3 col-lg-8 col-md-8">
-                                                            <div class="card card-custom gutter-b bg-white border-0 table-contentpos">
+                                                            <div class="card card-custom gutter-b {{ $item->isBlocked == 1 ? 'bg-light-danger' : 'bg-white' }} border-0 table-contentpos">
+                                                                @if ($item->isBlocked == 1)
+                                                                    <div style="position: absolute; top: 10px; right: 10px; z-index: 10;" class="badge badge-danger">BLOCKED: {{ $item->BlockedReason }}</div>
+                                                                @endif
                                                                 <div class="card-header align-items-center  border-0">
                                                                     <div class="card-title mb-0">
                                                                         <h3 class="card-label text-body font-weight-bold mb-0">{{ $item->NamaTitikLampu }}</h3>
@@ -418,7 +421,7 @@ License: You must have a valid license purchased only from themeforest(the above
                                                                         @if ($item->Status == -1)
                                                                             <div class ="row">
                                                                                 <div class="col-xl-12 col-lg-12 col-md-12 ">
-                                                                                    <button disabled class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
+                                                                                    <button {{ $item->isBlocked == 1 ? 'disabled' : '' }} disabled class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
                                                                                 </div>
                                                                             </div>
                                                                         @endif
@@ -426,7 +429,7 @@ License: You must have a valid license purchased only from themeforest(the above
                                                                         @if ($item->Status == 0)
                                                                             <div class ="row">
                                                                                 <div class="col-xl-12 col-lg-12 col-md-12 ">
-                                                                                    <button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
+                                                                                    <button {{ $item->isBlocked == 1 ? 'disabled' : '' }} class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
                                                                                 </div>
                                                                             </div>
                                                                         @endif
@@ -434,7 +437,7 @@ License: You must have a valid license purchased only from themeforest(the above
                                                                         @if ($item->Status == 1 || $item->Status == 99)
                                                                             <div class ="row">
                                                                                 <div class="col-xl-12 col-lg-12 col-md-12 ">
-                                                                                    <button disabled class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
+                                                                                    <button {{ $item->isBlocked == 1 ? 'disabled' : '' }} disabled class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btPilihPaket_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">PILIH LAYANAN</button>
                                                                                 </div>
                                                                             </div>
                                                                         @endif
@@ -443,14 +446,14 @@ License: You must have a valid license purchased only from themeforest(the above
                                                                             <br>
                                                                             <div class="row">
                                                                                 <div class="col-xl-12 col-lg-12 col-md-12">
-                                                                                    <button class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH WAKTU</button>
+                                                                                    <button {{ $item->isBlocked == 1 ? 'disabled' : '' }} class="btn btn-warning text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH WAKTU</button>
                                                                                 </div>
                                                                             </div>
                                                                         @else
                                                                             <br>
                                                                             <div class="row">
                                                                                 <div class="col-xl-12 col-lg-12 col-md-12">
-                                                                                    <button disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH WAKTU</button>
+                                                                                    <button {{ $item->isBlocked == 1 ? 'disabled' : '' }} disabled class="btn btn-success text-white font-weight-bold w-100 py-3 item-dropdown btTambahJam_{{ $item->id }}" data-namatitiklampu="{{ $item->NamaTitikLampu }}" data-notransaksi="{{ $item->NoTransaksi }}" data-jenispaket="{{ $item->JenisPaket }}">TAMBAH WAKTU</button>
                                                                                 </div>
                                                                             </div>
                                                                         @endif

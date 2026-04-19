@@ -135,7 +135,7 @@ class PoSController extends Controller
                 return redirect()->back();
                 break;
             case 'Hiburan' :
-                return redirect()->route('billing');
+                return redirect()->route('billing-new');
                 break;
             default:
                 alert()->error('Error','Jenis Usaha belum ada');

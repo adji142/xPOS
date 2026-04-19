@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\File;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EMenuOrderMail;
+
 
 use App\Models\Company;
 use App\Models\TitikLampu;
@@ -129,6 +132,10 @@ class TitikLampuController extends Controller
                                         ->first();
 
                    if ($serialNumberData) {
+                        if ($serialNumberData->isBlocked == 1) {
+                            throw new \Exception('Serial Number Blocked : ' . $serialNumberData->BlockedReason);
+                        }
+
                         $maxNode = $serialNumberData->MaximalNode;
 
                         // Count existing TitikLampu
@@ -231,6 +238,10 @@ class TitikLampuController extends Controller
                                         ->first();
 
                    if ($serialNumberData) {
+                        if ($serialNumberData->isBlocked == 1) {
+                            throw new \Exception('Serial Number Blocked : ' . $serialNumberData->BlockedReason);
+                        }
+
                         $maxNode = $serialNumberData->MaximalNode;
 
                         // Count existing TitikLampu
@@ -636,6 +647,7 @@ class TitikLampuController extends Controller
                                 'NamaPelanggan' => $request->input('NamaPelanggan'),
                                 'KodeGrupPelanggan' => '',
                                 'NoTlp1' => $request->input('NoTlp1'),
+                                'Email' => $request->input('Email'),
                                 'isPaidMembership' => 0,
                                 'MaxPlay' => 0,
                                 'MemberPrice' => 0,
@@ -735,6 +747,7 @@ class TitikLampuController extends Controller
             DB::commit();
             $data['success'] = true;
             $data['message'] = 'Order placed successfully!';
+            $data['NoTransaksi'] = $NoTransaksi;
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('EMenu storeOrder Error: ' . $e->getMessage(), [
@@ -883,6 +896,7 @@ class TitikLampuController extends Controller
                                 'NamaPelanggan' => $jsonData['NamaPelanggan'],
                                 'KodeGrupPelanggan' => '',
                                 'NoTlp1' => $jsonData['NoTlp1'],
+                                'Email' => $jsonData['Email'] ?? null,
                                 'isPaidMembership' => 0,
                                 'MaxPlay' => 0,
                                 'MemberPrice' => 0,
@@ -1125,7 +1139,7 @@ class TitikLampuController extends Controller
             DB::commit();
             $data['success'] = true;
             $data['message'] = 'Order and payment processed successfully!';
-            $data['NoTransaksi'] = "";
+            $data['NoTransaksi'] = $NoTransaksiTableOrder;
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('EMenu QRIS Error: ' . $e->getMessage());
@@ -1137,38 +1151,47 @@ class TitikLampuController extends Controller
 
     public function downloadZipQR()
     {
+        // ... (existing downloadZipQR code)
+    }
+
+    public function sendOrderEmail(Request $request)
+    {
+        $NoTransaksi = $request->input('NoTransaksi');
+        $roid = $request->input('roid');
+
+        Log::info("EMenu Frontend Email: Request received for order {$NoTransaksi}");
+
         try {
-            $titiklampu = TitikLampu::where('RecordOwnerID', Auth::user()->RecordOwnerID)->get();
-
-            if ($titiklampu->isEmpty()) {
-                alert()->error('Error', 'Tidak ada data Titik Lampu untuk di download.');
-                return redirect()->back();
-            }
-
-            $zipFileName = 'QR_Codes_' . Auth::user()->RecordOwnerID . '_' . date('YmdHis') . '.zip';
-            $zipPath = storage_path('app/' . $zipFileName);
-
-            $zip = new ZipArchive;
-            if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
-                foreach ($titiklampu as $v) {
-                    $url = url('/emenu/' . base64_encode($v->id) . '/' . base64_encode($v->RecordOwnerID));
-                    $qrCode = QrCode::size(500)->format('svg')->generate($url);
+            $orderHeader = TableOrderHeader::where('NoTransaksi', $NoTransaksi)
+                            ->where('RecordOwnerID', $roid)
+                            ->first();
+            
+            if ($orderHeader && $orderHeader->KodePelanggan != 'CASH') {
+                $pelanggan = Pelanggan::where('KodePelanggan', $orderHeader->KodePelanggan)
+                                ->where('RecordOwnerID', $roid)
+                                ->first();
+                
+                if ($pelanggan && !empty($pelanggan->Email)) {
+                    $orderItems = TableOrderFnB::where('NoTransaksi', $NoTransaksi)
+                                    ->where('RecordOwnerID', $roid)
+                                    ->get();
                     
-                    // Clean filename to avoid issues
-                    $fileName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $v->NamaTitikLampu) . '.svg';
-                    $zip->addFromString($fileName, $qrCode);
+                    $company = Company::where('KodePartner', $roid)->first();
+                    
+                    Log::info("EMenu Frontend Email: Sending to {$pelanggan->Email}");
+                    Mail::to($pelanggan->Email)->send(new EMenuOrderMail($orderHeader, $orderItems, $company));
+                    Log::info("EMenu Frontend Email: Sent successfully");
+                    
+                    return response()->json(['success' => true]);
+                } else {
+                    Log::info("EMenu Frontend Email: No email found for customer");
+                    return response()->json(['success' => false, 'message' => 'No email found']);
                 }
-                $zip->close();
-            } else {
-                throw new \Exception('Gagal membuat file ZIP.');
             }
-
-            return response()->download($zipPath)->deleteFileAfterSend(true);
-
+            return response()->json(['success' => false, 'message' => 'Order not found or CASH order']);
         } catch (\Exception $e) {
-            Log::error('Download QR ZIP Error: ' . $e->getMessage());
-            alert()->error('Error', 'Gagal mendownload QR: ' . $e->getMessage());
-            return redirect()->back();
+            Log::error("EMenu Frontend Email Error: " . $e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 }

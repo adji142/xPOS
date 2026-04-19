@@ -88,13 +88,18 @@ class MasterControllerController extends Controller
             }
 
             // Check if SN exists in serial_numbers and belongs to the partner
-            $checkOwner = DB::table('serial_numbers')
+            $serialNumberData = DB::table('serial_numbers')
                 ->where('SerialNumber', $sn)
                 ->where('KodePartner', Auth::user()->RecordOwnerID)
-                ->exists();
+                ->first();
             
-            if (!$checkOwner) {
+            if (!$serialNumberData) {
                 alert()->error('Error', 'Serial Number tidak valid atau bukan milik anda');
+                return redirect()->back();
+            }
+
+            if ($serialNumberData->isBlocked == 1) {
+                alert()->error('Error', 'Serial Number Blocked : ' . $serialNumberData->BlockedReason);
                 return redirect()->back();
             }
 
@@ -148,13 +153,18 @@ class MasterControllerController extends Controller
             }
 
             // Check if SN exists in serial_numbers and belongs to the partner
-            $checkOwner = DB::table('serial_numbers')
+            $serialNumberData = DB::table('serial_numbers')
                 ->where('SerialNumber', $sn)
                 ->where('KodePartner', Auth::user()->RecordOwnerID)
-                ->exists();
+                ->first();
             
-            if (!$checkOwner) {
+            if (!$serialNumberData) {
                 alert()->error('Error', 'Serial Number tidak valid atau bukan milik anda');
+                return redirect()->back();
+            }
+
+            if ($serialNumberData->isBlocked == 1) {
+                alert()->error('Error', 'Serial Number Blocked : ' . $serialNumberData->BlockedReason);
                 return redirect()->back();
             }
 

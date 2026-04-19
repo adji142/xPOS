@@ -1,0 +1,64 @@
+SET FOREIGN_KEY_CHECKS=0;
+
+ALTER TABLE `company` ADD COLUMN `ShowMetodePembayaran` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '00' AFTER `JenisLangganan`;
+
+ALTER TABLE `company` ADD COLUMN `MaximalUser` int(255) NULL DEFAULT 1 AFTER `ShowMetodePembayaran`;
+
+ALTER TABLE `serial_numbers` ADD COLUMN `isBlocked` int(1) NULL DEFAULT 0 AFTER `MaximalNode`;
+
+ALTER TABLE `serial_numbers` ADD COLUMN `BlockedReason` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL AFTER `isBlocked`;
+
+ALTER TABLE `tableorderfnb` ADD COLUMN `isCompleted` int(1) NULL DEFAULT 0 AFTER `LineTotal`;
+
+DROP TRIGGER `trg_updateStatusLampu`;
+
+DROP TRIGGER `trg_updateStatusLampu_co`;
+
+ALTER TABLE `tableorderheader` ADD COLUMN `TotalTax` double NULL DEFAULT 0 AFTER `updated_at`;
+
+ALTER TABLE `tableorderheader` ADD COLUMN `TotalPajakHiburan` double NULL DEFAULT 0 AFTER `TotalTax`;
+
+ALTER TABLE `tableorderheader` ADD COLUMN `Gross` double NULL DEFAULT 0 AFTER `TotalPajakHiburan`;
+
+ALTER TABLE `tableorderheader` ADD COLUMN `TotalDiskon` double NULL DEFAULT 0 AFTER `Gross`;
+
+ALTER TABLE `tableorderheader` ADD COLUMN `TotalMakanan` double NULL DEFAULT 0 AFTER `TotalDiskon`;
+
+ALTER TABLE `tableorderheader` ADD COLUMN `BiayaLayanan` double NULL DEFAULT 0 AFTER `TotalMakanan`;
+
+ALTER TABLE `tableorderheader` ADD COLUMN `KodeVoucer` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL AFTER `BiayaLayanan`;
+
+ALTER TABLE `tableorderheader` ADD COLUMN `TotalTerbayar` double NULL DEFAULT 0 AFTER `KodeVoucer`;
+
+ALTER TABLE `tableorderheader` ADD COLUMN `MetodePembayaran` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL AFTER `TotalTerbayar`;
+
+CREATE TRIGGER `trg_updateStatusLampu` AFTER INSERT ON `tableorderheader` FOR EACH ROW BEGIN
+    -- Jika order yang dimasukkan adalah pesanan / booking aktif (Status != 0)
+    -- ATAU jika itu adalah checkout (Status = 0 / -1) pastikan tidak ada order lain yang sedang berjalan 'O'
+    IF NEW.Status != 0 THEN
+	    UPDATE titiklampu set `Status` = NEW.`Status` WHERE id = NEW.tableid and RecordOwnerID = NEW.RecordOwnerID;
+    ELSE
+        -- Jika order baru ini statusnya 0 (Booking yang belum mulai misal dari +Layanan)
+        -- Kita hanya set titiklampu jadi 0 jika memang meja sedang kosong (tidak ada order 'O' atau '-1')
+        IF (SELECT COUNT(*) FROM tableorderheader WHERE tableid = NEW.tableid AND RecordOwnerID = NEW.RecordOwnerID AND (DocumentStatus = 'O' OR Status = -1) AND NoTransaksi != NEW.NoTransaksi) = 0 THEN
+            UPDATE titiklampu set `Status` = NEW.`Status` WHERE id = NEW.tableid and RecordOwnerID = NEW.RecordOwnerID;
+        END IF;
+    END IF;
+END;
+
+CREATE TRIGGER `trg_updateStatusLampu_co` AFTER UPDATE ON `tableorderheader` FOR EACH ROW BEGIN
+    IF NEW.Status != 0 THEN
+	    UPDATE titiklampu set `Status` = NEW.`Status` WHERE id = NEW.tableid and RecordOwnerID = NEW.RecordOwnerID;
+    ELSE
+        -- Sama seperti di atas, jika order di-update menjadi 0 atau checkout, kita pastikan tidak ada antrian order lain yang sedang 'O'
+        IF (SELECT COUNT(*) FROM tableorderheader WHERE tableid = NEW.tableid AND RecordOwnerID = NEW.RecordOwnerID AND (DocumentStatus = 'O' OR Status = -1) AND NoTransaksi != NEW.NoTransaksi) = 0 THEN
+            UPDATE titiklampu set `Status` = NEW.`Status` WHERE id = NEW.tableid and RecordOwnerID = NEW.RecordOwnerID;
+        END IF;
+    END IF;
+END;
+
+DROP TABLE `mastercontroller_backup`;
+
+DROP TABLE `userbackup`;
+
+SET FOREIGN_KEY_CHECKS=1;

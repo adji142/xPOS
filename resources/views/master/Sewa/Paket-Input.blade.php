@@ -131,9 +131,9 @@
 	                            		</div>
 
                                         <div class="col-md-3">
-	                            			<label  class="text-body">Durasi Paket</label>
+	                            			<label  class="text-body">Minimal Durasi Paket</label>
 	                            			<fieldset class="form-group mb-3">
-	                            				<input type="number" class="form-control" id="DurasiPaket" name="DurasiPaket" value="{{ count($paket) > 0 ? $paket[0]['DurasiPaket'] : '1' }}" readonly>
+	                            				<input type="number" class="form-control" id="DurasiPaket" name="DurasiPaket" value="{{ count($paket) > 0 ? $paket[0]['DurasiPaket'] : '1' }}">
                                                 <p><small class="text-muted" id="SatuanDurasi">Menit.</small></p>
 	                            			</fieldset>
 	                            		</div>
@@ -203,7 +203,7 @@
             var JenisPaket = jQuery('#JenisPaket').val();
             if (JenisPaket == "PAKET") {
                 jQuery('#SatuanDurasi').text('JAM');
-                jQuery('#DurasiPaket').attr('readonly',false);
+                // jQuery('#DurasiPaket').attr('readonly',false);
 
                 jQuery('#divHargaBaru').hide();
                 jQuery('#divJamHargaBaru').hide();
@@ -213,23 +213,23 @@
             }
 			else if(JenisPaket == "DAILY"){
 				jQuery('#SatuanDurasi').text('HARI');
-                jQuery('#DurasiPaket').attr('readonly',false);
+                // jQuery('#DurasiPaket').attr('readonly',false);
 
 				jQuery('#divPaketDaily').show();
 			}
 			else if(JenisPaket == "MONTHLY"){
 				jQuery('#SatuanDurasi').text('BULAN');
-                jQuery('#DurasiPaket').attr('readonly',false);
+                // jQuery('#DurasiPaket').attr('readonly',false);
 				jQuery('#divPaketDaily').hide();
 			}
 			else if(JenisPaket == "YEARLY"){
 				jQuery('#SatuanDurasi').text('TAHUN');
-                jQuery('#DurasiPaket').attr('readonly',false);
+                // jQuery('#DurasiPaket').attr('readonly',false);
 				jQuery('#divPaketDaily').hide();
 			}
             else{
                 jQuery('#SatuanDurasi').text(JenisPaket);
-                jQuery('#DurasiPaket').attr('readonly',true);
+                // jQuery('#DurasiPaket').attr('readonly',true);
 
                 jQuery('#divHargaBaru').show();
                 jQuery('#divJamHargaBaru').show();

@@ -106,6 +106,7 @@ Route::get('/emenu/{id}/{roid}', [TitikLampuController::class, 'emenu'])->name('
 Route::post('/emenu/store', [TitikLampuController::class, 'storeOrder'])->name('emenu.store');
 Route::post('/emenu/create-payment', [TitikLampuController::class, 'createPaymentEMenu'])->name('emenu.create-payment');
 Route::post('/emenu/store-qris', [TitikLampuController::class, 'storeOrderEMenuQRIS'])->name('emenu.store-qris');
+Route::post('/emenu/send-email', [TitikLampuController::class, 'sendOrderEmail'])->name('emenu.send-email');
 Route::get('titiklampu/generate-qrcode', [TitikLampuController::class, 'generateQRCode'])->name('titiklampu-generate-qrcode');
 Route::get('titiklampu/download-pdf-qrcode', [TitikLampuController::class, 'downloadPDFQRCode'])->name('titiklampu-download-pdf-qrcode')->middleware(['auth', 'check.session']);
 Route::get('titiklampu/download-qr-zip', [TitikLampuController::class, 'downloadZipQR'])->name('titiklampu-download-qr-zip')->middleware(['auth', 'check.session']);
@@ -139,6 +140,8 @@ Route::post('/serialnumber/store', [SerialNumberController::class, 'store'])->na
 Route::post('/serialnumber/edit', [SerialNumberController::class, 'edit'])->name('serialnumber-edit')->middleware(['auth', 'check.session']);
 Route::delete('/serialnumber/delete/{id}', [SerialNumberController::class, 'deletedata'])->name('serialnumber-delete')->middleware(['auth', 'check.session']);
 Route::post('/serialnumber/generate', [SerialNumberController::class, 'generateJson'])->name('serialnumber-generate')->middleware(['auth', 'check.session']);
+Route::post('/serialnumber/block', [SerialNumberController::class, 'block'])->name('serialnumber-block')->middleware(['auth', 'check.session']);
+Route::post('/serialnumber/unblock', [SerialNumberController::class, 'unblock'])->name('serialnumber-unblock')->middleware(['auth', 'check.session']);
 
 /*
 |--------------------------------------------------------------------------
@@ -582,11 +585,22 @@ Route::get('/fpenjualan/printthermal/{id}', [FakturPenjualanController::class, '
 Route::post('/fpenjualan/retailPosFnb', [FakturPenjualanController::class, 'storePoSFnB'])->name('fpenjualan-retailPosFnB')->middleware(['auth', 'check.session']);
 Route::post('/fpenjualan/editJsonPosFnb', [FakturPenjualanController::class, 'editJsonPoSFnB'])->name('fpenjualan-editJsonPosFnB')->middleware(['auth', 'check.session']);
 Route::get('/fpenjualan/custdisplay', [CustDisplayController::class, 'View'])->name('fpenjualan-custdisplay')->middleware(['auth', 'check.session']);
+Route::get('/fpenjualan/custdisplay_new', [CustDisplayController::class, 'ViewNew'])->name('fpenjualan-custdisplay-new')->middleware(['auth', 'check.session']);
 Route::post('/fpenjualan/hiburanPoS', [FakturPenjualanController::class, 'storePoSHiburan'])->name('fpenjualan-hiburanPoS')->middleware(['auth', 'check.session']);
 Route::post('/fpenjualan/void', [FakturPenjualanController::class, 'void'])->name('fpenjualan-void')->middleware(['auth', 'check.session']);
 Route::post('/fpenjualan/getTimeSlots', [TableOrderController::class, 'getAvailableTimeSlots'])->name('fpenjualan-getTimeSlots')->middleware(['auth', 'check.session']);
+Route::post('/billing/store-fnb', [TableOrderController::class, 'storeFnBOrder'])->name('billing-store-fnb')->middleware(['auth', 'check.session']);
+Route::post('/billing/store-tambah-durasi', [TableOrderController::class, 'storeTambahDurasi'])->name('billing-store-tambah-durasi')->middleware(['auth', 'check.session']);
+Route::post('/billing/get-faktur-detail', [TableOrderController::class, 'getFakturDetail'])->name('billing-get-faktur-detail')->middleware(['auth', 'check.session']);
+Route::post('/billing/send-receipt-email', [TableOrderController::class, 'sendReceiptEmail'])->name('billing-send-receipt-email')->middleware(['auth', 'check.session']);
+
+
 Route::get('/daftartableorder', [TableOrderController::class, 'DaftarTableOrder'])->name('daftartableorder')->middleware(['auth', 'check.session']);
 Route::post('/daftartableorder/reset', [TableOrderController::class, 'ResetController'])->name('daftartableorder-reset')->middleware(['auth', 'check.session']);
+Route::get('/fpenjualan/infokitchen', [FakturPenjualanController::class, 'InfoKitchen'])->name('infokitchen')->middleware(['auth', 'check.session']);
+Route::post('/fpenjualan/infokitchen-data', [FakturPenjualanController::class, 'InfoKitchenData'])->name('infokitchen-data')->middleware(['auth', 'check.session']);
+Route::post('/fpenjualan/infokitchen-markdone', [FakturPenjualanController::class, 'InfoKitchenMarkDone'])->name('infokitchen-markdone')->middleware(['auth', 'check.session']);
+Route::get('/fpenjualan/infokitchen-print', [FakturPenjualanController::class, 'InfoKitchenPrint'])->name('infokitchen-print')->middleware(['auth', 'check.session']);
 
 /*
 |--------------------------------------------------------------------------
@@ -797,6 +811,22 @@ Route::post('/penggunaaplikasi/suspend', [CompanyController::class, 'UpdateSuspe
 Route::post('/penggunaaplikasi/rubahlangganan', [CompanyController::class, 'UpdatePaket'])->name('penggunaaplikasi-rubahlangganan')->middleware(['auth', 'check.session']);
 Route::get('/penggunaaplikasi/export', [CompanyController::class,'Export'])->name('penggunaaplikasi-export')->middleware(['auth', 'check.session']);
 Route::post('/penggunaaplikasi/remove', [CompanyController::class,'DeletePengguna'])->name('penggunaaplikasi-remove')->middleware(['auth', 'check.session']);
+
+Route::get('/laporanpengguna', [CompanyController::class,'LaporanPengguna'])->name('laporanpengguna')->middleware(['auth', 'check.session']);
+Route::get('/laporanpengguna/export/excel', [CompanyController::class,'ExportLaporanPenggunaExcel'])->name('laporanpengguna-export-excel')->middleware(['auth', 'check.session']);
+Route::get('/laporanpengguna/export/pdf', [CompanyController::class,'ExportLaporanPenggunaPDF'])->name('laporanpengguna-export-pdf')->middleware(['auth', 'check.session']);
+
+Route::get('/laporanpenjualanpaket', [InvoicePenggunaController::class,'LaporanPenjualanPaket'])->name('laporanpenjualanpaket')->middleware(['auth', 'check.session']);
+Route::post('/laporanpenjualanpaket/viewheader', [InvoicePenggunaController::class,'GetPenjualanPaket'])->name('laporanpenjualanpaket-viewheader')->middleware(['auth', 'check.session']);
+Route::get('/laporanpenjualanpaket/export/excel/{TglAwal}/{TglAkhir}', [InvoicePenggunaController::class,'ExportPenjualanPaketExcel'])->name('laporanpenjualanpaket-export-excel')->middleware(['auth', 'check.session']);
+Route::get('/laporanpenjualanpaket/export/pdf/{TglAwal}/{TglAkhir}', [InvoicePenggunaController::class,'ExportPenjualanPaketPDF'])->name('laporanpenjualanpaket-export-pdf')->middleware(['auth', 'check.session']);
+
+Route::post('/penggunaaplikasi/getblastlist', [CompanyController::class,'GetBlastList'])->name('penggunaaplikasi-getblastlist')->middleware(['auth', 'check.session']);
+Route::post('/penggunaaplikasi/sendsingleblast', [CompanyController::class,'SendSingleBlast'])->name('penggunaaplikasi-sendsingleblast')->middleware(['auth', 'check.session']);
+
+
+
+
 /*
 |--------------------------------------------------------------------------
 | Invoice Pengguna - Admin
@@ -1011,15 +1041,28 @@ Route::delete('/paket/delete/{id}', [PaketController::class, 'deletedata'])->nam
 |
 */
 Route::get('/billing', [TableOrderController::class,'View'])->name('billing')->middleware(['auth', 'check.session']);
+Route::get('/billing-new', [TableOrderController::class,'ViewNew'])->name('billing-new')->middleware(['auth', 'check.session']);
 Route::post('/billing/store', [TableOrderController::class, 'store'])->name('billing-store')->middleware(['auth', 'check.session']);
 Route::post('/billing/editdurasi', [TableOrderController::class, 'EditPaket'])->name('billing-editdurasi')->middleware(['auth', 'check.session']);
 Route::post('/billing/checkout', [TableOrderController::class, 'CheckOut'])->name('billing-checkout')->middleware(['auth', 'check.session']);
+Route::post('/billing/process-checkout', [TableOrderController::class, 'processCheckOut'])->name('billing-process-checkout')->middleware(['auth', 'check.session']);
+Route::post('/billing/get-order-detail', [TableOrderController::class, 'getOrderDetail'])->name('billing-get-order-detail')->middleware(['auth', 'check.session']);
+Route::post('/billing/pay-order-detail', [TableOrderController::class, 'payOrderDetail'])->name('billing-pay-order-detail')->middleware(['auth', 'check.session']);
 Route::post('/billing/addfnb', [TableOrderController::class, 'AddFnB'])->name('billing-addfnb')->middleware(['auth', 'check.session']);
 Route::post('/billing/readfnb', [TableOrderController::class, 'ReadTableOrderFnB'])->name('billing-readfnb')->middleware(['auth', 'check.session']);
 Route::post('/billing/warning', [TableOrderController::class, 'NotifHampirHabis'])->name('billing-warning')->middleware(['auth', 'check.session']);
 Route::post('/billing/repopulate', [TableOrderController::class, 'ReadTitikLampu'])->name('billing-repopulate')->middleware(['auth', 'check.session']);
 Route::get('/billing/self-service', [TableOrderController::class,'ViewSelfService'])->name('billing-self-service')->middleware(['auth', 'check.session']);
 Route::post('/billing/maxtime', [TableOrderController::class, 'GetMaximalPaketMenit'])->name('billing-maxtime')->middleware(['auth', 'check.session']);
+Route::post('/billing/getAvailableSlots', [TableOrderController::class, 'getAvailableSlots'])->name('billing-getAvailableSlots')->middleware(['auth', 'check.session']);
+Route::post('/billing/checkVoucher', [TableOrderController::class, 'checkVoucher'])->name('billing-checkvoucher')->middleware(['auth', 'check.session']);
+Route::post('/billing/store-paket', [TableOrderController::class, 'storePaket'])->name('billing-store-paket')->middleware(['auth', 'check.session']);
+Route::post('/billing/midtrans-success', [TableOrderController::class, 'handleMidtransSuccess'])->name('billing-midtrans-success')->middleware(['auth', 'check.session']);
+Route::post('/billing/midtrans-cancel', [TableOrderController::class, 'handleMidtransCancel'])->name('billing-midtrans-cancel')->middleware(['auth', 'check.session']);
+Route::post('/billing/store-fnb-order', [TableOrderController::class, 'storeFnBOrder'])->name('billing-store-fnb-order')->middleware(['auth', 'check.session']);
+Route::post('/billing/store-tambah-durasi', [TableOrderController::class, 'storeTambahDurasi'])->name('billing-store-tambah-durasi')->middleware(['auth', 'check.session']);
+Route::get('/billing/get-table-statuses', [TableOrderController::class, 'getTableStatuses'])->name('billing-get-table-statuses')->middleware(['auth', 'check.session']);
+Route::post('/billing/jual-fnb-standalone', [TableOrderController::class, 'jualFnBStandalone'])->name('billing-jual-fnb-standalone')->middleware(['auth', 'check.session']);
 // GetMaximalPaketMenit
 /*
 |--------------------------------------------------------------------------

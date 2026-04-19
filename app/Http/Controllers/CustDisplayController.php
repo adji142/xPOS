@@ -93,4 +93,43 @@ class CustDisplayController extends Controller
             'oImageData' => $oImageData
         ]);
     }
+
+    public function ViewNew(Request $request)
+    {
+        $midtransdata = MetodePembayaran::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                            ->where('MetodeVerifikasi','=','AUTO')->first();
+        $midtransclientkey = "";
+        $MetodePembayaranAutoID = -1;
+        if ($midtransdata) {
+            $midtransclientkey = $midtransdata->ClientKey;
+            $MetodePembayaranAutoID = $midtransdata->id;
+        }
+        $company = Company::Where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
+
+        $oImageData = [];
+
+        for ($i=1; $i <= 5; $i++) { 
+            $imgField = "ImageCustDisplay".$i;
+            if (!empty($company->$imgField)) {
+                $image = array('type' => 'image', 'url' => $company->$imgField);
+                array_push($oImageData, $image);
+            }
+        }
+
+        for ($i=1; $i <= 5; $i++) { 
+            $vidField = "VideoCustomerDisplay".$i;
+            if (!empty($company->$vidField)) {
+                $url = "https://www.youtube.com/embed/".$company->$vidField."?autoplay=0&mute=1&enablejsapi=1";
+                $image = array('type' => 'video', 'url' => $url, 'id' => $company->$vidField);
+                array_push($oImageData, $image);
+            }
+        }
+
+        return view("Transaksi.Penjualan.PoS.CustDisplay_new",[
+            'company' => $company,
+            'midtransclientkey' => $midtransclientkey,
+            'MetodePembayaranAutoID' => $MetodePembayaranAutoID,
+            'oImageData' => $oImageData
+        ]);
+    }
 }

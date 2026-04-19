@@ -38,6 +38,8 @@ use App\Models\MenuRestoAddon;
 use App\Models\JournalHeader;
 use App\Models\JournalDetail;
 use App\Models\TableOrderFnB;
+use App\Models\JenisItem;
+use App\Models\Meja;
 
 class FakturPenjualanController extends Controller
 {
@@ -1501,24 +1503,35 @@ class FakturPenjualanController extends Controller
 					goto jump;
 				}
 
+				// $update = DB::table('tableorderheader')
+				// 			->where('NoTransaksi','=', $baseReff)
+				// 			->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+				// 			->whereNotIn('JenisPaket', ['JAM', 'MENIT','MENITREALTIME','DAILY', 'MONTHLY', 'YEARLY'])
+				// 			->update(
+				// 				[
+				// 					'Status'=>1,
+				// 				]
+				// 			);
+
 				$update = DB::table('tableorderheader')
 							->where('NoTransaksi','=', $baseReff)
 							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-							->whereNotIn('JenisPaket', ['JAM', 'MENIT','MENITREALTIME','DAILY', 'MONTHLY', 'YEARLY'])
+							// ->whereNotIn('JenisPaket', ['JAM', 'MENIT','MENITREALTIME','DAILY', 'MONTHLY', 'YEARLY'])
+							// ->where(DB::Raw("COALESCE(JamSelesai, NOW())"),'<', DB::raw("NOW()"))
 							->update(
 								[
-									'Status'=>1,
+									'Status'=>DB::raw("CASE WHEN COALESCE(JamSelesai, NOW()) < NOW() THEN 0 ELSE 1 END "),
 								]
 							);
 
-				DB::table('tableorderfnb')
-							->where('NoTransaksi','=', $baseReff)
-							->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-							->update(
-								[
-									'LineStatus'=>'C',
-								]
-							);
+				// DB::table('tableorderfnb')
+				// 			->where('NoTransaksi','=', $baseReff)
+				// 			->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+				// 			->update(
+				// 				[
+				// 					'LineStatus'=>'C',
+				// 				]
+				// 			);
 			}
 
 			if ($oCompany->isPostingAkutansi == 1) {
@@ -4674,4 +4687,165 @@ class FakturPenjualanController extends Controller
 		return response()->json($data);
 	}
 
+    public function InfoKitchen()
+    {
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+        $jenisItems = DB::table('jenisitem')
+            ->where('RecordOwnerID', $RecordOwnerID)
+            ->get();
+        
+        $tables = DB::table('tableorderfnb')
+            ->join('tableorderheader', function($join) {
+                $join->on('tableorderfnb.NoTransaksi', '=', 'tableorderheader.NoTransaksi')
+                     ->on('tableorderfnb.RecordOwnerID', '=', 'tableorderheader.RecordOwnerID');
+            })
+            ->join('titiklampu', function($join) {
+                $join->on('tableorderheader.tableid', '=', 'titiklampu.id')
+                     ->on('tableorderheader.RecordOwnerID', '=', 'titiklampu.RecordOwnerID');
+            })
+            ->whereDate('tableorderheader.TglTransaksi', date('Y-m-d'))
+            ->where('tableorderfnb.isCompleted', 0)
+            ->where('tableorderfnb.RecordOwnerID', $RecordOwnerID)
+            ->select('titiklampu.id', 'titiklampu.NamaTitikLampu')
+            ->distinct()
+            ->get();
+        
+        $company = DB::table('company')
+            ->where('KodePartner', $RecordOwnerID)
+            ->first();
+
+        return view('Transaksi.Penjualan.InfoKitchen', compact('jenisItems', 'tables', 'company'));
+    }
+
+    public function InfoKitchenData(Request $request)
+    {
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+        $KodeJenisItem = $request->input('KodeJenisItem');
+        $tableid = $request->input('tableid');
+        $searchTerm = $request->input('searchTerm');
+        $tgl = $request->input('tgl', date('Y-m-d'));
+
+        $query = DB::table('tableorderfnb')
+            ->join('itemmaster', function($join) {
+                $join->on('tableorderfnb.KodeItem', '=', 'itemmaster.KodeItem')
+                     ->on('tableorderfnb.RecordOwnerID', '=', 'itemmaster.RecordOwnerID');
+            })
+            ->leftJoin('tableorderheader', function($join) {
+                $join->on('tableorderfnb.NoTransaksi', '=', 'tableorderheader.NoTransaksi')
+                     ->on('tableorderfnb.RecordOwnerID', '=', 'tableorderheader.RecordOwnerID');
+            })
+            ->leftJoin('titiklampu', function($join) {
+                $join->on('tableorderheader.tableid', '=', 'titiklampu.id')
+                     ->on('tableorderheader.RecordOwnerID', '=', 'titiklampu.RecordOwnerID');
+            })
+            ->select(
+                'tableorderfnb.*',
+                'itemmaster.NamaItem',
+                'titiklampu.NamaTitikLampu',
+                'tableorderheader.TglTransaksi'
+            )
+            ->where('tableorderfnb.isCompleted', 0)
+            ->where('itemmaster.TypeItem', '<>', 4)
+            ->where('tableorderfnb.RecordOwnerID', $RecordOwnerID);
+
+        if (!empty($tgl)) {
+            $query->whereDate('tableorderheader.TglTransaksi', $tgl);
+        }
+
+        if (!empty($KodeJenisItem)) {
+            $query->where('itemmaster.KodeJenisItem', $KodeJenisItem);
+        }
+
+        if (!empty($tableid)) {
+            $query->where('tableorderheader.tableid', $tableid);
+        }
+
+        if (!empty($searchTerm)) {
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('tableorderfnb.NoTransaksi', 'like', "%{$searchTerm}%")
+                  ->orWhere('itemmaster.NamaItem', 'like', "%{$searchTerm}%")
+                  ->orWhere('tableorderfnb.KodeItem', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        $items = $query->orderBy('tableorderfnb.created_at', 'desc')->get();
+
+        return response()->json($items);
+    }
+
+    public function InfoKitchenMarkDone(Request $request)
+    {
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+        $NoTransaksi = $request->input('NoTransaksi');
+        $LineNumber = $request->input('LineNumber');
+
+        try {
+            DB::table('tableorderfnb')
+                ->where('NoTransaksi', $NoTransaksi)
+                ->where('LineNumber', $LineNumber)
+                ->where('RecordOwnerID', $RecordOwnerID)
+                ->update(['isCompleted' => 1]);
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function InfoKitchenPrint(Request $request)
+    {
+        $RecordOwnerID = Auth::user()->RecordOwnerID;
+        $NoTransaksi = $request->input('NoTransaksi');
+
+        $company = DB::table('company')->where('KodePartner', $RecordOwnerID)->first();
+        
+        $items = DB::table('tableorderfnb')
+            ->join('itemmaster', function($join) {
+                $join->on('tableorderfnb.KodeItem', '=', 'itemmaster.KodeItem')
+                     ->on('tableorderfnb.RecordOwnerID', '=', 'itemmaster.RecordOwnerID');
+            })
+            ->leftJoin('jenisitem', function($join) {
+                $join->on('itemmaster.KodeJenisItem', '=', 'jenisitem.KodeJenis')
+                     ->on('itemmaster.RecordOwnerID', '=', 'jenisitem.RecordOwnerID');
+            })
+            ->leftJoin('tableorderheader', function($join) {
+                $join->on('tableorderfnb.NoTransaksi', '=', 'tableorderheader.NoTransaksi')
+                     ->on('tableorderfnb.RecordOwnerID', '=', 'tableorderheader.RecordOwnerID');
+            })
+            ->leftJoin('titiklampu', function($join) {
+                $join->on('tableorderheader.tableid', '=', 'titiklampu.id')
+                     ->on('tableorderheader.RecordOwnerID', '=', 'titiklampu.RecordOwnerID');
+            })
+            ->where('tableorderfnb.NoTransaksi', $NoTransaksi)
+            ->where('tableorderfnb.RecordOwnerID', $RecordOwnerID)
+            ->where('tableorderfnb.isCompleted', 0)
+            ->select(
+                'tableorderfnb.*',
+                'itemmaster.NamaItem',
+                'jenisitem.NamaJenis',
+                'titiklampu.NamaTitikLampu'
+            )
+            ->get();
+
+        if ($items->isEmpty()) {
+            return "Tidak ada item yang perlu dimasak.";
+        }
+
+        // Group by NamaJenis
+        $grouped = [];
+        foreach ($items as $item) {
+            $groupName = $item->NamaJenis ?: 'Lain-lain';
+            if (!isset($grouped[$groupName])) {
+                $grouped[$groupName] = [];
+            }
+            $grouped[$groupName][] = $item;
+        }
+
+        return view('Transaksi.Penjualan.slip.KitchenInfoSlip', [
+            'NoTransaksi' => $NoTransaksi,
+            'company' => $company,
+            'groupedItems' => $grouped,
+            'TableName' => $items[0]->NamaTitikLampu ?? 'Take Away'
+        ]);
+    }
 }

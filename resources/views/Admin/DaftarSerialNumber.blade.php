@@ -63,7 +63,7 @@
 													<td>{{ $v->Keterangan }}</td>
 													<td>{{ $v->MaximalNode }}</td>
 													<td>
-														<span class="badge {{ $v->Status == 'CLAIMED' ? 'bg-success' : 'bg-secondary' }}">
+														<span class="badge {{ $v->Status == 'CLAIMED' ? 'bg-success' : ($v->Status == 'BLOCKED' ? 'bg-danger' : 'bg-secondary') }}">
 															{{ $v->Status }}
 														</span>
 													</td>
@@ -83,6 +83,11 @@
                                                                     @method('DELETE')
                                                                     <button type="submit" class="dropdown-item" onclick="return confirm('Apakah anda yakin ingin menghapus data ini?')">Delete</button>
                                                                 </form>
+                                                                @if ($v->Status == 'BLOCKED')
+                                                                    <button class="dropdown-item" onclick="unblockSN('{{ $v->SerialNumber }}')">Unblock</button>
+                                                                @else
+                                                                    <button class="dropdown-item text-danger" onclick="openBlockModal('{{ $v->SerialNumber }}')">Block</button>
+                                                                @endif
 															</div>
 														</div>
 													</td>
@@ -100,9 +105,34 @@
 		</div>
 	</div>
 </div>
+
+<!-- Block Modal -->
+<div class="modal fade" id="blockModal" tabindex="-1" aria-labelledby="blockModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="blockModalLabel">Blokir Serial Number</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="blockSN">
+        <div class="mb-3">
+          <label for="blockReason" class="form-label">Alasan Blokir</label>
+          <textarea class="form-control" id="blockReason" rows="3" placeholder="Masukkan alasan pemblokiran..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-danger" onclick="submitBlock()">Simpan Blokir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="text/javascript">
 	jQuery(document).ready(function() {
 		jQuery('#orderTable').DataTable({
@@ -113,5 +143,79 @@
             }]
 		});
 	});
+
+    function openBlockModal(sn) {
+        $('#blockSN').val(sn);
+        $('#blockReason').val('');
+        new bootstrap.Modal(document.getElementById('blockModal')).show();
+    }
+
+    function submitBlock() {
+        const sn = $('#blockSN').val();
+        const reason = $('#blockReason').val();
+
+        if (!reason) {
+            Swal.fire('Error', 'Alasan blokir harus diisi!', 'error');
+            return;
+        }
+
+        $.ajax({
+            url: "{{ route('serialnumber-block') }}",
+            method: "POST",
+            data: {
+                _token: "{{ csrf_token() }}",
+                SerialNumber: sn,
+                BlockedReason: reason
+            },
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire('Success', response.message, 'success').then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            },
+            error: function(err) {
+                Swal.fire('Error', 'Terjadi kesalahan sistem.', 'error');
+            }
+        });
+    }
+
+    function unblockSN(sn) {
+        Swal.fire({
+            title: 'Konfirmasi Unblock',
+            text: "Apakah Anda yakin ingin membuka blokir Serial Number " + sn + "?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Unblock!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "{{ route('serialnumber-unblock') }}",
+                    method: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        SerialNumber: sn
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire('Success', response.message, 'success').then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function(err) {
+                        Swal.fire('Error', 'Terjadi kesalahan sistem.', 'error');
+                    }
+                });
+            }
+        });
+    }
 </script>
 @endpush
