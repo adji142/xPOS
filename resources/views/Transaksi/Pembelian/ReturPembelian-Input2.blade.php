@@ -307,11 +307,11 @@
 	            headers: {
 	                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include the CSRF token in the headers
 	            },
-	            data: {
+				data:{
 	                'TglAwal' : '1999-01-01',
 	                'TglAkhir' : GetDate,
 	                'KodeVendor' :jQuery('#KodeSupplier').val(),
-	                'Status' : ''
+	                'Status' : 'O'
 	            },
 	            dataType: 'json',
 	            success: function(response) {

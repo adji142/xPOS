@@ -1,0 +1,91 @@
+fakturpenjualanheader
+Periode	varchar	255
+Transaksi	varchar	255
+NoTransaksi	varchar	255
+TglTransaksi	datetime	0
+TglJatuhTempo	date	0
+NoReff	varchar	255
+KodePelanggan	varchar	255
+KodeTermin	varchar	255
+Termin	varchar	255
+TotalTransaksi	double	0
+Potongan	double	0
+Pajak	double	0
+TotalPembelian	double	0
+TotalRetur	double	0
+TotalPembayaran	double	0
+Pembulatan	double	16
+Status	varchar	255
+Keterangan	longtext	0
+Posted	int	11
+MetodeBayar	varchar	255
+ReffPembayaran	varchar	255
+KodeSales	varchar	255
+CreatedBy	varchar	255
+UpdatedBy	varchar	255
+TipeOrder	int	6
+NomorMeja	varchar	55
+PajakHiburan	double	16
+BiayaLayanan	decimal	18
+SyaratDanKetentuan	longtext	0
+RecordOwnerID	varchar	255
+created_at	timestamp	0
+updated_at	timestamp	0
+
+
+fakturpenjualandetail
+NoTransaksi	varchar	255
+BaseReff	varchar	255
+NoUrut	int	11
+BaseLine	int	11
+KodeItem	varchar	255
+Qty	double	0
+QtyKonversi	double	16
+QtyRetur	double	16
+Satuan	varchar	255
+Harga	double	0
+Discount	double	0
+HargaNet	double	0
+LineStatus	varchar	255
+KodeGudang	varchar	255
+Keterangan	varchar	255
+VatPercent	double	16
+HargaPokokPenjualan	double	16
+RecordOwnerID	varchar	255
+Pajak	double	16
+PajakHiburan	double	16
+VatTotal	double	16
+created_at	timestamp	0
+updated_at	timestamp	0
+
+
+pembayaranpenjualanheader
+Periode	varchar	255
+NoTransaksi	varchar	255
+TglTransaksi	date	0
+KodePelanggan	varchar	255
+TotalPembelian	double	0
+TotalPembayaran	double	0
+BiayaLayanan	decimal	18
+KodeMetodePembayaran	varchar	255
+NoReff	varchar	255
+Keterangan	varchar	255
+CreatedBy	varchar	255
+UpdatedBy	varchar	255
+Posted	int	11
+Status	varchar	255
+RecordOwnerID	varchar	255
+created_at	timestamp	0
+updated_at	timestamp	0
+
+
+pembayaranpenjualandetail
+NoTransaksi	varchar	255
+NoUrut	int	11
+BaseReff	varchar	255
+TotalPembayaran	double	0
+KodeMetodePembayaran	varchar	255
+Keterangan	varchar	255
+RecordOwnerID	varchar	255
+created_at	timestamp	0
+updated_at	timestamp	0

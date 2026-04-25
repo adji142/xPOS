@@ -157,7 +157,7 @@ class KasMasukController extends Controller
                     $detail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
                     $detail->save();
-    
+
                     if (!$detail) {
                         $errorMessage = "Menyimpan Kas Masuk Detail Row Number " . ($index +1) . " Gagal dilakukan";
                         $errorCount +=1;
@@ -166,6 +166,25 @@ class KasMasukController extends Controller
                     $index +=1;
                     skip:
                 }
+
+                // Auto Journal
+                $journal = new \App\Services\AccountingService();
+                $journal->initialize("KM", $request->input('TglTransaksi'), $NoTransaksi, "O", ($request->input('StatusDocument') == "D"));
+
+                // Akun Kas/Bank Header (Debet)
+                $res = $journal->addDetailWithAccount($request->input('KodeAkun'), 1, $request->input('TotalTransaksi'), $request->input('Keterangan'));
+                if (!$res['success']) { $errorMessage = $res['message']; $errorCount+=1; goto jump; }
+
+                // Per Detail (Kredit - sumber penerimaan)
+                foreach ($DetailParameter as $dt) {
+                    if ($dt['TotalTransaksi'] == 0 || empty($dt['KodeAkun'])) continue;
+                    $res = $journal->addDetailWithAccount($dt['KodeAkun'], 2, $dt['TotalTransaksi'], $dt['Keterangan']);
+                    if (!$res['success']) { $errorMessage = $res['message']; $errorCount+=1; goto jump; }
+                }
+
+                $res = $journal->save();
+                if (!$res['success']) { $errorMessage = $res['message']; $errorCount+=1; goto jump; }
+                // End Auto Journal
             }
             else{
                 $errorMessage = "Data Detail Harus diisi";

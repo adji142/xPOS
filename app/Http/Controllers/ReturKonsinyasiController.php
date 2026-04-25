@@ -21,9 +21,6 @@ use App\Models\ReturKonsinyasiDetail;
 use App\Models\PembayaranKonsinyasiHeader;
 use App\Models\PembayaranKonsinyasiDetail;
 
-use App\Models\AutoPosting;
-use App\Models\SettingAccount;
-use App\Models\Rekening;
 
 class ReturKonsinyasiController extends Controller
 {
@@ -180,6 +177,13 @@ class ReturKonsinyasiController extends Controller
 			}
 
 
+			// Pre-calculate Pajak dari detail (backend authoritative)
+			$TotalPajak = 0;
+			foreach ($jsonData['Detail'] as $key) {
+				if ($key['Qty'] == 0) continue;
+				$_hbv = $key['Qty'] * $key['Harga'];
+				$TotalPajak += $_hbv * (($key['VatPercent'] ?? 0) / 100);
+			}
 			$NoUrut = 0 ;
 			foreach ($jsonData['Detail'] as $key) {
 				if ($key['Qty'] == 0) {
@@ -201,6 +205,8 @@ class ReturKonsinyasiController extends Controller
 					goto jump;
 				}
 
+				$HargaBeforeVat = $key['Qty'] * $key['Harga'];
+				$VatTotal = $HargaBeforeVat * (($key['VatPercent'] ?? 0) / 100);
 
 				$modelDetail = new ReturKonsinyasiDetail;
 				$modelDetail->NoTransaksi = $NoTransaksi;
@@ -211,11 +217,11 @@ class ReturKonsinyasiController extends Controller
 				$modelDetail->Qty = $key['Qty'];
 				$modelDetail->Satuan = $key['Satuan'];
 				$modelDetail->Harga = $key['Harga'];
-				$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
+				$modelDetail->HargaNet = $HargaBeforeVat + $VatTotal;
 				$modelDetail->LineStatus = $key['LineStatus'];
 				$modelDetail->KodeGudang = $key['KodeGudang'];
-				$modelDetail->VatPercent = $key['VatPercent'];
-				$modelDetail->HargaPokokPenjualan = $key['HargaPokokPenjualan'];
+				$modelDetail->VatPercent = $key['VatPercent'] ?? 0;
+				$modelDetail->HargaPokokPenjualan = $key['HargaPokokPenjualan'] ?? 0;
 				$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
 				$save = $modelDetail->save();
@@ -231,83 +237,44 @@ class ReturKonsinyasiController extends Controller
 			}
 
 			// Auto Journal
+			$journal = new \App\Services\AccountingService();
+			$journal->initialize("RTC", $jsonData['TglTransaksi'], $NoTransaksi, "O", ($jsonData['Status'] == "D"));
 
-			// Generate Header :
-			$arrHeader = array(
-				'NoTransaksi' => "",
-				'KodeTransaksi' => "RTC",
-				'TglTransaksi' => $jsonData['TglTransaksi'],
-				'NoReff' => $NoTransaksi,
-				'StatusTransaksi' => "O",
-				'RecordOwnerID' => Auth::user()->RecordOwnerID,
-			);
-			$arrDetail = array();
+			// Hutang Konsinyasi (Debet — membalik kredit penerimaan)
+			$res = $journal->addDetailFromSetting("KnAcctPenerimaanKonsinyasi", 1, $jsonData['TotalTransaksi'], $jsonData['Keterangan']);
+			if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 
-			// GetAccount :
-			$Setting = NEW SettingAccount();
-			$getSetting = $Setting->GetSetting("KnAcctPenerimaanKonsinyasi");
-			$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-							->where('KodeRekening', $getSetting)->get();
-
-			if (count($validate) == 0) {
-				$data['message'] = "Akun Rekening Akutansi Penerimaan Konsinyasi Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
-				$errorCount +=1;
-				goto jump;
+			// PPN (Kredit — membalik debet penerimaan)
+			if ($TotalPajak > 0) {
+				$res = $journal->addDetailFromSetting("PbAcctPajakPembelian", 2, $TotalPajak, $jsonData['Keterangan']);
+				if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 			}
 
-			// Hutang
+			// Inventory Per Item (Kredit — membalik debet penerimaan)
+			$TotalBiayaItem = 0;
+			foreach ($jsonData['Detail'] as $key) {
+				if ($key['Qty'] == 0) continue;
 
-			$temp = array(
-				'KodeTransaksi' => "RTC", 
-				'KodeRekening' => $getSetting,
-				'KodeRekeningBukuBesar' => "",
-				'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
-				'KodeMataUang' => "",
-				'Valas' => 0,
-				'NilaiTukar' => 0,
-				'Jumlah' => $jsonData['TotalTransaksi'], 
-				'Keterangan' => $jsonData['Keterangan'], 
-				'HeaderKas' => "",
-				'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-			);
+				$HargaBeforeVat = $key['Qty'] * $key['Harga'];
 
-			array_push($arrDetail, $temp);
-			// End Hutang
+				$res = $journal->addDetailForInventory($key['KodeItem'], 2, $HargaBeforeVat, $jsonData['Keterangan']);
+				if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 
-			// Inventory
-			// GetAccount :
-			$Setting = NEW SettingAccount();
-			$getSetting = $Setting->GetSetting("InvAcctPersediaan");
-			$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-							->where('KodeRekening', $getSetting)->get();
-
-			if (count($validate) == 0) {
-				$data['message'] = "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
-				$errorCount +=1;
-				goto jump;
+				$TotalBiayaItem += $HargaBeforeVat;
 			}
-			$temp = array(
-				'KodeTransaksi' => "RTC", 
-				'KodeRekening' => $getSetting,
-				'KodeRekeningBukuBesar' => "",
-				'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
-				'KodeMataUang' => "",
-				'Valas' => 0,
-				'NilaiTukar' => 0,
-				'Jumlah' => $jsonData['TotalTransaksi'], 
-				'Keterangan' => $jsonData['Keterangan'], 
-				'HeaderKas' => "",
-				'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-			);
 
-			array_push($arrDetail, $temp);
-			// End Inventory
+			// Selisih Pembulatan
+			$ExpectedBiaya = $jsonData['TotalTransaksi'] - $TotalPajak;
+			$SelisihPembulatan = round($ExpectedBiaya - $TotalBiayaItem, 2);
+			if (abs($SelisihPembulatan) > 0) {
+				$res = $journal->addDetailFromSetting("InvAcctPersediaan", ($SelisihPembulatan > 0 ? 2 : 1), abs($SelisihPembulatan), "Pembulatan Diskon");
+				if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
+			}
 
 			// Save Journal
-			$autoPosting = new AutoPosting();
-
-			if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
-				$data["message"] = "Gagal Simpan Jurnal";
+			$res = $journal->save();
+			if (!$res['success']) {
+				$data["message"] = $res['message'];
 				$errorCount +=1;
 				goto jump;
 			}
@@ -369,11 +336,22 @@ class ReturKonsinyasiController extends Controller
 	                ->delete();
 
 	            if ($delete) {
+	            	// Pre-calculate Pajak dari detail (backend authoritative)
+	            	$TotalPajak = 0;
+	            	foreach ($jsonData['Detail'] as $key) {
+	            		if ($key['Qty'] == 0) continue;
+	            		$_hbv = $key['Qty'] * $key['Harga'];
+	            		$TotalPajak += $_hbv * (($key['VatPercent'] ?? 0) / 100);
+	            	}
+
 	            	$NoUrut = 0 ;
 	            	foreach ($jsonData['Detail'] as $key) {
 		            	if ($key['Qty'] == 0) {
 							goto skip;
 						}
+
+						$HargaBeforeVat = $key['Qty'] * $key['Harga'];
+						$VatTotal = $HargaBeforeVat * (($key['VatPercent'] ?? 0) / 100);
 
 						$modelDetail = new ReturKonsinyasiDetail;
 						$modelDetail->NoTransaksi = $jsonData['NoTransaksi'];
@@ -384,12 +362,11 @@ class ReturKonsinyasiController extends Controller
 						$modelDetail->Qty = $key['Qty'];
 						$modelDetail->Satuan = $key['Satuan'];
 						$modelDetail->Harga = $key['Harga'];
-						$modelDetail->HargaNet = $key['Qty'] * $key['Harga'];
+						$modelDetail->HargaNet = $HargaBeforeVat + $VatTotal;
 						$modelDetail->LineStatus = $key['LineStatus'];
 						$modelDetail->KodeGudang = $key['KodeGudang'];
-						$modelDetail->VatPercent = $key['VatPercent'];
-						$modelDetail->HargaPokokPenjualan = $key['HargaPokokPenjualan'];
-
+						$modelDetail->VatPercent = $key['VatPercent'] ?? 0;
+						$modelDetail->HargaPokokPenjualan = $key['HargaPokokPenjualan'] ?? 0;
 						$modelDetail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
 						$save = $modelDetail->save();
@@ -406,83 +383,44 @@ class ReturKonsinyasiController extends Controller
 		            }
 
 					// Auto Journal
+					$journal = new \App\Services\AccountingService();
+					$journal->initialize("RTC", $jsonData['TglTransaksi'], $jsonData['NoTransaksi'], "O", ($jsonData['Status'] == "D"));
 
-					// Generate Header :
-					$arrHeader = array(
-						'NoTransaksi' => "",
-						'KodeTransaksi' => "RTC",
-						'TglTransaksi' => $jsonData['TglTransaksi'],
-						'NoReff' => $jsonData['NoTransaksi'],
-						'StatusTransaksi' => "O",
-						'RecordOwnerID' => Auth::user()->RecordOwnerID,
-					);
-					$arrDetail = array();
+					// Hutang Konsinyasi (Debet — membalik kredit penerimaan)
+					$res = $journal->addDetailFromSetting("KnAcctPenerimaanKonsinyasi", 1, $jsonData['TotalTransaksi'], $jsonData['Keterangan']);
+					if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 
-					// GetAccount :
-					$Setting = NEW SettingAccount();
-					$getSetting = $Setting->GetSetting("KnAcctPenerimaanKonsinyasi");
-					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-									->where('KodeRekening', $getSetting)->get();
-
-					if (count($validate) == 0) {
-						$data['message'] = "Akun Rekening Akutansi Penerimaan Konsinyasi Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
-						$errorCount +=1;
-						goto jump;
+					// PPN (Kredit — membalik debet penerimaan)
+					if ($TotalPajak > 0) {
+						$res = $journal->addDetailFromSetting("PbAcctPajakPembelian", 2, $TotalPajak, $jsonData['Keterangan']);
+						if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 					}
 
-					// Hutang
+					// Inventory Per Item (Kredit — membalik debet penerimaan)
+					$TotalBiayaItem = 0;
+					foreach ($jsonData['Detail'] as $key) {
+						if ($key['Qty'] == 0) continue;
 
-					$temp = array(
-						'KodeTransaksi' => "RTC", 
-						'KodeRekening' => $getSetting,
-						'KodeRekeningBukuBesar' => "",
-						'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
-						'KodeMataUang' => "",
-						'Valas' => 0,
-						'NilaiTukar' => 0,
-						'Jumlah' => $jsonData['TotalTransaksi'], 
-						'Keterangan' => $jsonData['Keterangan'], 
-						'HeaderKas' => "",
-						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-					);
+						$HargaBeforeVat = $key['Qty'] * $key['Harga'];
 
-					array_push($arrDetail, $temp);
-					// End Hutang
+						$res = $journal->addDetailForInventory($key['KodeItem'], 2, $HargaBeforeVat, $jsonData['Keterangan']);
+						if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 
-					// Inventory
-					// GetAccount :
-					$Setting = NEW SettingAccount();
-					$getSetting = $Setting->GetSetting("InvAcctPersediaan");
-					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-									->where('KodeRekening', $getSetting)->get();
-
-					if (count($validate) == 0) {
-						$data['message'] = "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
-						$errorCount +=1;
-						goto jump;
+						$TotalBiayaItem += $HargaBeforeVat;
 					}
-					$temp = array(
-						'KodeTransaksi' => "RTC", 
-						'KodeRekening' => $getSetting,
-						'KodeRekeningBukuBesar' => "",
-						'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
-						'KodeMataUang' => "",
-						'Valas' => 0,
-						'NilaiTukar' => 0,
-						'Jumlah' => $jsonData['TotalTransaksi'], 
-						'Keterangan' => $jsonData['Keterangan'], 
-						'HeaderKas' => "",
-						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-					);
 
-					array_push($arrDetail, $temp);
-					// End Inventory
+					// Selisih Pembulatan
+					$ExpectedBiaya = $jsonData['TotalTransaksi'] - $TotalPajak;
+					$SelisihPembulatan = round($ExpectedBiaya - $TotalBiayaItem, 2);
+					if (abs($SelisihPembulatan) > 0) {
+						$res = $journal->addDetailFromSetting("InvAcctPersediaan", ($SelisihPembulatan > 0 ? 2 : 1), abs($SelisihPembulatan), "Pembulatan Diskon");
+						if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
+					}
 
 					// Save Journal
-					$autoPosting = new AutoPosting();
-
-					if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
-						$data["message"] = "Gagal Simpan Jurnal";
+					$res = $journal->save();
+					if (!$res['success']) {
+						$data["message"] = $res['message'];
 						$errorCount +=1;
 						goto jump;
 					}

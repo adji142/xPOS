@@ -102,8 +102,7 @@ class RekeningController extends Controller
                 'NamaRekening'=>'required',
                 'KodeKelompok'=>'required',
                 'Level'=>'required',
-                'Jenis'=>'required',
-                'RekeningInduk'=>'required'
+                'Jenis'=>'required'
             ]);
 
             $model = new Rekening;

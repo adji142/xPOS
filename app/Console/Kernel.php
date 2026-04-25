@@ -19,6 +19,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('booking:update-status')->everyMinute();
         $schedule->command('table:sync-status')->everyMinute();
         $schedule->command('table:check-finished')->everyMinute();
+        $schedule->command('subscription:process-status')->dailyAt('00:05');
     }
 
     /**

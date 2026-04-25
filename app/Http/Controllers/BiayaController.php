@@ -14,8 +14,6 @@ use App\Models\BiayaHeader;
 use App\Models\BiayaDetail;
 use App\Models\DocumentNumbering;
 
-use App\Models\AutoPosting;
-use App\Models\SettingAccount;
 
 class BiayaController extends Controller
 {
@@ -167,69 +165,27 @@ class BiayaController extends Controller
 				skip:
 			}
 
-			// Auto Posting
-			$arrHeader = array(
-				'NoTransaksi' => "",
-				'KodeTransaksi' => "OBY",
-				'TglTransaksi' => $jsonData['TglTransaksi'],
-				'NoReff' => $NoTransaksi,
-				'StatusTransaksi' => "O",
-				'RecordOwnerID' => Auth::user()->RecordOwnerID,
-			);
-			$arrDetail = array();
+			// Auto Journal
+			$journal = new \App\Services\AccountingService();
+			$journal->initialize("OBY", $jsonData['TglTransaksi'], $NoTransaksi, "O", ($jsonData['Status'] == "D"));
 
+			// Akun Biaya Per Item (Debet)
 			$TotalRow = 0;
 			foreach ($jsonData['Detail'] as $key) {
-				if ($key['TotalTransaksi'] == 0) {
-					goto xskip;
-				}
-
-				if ($key['KodeRekening'] == "") {
-					goto xskip;
-				}
-				$temp = array(
-					'KodeTransaksi' => "OBY", 
-					'KodeRekening' => $key['KodeRekening'],
-					'KodeRekeningBukuBesar' => "",
-					'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
-					'KodeMataUang' => "",
-					'Valas' => 0,
-					'NilaiTukar' => 0,
-					'Jumlah' => $key['TotalTransaksi'],
-					'Keterangan' => $key['Keterangan'], 
-					'HeaderKas' => "",
-					'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-				);
-
-				array_push($arrDetail, $temp);
+				if ($key['TotalTransaksi'] == 0 || $key['KodeRekening'] == "") continue;
+				$res = $journal->addDetailWithAccount($key['KodeRekening'], 1, $key['TotalTransaksi'], $key['Keterangan']);
+				if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 				$TotalRow += $key['TotalTransaksi'];
-
-				xskip:
 			}
 
-			$temp = array(
-				'KodeTransaksi' => "OBY", 
-				'KodeRekening' => $jsonData['KodeRekening'],
-				'KodeRekeningBukuBesar' => "",
-				'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
-				'KodeMataUang' => "",
-				'Valas' => 0,
-				'NilaiTukar' => 0,
-				'Jumlah' => $TotalRow, 
-				'Keterangan' => $jsonData['Keterangan'], 
-				'HeaderKas' => "",
-				'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-			);
-
-			array_push($arrDetail, $temp);
-
+			// Akun Kas/Asset Header (Kredit)
+			$res = $journal->addDetailWithAccount($jsonData['KodeRekening'], 2, $TotalRow, $jsonData['Keterangan']);
+			if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 
 			// Save Journal
-			$autoPosting = new AutoPosting();
-
-			// var_dump(json_encode($arrDetail));
-			if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
-				$data["message"] = "Gagal Simpan Jurnal";
+			$res = $journal->save();
+			if (!$res['success']) {
+				$data["message"] = $res['message'];
 				$errorCount +=1;
 				goto jump;
 			}
@@ -324,68 +280,27 @@ class BiayaController extends Controller
 					skip:
                 }
 
-				// Auto Posting
-				$arrHeader = array(
-					'NoTransaksi' => "",
-					'KodeTransaksi' => "OBY",
-					'TglTransaksi' => $jsonData['TglTransaksi'],
-					'NoReff' => $jsonData['NoTransaksi'],
-					'StatusTransaksi' => "O",
-					'RecordOwnerID' => Auth::user()->RecordOwnerID,
-				);
-				$arrDetail = array();
+				// Auto Journal
+				$journal = new \App\Services\AccountingService();
+				$journal->initialize("OBY", $jsonData['TglTransaksi'], $jsonData['NoTransaksi'], "O", ($jsonData['Status'] == "D"));
 
+				// Akun Biaya Per Item (Debet)
 				$TotalRow = 0;
 				foreach ($jsonData['Detail'] as $key) {
-					if ($key['TotalTransaksi'] == 0) {
-						goto xskip;
-					}
-	
-					if ($key['KodeRekening'] == "") {
-						goto xskip;
-					}
-
-					$temp = array(
-						'KodeTransaksi' => "OBY", 
-						'KodeRekening' => $key['KodeRekening'],
-						'KodeRekeningBukuBesar' => "",
-						'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
-						'KodeMataUang' => "",
-						'Valas' => 0,
-						'NilaiTukar' => 0,
-						'Jumlah' => $key['TotalTransaksi'],
-						'Keterangan' => $key['Keterangan'], 
-						'HeaderKas' => "",
-						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-					);
-
-					array_push($arrDetail, $temp);
+					if ($key['TotalTransaksi'] == 0 || $key['KodeRekening'] == "") continue;
+					$res = $journal->addDetailWithAccount($key['KodeRekening'], 1, $key['TotalTransaksi'], $key['Keterangan']);
+					if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 					$TotalRow += $key['TotalTransaksi'];
-					xskip:
 				}
 
-				$temp = array(
-					'KodeTransaksi' => "OBY", 
-					'KodeRekening' => $jsonData['KodeRekening'],
-					'KodeRekeningBukuBesar' => "",
-					'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
-					'KodeMataUang' => "",
-					'Valas' => 0,
-					'NilaiTukar' => 0,
-					'Jumlah' => $TotalRow, 
-					'Keterangan' => $jsonData['Keterangan'], 
-					'HeaderKas' => "",
-					'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-				);
-
-				array_push($arrDetail, $temp);
-
+				// Akun Kas/Asset Header (Kredit)
+				$res = $journal->addDetailWithAccount($jsonData['KodeRekening'], 2, $TotalRow, $jsonData['Keterangan']);
+				if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 
 				// Save Journal
-				$autoPosting = new AutoPosting();
-
-				if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
-					$data["message"] = "Gagal Simpan Jurnal";
+				$res = $journal->save();
+				if (!$res['success']) {
+					$data["message"] = $res['message'];
 					$errorCount +=1;
 					goto jump;
 				}

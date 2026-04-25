@@ -1367,6 +1367,57 @@ class TableOrderController extends Controller
                 $pmD->created_at           = Carbon::now();
                 $pmD->save();
 
+                // ===== JOURNAL POSTING - PAKET =====
+                if ($company->isPostingAkutansi == 1) {
+                    $keteranganJurnal = "Pembayaran TableOrderControllerPaket PoS - " . $noTransaksi;
+
+                    // Jurnal Penjualan
+                    $jualPaket = new \App\Services\AccountingService();
+                    $jualPaket->initialize("OINV", $tglTransaksi, $invoicePaketNo, "O", false);
+
+                    // 1. Piutang Usaha (Debit)
+                    $res = $jualPaket->addDetailFromSetting("PjAcctPiutang", 1, $grandTotal, $keteranganJurnal);
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    // 2. Penjualan Jasa (Credit) = DPP + BiayaLayanan + AdminFee
+                    $pendapatanJasa = $dpp + $layananRp + $adminFeeRp;
+                    if ($pendapatanJasa > 0) {
+                        $res = $jualPaket->addDetailFromSetting("InvAcctPendapatanJasa", 2, $pendapatanJasa, $keteranganJurnal);
+                        if (!$res['success']) throw new \Exception($res['message']);
+                    }
+
+                    // 3. PPN Keluaran (Credit)
+                    if ($ppnRp > 0) {
+                        $res = $jualPaket->addDetailFromSetting("PjAcctPajakPenjualan", 2, $ppnRp, $keteranganJurnal);
+                        if (!$res['success']) throw new \Exception($res['message']);
+                    }
+
+                    // 4. Pajak Hiburan (Credit)
+                    if ($pb1Rp > 0) {
+                        $res = $jualPaket->addDetailFromSetting("PjAcctPajakHiburan", 2, $pb1Rp, $keteranganJurnal);
+                        if (!$res['success']) throw new \Exception($res['message']);
+                    }
+
+                    $res = $jualPaket->save();
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    // Jurnal Pembayaran Paket
+                    $akunPembayaran = $mp->AkunPembayaran ?? null;
+                    if (empty($akunPembayaran)) throw new \Exception("Akun Pembayaran untuk metode '" . $mp->NamaMetodePembayaran . "' belum dikonfigurasi.");
+
+                    $bayarPaket = new \App\Services\AccountingService();
+                    $bayarPaket->initialize("INPAY", $tglTransaksi, $pmPaketNo, "O", false);
+
+                    $res = $bayarPaket->addDetailWithAccount($akunPembayaran, 1, $grandTotal, $keteranganJurnal);
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    $res = $bayarPaket->addDetailFromSetting("PjAcctPiutang", 2, $grandTotal, $keteranganJurnal);
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    $res = $bayarPaket->save();
+                    if (!$res['success']) throw new \Exception($res['message']);
+                }
+
                 DB::table('tableorderheader')
                     ->where('NoTransaksi', $noTransaksi)
                     ->where('RecordOwnerID', $recordOwnerID)
@@ -1483,6 +1534,71 @@ class TableOrderController extends Controller
                 $pmFnbD->RecordOwnerID        = $recordOwnerID;
                 $pmFnbD->created_at           = Carbon::now();
                 $pmFnbD->save();
+
+                // ===== JOURNAL POSTING - FnB =====
+                if ($company->isPostingAkutansi == 1) {
+                    $keteranganFnb = "Pembayaran FnB PoS - " . $noTransaksi;
+
+                    // Hitung total HPP dari itemmaster
+                    $fnbKodeItems = $fnbOpen->pluck('KodeItem')->unique()->toArray();
+                    $itemHppMap = DB::table('itemmaster')
+                        ->where('RecordOwnerID', $recordOwnerID)
+                        ->whereIn('KodeItem', $fnbKodeItems)
+                        ->pluck('HargaPokokPenjualan', 'KodeItem');
+
+                    $totalHppFnb = 0;
+                    foreach ($fnbOpen as $fnbItem) {
+                        $totalHppFnb += (float)($itemHppMap[$fnbItem->KodeItem] ?? 0) * $fnbItem->Qty;
+                    }
+
+                    // Jurnal Penjualan FnB
+                    $jualFnb = new \App\Services\AccountingService();
+                    $jualFnb->initialize("OINV", $tglTransaksi, $invoiceFnbNo, "O", false);
+
+                    // 1. Piutang Usaha (Debit)
+                    $res = $jualFnb->addDetailFromSetting("PjAcctPiutang", 1, $grandFnb, $keteranganFnb);
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    // 2. Pendapatan Jual (Credit) = DPP FnB
+                    if ($totalFnb > 0) {
+                        $res = $jualFnb->addDetailFromSetting("InvAcctPendapatanJual", 2, $totalFnb, $keteranganFnb);
+                        if (!$res['success']) throw new \Exception($res['message']);
+                    }
+
+                    // 3. PPN Keluaran (Credit)
+                    if ($ppnFnb > 0) {
+                        $res = $jualFnb->addDetailFromSetting("PjAcctPajakPenjualan", 2, $ppnFnb, $keteranganFnb);
+                        if (!$res['success']) throw new \Exception($res['message']);
+                    }
+
+                    // 4. HPP (Debit) & Persediaan (Credit)
+                    if ($totalHppFnb > 0) {
+                        $res = $jualFnb->addDetailFromSetting("InvAcctHargaPokokPenjualan", 1, $totalHppFnb, $keteranganFnb);
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        $res = $jualFnb->addDetailFromSetting("InvAcctPersediaan", 2, $totalHppFnb, $keteranganFnb);
+                        if (!$res['success']) throw new \Exception($res['message']);
+                    }
+
+                    $res = $jualFnb->save();
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    // Jurnal Pembayaran FnB
+                    $akunPembayaran = $mp->AkunPembayaran ?? null;
+                    if (empty($akunPembayaran)) throw new \Exception("Akun Pembayaran untuk metode '" . $mp->NamaMetodePembayaran . "' belum dikonfigurasi.");
+
+                    $bayarFnb = new \App\Services\AccountingService();
+                    $bayarFnb->initialize("INPAY", $tglTransaksi, $pmFnbNo, "O", false);
+
+                    $res = $bayarFnb->addDetailWithAccount($akunPembayaran, 1, $grandFnb, $keteranganFnb);
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    $res = $bayarFnb->addDetailFromSetting("PjAcctPiutang", 2, $grandFnb, $keteranganFnb);
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    $res = $bayarFnb->save();
+                    if (!$res['success']) throw new \Exception($res['message']);
+                }
 
                 // Tandai FnB sebagai paid
                 DB::table('tableorderfnb')
@@ -2825,6 +2941,57 @@ class TableOrderController extends Controller
                     $pmDetail->RecordOwnerID         = Auth::user()->RecordOwnerID;
                     $pmDetail->created_at            = Carbon::now();
                     $pmDetail->save();
+
+                    // ===== JOURNAL POSTING =====
+                    if ($company->isPostingAkutansi == 1) {
+                        $keterangan = "Pembayaran Layanan PoS - " . $model->NoTransaksi;
+
+                        // Jurnal Penjualan
+                        $jualPaket = new \App\Services\AccountingService();
+                        $jualPaket->initialize("OINV", $model->TglTransaksi, $invoiceNo, "O", false);
+
+                        // 1. Piutang Usaha (Debit)
+                        $res = $jualPaket->addDetailFromSetting("PjAcctPiutang", 1, $grandTotal, $keterangan);
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        // 2. Penjualan Jasa (Credit) = DPP + BiayaLayanan + AdminFee
+                        $pendapatanJasa = $dpp + $model->BiayaLayanan + $adminFeeRp;
+                        if ($pendapatanJasa > 0) {
+                            $res = $jualPaket->addDetailFromSetting("InvAcctPendapatanJasa", 2, $pendapatanJasa, $keterangan);
+                            if (!$res['success']) throw new \Exception($res['message']);
+                        }
+
+                        // 3. PPN Keluaran (Credit)
+                        if ($model->TotalTax > 0) {
+                            $res = $jualPaket->addDetailFromSetting("PjAcctPajakPenjualan", 2, $model->TotalTax, $keterangan);
+                            if (!$res['success']) throw new \Exception($res['message']);
+                        }
+
+                        // 4. Pajak Hiburan (Credit)
+                        if ($model->TotalPajakHiburan > 0) {
+                            $res = $jualPaket->addDetailFromSetting("PjAcctPajakHiburan", 2, $model->TotalPajakHiburan, $keterangan);
+                            if (!$res['success']) throw new \Exception($res['message']);
+                        }
+
+                        $res = $jualPaket->save();
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        // Jurnal Pembayaran
+                        $akunPembayaran = $mp->AkunPembayaran ?? null;
+                        if (empty($akunPembayaran)) throw new \Exception("Akun Pembayaran untuk metode '" . $mp->NamaMetodePembayaran . "' belum dikonfigurasi.");
+
+                        $bayarPaket = new \App\Services\AccountingService();
+                        $bayarPaket->initialize("INPAY", $model->TglTransaksi, $pmNo, "O", false);
+
+                        $res = $bayarPaket->addDetailWithAccount($akunPembayaran, 1, $grandTotal, $keterangan);
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        $res = $bayarPaket->addDetailFromSetting("PjAcctPiutang", 2, $grandTotal, $keterangan);
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        $res = $bayarPaket->save();
+                        if (!$res['success']) throw new \Exception($res['message']);
+                    }
                 }
 
                 DB::commit();
@@ -3244,6 +3411,7 @@ class TableOrderController extends Controller
                 $fakturHeader->CreatedBy = Auth::user()->name;
                 $fakturHeader->save();
 
+                $totalHppFnb = 0;
                 foreach ($items as $index => $item) {
                     $kodeItem = $item['KodeItem'];
                     $qty = floatval($item['Qty']);
@@ -3253,6 +3421,8 @@ class TableOrderController extends Controller
                     $itemMaster = ItemMaster::where('KodeItem', $kodeItem)
                         ->where('RecordOwnerID', $recordOwnerID)
                         ->first();
+
+                    $totalHppFnb += (float)($itemMaster->HargaPokok ?? 0) * $qty;
 
                     $fakturDetail = new FakturPenjualanDetail;
                     $fakturDetail->NoTransaksi = $invoiceNo;
@@ -3303,6 +3473,60 @@ class TableOrderController extends Controller
                 $payDetail->RecordOwnerID = $recordOwnerID;
                 $payDetail->KodeMetodePembayaran = $mpId;
                 $payDetail->save();
+
+                // ===== JOURNAL POSTING - FnB =====
+                if ($company->isPostingAkutansi == 1) {
+                    $grandFnb  = $fakturHeader->TotalPembelian;
+                    $keteranganFnb = "Pembayaran FnB PoS - " . $noTransaksi;
+
+                    // Jurnal Penjualan FnB
+                    $jualFnb = new \App\Services\AccountingService();
+                    $jualFnb->initialize("OINV", $fakturHeader->TglTransaksi, $invoiceNo, "O", false);
+
+                    // 1. Piutang Usaha (Debit)
+                    $res = $jualFnb->addDetailFromSetting("PjAcctPiutang", 1, $grandFnb, $keteranganFnb);
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    // 2. Pendapatan Jual (Credit) = DPP FnB
+                    if ($totalFnB > 0) {
+                        $res = $jualFnb->addDetailFromSetting("InvAcctPendapatanJual", 2, $totalFnB, $keteranganFnb);
+                        if (!$res['success']) throw new \Exception($res['message']);
+                    }
+
+                    // 3. PPN Keluaran (Credit)
+                    if ($totalTax > 0) {
+                        $res = $jualFnb->addDetailFromSetting("PjAcctPajakPenjualan", 2, $totalTax, $keteranganFnb);
+                        if (!$res['success']) throw new \Exception($res['message']);
+                    }
+
+                    // 4. HPP (Debit) & Persediaan (Credit)
+                    if ($totalHppFnb > 0) {
+                        $res = $jualFnb->addDetailFromSetting("InvAcctHargaPokokPenjualan", 1, $totalHppFnb, $keteranganFnb);
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        $res = $jualFnb->addDetailFromSetting("InvAcctPersediaan", 2, $totalHppFnb, $keteranganFnb);
+                        if (!$res['success']) throw new \Exception($res['message']);
+                    }
+
+                    $res = $jualFnb->save();
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    // Jurnal Pembayaran FnB
+                    $akunPembayaran = $mp->AkunPembayaran ?? null;
+                    if (empty($akunPembayaran)) throw new \Exception("Akun Pembayaran untuk metode '" . $mp->NamaMetodePembayaran . "' belum dikonfigurasi.");
+
+                    $bayarFnb = new \App\Services\AccountingService();
+                    $bayarFnb->initialize("INPAY", $fakturHeader->TglTransaksi, $payNo, "O", false);
+
+                    $res = $bayarFnb->addDetailWithAccount($akunPembayaran, 1, $grandFnb, $keteranganFnb);
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    $res = $bayarFnb->addDetailFromSetting("PjAcctPiutang", 2, $grandFnb, $keteranganFnb);
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    $res = $bayarFnb->save();
+                    if (!$res['success']) throw new \Exception($res['message']);
+                }
             }
 
             DB::commit();
@@ -3516,7 +3740,6 @@ class TableOrderController extends Controller
                 $fakturDetail->Harga = $hargaNormal;
                 $fakturDetail->Discount = 0;
                 $fakturDetail->HargaNet = $subtotalAdd;
-                $fakturDetail->LineTotal = $subtotalAdd;
                 $fakturDetail->LineStatus = "C";
                 $fakturDetail->KodeGudang = $company->GudangPoS ?? 'HO';
                 $fakturDetail->Keterangan = "Tambah Durasi: " . $paket->NamaPaket;
@@ -3560,6 +3783,55 @@ class TableOrderController extends Controller
                     $pembayaranDetail->RecordOwnerID = $recordOwnerID;
                     $pembayaranDetail->created_at = Carbon::now();
                     $pembayaranDetail->save();
+
+                    // ===== JOURNAL POSTING - TAMBAH DURASI =====
+                    if ($company->isPostingAkutansi == 1) {
+                        $keteranganJurnal = "Tambah Durasi PoS - " . $noTransaksi;
+
+                        // Jurnal Penjualan Jasa
+                        $jualDurasi = new \App\Services\AccountingService();
+                        $jualDurasi->initialize("OINV", $fakturHeader->TglTransaksi, $invoiceNo, "O", false);
+
+                        // 1. Piutang Usaha (Debit)
+                        $res = $jualDurasi->addDetailFromSetting("PjAcctPiutang", 1, $grandTotal, $keteranganJurnal);
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        // 2. Penjualan Jasa (Credit) = DPP + BiayaLayanan + AdminFee
+                        $pendapatanJasa = $subtotalAdd + $serviceAdd + $adminFeeAdd;
+                        if ($pendapatanJasa > 0) {
+                            $res = $jualDurasi->addDetailFromSetting("InvAcctPendapatanJasa", 2, $pendapatanJasa, $keteranganJurnal);
+                            if (!$res['success']) throw new \Exception($res['message']);
+                        }
+
+                        // 3. PPN Keluaran (Credit)
+                        if ($taxAdd > 0) {
+                            $res = $jualDurasi->addDetailFromSetting("PjAcctPajakPenjualan", 2, $taxAdd, $keteranganJurnal);
+                            if (!$res['success']) throw new \Exception($res['message']);
+                        }
+
+                        $res = $jualDurasi->save();
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        // Jurnal Pembayaran
+                        $akunPembayaran = $mp->AkunPembayaran ?? null;
+                        if (empty($akunPembayaran)) throw new \Exception("Akun Pembayaran untuk metode '" . $mp->NamaMetodePembayaran . "' belum dikonfigurasi.");
+
+                        $bayarDurasi = new \App\Services\AccountingService();
+                        $bayarDurasi->initialize("INPAY", $fakturHeader->TglTransaksi, $pmNo, "O", false);
+                        // dd("Header", $bayarDurasi);
+
+                        $res = $bayarDurasi->addDetailWithAccount($akunPembayaran, 1, $grandTotal, $keteranganJurnal);
+                        if (!$res['success']) throw new \Exception($res['message']);
+                        // dd("Res 1", $res);
+
+                        $res = $bayarDurasi->addDetailFromSetting("PjAcctPiutang", 2, $grandTotal, $keteranganJurnal);
+                        if (!$res['success']) throw new \Exception($res['message']);
+                        // dd("Res 2", $res);
+
+                        $res = $bayarDurasi->save();
+                        if (!$res['success']) throw new \Exception($res['message']);
+                        // dd("Res 3", $bayarDurasi);
+                    }
                 }
             }
 
@@ -3698,6 +3970,50 @@ class TableOrderController extends Controller
                     $pmD->Keterangan = "Pembayaran " . $fH->NoTransaksi;
                     $pmD->RecordOwnerID = $recordOwnerID;
                     $pmD->save();
+
+                    // ===== JOURNAL POSTING - JUAL_FNB =====
+                    if ($company->isPostingAkutansi == 1) {
+                        $grandFnbJ  = $fH->TotalPembelian;
+                        $subtotalFnbJ = $sessionData['subtotal'];
+                        $ppnFnbJ    = $sessionData['ppnRp'];
+                        $keteranganFnbJ = "Penjualan FnB Langsung - " . $invoiceNo;
+
+                        // Jurnal Penjualan FnB
+                        $jualFnbJ = new \App\Services\AccountingService();
+                        $jualFnbJ->initialize("OINV", $fH->TglTransaksi, $invoiceNo, "O", false);
+
+                        $res = $jualFnbJ->addDetailFromSetting("PjAcctPiutang", 1, $grandFnbJ, $keteranganFnbJ);
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        if ($subtotalFnbJ > 0) {
+                            $res = $jualFnbJ->addDetailFromSetting("InvAcctPendapatanJual", 2, $subtotalFnbJ, $keteranganFnbJ);
+                            if (!$res['success']) throw new \Exception($res['message']);
+                        }
+
+                        if ($ppnFnbJ > 0) {
+                            $res = $jualFnbJ->addDetailFromSetting("PjAcctPajakPenjualan", 2, $ppnFnbJ, $keteranganFnbJ);
+                            if (!$res['success']) throw new \Exception($res['message']);
+                        }
+
+                        $res = $jualFnbJ->save();
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        // Jurnal Pembayaran
+                        $akunPembayaran = $metode ? ($metode->AkunPembayaran ?? null) : null;
+                        if (empty($akunPembayaran)) throw new \Exception("Akun Pembayaran untuk metode '" . ($metode->NamaMetodePembayaran ?? '') . "' belum dikonfigurasi.");
+
+                        $bayarFnbJ = new \App\Services\AccountingService();
+                        $bayarFnbJ->initialize("INPAY", $fH->TglTransaksi, $pmNo, "O", false);
+
+                        $res = $bayarFnbJ->addDetailWithAccount($akunPembayaran, 1, $grandFnbJ, $keteranganFnbJ);
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        $res = $bayarFnbJ->addDetailFromSetting("PjAcctPiutang", 2, $grandFnbJ, $keteranganFnbJ);
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        $res = $bayarFnbJ->save();
+                        if (!$res['success']) throw new \Exception($res['message']);
+                    }
 
                     // Clear Session
                     session()->forget($noTransaksi);
@@ -3878,6 +4194,56 @@ class TableOrderController extends Controller
                     $pmD->RecordOwnerID = $recordOwnerID;
                     $pmD->created_at = Carbon::now();
                     $pmD->save();
+
+                    // ===== JOURNAL POSTING - POS/NEW_PACKAGE (Jasa) =====
+                    if ($company->isPostingAkutansi == 1) {
+                        $mpPos = MetodePembayaran::where('NamaMetodePembayaran', $model->MetodePembayaran)
+                            ->where('MetodeVerifikasi', 'AUTO')->first();
+                        $dppPos = $model->GrossTotal - $model->TotalDiskon;
+                        $pendapatanJasaPos = $dppPos + $model->BiayaLayanan + $adminFeeRp;
+                        $keteranganPos = "Pembayaran Layanan PoS - " . $noTransaksi;
+
+                        // Jurnal Penjualan Jasa
+                        $jualPos = new \App\Services\AccountingService();
+                        $jualPos->initialize("OINV", $fakturHeader->TglTransaksi, $invoiceNo, "O", false);
+
+                        $res = $jualPos->addDetailFromSetting("PjAcctPiutang", 1, $grandTotal, $keteranganPos);
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        if ($pendapatanJasaPos > 0) {
+                            $res = $jualPos->addDetailFromSetting("InvAcctPendapatanJasa", 2, $pendapatanJasaPos, $keteranganPos);
+                            if (!$res['success']) throw new \Exception($res['message']);
+                        }
+
+                        if ($model->TotalTax > 0) {
+                            $res = $jualPos->addDetailFromSetting("PjAcctPajakPenjualan", 2, $model->TotalTax, $keteranganPos);
+                            if (!$res['success']) throw new \Exception($res['message']);
+                        }
+
+                        if ($model->TotalPajakHiburan > 0) {
+                            $res = $jualPos->addDetailFromSetting("PjAcctPajakHiburan", 2, $model->TotalPajakHiburan, $keteranganPos);
+                            if (!$res['success']) throw new \Exception($res['message']);
+                        }
+
+                        $res = $jualPos->save();
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        // Jurnal Pembayaran
+                        $akunPembayaran = $mpPos ? ($mpPos->AkunPembayaran ?? null) : null;
+                        if (empty($akunPembayaran)) throw new \Exception("Akun Pembayaran untuk metode '" . ($model->MetodePembayaran ?? '') . "' belum dikonfigurasi.");
+
+                        $bayarPos = new \App\Services\AccountingService();
+                        $bayarPos->initialize("INPAY", $fakturHeader->TglTransaksi, $pmNo, "O", false);
+
+                        $res = $bayarPos->addDetailWithAccount($akunPembayaran, 1, $grandTotal, $keteranganPos);
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        $res = $bayarPos->addDetailFromSetting("PjAcctPiutang", 2, $grandTotal, $keteranganPos);
+                        if (!$res['success']) throw new \Exception($res['message']);
+
+                        $res = $bayarPos->save();
+                        if (!$res['success']) throw new \Exception($res['message']);
+                    }
                 }
 
             } else if ($paymentType === 'PAY_DETAIL' || $paymentType === 'ADD_DURATION' || $paymentType === 'ADD_FNB') {
@@ -4160,6 +4526,47 @@ class TableOrderController extends Controller
                 $pmD->RecordOwnerID = $recordOwnerID;
                 $pmD->created_at = Carbon::now();
                 $pmD->save();
+
+                // ===== JOURNAL POSTING - PAY_DETAIL / ADD_DURATION / ADD_FNB =====
+                if ($company->isPostingAkutansi == 1) {
+                    $tglJurnal = $now->toDateString();
+                    $keteranganJurnal = "Pembayaran PoS Midtrans - " . $noTransaksi;
+
+                    // Jurnal Penjualan
+                    $jual = new \App\Services\AccountingService();
+                    $jual->initialize("OINV", $tglJurnal, $invoiceNo, "O", false);
+
+                    $res = $jual->addDetailFromSetting("PjAcctPiutang", 1, $nominalBayar, $keteranganJurnal);
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    if ($paymentType === 'ADD_FNB') {
+                        // Pendapatan Jual (FnB)
+                        $res = $jual->addDetailFromSetting("InvAcctPendapatanJual", 2, $nominalBayar, $keteranganJurnal);
+                    } else {
+                        // Pendapatan Jasa (ADD_DURATION, PAY_DETAIL)
+                        $res = $jual->addDetailFromSetting("InvAcctPendapatanJasa", 2, $nominalBayar, $keteranganJurnal);
+                    }
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    $res = $jual->save();
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    // Jurnal Pembayaran
+                    $akunPembayaran = $mp ? ($mp->AkunPembayaran ?? null) : null;
+                    if (empty($akunPembayaran)) throw new \Exception("Akun Pembayaran untuk metode '" . ($mp ? $mp->NamaMetodePembayaran : '') . "' belum dikonfigurasi.");
+
+                    $bayar = new \App\Services\AccountingService();
+                    $bayar->initialize("INPAY", $tglJurnal, $pmNo, "O", false);
+
+                    $res = $bayar->addDetailWithAccount($akunPembayaran, 1, $nominalBayar, $keteranganJurnal);
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    $res = $bayar->addDetailFromSetting("PjAcctPiutang", 2, $nominalBayar, $keteranganJurnal);
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    $res = $bayar->save();
+                    if (!$res['success']) throw new \Exception($res['message']);
+                }
             }
 
             DB::commit();
@@ -4470,6 +4877,71 @@ class TableOrderController extends Controller
             $pmD->RecordOwnerID = $recordOwnerID;
             $pmD->save();
 
+            // ===== JOURNAL POSTING - FnB Standalone =====
+            if ($company->isPostingAkutansi == 1) {
+                // Hitung total HPP dari itemmaster
+                $fnbKodeItems = array_unique(array_column($items, 'KodeItem'));
+                $itemHppMap = DB::table('itemmaster')
+                    ->where('RecordOwnerID', $recordOwnerID)
+                    ->whereIn('KodeItem', $fnbKodeItems)
+                    ->pluck('HargaPokokPenjualan', 'KodeItem');
+
+                $totalHpp = 0;
+                foreach ($items as $item) {
+                    $totalHpp += (float)($itemHppMap[$item['KodeItem']] ?? 0) * floatval($item['Qty'] ?? 1);
+                }
+
+                $keteranganFnb = "Penjualan FnB Langsung - " . $invoiceNo;
+
+                // Jurnal Penjualan FnB
+                $jualFnb = new \App\Services\AccountingService();
+                $jualFnb->initialize("OINV", $fH->TglTransaksi, $invoiceNo, "O", false);
+
+                // 1. Piutang Usaha (Debit)
+                $res = $jualFnb->addDetailFromSetting("PjAcctPiutang", 1, $grandTotal, $keteranganFnb);
+                if (!$res['success']) throw new \Exception($res['message']);
+
+                // 2. Pendapatan Jual (Credit) = DPP
+                if ($subtotal > 0) {
+                    $res = $jualFnb->addDetailFromSetting("InvAcctPendapatanJual", 2, $subtotal, $keteranganFnb);
+                    if (!$res['success']) throw new \Exception($res['message']);
+                }
+
+                // 3. PPN Keluaran (Credit)
+                if ($ppnRp > 0) {
+                    $res = $jualFnb->addDetailFromSetting("PjAcctPajakPenjualan", 2, $ppnRp, $keteranganFnb);
+                    if (!$res['success']) throw new \Exception($res['message']);
+                }
+
+                // 4. HPP (Debit) & Persediaan (Credit)
+                if ($totalHpp > 0) {
+                    $res = $jualFnb->addDetailFromSetting("InvAcctHargaPokokPenjualan", 1, $totalHpp, $keteranganFnb);
+                    if (!$res['success']) throw new \Exception($res['message']);
+
+                    $res = $jualFnb->addDetailFromSetting("InvAcctPersediaan", 2, $totalHpp, $keteranganFnb);
+                    if (!$res['success']) throw new \Exception($res['message']);
+                }
+
+                $res = $jualFnb->save();
+                if (!$res['success']) throw new \Exception($res['message']);
+
+                // Jurnal Pembayaran
+                $akunPembayaran = $metode ? ($metode->AkunPembayaran ?? null) : null;
+                if (empty($akunPembayaran)) throw new \Exception("Akun Pembayaran untuk metode '" . ($metode->NamaMetodePembayaran ?? '') . "' belum dikonfigurasi.");
+
+                $bayarFnb = new \App\Services\AccountingService();
+                $bayarFnb->initialize("INPAY", $fH->TglTransaksi, $pmNo, "O", false);
+
+                $res = $bayarFnb->addDetailWithAccount($akunPembayaran, 1, $grandTotal, $keteranganFnb);
+                if (!$res['success']) throw new \Exception($res['message']);
+
+                $res = $bayarFnb->addDetailFromSetting("PjAcctPiutang", 2, $grandTotal, $keteranganFnb);
+                if (!$res['success']) throw new \Exception($res['message']);
+
+                $res = $bayarFnb->save();
+                if (!$res['success']) throw new \Exception($res['message']);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -4565,7 +5037,8 @@ class TableOrderController extends Controller
                 (COALESCE(pembayaranpenjualanheader.TotalPembayaran,0) - fakturpenjualanheader.TotalPembelian) as Kembali, 
                 metodepembayaran.NamaMetodePembayaran,
                 pelanggan.NamaPelanggan,
-                pelanggan.Email
+                pelanggan.Email,
+                CONCAT(COALESCE(titiklampu.NamaTitikLampu, ''), ' - ', COALESCE(titiklampu.DigitalInput, '')) as NamaTitikLampu
             ")
             ->join('fakturpenjualandetail', function($join) {
                 $join->on('fakturpenjualanheader.NoTransaksi', '=', 'fakturpenjualandetail.NoTransaksi')
@@ -4587,20 +5060,24 @@ class TableOrderController extends Controller
                 $join->on('fakturpenjualanheader.KodePelanggan', '=', 'pelanggan.KodePelanggan')
                      ->on('fakturpenjualanheader.RecordOwnerID', '=', 'pelanggan.RecordOwnerID');
             })
+            ->leftJoin('titiklampu', function($join) {
+                $join->on('fakturpenjualanheader.NomorMeja', '=', 'titiklampu.id')
+                     ->on('fakturpenjualanheader.RecordOwnerID', '=', 'titiklampu.RecordOwnerID');
+            })
             ->where('fakturpenjualanheader.RecordOwnerID', $recordOwnerID)
-            ->where('fakturpenjualanheader.NoTransaksi', $noTransaksi)
-            // ->where(function($q) use ($noTransaksi) {
-            //     // Scenario 1: Table order receipt - look up by BaseReff (tableorder NoTransaksi) with TypeItem=4
-            //     $q->Where(function($sq) use ($noTransaksi) {
-            //           $sq->where('fakturpenjualandetail.BaseReff', $noTransaksi)
-            //              ->where('itemmaster.TypeItem', 4);
-            //       })
-            //     // Scenario 2: Direct FnB sale receipt - look up by faktur NoTransaksi directly
-            //     ->orWhere(function($sq) use ($noTransaksi) {
-            //           $sq->where('fakturpenjualanheader.NoTransaksi', $noTransaksi)
-            //              ->where('fakturpenjualanheader.NoReff', 'FNB-DIRECT');
-            //       });
-            // })
+            // ->where('fakturpenjualanheader.NoTransaksi', $noTransaksi)
+            ->where(function($q) use ($noTransaksi) {
+                // Scenario 1: Table order receipt - look up by BaseReff (tableorder NoTransaksi) with TypeItem=4
+                $q->Where(function($sq) use ($noTransaksi) {
+                      $sq->where('fakturpenjualandetail.BaseReff', $noTransaksi)
+                         ->where('itemmaster.TypeItem', 4);
+                  });
+                // Scenario 2: Direct FnB sale receipt - look up by faktur NoTransaksi directly
+                // ->orWhere(function($sq) use ($noTransaksi) {
+                //       $sq->where('fakturpenjualanheader.NoTransaksi', $noTransaksi)
+                //          ->where('fakturpenjualanheader.NoReff', 'FNB-DIRECT');
+                //   });
+            })
             ->first();
 
         if (!$header) {

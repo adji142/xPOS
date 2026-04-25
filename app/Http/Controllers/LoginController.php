@@ -52,7 +52,7 @@ class LoginController extends Controller
         $kecamatan = Kecamatan::all();
         $tnc = TnCModel::first();
         // dd($kota);
-        return view("auth.registerv2",[
+        return view("auth.registerv3",[
             'subscriptionheader' => $subscriptionheader,
             'provinsi' => $provinsi,
             'kota' => $kota,
@@ -436,34 +436,41 @@ class LoginController extends Controller
 
 
             // Save Invoice
-            $oSubs = SubscriptionHeader::where('NoTransaksi',$request->input('ProductSelected'))->first();
+            $oSubs       = SubscriptionHeader::where('NoTransaksi', $request->input('ProductSelected'))->first();
+            $hargaAsli   = floatval($oSubs->Harga) - floatval($oSubs->Potongan);
+            $diskon      = floatval($request->input('DiscountAmount', 0));
+            $voucherCode = $request->input('VoucherCode', null);
+
             $oDetail = array(
                 'NoTransaksi' => '',
-                'NoUrut' => -1,
-                'Harga' => floatval($oSubs->Harga) - floatval($oSubs->Potongan),
-                'Catatan' => "Langganan Perdana",
+                'NoUrut'      => -1,
+                'Harga'       => $hargaAsli,
+                'Diskon'      => $diskon,
+                'Catatan'     => "Langganan Perdana",
                 'KodePelanggan' => $KodePartner,
             );
             $oObject = array(
-                'NoTransaksi' => '',
-                'TglTransaksi' => Carbon::now()->format('Y-m-d'),
-                'TglJatuhTempo' => Carbon::now()->addDays(7)->format('Y-m-d'),
+                'NoTransaksi'        => '',
+                'TglTransaksi'       => Carbon::now()->format('Y-m-d'),
+                'TglJatuhTempo'      => Carbon::now()->addDays(7)->format('Y-m-d'),
                 'KodePaketLangganan' => $request->input('ProductSelected'),
-                'Catatan' => 'Langganan Perdana',
-                'KodePelanggan' => $KodePartner,
-                'TotalTagihan' => $oSubs->Harga - $oSubs->Potongan,
-                'TotalBayar' => 0,
-                'Status' => 'O',
-                'StartSubs' => Carbon::now()->format('Y-m-d'),
-                'EndSubs' => Carbon::now()->format('Y-m-d'),
-                'Detail' => $oDetail
+                'Catatan'            => 'Langganan Perdana',
+                'KodePelanggan'      => $KodePartner,
+                'Total'              => $hargaAsli,
+                'Diskon'             => $diskon,
+                'VoucherCode'        => $voucherCode,
+                'TotalBayar'         => 0,
+                'Status'             => 'O',
+                'StartSubs'          => Carbon::now()->format('Y-m-d'),
+                'EndSubs'            => Carbon::now()->format('Y-m-d'),
+                'Detail'             => $oDetail
             );
             
-            $oInv = new InvoicePenggunaController();
-            $oSaveINV = $oInv->SaveInvoice($oObject);
-            if (!$oSaveINV) {
-                $errorCount +=1;
-                $errorMessage = "Gagal Menimpan Tagihan ";
+            $oInv     = new InvoicePenggunaController();
+            $oSaveINV = $oInv->SaveInvoice($oObject)->getData(true);
+            if (!$oSaveINV['success']) {
+                $errorCount  += 1;
+                $errorMessage = "Gagal Menyimpan Tagihan: " . ($oSaveINV['message'] ?? '');
                 goto jump;
             }
         } catch (\Exception $e) {

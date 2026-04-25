@@ -157,7 +157,7 @@ class KasKeluarController extends Controller
                     $detail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
                     $detail->save();
-    
+
                     if (!$detail) {
                         $errorMessage = "Menyimpan Kas Keluar Detail Row Number " . ($index +1) . " Gagal dilakukan";
                         $errorCount +=1;
@@ -166,6 +166,25 @@ class KasKeluarController extends Controller
                     $index +=1;
                     skip:
                 }
+
+                // Auto Journal
+                $journal = new \App\Services\AccountingService();
+                $journal->initialize("KK", $request->input('TglTransaksi'), $NoTransaksi, "O", ($request->input('StatusDocument') == "D"));
+
+                // Per Detail (Debet - tujuan pengeluaran)
+                foreach ($DetailParameter as $dt) {
+                    if ($dt['TotalTransaksi'] == 0 || empty($dt['KodeAkun'])) continue;
+                    $res = $journal->addDetailWithAccount($dt['KodeAkun'], 1, $dt['TotalTransaksi'], $dt['Keterangan']);
+                    if (!$res['success']) { $errorMessage = $res['message']; $errorCount+=1; goto jump; }
+                }
+
+                // Akun Kas/Bank Header (Kredit)
+                $res = $journal->addDetailWithAccount($request->input('KodeAkun'), 2, $request->input('TotalTransaksi'), $request->input('Keterangan'));
+                if (!$res['success']) { $errorMessage = $res['message']; $errorCount+=1; goto jump; }
+
+                $res = $journal->save();
+                if (!$res['success']) { $errorMessage = $res['message']; $errorCount+=1; goto jump; }
+                // End Auto Journal
             }
             else{
                 $errorMessage = "Data Detail Harus diisi";
@@ -221,14 +240,12 @@ jump:
 
             if ($DetailParameter) {
                 $delete = DB::table('kaskeluardetail')
-		                ->where('NoTransaksi','=', $request->input('NoTransaksi'))
-		                ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
-		                ->delete();
+                        ->where('NoTransaksi','=', $request->input('NoTransaksi'))
+                        ->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
+                        ->delete();
                 $index = 0;
-                // var_dump($DetailParameter);
                 foreach ($DetailParameter as $dt) {
                     if ($dt["TotalTransaksi"] == "0") {
-                        // var_dump($dt["TotalTransaksi"]. " / ". $dt['KodeAkun']);
                         goto skip;
                     }
 
@@ -241,7 +258,7 @@ jump:
                     $detail->RecordOwnerID = Auth::user()->RecordOwnerID;
 
                     $detail->save();
-    
+
                     if (!$detail) {
                         $data['success'] = false;
                         $data['message'] = "Menyimpan Kas Keluar Detail Row Number " . ($index +1) . " Gagal dilakukan";
@@ -251,6 +268,25 @@ jump:
                     $index +=1;
                     skip:
                 }
+
+                // Auto Journal
+                $journal = new \App\Services\AccountingService();
+                $journal->initialize("KK", $request->input('TglTransaksi'), $request->input('NoTransaksi'), "O", ($request->input('StatusDocument') == "D"));
+
+                // Per Detail (Debet - tujuan pengeluaran)
+                foreach ($DetailParameter as $dt) {
+                    if ($dt['TotalTransaksi'] == 0 || empty($dt['KodeAkun'])) continue;
+                    $res = $journal->addDetailWithAccount($dt['KodeAkun'], 1, $dt['TotalTransaksi'], $dt['Keterangan']);
+                    if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
+                }
+
+                // Akun Kas/Bank Header (Kredit)
+                $res = $journal->addDetailWithAccount($request->input('KodeAkun'), 2, $request->input('TotalTransaksi'), $request->input('Keterangan'));
+                if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
+
+                $res = $journal->save();
+                if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
+                // End Auto Journal
             }
             else{
                 $data['success'] = false;
