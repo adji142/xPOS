@@ -348,27 +348,34 @@
       		var allRowsData  = dataGridInstance.getDataSource().items();
       		console.log(allRowsData)
       		var oDetail = [];
+      		var TotalPajak = 0;
 
       		for (var i = 0; i < allRowsData.length; i++) {
-      			// Things[i]
       			if (allRowsData[i]['KodeItem'] != "") {
+      				var _qty      = allRowsData[i]['Qty'] || 0;
+      				var _harga    = allRowsData[i]['Harga'] || 0;
+      				var _disc     = allRowsData[i]['Discount'] || 0;
+      				var _vat      = allRowsData[i]['VatPercent'] || 0;
+      				var _gross    = _qty * _harga;
+      				var _netBefore = _gross - (_gross * _disc / 100);
+      				TotalPajak += _netBefore * _vat / 100;
 
       				var oItem = {
       					'NoUrut' : allRowsData[i]['NoUrut'],
 						'KodeItem' : allRowsData[i]['KodeItem'],
-						'Qty' : allRowsData[i]['Qty'],
+						'Qty' : _qty,
 						'Satuan' : allRowsData[i]['Satuan'],
-						'Harga' : allRowsData[i]['Harga'],
-						'Discount' : allRowsData[i]['Discount'],
+						'Harga' : _harga,
+						'Discount' : _disc,
 						'HargaNet' : allRowsData[i]['HargaNet'],
 						'BaseReff' : "-",
 						'BaseLine' : -1,
 						'KodeGudang' : allRowsData[i]['KodeGudang'],
-						'LineStatus':allRowsData[i]['LineStatus'],
-						'VatPercent':allRowsData[i]['VatPercent'],
-						'HargaPokokPenjualan':allRowsData[i]['HargaPokokPenjualan'],
+						'LineStatus' : allRowsData[i]['LineStatus'],
+						'VatPercent' : _vat,
+						'HargaPokokPenjualan' : allRowsData[i]['HargaPokokPenjualan'] || 0,
       				}
-      				
+
       				oDetail.push(oItem)
       			}
       		}
@@ -383,14 +390,12 @@
 				'Termin' : TotalTermin,
 				'TotalTransaksi' : jQuery('#TotalTransaksi').attr("originalvalue"),
 				'Potongan' : jQuery('#Potongan').attr("originalvalue"),
-				'Pajak' : 0,
+				'Pajak' : TotalPajak,
 				'TotalPembelian' : jQuery('#TotalPembelian').attr("originalvalue"),
 				'TotalRetur' : 0,
 				'TotalPembayaran' : 0,
 				'Status' : jQuery('#Status').val(),
 				'Keterangan' : jQuery('#Keterangan').val(),
-				'VatPercent' : jQuery('#VatPercent').val(),
-				'HargaPokokPenjualan' : jQuery('#HargaPokokPenjualan').val(),
 				'Detail' : oDetail
 			}
 			// var originalvalue = jQuery("#TotalTransaksi").attr("originalvalue");
@@ -512,40 +517,29 @@
       		var TotalTransaksi = 0;
       		var TotalPotongan = 0;
       		var TotalPajak = 0;
-      		var TotalNet = 0;
 
-      		console.log(allRowsData)
       		for (var i = 0; i < allRowsData.length; i++) {
-      			// Things[i]
+      			if (allRowsData[i]['KodeItem'] == "") continue;
 
-      			if (allRowsData[i]['KodeItem'] != "") {
+      			var Qty = allRowsData[i]['Qty'] || 0;
+      			var Harga = allRowsData[i]['Harga'] || 0;
+      			var Discount = allRowsData[i]['Discount'] || 0;
+				var VatPercent = allRowsData[i]['VatPercent'] || 0;
 
-      				console.log(allRowsData[i]['Qty'])
-      				var Qty = (typeof(allRowsData[i]['Qty'])) === "undefined" ? 0 : allRowsData[i]['Qty'];
-	      			var Harga = (typeof(allRowsData[i]['Harga'])) == "undefined" ? 0 : allRowsData[i]['Harga'];
-	      			var Discount = (typeof(allRowsData[i]['Discount'])) == "undefined" ? 0 : allRowsData[i]['Discount'];
-					var PPN = (typeof(allRowsData[i]['VatPercent'])) == "undefined" ? 0 : allRowsData[i]['VatPercent'];
+      			var GrossItem = Qty * Harga;
+      			var DiskonItem = GrossItem * Discount / 100;
+      			var NetBeforeVat = GrossItem - DiskonItem;
+      			var VatItem = NetBeforeVat * VatPercent / 100;
 
-      				TotalTransaksi += Qty * Harga;
-      				console.log(TotalTransaksi)
-	      			if (Discount > 0) {
-
-	      				var diskon = TotalTransaksi * Discount / 100
-	      				TotalPotongan += parseFloat(diskon);
-	      			}
-
-					if (PPN > 0 && TotalTransaksi > 0) {
-	      				var Gross = (Qty * Harga) - TotalPotongan;
-	      				TotalPajak +=  (parseFloat(allRowsData[i]['VatPercent']) / 100) * Gross;
-	      				console.log(allRowsData[i]['VatPercent'] + " > " + Gross)
-	      			}
-      			}
+      			TotalTransaksi += GrossItem;
+      			TotalPotongan += DiskonItem;
+      			TotalPajak += VatItem;
       		}
 
       		formatCurrency(jQuery('#TotalTransaksi'), TotalTransaksi);
       		formatCurrency(jQuery('#Potongan'), TotalPotongan);
+      		formatCurrency(jQuery('#Pajak'), TotalPajak);
       		formatCurrency(jQuery('#TotalPembelian'), TotalTransaksi - TotalPotongan + TotalPajak);
-			formatCurrency(jQuery('#Pajak'), TotalPajak);
 		}
 
 		function BindGridDetail(data) {

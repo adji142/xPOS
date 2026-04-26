@@ -15,6 +15,48 @@
     height: 50% !important;
 }
 
+/* Responsive Table */
+@media (max-width: 768px) {
+    #tableDetailItem thead {
+        display: none;
+    }
+    #tableDetailItem tr {
+        display: block;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e3e6f0;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        background: #ffffff;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    #tableDetailItem td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: none;
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed #ebedf3;
+    }
+    #tableDetailItem td:last-child {
+        border-bottom: none;
+        justify-content: flex-end;
+    }
+    #tableDetailItem td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #3f4254;
+        margin-right: 1rem;
+    }
+    #tableDetailItem td .select2-container, 
+    #tableDetailItem td .form-control {
+        width: 60% !important;
+    }
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,.02);
+}
+
 </style>
 <div class="subheader py-2 py-lg-6 subheader-solid">
 	<div class="container-fluid">
@@ -170,19 +212,19 @@
                                         <table class="table table-bordered" id="tableDetailItem">
                                             <thead>
                                                 <tr>
-                                                    <th style="width: 30%">Item</th>
+                                                    <th style="width: 35%">Item</th>
                                                     <th style="width: 10%">Qty Order</th>
                                                     <th style="width: 10%">Qty Kirim</th>
                                                     <th style="width: 15%">Gudang</th>
-                                                    <th style="width: 15%">Harga</th>
-                                                    <th style="width: 15%">PPN</th>
-                                                    <th style="width: 15%">Total</th>
-                                                    <th style="width: 10%"><button type="button" id="btnAddRow" class="btn btn-sm btn-success">+</button></th>
+                                                    <th style="width: 10%">Harga</th>
+                                                    <th style="width: 10%">PPN</th>
+                                                    <th style="width: 10%">Total</th>
+                                                    <th style="width: 5%"><button type="button" id="btnAddRow" class="btn btn-sm btn-light-success btn-icon"><i class="fa fa-plus"></i></button></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td>
+                                                    <td data-label="Item">
                                                         <select class="form-control select-item select2" name="item[]" style="width: 100%">
                                                             <option value="">Pilih Item</option>
                                                             @foreach($item as $it)
@@ -192,9 +234,9 @@
                                                             @endforeach
                                                         </select>
                                                     </td>
-                                                    <td><input type="number" name="qtyorder[]" class="form-control qtyorder" value="1" min="1" readonly/></td>
-                                                    <td><input type="number" name="qtykirim[]" class="form-control qtykirim" value="1" min="1" /></td>
-                                                    <td>
+                                                    <td data-label="Qty Order"><input type="number" name="qtyorder[]" class="form-control qtyorder" value="0" min="0" readonly/></td>
+                                                    <td data-label="Qty Kirim"><input type="number" name="qtykirim[]" class="form-control qtykirim" value="1" min="1" /></td>
+                                                    <td data-label="Gudang">
                                                         <select class="form-control select-gudang select2" name="gudang[]" style="width: 100%">
                                                             <option value="">Pilih gudang</option>
                                                             @foreach($gudang as $gd)
@@ -204,15 +246,15 @@
                                                             @endforeach
                                                         </select>
                                                     </td>
-                                                    <td>
+                                                    <td data-label="Harga">
                                                         <input type="text" name="harga[]" class="form-control harga" readonly/>
                                                         <input type="hidden" name="hpp[]" class="form-control hpp" readonly/>
                                                         <input type="hidden" name="diskon[]" class="form-control diskon" value="0" />
                                                         <input type="hidden" name="baseline[]" class="form-control baseline" value="-1" />
                                                     </td>
-                                                    <td><input type="text" name="ppn[]" class="form-control ppn" readonly/></td>
-                                                    <td><input type="text" name="total[]" class="form-control total" readonly /></td>
-                                                    <td><button type="button" class="btn btn-sm btn-danger btnRemoveRow">-</button></td>
+                                                    <td data-label="PPN"><input type="text" name="ppn[]" class="form-control ppn" readonly/></td>
+                                                    <td data-label="Total"><input type="text" name="total[]" class="form-control total" readonly /></td>
+                                                    <td data-label="Aksi"><button type="button" class="btn btn-sm btn-light-danger btn-icon btnRemoveRow"><i class="fa fa-trash"></i></button></td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -300,7 +342,9 @@
     var firstDay = now.getFullYear()+"-"+month+"-01";
     var NowDay = now.getFullYear()+"-"+month+"-"+day;
 
+    var isInit = false;
     var TotalTermin = 0;
+    var NoOrderPembelian = "";
     var orderDetailData = <?php echo json_encode($orderdetail) ?>;
     var oPPN = <?php echo $ppnpercent ?>;
     var oPPNInclude = <?php echo $ppninclude ?>;
@@ -355,6 +399,7 @@
             combo.option("disabled", true);
 
 
+            isInit = true;
             const tableBody = jQuery('#tableDetailItem tbody');
             tableBody.empty(); // hapus semua baris default
 
@@ -364,7 +409,7 @@
                 console.log(dlv);
                 const newRow = `
                     <tr>
-                        <td>
+                        <td data-label="Item">
                             <select class="form-control select2 select-item" name="item[]">
                                 <option value="">Pilih Item</option>
                                 @foreach($item as $i)
@@ -379,9 +424,9 @@
                                 @endforeach
                             </select>
                         </td>
-                        <td><input type="number" class="form-control qtyorder" value="${dlv.QtyOrder}" readonly/></td>
-                        <td><input type="number" class="form-control qtykirim" value="0" min=1 max="${dlv.Qty}"/></td>
-                        <td>
+                        <td data-label="Qty Order"><input type="number" class="form-control qtyorder" value="${dlv.QtyOrder}" readonly/></td>
+                        <td data-label="Qty Kirim"><input type="number" class="form-control qtykirim" value="${dlv.QtyKirim}" min=1 max="${dlv.QtyOrder}"/></td>
+                        <td data-label="Gudang">
                             <select class="form-control select2 select-gudang" name="gudang[]">
                                 <option value="">Pilih Gudang</option>
                                 @foreach($gudang as $gd)
@@ -391,15 +436,15 @@
                                 @endforeach
                             </select>
                         </td>
-                        <td>
+                        <td data-label="Harga">
                             <input type="text" class="form-control harga" value="${dlv.Harga}" originalvalue="${dlv.Harga}" readonly/>
                             <input type="hidden" class="form-control diskon" value="${dlv.Discount}" readonly/>
                             <input type="hidden" class="form-control hpp" value="${dlv.HargaPokokPenjualan}" originalvalue="${dlv.HargaPokokPenjualan}" readonly/>
-                            <input type="hidden" class="form-control baseline" value="${dlv.NoUrut}" originalvalue="${dlv.NoUrut}" readonly/>
+                            <input type="hidden" class="form-control baseline" value="${dlv.BaseLine}" originalvalue="${dlv.BaseLine}" readonly/>
                         </td>
-                        <td><input type="text" name="ppn[]" class="form-control ppn" value="${dlv.VatTotal}" originalvalue="${dlv.VatTotal}" readonly/></td>
-                        <td><input type="text" class="form-control total" readonly/></td>
-                        <td><button type="button" class="btn btn-sm btn-danger btnRemoveRow">-</button></td>
+                        <td data-label="PPN"><input type="text" name="ppn[]" class="form-control ppn" value="${dlv.VatTotal}" originalvalue="${dlv.VatTotal}" readonly/></td>
+                        <td data-label="Total"><input type="text" class="form-control total" readonly/></td>
+                        <td data-label="Aksi"><button type="button" class="btn btn-sm btn-light-danger btn-icon btnRemoveRow"><i class="fa fa-trash"></i></button></td>
                     </tr>
                 `;
 
@@ -411,11 +456,13 @@
                 // Set selected item
                 row.find('.select-item').val(dlv.KodeItem).trigger('change');
                 row.find('.select-gudang').val(dlv.KodeGudang).trigger('change');
+                row.find('.qtykirim').val(dlv.QtyKirim); // Reset setelah trigger change karena change men-set ke 1
                 row.find('.select2').select2({ width: 'resolve' });
 
                 // Kalkulasi ulang total
                 calculateRowTotal(row);
             });
+            isInit = false;
 
             updateSummary();
         }
@@ -930,7 +977,7 @@
     }
 
     // Hitung otomatis saat input berubah
-    jQuery('#tableDetailItem').on('input change', '.qty, .harga, .diskon', function () {
+    jQuery('#tableDetailItem').on('input change', '.qtykirim, .qtyorder, .harga, .diskon', function () {
         let row = jQuery(this).closest('tr');
         calculateRowTotal(row);
         updateSummary();
@@ -973,6 +1020,11 @@
 
         calculateRowTotal(row);
         updateSummary();
+
+        // Auto add row if this is the last row and an item is selected
+        if (!isInit && row.is(':last-child') && jQuery(this).val() != "") {
+            jQuery('#btnAddRow').click();
+        }
     });
 
     // Tambah baris
@@ -980,15 +1032,24 @@
         let tableBody = jQuery('#tableDetailItem tbody');
         let newRow = tableBody.find('tr:first').clone();
 
+        // Reset values
         newRow.find('input').val('');
         newRow.find('select').val('').trigger('change');
-        newRow.find('.total').val(''); // pastikan total kosong
+        newRow.find('.qtyorder').val(0);
+        newRow.find('.qtykirim').val(1);
+        newRow.find('.total').val('');
+        newRow.find('.ppn').val('');
+        newRow.find('.baseline').val('-1');
+        newRow.find('.diskon').val(0);
+
+        // Remove old select2 container before re-initializing
+        newRow.find('.select2-container').remove();
+        newRow.find('.select2').removeClass('select2-hidden-accessible');
 
         tableBody.append(newRow);
+        
+        // Re-initialize select2
         newRow.find('.select2').select2({ width: 'resolve' });
-        // newRow.find('.select2-selection.select2-selection--single').hide();
-        // newRow.find('span.selection').css('display', 'none');
-        // newRow.find('span.selection > span.select2-selection.select2-selection--single').css('display', 'none');
     });
 
     // Hapus baris

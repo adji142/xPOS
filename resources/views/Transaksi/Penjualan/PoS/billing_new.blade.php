@@ -1670,7 +1670,7 @@
         const dateStr = dateObj.toLocaleDateString('id-ID') + ' ' + dateObj.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
         $('#rcptDate').text(dateStr);
         
-        $('#rcptTable').text(h.NomorMeja || '-');
+        $('#rcptTable').text(h.NamaTitikLampu || '-');
         $('#rcptCustomer').text(h.NamaPelanggan || 'Umum');
         $('#rcptCustomerEmail').text(h.Email || '');
 
@@ -2010,10 +2010,11 @@
                             }
                         });
                     } else {
+                        console.log("Manual Payment")
                         btn.disabled = false;
                         btn.innerHTML = oldHtml;
                         closeDetailModal();
-                        showReceiptPreview(res.NoTransaksi);
+                        showReceiptPreview(selectedTitik.notransaksi);
                     }
                 } else {
                     btn.disabled = false;
@@ -4476,7 +4477,16 @@
                             window.snap.pay(res.snap_token, handlers);
                         } else {
                             // Flow normal (Cash / Piutang / Metode Manual)
-                                showReceiptPreview(res.NoTransaksi);
+                            var isLangsung = document.querySelector('input[name="OpsiBayar"]:checked').value === 'LANGSUNG';
+
+                            if (isLangsung) {
+                                showReceiptPreview(res.NoTransaksi);   
+                            }
+                            else{
+                                swal("Perhatian", "Order berhasil dibuat", "success").then(() => {
+                                    location.reload(); 
+                                });
+                            }
                         }
                     } else {
                         // Restore button

@@ -99,7 +99,7 @@
                             		</div>
 
                             		<div class="col-md-12">
-                            			<label  class="text-body">Isi Nomor Order</label>
+                            			<label  class="text-body">Isi Nomor Surat Jalan</label>
                             			<fieldset class="form-group mb-3">
                             				<div id="gridBox"></div>
                             			</fieldset>
@@ -467,7 +467,7 @@
                     return `${item.NoTransaksi}`;
                 }
             },
-            placeholder: 'Pilih Nomor Order',
+            placeholder: 'Pilih Nomor Surat Jalan',
             dataSource:data,
             showClearButton: true,
             contentTemplate: function(e) {
@@ -544,7 +544,7 @@
                                         @endforeach
                                     </select>
                                 </td>
-                                <td><input type="number" class="form-control qtyfaktur" value="0" min=1 max="${v.Qty}"/></td>
+                                <td><input type="number" class="form-control qtyfaktur" value="${v.Qty - v.QtyFaktur}" min=0 max="${v.Qty - v.QtyFaktur}"/></td>
                                 <td>
                                     <select class="form-control select2 select-gudang" name="gudang[]">
                                         <option value="">Pilih Gudang</option>
@@ -572,6 +572,7 @@
 
                         // Set selected item
                         row.find('.select-item').val(v.KodeItem).trigger('change');
+                        row.find('.qtyfaktur').val(v.Qty - v.QtyFaktur); // Set qty after change trigger to avoid overwrite
                         row.find('.select-gudang').val(v.KodeGudang).trigger('change');
                         row.find('.select2').select2({ width: 'resolve' });
 

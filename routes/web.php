@@ -71,6 +71,7 @@ use App\Http\Controllers\DocumentOutputController;
 use App\Http\Controllers\KelompokLampuController;
 use App\Http\Controllers\QueueManagementController;
 use App\Http\Controllers\DiscountVoucherController;
+use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\SupportPageController;
 use App\Http\Controllers\LogingController;
 use App\Http\Controllers\SerialNumberController;
@@ -590,7 +591,7 @@ Route::post('/fpenjualan/hiburanPoS', [FakturPenjualanController::class, 'storeP
 Route::post('/fpenjualan/void', [FakturPenjualanController::class, 'void'])->name('fpenjualan-void')->middleware(['auth', 'check.session']);
 Route::post('/fpenjualan/getTimeSlots', [TableOrderController::class, 'getAvailableTimeSlots'])->name('fpenjualan-getTimeSlots')->middleware(['auth', 'check.session']);
 Route::post('/billing/store-fnb', [TableOrderController::class, 'storeFnBOrder'])->name('billing-store-fnb')->middleware(['auth', 'check.session']);
-Route::post('/billing/store-tambah-durasi', [TableOrderController::class, 'storeTambahDurasi'])->name('billing-store-tambah-durasi')->middleware(['auth', 'check.session']);
+// Route::post('/billing/store-tambah-durasi', [TableOrderController::class, 'storeTambahDurasi'])->name('billing-store-tambah-durasi')->middleware(['auth', 'check.session']);
 Route::post('/billing/get-faktur-detail', [TableOrderController::class, 'getFakturDetail'])->name('billing-get-faktur-detail')->middleware(['auth', 'check.session']);
 Route::post('/billing/send-receipt-email', [TableOrderController::class, 'sendReceiptEmail'])->name('billing-send-receipt-email')->middleware(['auth', 'check.session']);
 
@@ -735,6 +736,8 @@ Route::get('/report/pembayaranpembelian', [ReportController::class, 'RptPembayar
 Route::get('/report/saldorekening', [ReportController::class, 'RptSaldoRekening'])->name('report-saldorekening')->middleware(['auth', 'check.session']);
 Route::get('/report/neracasaldo', [ReportController::class, 'RptNeracaSaldo'])->name('report-neracasaldo')->middleware(['auth', 'check.session']);
 Route::get('/report/labarugi', [ReportController::class, 'rptLabaRugi'])->name('report-labarugi')->middleware(['auth', 'check.session']);
+Route::get('/report/bukubesar', [ReportController::class, 'RptBukuBesar'])->name('report-bukubesar')->middleware(['auth', 'check.session']);
+Route::get('/report/cashflow', [ReportController::class, 'rptCashFlow'])->name('report-cashflow')->middleware(['auth', 'check.session']);
 
 
 
@@ -1139,6 +1142,24 @@ Route::post('/discountvoucher/editJson', [DiscountVoucherController::class, 'edi
 Route::delete('/discountvoucher/delete/{id}', [DiscountVoucherController::class, 'deletedata'])->name('discountvoucher-delete')->middleware(['auth', 'check.session']);
 Route::get('/discountvoucher/export', [DiscountVoucherController::class,'Export'])->name('discountvoucher-export')->middleware(['auth', 'check.session']);
 
+
+
+/*
+|--------------------------------------------------------------------------
+| Voucher Management
+|--------------------------------------------------------------------------
+|
+*/
+Route::get('/voucher', [VoucherController::class, 'View'])->name('voucher')->middleware(['auth', 'check.session']);
+Route::get('/voucher/form/{id}', [VoucherController::class, 'Form'])->name('voucher-form')->middleware(['auth', 'check.session']);
+Route::post('/voucher/store', [VoucherController::class, 'store'])->name('voucher-store')->middleware(['auth', 'check.session']);
+Route::post('/voucher/edit', [VoucherController::class, 'edit'])->name('voucher-edit')->middleware(['auth', 'check.session']);
+Route::delete('/voucher/delete/{id}', [VoucherController::class, 'deletedata'])->name('voucher-delete')->middleware(['auth', 'check.session']);
+Route::post('/voucher/toggle/{id}', [VoucherController::class, 'toggleActive'])->name('voucher-toggle')->middleware(['auth', 'check.session']);
+// json
+Route::post('/voucher/read', [VoucherController::class, 'ViewJson'])->name('voucher-ViewJson')->middleware(['auth', 'check.session']);
+// public – used on registration form (no auth required)
+Route::post('/voucher/check', [VoucherController::class, 'checkVoucher'])->name('voucher-check');
 
 
 Route::get('/queue/{id}', [QueueManagementController::class,'index'])->name('queue-management');

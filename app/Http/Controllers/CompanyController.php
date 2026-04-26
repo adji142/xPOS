@@ -794,29 +794,32 @@ class CompanyController extends Controller
                     
                     // Save Invoice
                     if($isCreateNewInvoice){
-                        $oSubs = SubscriptionHeader::where('NoTransaksi',$value->KodePaketLangganan)->first();
+                        $oSubs      = SubscriptionHeader::where('NoTransaksi',$value->KodePaketLangganan)->first();
+                        $hargaAsli  = floatval($oSubs->Harga) - floatval($oSubs->Potongan);
                         $oDetail = array(
-                            'NoTransaksi' => '',
-                            'NoUrut' => -1,
-                            'Harga' => floatval($oSubs->Harga) - floatval($oSubs->Potongan),
-                            'Catatan' => "Langganan Perdana",
+                            'NoTransaksi'   => '',
+                            'NoUrut'        => -1,
+                            'Harga'         => $hargaAsli,
+                            'Diskon'        => 0,
+                            'Catatan'       => "Perpanjangan Langganan",
                             'KodePelanggan' => $value->KodePartner,
                         );
                         $oObject = array(
-                            'NoTransaksi' => '',
-                            'TglTransaksi' => Carbon::now()->format('Y-m-d'),
-                            'TglJatuhTempo' => Carbon::now()->addDays(7)->format('Y-m-d'),
+                            'NoTransaksi'        => '',
+                            'TglTransaksi'       => Carbon::now()->format('Y-m-d'),
+                            'TglJatuhTempo'      => Carbon::now()->addDays(7)->format('Y-m-d'),
                             'KodePaketLangganan' => $value->KodePaketLangganan,
-                            'Catatan' => 'Langganan DS Tech Smart Pos Bulan ' . Carbon::now()->format('F Y'),
-                            'KodePelanggan' => $value->KodePartner,
-                            'TotalTagihan' => $oSubs->Harga - $oSubs->Potongan,
-                            'TotalBayar' => 0,
-                            'Status' => 'O',
-                            'StartSubs' => Carbon::now()->format('Y-m-d'),
-                            'EndSubs' => Carbon::now()->format('Y-m-d'),
-                            'Detail' => $oDetail
+                            'Catatan'            => 'Langganan DS Tech Smart Pos Bulan ' . Carbon::now()->format('F Y'),
+                            'KodePelanggan'      => $value->KodePartner,
+                            'Total'              => $hargaAsli,
+                            'Diskon'             => 0,
+                            'TotalBayar'         => 0,
+                            'Status'             => 'O',
+                            'StartSubs'          => Carbon::now()->format('Y-m-d'),
+                            'EndSubs'            => Carbon::now()->format('Y-m-d'),
+                            'Detail'             => $oDetail
                         );
-                        
+
                         $oInv = new InvoicePenggunaController();
                         $oSaveINV = $oInv->SaveInvoice($oObject);
                         if (!$oSaveINV) {
@@ -845,29 +848,32 @@ class CompanyController extends Controller
                     // Save Invoice
 
                     if($isCreateNewInvoice){
-                        $oSubs = SubscriptionHeader::where('NoTransaksi',$value->KodePaketLangganan)->first();
+                        $oSubs     = SubscriptionHeader::where('NoTransaksi',$value->KodePaketLangganan)->first();
+                        $hargaAsli = floatval($oSubs->Harga) - floatval($oSubs->Potongan);
                         $oDetail = array(
-                            'NoTransaksi' => '',
-                            'NoUrut' => -1,
-                            'Harga' => floatval($oSubs->Harga) - floatval($oSubs->Potongan),
-                            'Catatan' => "Langganan Perdana",
+                            'NoTransaksi'   => '',
+                            'NoUrut'        => -1,
+                            'Harga'         => $hargaAsli,
+                            'Diskon'        => 0,
+                            'Catatan'       => "Perpanjangan Langganan",
                             'KodePelanggan' => $value->KodePartner,
                         );
                         $oObject = array(
-                            'NoTransaksi' => '',
-                            'TglTransaksi' => Carbon::now()->format('Y-m-d'),
-                            'TglJatuhTempo' => Carbon::now()->addDays(7)->format('Y-m-d'),
+                            'NoTransaksi'        => '',
+                            'TglTransaksi'       => Carbon::now()->format('Y-m-d'),
+                            'TglJatuhTempo'      => Carbon::now()->addDays(7)->format('Y-m-d'),
                             'KodePaketLangganan' => $value->KodePaketLangganan,
-                            'Catatan' => 'Langganan DS Tech Smart Pos Bulan ' . Carbon::now()->format('F Y'),
-                            'KodePelanggan' => $value->KodePartner,
-                            'TotalTagihan' => $oSubs->Harga - $oSubs->Potongan,
-                            'TotalBayar' => 0,
-                            'Status' => 'O',
-                            'StartSubs' => Carbon::now()->format('Y-m-d'),
-                            'EndSubs' => Carbon::now()->format('Y-m-d'),
-                            'Detail' => $oDetail
+                            'Catatan'            => 'Langganan DS Tech Smart Pos Bulan ' . Carbon::now()->format('F Y'),
+                            'KodePelanggan'      => $value->KodePartner,
+                            'Total'              => $hargaAsli,
+                            'Diskon'             => 0,
+                            'TotalBayar'         => 0,
+                            'Status'             => 'O',
+                            'StartSubs'          => Carbon::now()->format('Y-m-d'),
+                            'EndSubs'            => Carbon::now()->format('Y-m-d'),
+                            'Detail'             => $oDetail
                         );
-                        
+
                         $oInv = new InvoicePenggunaController();
                         $oSaveINV = $oInv->SaveInvoice($oObject);
                         if (!$oSaveINV) {

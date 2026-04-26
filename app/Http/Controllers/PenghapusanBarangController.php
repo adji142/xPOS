@@ -14,7 +14,6 @@ use App\Models\Gudang;
 use App\Models\DocumentNumbering;
 use App\Models\PenghapusanBarangHeader;
 use App\Models\PenghapusanBarangDetail;
-use App\Models\AutoPosting;
 use App\Models\Company;
 use App\Models\SettingAccount;
 use App\Models\Rekening;
@@ -25,7 +24,7 @@ class PenghapusanBarangController extends Controller
 		$Status = $request->input('Status');
 
 		return view("Transaksi.Inventory.PenghapusanStock",[
-			'oldStatus' => $Status, 
+			'oldStatus' => $Status,
 		]);
     }
     public function ViewHeader(Request $request){
@@ -33,8 +32,6 @@ class PenghapusanBarangController extends Controller
     	$TglAwal = $request->input('TglAwal');
 	   	$TglAkhir = $request->input('TglAkhir');
 	   	$Status = $request->input('Status');
-
-	   	$sql = "";
 
 	   	$model = PenghapusanBarangHeader::where('RecordOwnerID',Auth::user()->RecordOwnerID)
 	   				->whereBetween('TglTransaksi', [$TglAwal, $TglAkhir]);
@@ -78,7 +75,7 @@ class PenghapusanBarangController extends Controller
 						->where('Active','Y')->get();
 		$satuan = Satuan::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
 		$gudang = Gudang::where('RecordOwnerID','=',Auth::user()->RecordOwnerID)->get();
-		
+
 		$rekening = Rekening::selectRaw('KodeRekening, NamaRekening')
 						->where('RecordOwnerID','=',Auth::user()->RecordOwnerID)
 						->where('Jenis','=',2)
@@ -111,7 +108,6 @@ class PenghapusanBarangController extends Controller
 	    DB::beginTransaction();
 
 	    $errorCount = 0;
-		// var_dump($jsonData);
 		$oCompany = Company::where('KodePartner','=',Auth::user()->RecordOwnerID)->first();
 
 	    try {
@@ -120,7 +116,7 @@ class PenghapusanBarangController extends Controller
 			$Month = $currentDate->format('m');
 
             $model = new PenghapusanBarangHeader;
-           	
+
            	$numberingData = new DocumentNumbering();
            	$NoTransaksi = $numberingData->GetNewDoc("GI","penghapusanbarangheader","NoTransaksi");
 
@@ -134,12 +130,7 @@ class PenghapusanBarangController extends Controller
 	        $model->CreatedBy = Auth::user()->name;
 	        $model->UpdatedBy = '';
 	        $model->Posted = 0;
-			if (array_key_exists('JenisTransaksi', $jsonData)) {
-				$jsonData['JenisTransaksi'];
-			}
-			else{
-				$model->JenisTransaksi = 1;
-			}
+			$model->JenisTransaksi = array_key_exists('JenisTransaksi', $jsonData) ? $jsonData['JenisTransaksi'] : 1;
 	        $model->RecordOwnerID = Auth::user()->RecordOwnerID;
 	        $save = $model->save();
 
@@ -174,7 +165,7 @@ class PenghapusanBarangController extends Controller
 							$data['message'] = "Stock Item ".$key['KodeItem'].' Tidak Cukup';
 							$data['title'] = "#Penghapusan Barang";
 							$errorCount += 1;
-							goto jump;		
+							goto jump;
 						}
 					}
 				}
@@ -206,17 +197,11 @@ class PenghapusanBarangController extends Controller
 				$NoUrut +=1;
            	}
 
-			// Auto Posting
-			$arrHeader = array(
-				'NoTransaksi' => "",
-				'KodeTransaksi' => "GI",
-				'TglTransaksi' => $jsonData['TglTransaksi'],
-				'NoReff' => $NoTransaksi,
-				'StatusTransaksi' => "O",
-				'RecordOwnerID' => Auth::user()->RecordOwnerID,
-			);
-			$arrDetail = array();
+			// Auto Journal
+			$journal = new \App\Services\AccountingService();
+			$journal->initialize("GI", $jsonData['TglTransaksi'], $NoTransaksi, "O", ($jsonData['Status'] == "D"));
 
+			// Akun Penyesuaian Per Item (Debet)
 			$TotalRow = 0;
 			foreach ($jsonData['Detail'] as $key) {
 				if ($key['KodeRekening'] == "") {
@@ -224,58 +209,20 @@ class PenghapusanBarangController extends Controller
 					$errorCount +=1;
 					goto jump;
 				}
-				$temp = array(
-					'KodeTransaksi' => "GI", 
-					'KodeRekening' => $key['KodeRekening'],
-					'KodeRekeningBukuBesar' => "",
-					'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
-					'KodeMataUang' => "",
-					'Valas' => 0,
-					'NilaiTukar' => 0,
-					'Jumlah' => $key['Qty'] * $key['Harga'],
-					'Keterangan' => $jsonData['Keterangan'], 
-					'HeaderKas' => "",
-					'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-				);
-
-				array_push($arrDetail, $temp);
-				$TotalRow += $key['Qty'] * $key['Harga'];
+				$jumlah = $key['Qty'] * $key['Harga'];
+				$res = $journal->addDetailWithAccount($key['KodeRekening'], 1, $jumlah, $jsonData['Keterangan']);
+				if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
+				$TotalRow += $jumlah;
 			}
 
-			// GetAccount :
-			$Setting = NEW SettingAccount();
-			$getSetting = $Setting->GetSetting("InvAcctPersediaan");
-			$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-							->where('KodeRekening', $getSetting)->get();
-
-			if (count($validate) == 0) {
-				$data['message'] = "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
-				$errorCount +=1;
-				goto jump;
-			}
-
-			$temp = array(
-				'KodeTransaksi' => "GI", 
-				'KodeRekening' => $getSetting,
-				'KodeRekeningBukuBesar' => "",
-				'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
-				'KodeMataUang' => "",
-				'Valas' => 0,
-				'NilaiTukar' => 0,
-				'Jumlah' => $TotalRow, 
-				'Keterangan' => $jsonData['Keterangan'], 
-				'HeaderKas' => "",
-				'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-			);
-
-			array_push($arrDetail, $temp);
-
+			// Inventory (Kredit)
+			$res = $journal->addDetailFromSetting("InvAcctPersediaan", 2, $TotalRow, $jsonData['Keterangan']);
+			if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 
 			// Save Journal
-			$autoPosting = new AutoPosting();
-
-			if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
-				$data["message"] = "Gagal Simpan Jurnal";
+			$res = $journal->save();
+			if (!$res['success']) {
+				$data["message"] = $res['message'];
 				$errorCount +=1;
 				goto jump;
 			}
@@ -295,7 +242,7 @@ class PenghapusanBarangController extends Controller
 	        $data['message'] = $e->getMessage();
 	    }
 
-	    return response()->json($data);
+	    return $data;
 	}
 
     public function editJson(Request $request){
@@ -348,11 +295,11 @@ class PenghapusanBarangController extends Controller
 											->where('KodeItem',$key['KodeItem'])
 											->where('Stock','>',0)
 											->get();
-		
+
 								if (count($oItem) == 0) {
 									$data['message'] = "Stock Item ".$key['NamaItem'].' Tidak Cukup';
 									$errorCount += 1;
-									goto jump;		
+									goto jump;
 								}
 							}
 						}
@@ -384,71 +331,32 @@ class PenghapusanBarangController extends Controller
 						skip:
 		           	}
 
-					// Auto Posting
-					$arrHeader = array(
-						'NoTransaksi' => "",
-						'KodeTransaksi' => "GI",
-						'TglTransaksi' => $jsonData['TglTransaksi'],
-						'NoReff' => $jsonData['NoTransaksi'],
-						'StatusTransaksi' => "O",
-						'RecordOwnerID' => Auth::user()->RecordOwnerID,
-					);
-					$arrDetail = array();
+					// Auto Journal
+					$journal = new \App\Services\AccountingService();
+					$journal->initialize("GI", $jsonData['TglTransaksi'], $jsonData['NoTransaksi'], "O", ($jsonData['Status'] == "D"));
 
+					// Akun Penyesuaian Per Item (Debet)
 					$TotalRow = 0;
 					foreach ($jsonData['Detail'] as $key) {
-						$temp = array(
-							'KodeTransaksi' => "GI", 
-							'KodeRekening' => $key['KodeRekening'],
-							'KodeRekeningBukuBesar' => "",
-							'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
-							'KodeMataUang' => "",
-							'Valas' => 0,
-							'NilaiTukar' => 0,
-							'Jumlah' => $key['Qty'] * $key['Harga'],
-							'Keterangan' => $jsonData['Keterangan'], 
-							'HeaderKas' => "",
-							'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-						);
-
-						array_push($arrDetail, $temp);
-						$TotalRow += $key['Qty'] * $key['Harga'];
+						if ($key['KodeRekening'] == "") {
+							$data['message'] = "Akun Rekening Akutansi Harus diisi";
+							$errorCount +=1;
+							goto jump;
+						}
+						$jumlah = $key['Qty'] * $key['Harga'];
+						$res = $journal->addDetailWithAccount($key['KodeRekening'], 1, $jumlah, $jsonData['Keterangan']);
+						if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
+						$TotalRow += $jumlah;
 					}
 
-					// GetAccount :
-					$Setting = NEW SettingAccount();
-					$getSetting = $Setting->GetSetting("InvAcctPersediaan");
-					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-									->where('KodeRekening', $getSetting)->get();
-
-					if (count($validate) == 0) {
-						$data['message'] = "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
-						$errorCount +=1;
-						goto jump;
-					}
-
-					$temp = array(
-						'KodeTransaksi' => "GI", 
-						'KodeRekening' => $getSetting,
-						'KodeRekeningBukuBesar' => "",
-						'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
-						'KodeMataUang' => "",
-						'Valas' => 0,
-						'NilaiTukar' => 0,
-						'Jumlah' => $TotalRow, 
-						'Keterangan' => $jsonData['Keterangan'], 
-						'HeaderKas' => "",
-						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-					);
-
-					array_push($arrDetail, $temp);
-
+					// Inventory (Kredit)
+					$res = $journal->addDetailFromSetting("InvAcctPersediaan", 2, $TotalRow, $jsonData['Keterangan']);
+					if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 
 					// Save Journal
-					$autoPosting = new AutoPosting();
-
-					if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
-						$data["message"] = "Gagal Simpan Jurnal";
+					$res = $journal->save();
+					if (!$res['success']) {
+						$data["message"] = $res['message'];
 						$errorCount +=1;
 						goto jump;
 					}

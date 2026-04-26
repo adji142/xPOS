@@ -22,10 +22,8 @@ use App\Models\ReturPembelianHeader;
 use App\Models\ReturPembelianDetail;
 use App\Models\PembayaranHeader;
 use App\Models\PembayaranDetail;
+use App\Services\AccountingService;
 
-use App\Models\AutoPosting;
-use App\Models\SettingAccount;
-use App\Models\Rekening;
 
 class ReturPembelianController extends Controller
 {
@@ -255,120 +253,49 @@ class ReturPembelianController extends Controller
 				skip:
 			}
 
+
 			// Auto Journal
+			$journal = new AccountingService();
+			$journal->initialize("RTB", $jsonData['TglTransaksi'], $NoTransaksi, "O", ($jsonData['Status'] == "D"));
 
-			// Generate Header :
+			// Hutang (Debet = 1)
+			$res = $journal->addDetailFromSetting("PbAcctHutang", 1, $jsonData['TotalPembelian'], $jsonData['Keterangan']);
+			if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 
-			$arrHeader = array(
-						'NoTransaksi' => "",
-						'KodeTransaksi' => "RTB",
-						'TglTransaksi' => $jsonData['TglTransaksi'],
-						'NoReff' => $NoTransaksi,
-						'StatusTransaksi' => "O",
-						'RecordOwnerID' => Auth::user()->RecordOwnerID,
-					);
-			$arrDetail = array();
-
-			// GetAccount :
-			$Setting = NEW SettingAccount();
-			$getSetting = $Setting->GetSetting("PbAcctHutang");
-			$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-							->where('KodeRekening', $getSetting)->get();
-
-			if (count($validate) == 0) {
-				$data['message'] = "Akun Rekening Akutansi Hutang Pembelian Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
-				$errorCount +=1;
-				goto jump;
-			}
-
-			// Hutang
-
-			$temp = array(
-				'KodeTransaksi' => "RTB", 
-				'KodeRekening' => $getSetting,
-				'KodeRekeningBukuBesar' => "",
-				'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
-				'KodeMataUang' => "",
-				'Valas' => 0,
-				'NilaiTukar' => 0,
-				'Jumlah' => $jsonData['TotalPembelian'], 
-				'Keterangan' => $jsonData['Keterangan'], 
-				'HeaderKas' => "",
-				'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-			);
-
-			array_push($arrDetail, $temp);
-			// End Hutang
-
-			// PPN
-
+			// PPN (Kredit = 2)
 			if ($jsonData['Pajak'] > 0) {
-				// GetAccount :
-				$Setting = NEW SettingAccount();
-				$getSetting = $Setting->GetSetting("PbAcctPajakPembelian");
-				$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-								->where('KodeRekening', $getSetting)->get();
-
-				if (count($validate) == 0) {
-					$data['message'] = "Akun Rekening Akutansi Pajak Pembelian Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
-					$errorCount +=1;
-					goto jump;
-				}
-				$temp = array(
-					'KodeTransaksi' => "RTB", 
-					'KodeRekening' => $getSetting,
-					'KodeRekeningBukuBesar' => "",
-					'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
-					'KodeMataUang' => "",
-					'Valas' => 0,
-					'NilaiTukar' => 0,
-					'Jumlah' => $jsonData['Pajak'], 
-					'Keterangan' => $jsonData['Keterangan'], 
-					'HeaderKas' => "",
-					'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-				);
-
-				array_push($arrDetail, $temp);
+				$res = $journal->addDetailFromSetting("PbAcctPajakPembelian", 2, $jsonData['Pajak'], $jsonData['Keterangan']);
+				if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 			}
-			// End PPN
 
-			// Inventory
-			// GetAccount :
-			$Setting = NEW SettingAccount();
-			$getSetting = $Setting->GetSetting("InvAcctPersediaan");
-			$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-							->where('KodeRekening', $getSetting)->get();
-
-			if (count($validate) == 0) {
-				$data['message'] = "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
-				$errorCount +=1;
-				goto jump;
+			// Inventory (Kredit = 2)
+			foreach ($jsonData['Detail'] as $key) {
+				if ($key['Qty'] == 0) continue;
+				$res = $journal->addDetailForInventory($key['KodeItem'], 2, $key['Qty'] * $key['Harga'], $jsonData['Keterangan']);
+				if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 			}
-			$temp = array(
-				'KodeTransaksi' => "RTB", 
-				'KodeRekening' => $getSetting,
-				'KodeRekeningBukuBesar' => "",
-				'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
-				'KodeMataUang' => "",
-				'Valas' => 0,
-				'NilaiTukar' => 0,
-				'Jumlah' => $jsonData['TotalTransaksi'], 
-				'Keterangan' => $jsonData['Keterangan'], 
-				'HeaderKas' => "",
-				'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-			);
-
-			array_push($arrDetail, $temp);
-			// End Inventory
 
 			// Save Journal
-			$autoPosting = new AutoPosting();
-
-			if ($autoPosting->Auto($arrHeader, $arrDetail,($jsonData['Status']== "D") ? true : false) != "OK") {
-				$data["message"] = "Gagal Simpan Jurnal";
+			$res = $journal->save();
+			if (!$res['success']) {
+				$data["message"] = $res['message'];
 				$errorCount +=1;
 				goto jump;
 			}
+			// End Auto Journal
+
+			// Update Invoice Status & TotalRetur
+			$NoFaktur = "";
+			foreach ($jsonData['Detail'] as $key) {
+				if (!empty($key['BaseReff'])) {
+					$NoFaktur = $key['BaseReff'];
+					break;
+				}
+			}
+			if ($NoFaktur != "") {
+				$this->updateInvoiceStatus($NoFaktur);
+			}
+
 			// End Save Jurnal
 
 			jump:
@@ -471,121 +398,49 @@ class ReturPembelianController extends Controller
 		            }	
 	            }
 
+
 	            // Auto Journal
+				$journal = new AccountingService();
+				$journal->initialize("RTB", $jsonData['TglTransaksi'], $jsonData['NoTransaksi'], "O", ($jsonData['Status'] == "D"));
 
-				// Generate Header :
+				// Hutang (Debet = 1)
+				$res = $journal->addDetailFromSetting("PbAcctHutang", 1, $jsonData['TotalPembelian'], $jsonData['Keterangan']);
+				if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 
-				$arrHeader = array(
-					'NoTransaksi' => "",
-					'KodeTransaksi' => "RTB",
-					'TglTransaksi' => $jsonData['TglTransaksi'],
-					'NoReff' => $jsonData['NoTransaksi'],
-					'StatusTransaksi' => "O",
-					'RecordOwnerID' => Auth::user()->RecordOwnerID,
-				);
-
-				$arrDetail = array();
-
-				// GetAccount :
-				$Setting = NEW SettingAccount();
-				$getSetting = $Setting->GetSetting("PbAcctHutang");
-				$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-								->where('KodeRekening', $getSetting)->get();
-
-				if (count($validate) == 0) {
-					$data['message'] = "Akun Rekening Akutansi Hutang Pembelian Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
-					$errorCount +=1;
-					goto jump;
-				}
-
-				// Hutang
-
-				$temp = array(
-					'KodeTransaksi' => "RTB", 
-					'KodeRekening' => $getSetting,
-					'KodeRekeningBukuBesar' => "",
-					'DK' => ($jsonData['Status'] == "D") ? 2 : 1, 
-					'KodeMataUang' => "",
-					'Valas' => 0,
-					'NilaiTukar' => 0,
-					'Jumlah' => $jsonData['TotalPembelian'], 
-					'Keterangan' => $jsonData['Keterangan'], 
-					'HeaderKas' => "",
-					'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-				);
-
-				array_push($arrDetail, $temp);
-				// End Hutang
-
-				// PPN
-
+				// PPN (Kredit = 2)
 				if ($jsonData['Pajak'] > 0) {
-					// GetAccount :
-					$Setting = NEW SettingAccount();
-					$getSetting = $Setting->GetSetting("PbAcctPajakPembelian");
-					$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-									->where('KodeRekening', $getSetting)->get();
-
-					if (count($validate) == 0) {
-						$data['message'] = "Akun Rekening Akutansi Pajak Pembelian Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
-						$errorCount +=1;
-						goto jump;
-					}
-					$temp = array(
-						'KodeTransaksi' => "RTB", 
-						'KodeRekening' => $getSetting,
-						'KodeRekeningBukuBesar' => "",
-						'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
-						'KodeMataUang' => "",
-						'Valas' => 0,
-						'NilaiTukar' => 0,
-						'Jumlah' => $jsonData['Pajak'], 
-						'Keterangan' => $jsonData['Keterangan'], 
-						'HeaderKas' => "",
-						'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-					);
-
-					array_push($arrDetail, $temp);
+					$res = $journal->addDetailFromSetting("PbAcctPajakPembelian", 2, $jsonData['Pajak'], $jsonData['Keterangan']);
+					if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 				}
-				// End PPN
 
-				// Inventory
-				// GetAccount :
-				$Setting = NEW SettingAccount();
-				$getSetting = $Setting->GetSetting("InvAcctPersediaan");
-				$validate = Rekening::where('RecordOwnerID', Auth::user()->RecordOwnerID)
-								->where('KodeRekening', $getSetting)->get();
-
-				if (count($validate) == 0) {
-					$data['message'] = "Akun Rekening Akutansi Inventory Tidak Valid / Tidak Ada silahkan Setting Akun di menu Master->Finance->Setting Account";
-					$errorCount +=1;
-					goto jump;
+				// Inventory (Kredit = 2)
+				foreach ($jsonData['Detail'] as $key) {
+					if ($key['Qty'] == 0) continue;
+					$res = $journal->addDetailForInventory($key['KodeItem'], 2, $key['Qty'] * $key['Harga'], $jsonData['Keterangan']);
+					if (!$res['success']) { $data['message'] = $res['message']; $errorCount+=1; goto jump; }
 				}
-				$temp = array(
-					'KodeTransaksi' => "RTB", 
-					'KodeRekening' => $getSetting,
-					'KodeRekeningBukuBesar' => "",
-					'DK' => ($jsonData['Status'] == "D") ? 1 : 2, 
-					'KodeMataUang' => "",
-					'Valas' => 0,
-					'NilaiTukar' => 0,
-					'Jumlah' => $jsonData['TotalTransaksi'], 
-					'Keterangan' => $jsonData['Keterangan'], 
-					'HeaderKas' => "",
-					'RecordOwnerID' =>  Auth::user()->RecordOwnerID
-				);
-
-				array_push($arrDetail, $temp);
-				// End Inventory
 
 				// Save Journal
-				$autoPosting = new AutoPosting();
-
-				if ($autoPosting->Auto($arrHeader, $arrDetail, ($jsonData['Status']== "D") ? true : false) != "OK") {
-					$data["message"] = "Gagal Simpan Jurnal";
+				$res = $journal->save();
+				if (!$res['success']) {
+					$data["message"] = $res['message'];
 					$errorCount +=1;
 					goto jump;
 				}
+				// End Auto Journal
+
+				// Update Invoice Status & TotalRetur
+				$NoFaktur = "";
+				foreach ($jsonData['Detail'] as $key) {
+					if (!empty($key['BaseReff'])) {
+						$NoFaktur = $key['BaseReff'];
+						break;
+					}
+				}
+				if ($NoFaktur != "") {
+					$this->updateInvoiceStatus($NoFaktur);
+				}
+
 				// End Save Jurnal
 	        }
 	        jump:
@@ -603,5 +458,42 @@ class ReturPembelianController extends Controller
 		}
 
 		return response()->json($data);
+	}
+
+
+	private function updateInvoiceStatus($NoFaktur)
+	{
+		$RecordOwnerID = Auth::user()->RecordOwnerID;
+
+		// Recalculate Total Retur
+		$totalRetur = DB::table('returpembeliandetail')
+			->join('returpembelianheader', function ($join) {
+				$join->on('returpembeliandetail.NoTransaksi', '=', 'returpembelianheader.NoTransaksi')
+					->on('returpembeliandetail.RecordOwnerID', '=', 'returpembelianheader.RecordOwnerID');
+			})
+			->where('returpembeliandetail.BaseReff', $NoFaktur)
+			->where('returpembeliandetail.RecordOwnerID', $RecordOwnerID)
+			->where('returpembelianheader.Status', '<>', 'D')
+			->sum('returpembeliandetail.HargaNet');
+
+		// Update Header
+		$faktur = FakturPembelianHeader::where('NoTransaksi', $NoFaktur)
+			->where('RecordOwnerID', $RecordOwnerID)
+			->first();
+
+		if ($faktur) {
+			$faktur->TotalRetur = $totalRetur;
+			
+			// Check if fully returned or paid
+			$Outstanding = $faktur->TotalPembelian - ($faktur->TotalPembayaran ?? 0) - $totalRetur;
+			if ($Outstanding <= 0) {
+				$faktur->Status = 'C';
+			} else {
+				if ($faktur->Status == 'C' && $Outstanding > 0) {
+					$faktur->Status = 'O';
+				}
+			}
+			$faktur->save();
+		}
 	}
 }
