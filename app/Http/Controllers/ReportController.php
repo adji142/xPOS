@@ -257,7 +257,7 @@ class ReportController extends Controller
     function RptNeracaSaldo(Request $request) {
         $Bulan = $request->input('Bulan');
         $Tahun = $request->input('Tahun');
-        $Level = $request->input('Level', 3);
+        $Level = $request->input('Level', 5);
         $RecordOwnerID = Auth::user()->RecordOwnerID;
 
         $currentYear = Carbon::now()->year;
