@@ -36,7 +36,8 @@ class JournalController extends Controller
 
         $model = JournalHeader::selectRaw($sql)
                     ->leftJoin('documenttype', 'headerjurnal.KodeTransaksi','documenttype.KodeDokumen')
-                    ->whereBetween('headerjurnal.TglTransaksi', [$TglAwal, $TglAkhir]);
+                    ->whereBetween('headerjurnal.TglTransaksi', [$TglAwal, $TglAkhir])
+                    ->where('headerjurnal.RecordOwnerID', Auth::user()->RecordOwnerID);
         if($docType != ""){
             $model->where('KodeTransaksi', $docType);
         }
@@ -60,6 +61,7 @@ class JournalController extends Controller
                         ->on('rekeningakutansi.RecordOwnerID','=','detailjurnal.RecordOwnerID');
                     })
                     ->where('detailjurnal.NoTransaksi', $NoTransaksi)
+                    ->where('detailjurnal.RecordOwnerID', Auth::user()->RecordOwnerID)
                     ->orderBy('detailjurnal.NoUrut');
 
         $data['data']= $model->get();
