@@ -14,6 +14,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\BookingOnlineController;
 use App\Http\Controllers\DiscountVoucherController;
 use App\Http\Controllers\PelangganController;
+use App\Http\Controllers\GenerateDocumentController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -57,3 +58,5 @@ Route::post('/getjadwal', [BookingOnlineController::class, 'getjadwalMeja'])->na
 Route::post('/discountvoucher/cekdiscount', [DiscountVoucherController::class, 'checkVoucher'])->name('discountvoucher-cekdiscount');
 
 Route::post('/pelanggan/viewJson', [PelangganController::class, 'ReadPelangganJson'])->name('pelanggan-viewJson');
+
+Route::post('/tools/generate-document', [GenerateDocumentController::class, 'generate'])->name('tools-generate-document');

@@ -30,9 +30,9 @@ class AutoPosting extends Model
     	$oCompany = Company::where('KodePartner',Auth::user()->RecordOwnerID)->first();
 
     	if ($oCompany->isPostingAkutansi == 1) {
-    		$currentDate = Carbon::now();
-			$Year = $currentDate->format('Y');
-			$Month = $currentDate->format('m');
+    		$tgl   = Carbon::parse($Header['TglTransaksi']);
+			$Year  = $tgl->format('Y');
+			$Month = $tgl->format('m');
 
 	    	$numberingData = new DocumentNumbering();
 		    $NoTransaksi = $numberingData->GetNewDoc("JE","headerjurnal","NoTransaksi");
